@@ -1,6 +1,6 @@
 # knowledge_envelope Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_envelope.py`
+**Path:** `src/llm_wiki_engine/knowledge_envelope.py`
 
 ## Description
 
@@ -16,15 +16,16 @@ step whose result is inert input to the builder.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
-| `.knowledge_evidence` | `canonical_json_bytes`, `formatted_json_text`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_model` | `EVALUATED_REVISION_PATTERN`, `LIMITATION_CODE_PATTERN`, `REPOSITORY_IDENTITY_PATTERN`, `REPOSITORY_IDENTITY_SOURCE_EXTENSION`, `BundleRecord`, `KnowledgeIndex`, `KnowledgeModelError`, `ProducerComponent`, `ProducerRecord`, `RepositoryIdentitySource`, `RepositoryRecord`, `SnapshotRecord`, `WorkingTreeState`, `knowledge_index_to_payload` |
-| `.progress` | `observed_phase` |
-| `.validation` | `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_evidence` | `canonical_json_bytes`, `formatted_json_text`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
 | `math` | `math` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -39,7 +40,7 @@ step whose result is inert input to the builder.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_envelope.py"]
+    n1["src/llm_wiki_engine/knowledge_envelope.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_envelope.md"
@@ -51,23 +52,23 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (25) |
-| Outbound | `src` (5) |
+| Inbound | `src` (27) |
+| Outbound | `src` (6) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [_GitCommandResult](../entities/GitCommandResult.md) | Class | 80 | — | — |
-| [KnowledgeEnvelopeError](../entities/KnowledgeEnvelopeError.md) | Class | 90 | `ValueError` | Field-specific validation failure while constructing an envelope. |
-| [ConsumedInputKind](../entities/ConsumedInputKind.md) | Enum | 99 | `str`, `Enum` | Known classes of repository/configuration input consumed by a run. |
-| [ConsumedInput](../entities/ConsumedInput.md) | Class | 125 | — | One already captured repository-relative content commitment. |
-| [ProducerComponentInput](../entities/ProducerComponentInput.md) | Class | 219 | — | Safe, already selected producer metadata. |
-| [RepositoryEvidence](../entities/RepositoryEvidence.md) | Class | 235 | — | Already collected local VCS evidence; raw remotes are never serialized. |
-| [EnvelopeInputs](../entities/EnvelopeInputs.md) | Class | 247 | — | Complete in-memory inputs for one evaluated envelope. |
-| [EvaluatedEnvelope](../entities/EvaluatedEnvelope.md) | Class | 267 | — | Version-tagged evaluated basis committed through manifest v5. |
+| [_GitCommandResult](../entities/GitCommandResult.md) | Class | 81 | — | — |
+| [KnowledgeEnvelopeError](../entities/KnowledgeEnvelopeError.md) | Class | 91 | `ValueError` | Field-specific validation failure while constructing an envelope. |
+| [ConsumedInputKind](../entities/ConsumedInputKind.md) | Enum | 100 | `str`, `Enum` | Known classes of repository/configuration input consumed by a run. |
+| [ConsumedInput](../entities/ConsumedInput.md) | Class | 126 | — | One already captured repository-relative content commitment. |
+| [ProducerComponentInput](../entities/ProducerComponentInput.md) | Class | 220 | — | Safe, already selected producer metadata. |
+| [RepositoryEvidence](../entities/RepositoryEvidence.md) | Class | 236 | — | Already collected local VCS evidence; raw remotes are never serialized. |
+| [EnvelopeInputs](../entities/EnvelopeInputs.md) | Class | 248 | — | Complete in-memory inputs for one evaluated envelope. |
+| [EvaluatedEnvelope](../entities/EvaluatedEnvelope.md) | Class | 268 | — | Version-tagged evaluated basis committed through manifest v5. |
 
 ## Functions
 

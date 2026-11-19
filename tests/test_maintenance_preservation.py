@@ -14,32 +14,32 @@ from llm_wiki_cli.services.documentation_native import (
     refresh_documentation_native_projection,
     DocumentationNativeError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import CommitStage, current_knowledge_format
+from llm_wiki_engine.knowledge_artifacts import CommitStage, current_knowledge_format
 from llm_wiki_cli.services.documentation_wiki_input import (
     adopt_documentation_wiki_snapshot,
     DocumentationWikiInputError,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import (
     KnowledgeStorageError,
     canonical_bytes,
     digest,
 )
-from llm_wiki_cli.services.knowledge_storage import build_knowledge_store
-from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_storage import build_knowledge_store
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage,
     recover_knowledge_storage,
     export_knowledge_v1,
 )
-from llm_wiki_cli.services.maintenance_protocol import (
+from llm_wiki_engine.maintenance_protocol import (
     ADOPTION_FILENAME,
     guard_maintenance_owner,
 )
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
-from llm_wiki_cli.services.manifest_storage import current_manifest_format, object_path
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.manifest_storage import current_manifest_format, object_path
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest
 from tests.developer_value.fixtures import POLICY_SOURCE
 
 

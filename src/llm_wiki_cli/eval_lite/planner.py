@@ -17,11 +17,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.canonical_json import compact_bytes
+from llm_wiki_engine.contracts import (
     EVAL_LITE_PLAN_SCHEMA_VERSION,
     EVAL_LITE_TASK_SCHEMA_VERSION,
 )
-from llm_wiki_cli.services.validation import (
+from llm_wiki_engine.validation import (
     portable_path_key,
     require_portable_relative_path,
 )
@@ -377,7 +378,7 @@ def materialize_evaluation_plan(
 ) -> EvaluationPlan:
     """Materialize both packets through the read-only QCP builder, then plan."""
 
-    from llm_wiki_cli.services.context_packet import (
+    from llm_wiki_cli.services.context_packet_builder import (
         build_qualified_context,
         reconcile_context_packet,
     )
@@ -592,16 +593,16 @@ def _reconciliation_receipt(
             "basis": "not-provided",
             "limitations": ["live-reconciliation-not-performed"],
         }
-    from llm_wiki_cli.services import context_packet
+    from llm_wiki_cli.services import context_packet_builder
 
-    if type(value) is not context_packet.ContextPacketReconciliation:
+    if type(value) is not context_packet_builder.ContextPacketReconciliation:
         raise EvaluationPlanError(
             field,
             "must be an official ContextPacketReconciliation returned by "
             "reconcile_context_packet, or None",
         )
     try:
-        context_packet._validate_reconciliation_contract(
+        context_packet_builder._validate_reconciliation_contract(
             packet_id=value.packet_id,
             policy=value.policy,
             state=value.state,
@@ -948,14 +949,7 @@ def _validate_json_tree(value: Any, field: str, *, depth: int = 0) -> None:
     raise EvaluationPlanError(field, f"contains unsupported value {type(value).__name__}")
 
 
-def _canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-        allow_nan=False,
-    ).encode("utf-8")
+_canonical_json_bytes = compact_bytes
 
 
 def _domain_digest(domain: bytes, value: bytes) -> str:

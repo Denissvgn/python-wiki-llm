@@ -138,9 +138,9 @@ jobs:
       run: |
         if [[ "${HISTORY_PROFILE}" == "windows-trained" ]]; then
           python -I incoming/tools/release/core_schedule.py constraints --root incoming/tools --output incoming/training-constraints.txt
-          python -m pip install --no-cache-dir --constraint incoming/training-constraints.txt --requirement incoming/training-constraints.txt "./candidate[dev,tokens]"
+          python -m pip install --no-cache-dir --constraint incoming/training-constraints.txt --requirement incoming/training-constraints.txt ./candidate/src "./candidate[dev,tokens]"
         else
-          python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+          python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"
         fi
     - name: Collect a complete plan and execute the unsharded reference
       env:
@@ -223,7 +223,7 @@ jobs:
           --identity incoming/identity.json --harness-sha256 "${HARNESS_SHA256}" \
           --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
     - name: Install the identical resolved dependency profile
-      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt "./candidate[dev,tokens]"
+      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt ./candidate/src "./candidate[dev,tokens]"
     - name: Execute exactly one planned shard
       env:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
@@ -311,7 +311,7 @@ jobs:
           --identity incoming/identity.json --harness-sha256 "${HARNESS_SHA256}" \
           --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
     - name: Install the identical aggregation profile
-      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt "./candidate[dev,tokens]"
+      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt ./candidate/src "./candidate[dev,tokens]"
     - name: Require complete inventory coverage and outcome parity
       env:
         HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}

@@ -11,8 +11,8 @@ import stat
 import sys
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
-from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
-from llm_wiki_cli.services.knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 from llm_wiki_cli.services.publication_candidate import (
     MAX_FILE_BYTES,
     MAX_FILES,
@@ -31,7 +31,7 @@ from llm_wiki_cli.services.publication_impact import (
     compare_publication_impact,
     read_publication_document,
 )
-from llm_wiki_cli.services.validation import require_portable_relative_path
+from llm_wiki_engine.validation import require_portable_relative_path
 
 # Both directories are from the pinned action. -I keeps caller code off sys.path.
 HERE = Path(__file__).resolve().parent

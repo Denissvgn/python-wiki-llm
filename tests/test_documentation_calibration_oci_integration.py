@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION,
 )
 from llm_wiki_cli.services.documentation_calibration_broker import (

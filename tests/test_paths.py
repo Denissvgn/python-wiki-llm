@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services.paths import (
+from llm_wiki_engine.paths import (
     display_project_path,
     normalize_source_path,
     portable_source_root_label,

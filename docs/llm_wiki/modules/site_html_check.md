@@ -10,9 +10,9 @@ Built static-site HTML link validation.
 
 | Source | Symbols |
 |--------|---------|
-| `.wiki_media` | `split_srcset_candidates` |
 | `__future__` | `annotations` |
 | `html.parser` | `HTMLParser` |
+| `llm_wiki_engine.wiki_media` | `split_srcset_candidates` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
 | `typing` | `Callable`, `Iterable`, `Optional`, `Union` |
@@ -23,16 +23,16 @@ Built static-site HTML link validation.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/site_cmd.py"]
+    n0["src/llm_wiki_cli/cli_declarations.py"]
     n1["src/llm_wiki_cli/services/site_export.py"]
     n2["src/llm_wiki_cli/services/site_html_check.py"]
-    n3["src/llm_wiki_cli/services/wiki_media.py"]
+    n3["src/llm_wiki_engine/wiki_media.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
     n1 --> n3
     n2 --> n3
-    click n0 "../modules/site_cmd.md"
+    click n0 "../modules/cli_declarations.md"
     click n1 "../modules/site_export.md"
     click n2 "../modules/site_html_check.md"
     click n3 "../modules/wiki_media.md"
@@ -42,7 +42,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | [site_cmd](../modules/site_cmd.md) |
+| Inbound | [cli_declarations](../modules/cli_declarations.md) |
 | Inbound | [site_export](../modules/site_export.md) |
 | Outbound | [wiki_media](../modules/wiki_media.md) |
 

@@ -2,7 +2,15 @@
 
 **Entry point:** `is_pristine_wiki_target` (`api`)
 **Source:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
-**Modules touched:** [current_contracts](../modules/current_contracts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [current_contracts](../modules/current_contracts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), and 1 more
+
+**Complete modules touched:**
+
+- [canonical_json](../modules/canonical_json.md)
+- [current_contracts](../modules/current_contracts.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [wiki_lifecycle](../modules/wiki_lifecycle.md)
+- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -15,7 +23,7 @@ sequenceDiagram
     participant p1 as formatted_json_bytes
     participant p2 as iter_page_kinds
     participant p3 as current_contract_defaults
-    participant p4 as formatted_json_text
+    participant p4 as indented_line_text
     participant p5 as Path
     participant p6 as root.is_symlink
     participant p7 as root.exists
@@ -38,7 +46,7 @@ sequenceDiagram
     p0->>p1: formatted_json_bytes
     p0->>p2: iter_page_kinds
     p0->>p3: current_contract_defaults
-    p1->>p4: formatted_json_text
+    p1->>p4: indented_line_text
     p0-->>p5: Path(wiki_dir)
     p0-->>p6: root.is_symlink
     p0-->>p7: root.exists
@@ -76,10 +84,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 33 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 35 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_evidence.py:formatted_json_bytes` | 33 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:indented_line_text` | 35 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | [src/llm_wiki_engine/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -171,39 +179,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_pristine_wiki_target | Path | 156 | `Path(wiki_dir)` |
-| is_pristine_wiki_target | root.is_symlink | 157 | `root.is_symlink(data not statically known)` |
-| is_pristine_wiki_target | root.exists | 159 | `root.exists(data not statically known)` |
-| is_pristine_wiki_target | root.is_dir | 161 | `root.is_dir(data not statically known)` |
-| is_pristine_wiki_target | iter_page_kinds | 165 | `iter_page_kinds(data not statically known)` |
-| is_pristine_wiki_target | sorted | 177 | `sorted(root.rglob(...))` |
-| is_pristine_wiki_target | root.rglob | 177 | `root.rglob('*')` |
-| is_pristine_wiki_target | path.is_symlink | 185 | `path.is_symlink(data not statically known)` |
-| is_pristine_wiki_target | path.relative_to(…).as_posix | 188 | `path.relative_to(root).as_posix(data not statically known)` |
-| is_pristine_wiki_target | path.relative_to | 188 | `path.relative_to(root)` |
-| is_pristine_wiki_target | path.is_file | 192 | `path.is_file(data not statically known)` |
+| is_pristine_wiki_target | Path | 157 | `Path(wiki_dir)` |
+| is_pristine_wiki_target | root.is_symlink | 158 | `root.is_symlink(data not statically known)` |
+| is_pristine_wiki_target | root.exists | 160 | `root.exists(data not statically known)` |
+| is_pristine_wiki_target | root.is_dir | 162 | `root.is_dir(data not statically known)` |
+| is_pristine_wiki_target | iter_page_kinds | 166 | `iter_page_kinds(data not statically known)` |
+| is_pristine_wiki_target | sorted | 178 | `sorted(root.rglob(...))` |
+| is_pristine_wiki_target | root.rglob | 178 | `root.rglob('*')` |
+| is_pristine_wiki_target | path.is_symlink | 186 | `path.is_symlink(data not statically known)` |
+| is_pristine_wiki_target | path.relative_to(…).as_posix | 189 | `path.relative_to(root).as_posix(data not statically known)` |
+| is_pristine_wiki_target | path.relative_to | 189 | `path.relative_to(root)` |
+| is_pristine_wiki_target | path.is_file | 193 | `path.is_file(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 218 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 221 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 224 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 219 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 222 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 225 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 157 |
-| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 159 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 161 |
-| external_call | `is_pristine_wiki_target` | `sorted` | 177 |
-| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 177 |
-| unresolved_call | `is_pristine_wiki_target` | `path.is_symlink` | 185 |
-| unresolved_call | `is_pristine_wiki_target` | `path.relative_to(root).as_posix` | 188 |
-| unresolved_call | `is_pristine_wiki_target` | `path.relative_to` | 188 |
-| unresolved_call | `is_pristine_wiki_target` | `path.is_file` | 192 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 158 |
+| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 160 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 162 |
+| external_call | `is_pristine_wiki_target` | `sorted` | 178 |
+| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 178 |
+| unresolved_call | `is_pristine_wiki_target` | `path.is_symlink` | 186 |
+| unresolved_call | `is_pristine_wiki_target` | `path.relative_to(root).as_posix` | 189 |
+| unresolved_call | `is_pristine_wiki_target` | `path.relative_to` | 189 |
+| unresolved_call | `is_pristine_wiki_target` | `path.is_file` | 193 |
 | step_limit | `is_pristine_wiki_target` | `first 12 steps` | 0 |
 
 ## Behavior

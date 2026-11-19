@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Iterator
 from urllib.parse import urlsplit
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     WindowsFileGuardError,
     WindowsIdentityUnavailableError,
@@ -27,7 +27,7 @@ from .filesystem_guard import (
     windows_object_identity,
     _windows_path_handle_metadata,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     resolve_source_selection,

@@ -1,9 +1,9 @@
 # SchemaCleanupReceipt
 
-**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:103`
+**Location:** `src/llm_wiki_cli/services/upgrade_runtime.py:105`
 **Kind:** Class
 **Bases:** —
-**Module:** [upgrade_cmd](../modules/upgrade_cmd.md)
+**Module:** [upgrade_runtime](../modules/upgrade_runtime.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
@@ -28,26 +28,26 @@ Reversible source-schema mutation held until cleanup is committed.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SchemaCleanupReceipt (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n1["_clean_old_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n2["_restore_old_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
+    n0["SchemaCleanupReceipt (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n1["_clean_old_schema (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n2["_restore_old_schema (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n1 --> n0
     n2 --> n0
-    click n0 "../modules/upgrade_cmd.md"
-    click n1 "../modules/upgrade_cmd.md"
-    click n2 "../modules/upgrade_cmd.md"
+    click n0 "../modules/upgrade_runtime.md"
+    click n1 "../modules/upgrade_runtime.md"
+    click n2 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [upgrade_cmd](../modules/upgrade_cmd.md) | 0 | `after`, `before`, `path` |
+| [upgrade_runtime](../modules/upgrade_runtime.md) | 0 | `after`, `before`, `path` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 2 |
-| `_clean_old_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
-| `_restore_old_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_clean_old_schema` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 2 |
+| `_clean_old_schema` | type_reference | [upgrade_runtime](../modules/upgrade_runtime.md) | — |
+| `_restore_old_schema` | type_reference | [upgrade_runtime](../modules/upgrade_runtime.md) | — |

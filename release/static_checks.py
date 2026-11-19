@@ -269,6 +269,7 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
             (sys.executable, "-I", "-m", "bandit",
                 "-r",
                 "src/llm_wiki_cli",
+                "src/llm_wiki_engine",
                 "-f",
                 "json",
                 "-o",
@@ -277,7 +278,7 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
             accepted_codes=(0, 1),
             report=bandit_report,
             report_kind="bandit",
-            source_paths=("src/llm_wiki_cli",),
+            source_paths=("src/llm_wiki_cli", "src/llm_wiki_engine"),
         ),
         Check(
             "bandit-blocking",

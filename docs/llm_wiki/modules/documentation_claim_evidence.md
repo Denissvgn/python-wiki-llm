@@ -17,12 +17,12 @@ structural evidence, freshness, review, verification, or lifecycle state.
 | Source | Symbols |
 |--------|---------|
 | `.documentation_queries` | `DocumentationQueryError`, `DocumentationGraphQueryService` |
-| `.knowledge_evidence` | `is_valid_sha256` |
-| `.knowledge_graph` | `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
-| `.validation` | `require_exact_choice`, `require_exact_fields`, `require_mapping`, `require_mapping_list`, `require_nonnegative_int`, `require_portable_relative_path`, `require_trimmed_text`, `require_trimmed_text_list` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.knowledge_evidence` | `is_valid_sha256` |
+| `llm_wiki_engine.knowledge_graph` | `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
+| `llm_wiki_engine.validation` | `require_exact_choice`, `require_exact_fields`, `require_mapping`, `require_mapping_list`, `require_nonnegative_int`, `require_portable_relative_path`, `require_trimmed_text`, `require_trimmed_text_list` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `typing` | `TYPE_CHECKING`, `Any` |
@@ -36,9 +36,9 @@ flowchart LR
     n0["src/llm_wiki_cli/services/documentation_claim_evidence.py"]
     n1["src/llm_wiki_cli/services/documentation_queries.py"]
     n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n3["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n4["src/llm_wiki_cli/services/knowledge_graph.py"]
-    n5["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_engine/knowledge_evidence.py"]
+    n4["src/llm_wiki_engine/knowledge_graph.py"]
+    n5["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4

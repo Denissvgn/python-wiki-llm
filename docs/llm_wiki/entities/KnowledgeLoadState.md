@@ -1,6 +1,6 @@
 # KnowledgeLoadState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:206`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:208`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -28,17 +28,17 @@ Validated artifact-load outcomes; never persisted in the knowledge index.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeLoadState (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["KnowledgeLoadState (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n4["src/llm_wiki_cli/services/context_service.py"]
     n5["src/llm_wiki_cli/services/doctor_service.py"]
-    n6["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n7["_live_governance_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n8["KnowledgeStateLoadError.__init__ (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n9["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n10["src/llm_wiki_cli/services/lint_service.py"]
+    n6["src/llm_wiki_cli/services/lint_service.py"]
+    n7["src/llm_wiki_engine/knowledge_consumption.py"]
+    n8["_live_governance_issues (src/llm_wiki_engine/knowledge_loader.py)"]
+    n9["KnowledgeStateLoadError.__init__ (src/llm_wiki_engine/knowledge_loader.py)"]
+    n10["src/llm_wiki_engine/knowledge_observability.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -53,11 +53,11 @@ flowchart LR
     click n3 "../modules/knowledge_cmd.md"
     click n4 "../modules/context_service.md"
     click n5 "../modules/doctor_service.md"
-    click n6 "../modules/knowledge_consumption.md"
-    click n7 "../modules/knowledge_loader.md"
+    click n6 "../modules/lint_service.md"
+    click n7 "../modules/knowledge_consumption.md"
     click n8 "../modules/knowledge_loader.md"
-    click n9 "../modules/knowledge_observability.md"
-    click n10 "../modules/lint_service.md"
+    click n9 "../modules/knowledge_loader.md"
+    click n10 "../modules/knowledge_observability.md"
 ```
 
 ### Summary
@@ -80,8 +80,8 @@ flowchart LR
 | `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `_live_governance_issues` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `KnowledgeStateLoadError.__init__` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

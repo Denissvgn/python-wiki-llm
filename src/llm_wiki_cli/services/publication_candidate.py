@@ -1,4 +1,8 @@
-"""Portable, review-bound GitHub wiki candidates without remote mutation."""
+"""Portable, review-bound publication candidates without remote mutation.
+
+The policy's :mod:`publication target <.publication_targets>` prepares each
+owned page and checks the composed tree; GitHub wiki is the built-in target.
+"""
 
 from __future__ import annotations
 
@@ -11,9 +15,10 @@ import stat
 from typing import Any, Mapping
 
 from .. import __version__
-from .filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
-from .knowledge_evidence import hash_json, sha256_bytes
-from .knowledge_storage_io import StorageReadSession, _absolute_path
+from .domain_pack import current_pack
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes, ensure_guarded_directory
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, _absolute_path
 from .publication_config import (
     DELIVERY_CHECKPOINT_PATH,
     load_publication_config,
@@ -27,7 +32,9 @@ from .publication_contracts import (
     validate_publication_report,
 )
 from .publication_impact import capture_publication_basis, compare_publication_impact
-from .validation import portable_path_key, require_portable_relative_path
+from .publication_targets import current_publication_targets, publication_target
+from .reference_providers import reference_providers_identity
+from llm_wiki_engine.validation import portable_path_key, require_portable_relative_path
 
 
 RECEIPT_SCHEMA = "llm-wiki-publication-candidate/v1"
@@ -209,15 +216,32 @@ def _provider():
         for name in sorted(names):
             files[name] = sha256_bytes(session.read(name, MAX_FILE_BYTES))
     session.recheck()
+    # Engine modules ship in their own distribution but shape the same output.
+    from .analysis_capture import ENGINE_PACKAGE, engine_package_root
+
+    engine = engine_package_root(package)
+    with StorageReadSession(engine).phase() as session:
+        for name in sorted(registry.get("engine_classified_python_files", [])):
+            relative = name.removeprefix(ENGINE_PACKAGE + "/")
+            files[name] = sha256_bytes(session.read(relative, MAX_FILE_BYTES))
+        files[ENGINE_PACKAGE + "/py.typed"] = sha256_bytes(session.read("py.typed", MAX_FILE_BYTES))
+    session.recheck()
     try:
         parser_version = metadata.version("markdown-it-py")
     except metadata.PackageNotFoundError:
         parser_version = None
+    fingerprinted: dict[str, Any] = {"files": files, "parser_version": parser_version}
+    targets = current_publication_targets().identity()
+    if targets is not None:
+        fingerprinted["targets"] = targets
+    references = reference_providers_identity(current_pack().reference_providers)
+    if references is not None:
+        fingerprinted["reference_providers"] = references
     return {
         "name": "agent-wiki-cli",
         "version": __version__,
         "parser_version": parser_version,
-        "fingerprint": hash_json({"files": files, "parser_version": parser_version}),
+        "fingerprint": hash_json(fingerprinted),
     }
 
 
@@ -618,7 +642,7 @@ def _output_path(root, name, config, target, basis, config_path):
     inputs.update(
         root / reference["configuration"]["path"]
         for reference in basis.get("references", {}).values()
-        if reference["configuration"]["kind"] == "contract-file"
+        if "path" in reference["configuration"]
     )
     inputs.update(publication_input_controls(root, config, config_path))
     for item in inputs:
@@ -641,7 +665,6 @@ def _prepare(
     source_revision,
     target_revision,
 ):
-    from .publication_links import check_github_wiki, prepare_wiki_markdown
     from .publication_impact import project_publication_targets
 
     root = _absolute_path(Path(consumer_root))
@@ -685,6 +708,7 @@ def _prepare(
                 raise ValueError(
                     "Target snapshot includes source or architecture inputs"
                 )
+    destination = publication_target(config["target"]["kind"])
     provider = _provider()
     before = {} if target is None else _read_tree(target, target_snapshot=True)
     basis = capture_publication_basis(
@@ -747,7 +771,7 @@ def _prepare(
                 raise ValueError("Authored content changed after evidence capture")
             if owner["kind"] == "page":
                 text = raw.decode("utf-8")
-                authored[path] = prepare_wiki_markdown(
+                authored[path] = destination.prepare_page(
                     text,
                     source_path=source,
                     source_pages=pages,
@@ -829,7 +853,7 @@ def _prepare(
         or sum(map(len, output.values())) > MAX_TREE_BYTES
     ):
         raise ValueError("Composed candidate exceeds the public file or byte limit")
-    checks = check_github_wiki(output)
+    checks = destination.check(output)
     projected = project_publication_targets(basis, output, baseline=baseline)
     impact = compare_publication_impact(projected, baseline, reviews=reviews)
     session.recheck()
@@ -1034,9 +1058,8 @@ def _validate_candidate_files(
     """Check public file bytes against a previously validated candidate receipt."""
     if _hashes(files) != receipt["files"]:
         raise ValueError("Candidate files differ from the supplied receipt")
-    from .publication_links import check_github_wiki
-
-    if check_github_wiki(files) != receipt["checks"]:
+    target = publication_target(receipt["basis"]["config"]["target"]["kind"])
+    if target.check(files) != receipt["checks"]:
         raise ValueError("Candidate checks differ from its actual public content")
     from .publication_impact import publication_target_observation
 

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli.services import maintenance_service as service
-from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError
+from llm_wiki_engine.maintenance_protocol import MaintenanceProtocolError
 
 
 class AliasedRoot(PureWindowsPath):

@@ -49,9 +49,16 @@ its page and authored context; an unrelated owner cannot claim the occupied path
 Ambiguous duplicate removal requires resolved ownership before page writes.
 Previously documented sources with no documentable inventory receive a narrow
 parser qualification: a valid empty module retains its module page and source
-commitment while its removed members become history. Python aliases, parse
-failures and unavailable coverage stop that transition. A stale Markdown header
-alone does not establish retirement authority.
+commitment while its removed members become history. A source the built-in
+Python parser classifies as a static self-module alias
+(`sys.modules[__name__] = impl`) no longer owns pages: sync treats it like a
+removed source, so declarations that moved to another module keep their pages
+and the module page is marked stale for audit. When the moved module keeps the
+same page name, it continues that page with its authored text instead, and
+so do its classes, including those whose pages carry the module's name.
+Parse failures, unreported outcomes and unavailable coverage stop that
+transition. A stale Markdown header alone does not establish retirement
+authority.
 
 Retained empty modules remain explicit in the owning manifest. Lint and live
 native reads request those exact parser records, preserving the distinction
@@ -354,8 +361,13 @@ From source:
 git clone https://github.com/Denissvgn/python-wiki-llm.git
 cd python-wiki-llm
 python3 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
+.venv/bin/pip install -e ./src -e ".[dev]"
 ```
+
+The checkout holds two distributions: `agent-wiki-cli` at the repository root
+and the standard-library-only `llm-wiki-engine` it depends on, under `src/`.
+Install both from the checkout, because the CLI pins the exact engine version
+from the same commit.
 
 The following extras are accepted for compatibility with documented workflows,
 but they do not install external TypeScript/JavaScript, Go, Rust, or Haskell
@@ -365,10 +377,10 @@ toolchains:
 pip install "agent-wiki-cli[typescript,go,rust]"
 ```
 
-Uninstall the Python package with:
+Uninstall the Python packages with:
 
 ```bash
-pip uninstall agent-wiki-cli
+pip uninstall agent-wiki-cli llm-wiki-engine
 ```
 
 ## Quick Start
@@ -444,23 +456,28 @@ For the separate protected lifecycle, see
 
 ## Working from source
 
-Install an editable development checkout from the repository root:
+Install an editable development checkout, engine included, from the
+repository root:
 
 ```bash
-.venv/bin/pip install -e ".[dev]"
+.venv/bin/pip install -e ./src -e ".[dev]"
 ```
 
 Include the optional MCP dependency when working on that integration:
 
 ```bash
-.venv/bin/pip install -e ".[dev,mcp]"
+.venv/bin/pip install -e ./src -e ".[dev,mcp]"
 ```
 
 Build distribution artifacts locally with:
 
 ```bash
 .venv/bin/python -m build
+.venv/bin/python -m build --outdir dist/engine src
 ```
+
+The first command builds `agent-wiki-cli`; the second builds
+`llm-wiki-engine` into `dist/engine`.
 
 Release notes and package metadata record the surface, distribution,
 compatibility, and release behavior for documentation-surface work. Use

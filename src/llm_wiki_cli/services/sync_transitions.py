@@ -9,15 +9,15 @@ import stat
 from typing import Mapping
 
 from .bootstrap_runtime import _module_name_from_path
-from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
-from .knowledge_storage_io import StorageReadSession
-from .markdown_sections import normalize_markdown
+from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+from llm_wiki_engine.markdown_sections import normalize_markdown
 from .sync_analysis import SyncOwnershipError, _recorded_entity_pages
-from .sync_manifest import ManifestPageSource, SyncManifest
-from .sync_retained_links import repair_retained_page_links
-from .validation import portable_path_key
-from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
-from .source_retirement import retired_entity_mappings
+from llm_wiki_engine.sync_manifest import ManifestPageSource, SyncManifest
+from llm_wiki_engine.sync_retained_links import repair_retained_page_links
+from llm_wiki_engine.validation import portable_path_key
+from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, canonical_path
+from llm_wiki_engine.source_retirement import retired_entity_mappings
 
 
 class PageTransitionError(SyncOwnershipError):
@@ -188,6 +188,56 @@ def _prior_ownership(manifest: SyncManifest) -> _Ownership:
     return prior
 
 
+def _moved_module_owner(
+    prior: _Ownership, target: str, inventory: Mapping[str, Mapping]
+) -> ManifestPageSource | None:
+    """Return the retired module whose page a new module continues, if any.
+
+    A module moved to another directory keeps its page name. When exactly one
+    recorded module owns that page and its source no longer has documentable
+    inventory (removed, or now a static alias), the new source takes the page
+    over, so authored text stays with the moved implementation.
+    """
+    owners = prior.claims.get(portable_path_key(target), set())
+    if len(owners) != 1:
+        return None
+    (owner,) = owners
+    if owner.scope != "module" or owner.source_path in inventory:
+        return None
+    if owner not in prior.candidates:
+        return None
+    return owner
+
+
+def _moved_entity_owner(
+    prior: _Ownership,
+    target: str,
+    owner: ManifestPageSource,
+    inventory: Mapping[str, Mapping],
+) -> ManifestPageSource | None:
+    """Return the retired declaration whose page a moved declaration continues.
+
+    A class whose name is not unique gets a module-qualified page, so name
+    based move detection cannot follow it. When exactly one recorded owner
+    holds the target page, declares the same name and occurrence, and its
+    source no longer has documentable inventory, the declaration moved with
+    its module and keeps its page.
+    """
+    owners = prior.claims.get(portable_path_key(target), set())
+    if len(owners) != 1:
+        return None
+    (previous,) = owners
+    if (
+        previous.scope != "entity"
+        or previous.entity_name != owner.entity_name
+        or previous.occurrence != owner.occurrence
+        or previous.source_path in inventory
+        or previous not in prior.candidates
+    ):
+        return None
+    return previous
+
+
 def _existing_pages(wiki_dir: Path) -> dict[str, tuple[str, bool]]:
     """Inventory names and file kinds without reading content or following links."""
     existing: dict[str, tuple[str, bool]] = {}
@@ -293,6 +343,8 @@ def plan_page_transitions(
         previous = None
         if owner.scope == "module" and owner.source_path in manifest.sources:
             previous = owner
+        elif owner.scope == "module":
+            previous = _moved_module_owner(prior, target, inventory)
         elif owner.scope == "entity":
             name, occurrence = str(owner.entity_name), int(owner.occurrence or 0)
             if old_counts.get(owner.source_path, {}).get(name, 0) >= occurrence:
@@ -308,6 +360,8 @@ def plan_page_transitions(
                 ):
                     raise PageTransitionError(f"Ambiguous source move for {name!r}")
                 previous = ManifestPageSource("entity", old_source, name, 1)
+            else:
+                previous = _moved_entity_owner(prior, target, owner, inventory)
         old_path = prior.resolve(previous) if previous is not None else None
         source_path = None
         if old_path is not None and portable_path_key(old_path) in existing:

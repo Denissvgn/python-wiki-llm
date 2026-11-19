@@ -1,13 +1,13 @@
 # WriteBasis
 
-**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:15`
+**Location:** `src/llm_wiki_engine/wiki_write_basis.py:11`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Description
 
-_Auto-generated from `WriteBasis` in `src/llm_wiki_cli/services/wiki_write_basis.py`._
+_Auto-generated from `WriteBasis` in `src/llm_wiki_engine/wiki_write_basis.py`._
 
 ## Attributes
 
@@ -16,14 +16,14 @@ _Auto-generated from `WriteBasis` in `src/llm_wiki_cli/services/wiki_write_basis
 | `root` | `Path` | *required* | — |
 | `preimages` | `Mapping[str, bytes]` | *required* | — |
 | `expected` | `MutableMapping[str, bytes]` | *required* | — |
-| `source_snapshot` | `SourceSnapshot \| None` | *required* | — |
+| `source_snapshot` | `Any` | *required* | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `assert_current` | `() -> None` | — | — |
-| `bind_committed_state` | `(state: CommittedKnowledgeState) -> None` | — | — |
+| `bind_committed_state` | `(state: Any) -> None` | — | — |
 | `before_write` | `(path: Path, content: bytes \| None) -> None` | — | — |
 | `after_write` | `(path: Path, content: bytes \| None) -> None` | — | — |
 
@@ -32,7 +32,7 @@ _Auto-generated from `WriteBasis` in `src/llm_wiki_cli/services/wiki_write_basis
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WriteBasis (src/llm_wiki_cli/services/wiki_write_basis.py)"]
+    n0["WriteBasis (src/llm_wiki_engine/wiki_write_basis.py)"]
     n1["Protocol"]
     n0 --> n1
     click n0 "../modules/wiki_write_basis.md"

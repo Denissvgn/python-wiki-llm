@@ -6,7 +6,7 @@ from functools import lru_cache
 
 import pytest
 
-from llm_wiki_cli.services.maintenance_state import (
+from llm_wiki_engine.maintenance_state import (
     MaintenanceCore,
     MaintenanceError,
     new_identity,
@@ -50,7 +50,7 @@ def evidence(
         value["comparison_id"] = pi.comparison_id(value["producer"])
     if source == "original" and execution != "original":
         original = f"# source {source!r}\nclass {owner}:\n    def run(self):\n        return 'original'\n"
-        from llm_wiki_cli.services.knowledge_storage import digest
+        from llm_wiki_engine.knowledge_storage import digest
 
         value["source_hash"] = digest(original.encode())
     if reason:

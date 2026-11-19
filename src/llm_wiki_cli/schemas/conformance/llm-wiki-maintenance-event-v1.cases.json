@@ -1,0 +1,1144 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-maintenance-event/v1",
+  "schema": "llm-wiki-maintenance-event-v1.schema.json",
+  "cases": [
+    {
+      "name": "register",
+      "valid": true,
+      "description": "A new semantic section joins the ledger.",
+      "document": {
+        "expected_state_hash": "sha256:9dabcb1f8846b9f6d03f89a775b50603db1a30c01d491c7f3ff0d9f72e8bd6eb",
+        "kind": "register",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:9eb4567f8c8304c1e06f3dcce01e4ecc39faa8044c6444d1a78e1b797deb4300",
+            "scope": "class",
+            "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Third%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Third%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4006-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "observe",
+      "valid": true,
+      "description": "A fresh capture of a recorded section.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "observe",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "acknowledge",
+      "valid": true,
+      "description": "Ordinary review of an exact captured basis.",
+      "document": {
+        "actor": {
+          "actor_id": "test-agent",
+          "authority": "ordinary-maintenance",
+          "kind": "agent"
+        },
+        "basis": {
+          "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+          "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+          "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+          "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+          "scope": "class",
+          "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+          }
+        },
+        "expected_state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714",
+        "kind": "acknowledge",
+        "record_id": "00000000-0000-4003-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "delete",
+      "valid": true,
+      "description": "The declaration's source was deleted.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "delete",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": null,
+            "executable_hash": null,
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": null,
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": false,
+              "observations_returned": 0,
+              "observations_total": 0,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": null,
+            "executable_hash": null,
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": null,
+            "status": "unavailable",
+            "unavailable_reason": "missing-source"
+          },
+          "presence": "deleted",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "delete-target",
+      "valid": true,
+      "description": "The semantic section was deleted.",
+      "document": {
+        "expected_state_hash": "sha256:5be15186cd7d2cd223b332bfe700e70e38277811783e73cca676f8991e40614e",
+        "kind": "delete-target",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": null,
+            "scope": "class",
+            "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+          },
+          "target_presence": "deleted"
+        },
+        "record_id": "00000000-0000-4005-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "sync",
+      "valid": true,
+      "description": "A sync carries only the record and expected state.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync"
+      }
+    },
+    {
+      "name": "confirm-move",
+      "valid": true,
+      "description": "A confirmed move between two declarations.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "confirm-move",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "confirmation": {
+          "actor": {
+            "actor_id": "test-agent",
+            "authority": "ordinary-maintenance",
+            "kind": "agent"
+          },
+          "from_basis_hash": "sha256:79224c954a5516aa1a65238d29bca52d9b0a42231d6fe8894c6473857af01760",
+          "to_basis_hash": "sha256:79224c954a5516aa1a65238d29bca52d9b0a42231d6fe8894c6473857af01760",
+          "from_coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch.cap",
+            "source_path": "policy.py"
+          },
+          "to_coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "governance_effect": "none",
+          "from_target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Notes~1/First%20note~1"
+          },
+          "to_target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          }
+        }
+      }
+    },
+    {
+      "name": "ambiguous-move",
+      "valid": true,
+      "description": "A move with several candidate owners.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "ambiguous-move",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "candidates": [
+          {
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          {
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch.cap",
+              "source_path": "policy.py"
+            },
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Notes~1/First%20note~1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The event names this format.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v2",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync"
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "An event is closed.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync",
+        "note": "x"
+      }
+    },
+    {
+      "name": "unknown-kind",
+      "valid": false,
+      "description": "Kinds are the eight maintenance operations.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "approve"
+      }
+    },
+    {
+      "name": "bad-expected-state-hash",
+      "valid": false,
+      "description": "The expected state hash is a sha256 digest.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "expected_state_hash": "abc",
+        "kind": "sync"
+      }
+    },
+    {
+      "name": "empty-record-id",
+      "valid": false,
+      "description": "Every event names a record.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync"
+      }
+    },
+    {
+      "name": "acknowledge-without-actor",
+      "valid": false,
+      "description": "An acknowledgment names who reviewed.",
+      "document": {
+        "basis": {
+          "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+          "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+          "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+          "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+          "scope": "class",
+          "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+          }
+        },
+        "expected_state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714",
+        "kind": "acknowledge",
+        "record_id": "00000000-0000-4003-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "acknowledge-with-observation",
+      "valid": false,
+      "description": "An acknowledgment carries no observation.",
+      "document": {
+        "actor": {
+          "actor_id": "test-agent",
+          "authority": "ordinary-maintenance",
+          "kind": "agent"
+        },
+        "basis": {
+          "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+          "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+          "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+          "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+          "scope": "class",
+          "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+          }
+        },
+        "expected_state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714",
+        "kind": "acknowledge",
+        "record_id": "00000000-0000-4003-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        }
+      }
+    },
+    {
+      "name": "sync-with-observation",
+      "valid": false,
+      "description": "A sync carries no observation.",
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        }
+      }
+    },
+    {
+      "name": "observe-with-basis",
+      "valid": false,
+      "description": "An observation carries no acknowledged basis.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "observe",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "basis": {
+          "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+          "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+          "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+          "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+          "scope": "class",
+          "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+          }
+        }
+      }
+    },
+    {
+      "name": "observe-without-observation",
+      "valid": false,
+      "description": "An observe event carries its observation.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "observe",
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "one-candidate",
+      "valid": false,
+      "description": "An ambiguous move has at least two candidates.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "ambiguous-move",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "candidates": [
+          {
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "governance-effect",
+      "valid": false,
+      "description": "Ordinary maintenance has no governance effect.",
+      "document": {
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "confirm-move",
+        "observation": {
+          "basis": {
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+            "prose_hash": "sha256:25e79304f8ff17aa8414d892ea0b18c7ede0a68b51c63f8b28c68c8b5fcb42a7",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "target": {
+              "canonical_path": "entities/Batch.md",
+              "ownership": "semantic",
+              "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+            }
+          },
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "implementation": {
+            "aggregation": {
+              "complete_scope": true,
+              "observations_returned": 1,
+              "observations_total": 1,
+              "truncated": false
+            },
+            "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+            "coordinate": {
+              "occurrence": 1,
+              "qualified_owner": "Batch",
+              "source_path": "policy.py"
+            },
+            "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+            "executable_hash": "sha256:e80f917e3c4fdb9b2c00d6a799c6d8a72a8a113ca631c154d6c6923f607c52cf",
+            "producer": {
+              "algorithm": "python-executable-ast/v1",
+              "analysis_compatibility_hash": "sha256:f1dea9f94520cebcd497eb24c480450fde51234dac159d7495593bdde7677a0d",
+              "language": "python",
+              "parser": "cpython-ast",
+              "parser_version": "3.14.5"
+            },
+            "schema_version": "llm-wiki-implementation-evidence/v1",
+            "scope": "class",
+            "source_hash": "sha256:833a36f563769fc88d8c2f45872092cd658997cd1b5ac06bd9b98adb8e41b0b1",
+            "status": "available",
+            "unavailable_reason": null
+          },
+          "presence": "present",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          },
+          "target_presence": "present"
+        },
+        "record_id": "00000000-0000-4004-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "confirmation": {
+          "actor": {
+            "actor_id": "test-agent",
+            "authority": "ordinary-maintenance",
+            "kind": "agent"
+          },
+          "from_basis_hash": "sha256:79224c954a5516aa1a65238d29bca52d9b0a42231d6fe8894c6473857af01760",
+          "to_basis_hash": "sha256:79224c954a5516aa1a65238d29bca52d9b0a42231d6fe8894c6473857af01760",
+          "from_coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch.cap",
+            "source_path": "policy.py"
+          },
+          "to_coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "governance_effect": "approve",
+          "from_target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Notes~1/First%20note~1"
+          },
+          "to_target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/First%20note~1"
+          }
+        }
+      }
+    },
+    {
+      "name": "other-authority",
+      "valid": false,
+      "description": "Actors act with ordinary-maintenance authority.",
+      "document": {
+        "actor": {
+          "actor_id": "test-agent",
+          "authority": "governance",
+          "kind": "agent"
+        },
+        "basis": {
+          "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+          "coordinate": {
+            "occurrence": 1,
+            "qualified_owner": "Batch",
+            "source_path": "policy.py"
+          },
+          "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+          "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+          "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+          "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+          "scope": "class",
+          "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+          "target": {
+            "canonical_path": "entities/Batch.md",
+            "ownership": "semantic",
+            "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+          }
+        },
+        "expected_state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714",
+        "kind": "acknowledge",
+        "record_id": "00000000-0000-4003-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-event/v1"
+      }
+    },
+    {
+      "name": "record-id-not-uuid",
+      "valid": false,
+      "description": "Record ids are UUIDv4.",
+      "schema_valid": true,
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "record-1",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync"
+      }
+    },
+    {
+      "name": "record-id-uppercase",
+      "valid": false,
+      "description": "A UUID is written in canonical lowercase.",
+      "schema_valid": true,
+      "document": {
+        "schema_version": "llm-wiki-maintenance-event/v1",
+        "record_id": "3F0C1B8E-6A2D-4C51-9E7F-2B8D4A6C0E19",
+        "expected_state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657",
+        "kind": "sync"
+      }
+    }
+  ]
+}

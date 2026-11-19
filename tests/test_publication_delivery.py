@@ -9,7 +9,7 @@ import pytest
 
 from llm_wiki_cli.services import publication_candidate as candidate
 from llm_wiki_cli.services import publication_delivery as delivery
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.publication_config import (
     DELIVERY_CONFIG_SCHEMA_VERSION,
     validate_publication_config,

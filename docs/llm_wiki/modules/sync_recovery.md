@@ -1,6 +1,6 @@
 # sync_recovery Module
 
-**Path:** `src/llm_wiki_cli/services/sync_recovery.py`
+**Path:** `src/llm_wiki_engine/sync_recovery.py`
 
 ## Description
 
@@ -30,23 +30,22 @@ syncs discard only verified private scratch and retain unexpected contents.
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `unlink_guarded_bytes` |
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_governance` | `_governance_lock_root` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `_identity`, `read_guarded` |
 | `.maintenance_protocol` | `governance_writer_lock`, `storage_writer_lock` |
-| `.request_json` | `_pairs`, `_constant` |
-| `.source_snapshot` | `SourceSnapshot` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_write_basis` | `ACTIVE_SYNC_JOURNAL` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `unlink_guarded_bytes` |
+| `llm_wiki_engine.host` | `emit` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_SYNC_JOURNAL` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
-| `sys` | `sys` |
 | `tempfile` | `tempfile` |
 | `typing` | `Any` |
 | `uuid` | `UUID`, `uuid4` |
@@ -57,7 +56,7 @@ syncs discard only verified private scratch and retain unexpected contents.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/sync_recovery.py"]
+    n1["src/llm_wiki_engine/sync_recovery.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/sync_recovery.md"
@@ -78,8 +77,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncRecoveryError](../entities/SyncRecoveryError.md) | 42 | `ValueError` | A recovery proof or operation cannot be admitted safely. |
-| [NewPageJournal](../entities/NewPageJournal.md) | 138 | — | — |
+| [SyncRecoveryError](../entities/SyncRecoveryError.md) | 44 | `ValueError` | A recovery proof or operation cannot be admitted safely. |
+| [NewPageJournal](../entities/NewPageJournal.md) | 140 | — | — |
 
 ## Functions
 

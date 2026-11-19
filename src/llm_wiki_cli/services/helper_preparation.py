@@ -5,17 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING
-import sys
 
 from . import extractor_helpers as helpers
 from .source_snapshot import SourceSnapshot, build_source_snapshot
+from llm_wiki_engine.host import emit
 
 if TYPE_CHECKING:
     from .helper_runtime import PreparedHelperHandle
 
 
 def _helper_progress(message: str) -> None:
-    from .progress import current_progress
+    from llm_wiki_engine.progress import current_progress
 
     # The command's phase sink owns its mode and output format. Preparation is
     # already represented by the helper_preparation phase below; emitting a
@@ -24,7 +24,7 @@ def _helper_progress(message: str) -> None:
     if current_progress() is not None:
         return
     try:
-        print("llm-wiki: " + message, file=sys.stderr, flush=True)
+        emit("llm-wiki: " + message, stream="stderr", flush=True)
     except (OSError, ValueError):
         pass
 
@@ -49,7 +49,7 @@ def prepare_operation_helpers(
     from .helper_cache import (
         HelperPreparationError, cache_roots, ensure_helper, lookup_helper, validate_handle,
     )
-    from .progress import phase
+    from llm_wiki_engine.progress import phase
 
     operation = current_helper_operation()
     if operation is None:

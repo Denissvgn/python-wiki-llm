@@ -1,6 +1,6 @@
 # ImplementationReport
 
-**Location:** `src/llm_wiki_cli/services/implementation_evidence.py:739`
+**Location:** `src/llm_wiki_cli/services/implementation_evidence.py:738`
 **Kind:** Class
 **Bases:** —
 **Module:** [implementation_evidence](../modules/implementation_evidence.md)
@@ -34,14 +34,11 @@ flowchart LR
     n0["ImplementationReport (src/llm_wiki_cli/services/implementation_evidence.py)"]
     n1["compare_knowledge_implementation (src/llm_wiki_cli/services/implementation_evidence.py)"]
     n2["select_implementation_comparison (src/llm_wiki_cli/services/implementation_evidence.py)"]
-    n3["src/llm_wiki_cli/services/knowledge_consumption.py"]
     n1 --> n0
     n2 --> n0
-    n3 --> n0
     click n0 "../modules/implementation_evidence.md"
     click n1 "../modules/implementation_evidence.md"
     click n2 "../modules/implementation_evidence.md"
-    click n3 "../modules/knowledge_consumption.md"
 ```
 
 ### Summary
@@ -57,4 +54,3 @@ flowchart LR
 | `compare_knowledge_implementation` | call | [implementation_evidence](../modules/implementation_evidence.md) | 1 |
 | `compare_knowledge_implementation` | type_reference | [implementation_evidence](../modules/implementation_evidence.md) | — |
 | `select_implementation_comparison` | type_reference | [implementation_evidence](../modules/implementation_evidence.md) | — |
-| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |

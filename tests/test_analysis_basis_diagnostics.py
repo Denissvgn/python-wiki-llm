@@ -6,17 +6,18 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services import analysis_compatibility as ac, analysis_capture
+from llm_wiki_cli.services import analysis_capture
+from llm_wiki_engine import analysis_compatibility as ac
 from llm_wiki_cli.services import ci_report, doctor_service, lint_service
 from llm_wiki_cli.services.health_summary import detailed_health_rows
-from llm_wiki_cli.services.knowledge_observability import knowledge_freshness_hint
+from llm_wiki_engine.knowledge_observability import knowledge_freshness_hint
 from tests.test_analysis_compatibility import component
 from tests.test_health_details import _ci
 from tests.test_knowledge_health_refresh import recorded_project as recorded_project, _command, _sync
 
 
 def test_diagnostics_do_not_expand_the_public_service_exports():
-    from llm_wiki_cli.services import knowledge_observability
+    from llm_wiki_engine import knowledge_observability
 
     assert "freshness_analysis_diagnostic" not in knowledge_observability.__all__
 

@@ -18,8 +18,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
 
-from .io import first_unsafe_path_component, read_md, write_md
-from .validation import require_safe_base_path
+from llm_wiki_engine.io import first_unsafe_path_component, read_md, write_md
+from llm_wiki_engine.validation import require_safe_base_path
 
 DEFAULT_INSTALL_TARGET = Path(".claude") / "skills"
 BUNDLED_SKILLS_ROOT = Path(__file__).resolve().parents[1] / "skills"

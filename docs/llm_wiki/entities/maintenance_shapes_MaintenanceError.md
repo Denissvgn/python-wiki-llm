@@ -1,13 +1,13 @@
 # MaintenanceError
 
-**Location:** `src/llm_wiki_cli/services/maintenance_shapes.py:17`
+**Location:** `src/llm_wiki_engine/maintenance_shapes.py:17`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [maintenance_shapes](../modules/maintenance_shapes.md)
 
 ## Description
 
-_Auto-generated from `MaintenanceError` in `src/llm_wiki_cli/services/maintenance_shapes.py`._
+_Auto-generated from `MaintenanceError` in `src/llm_wiki_engine/maintenance_shapes.py`._
 
 ## Attributes
 
@@ -24,20 +24,20 @@ _Auto-generated from `MaintenanceError` in `src/llm_wiki_cli/services/maintenanc
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MaintenanceError (src/llm_wiki_cli/services/maintenance_shapes.py)"]
+    n0["MaintenanceError (src/llm_wiki_engine/maintenance_shapes.py)"]
     n1["ValueError"]
-    n2["_current_evidence (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n3["_reconcile_existing_maintenance (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n4["_StrictMaintenanceReconciliation._apply_owned (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n5["captured_observations_from_knowledge (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n6["captured_semantic_sections (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n7["maintenance_transfers_from_page_plan (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n8["reconcile_pending_maintenance (src/llm_wiki_cli/services/maintenance_evidence.py)"]
-    n9["_fields (src/llm_wiki_cli/services/maintenance_projection.py)"]
-    n10["project_maintenance_knowledge (src/llm_wiki_cli/services/maintenance_projection.py)"]
-    n11["validate_maintenance_binding (src/llm_wiki_cli/services/maintenance_projection.py)"]
-    n12["validate_maintenance_concept_projection (src/llm_wiki_cli/services/maintenance_projection.py)"]
-    n13["validate_maintenance_projection (src/llm_wiki_cli/services/maintenance_projection.py)"]
+    n2["_current_evidence (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n3["_reconcile_existing_maintenance (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n4["_StrictMaintenanceReconciliation._apply_owned (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n5["captured_observations_from_knowledge (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n6["captured_semantic_sections (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n7["maintenance_transfers_from_page_plan (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n8["reconcile_pending_maintenance (src/llm_wiki_engine/maintenance_evidence.py)"]
+    n9["_fields (src/llm_wiki_engine/maintenance_projection.py)"]
+    n10["project_maintenance_knowledge (src/llm_wiki_engine/maintenance_projection.py)"]
+    n11["validate_maintenance_binding (src/llm_wiki_engine/maintenance_projection.py)"]
+    n12["validate_maintenance_concept_projection (src/llm_wiki_engine/maintenance_projection.py)"]
+    n13["validate_maintenance_projection (src/llm_wiki_engine/maintenance_projection.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

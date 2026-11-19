@@ -11,7 +11,7 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import docs_cmd
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
 

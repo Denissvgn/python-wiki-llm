@@ -22,15 +22,15 @@ the preparation flag; it does not become a saved analysis preference.
 | `..config` | `AgentConfigState`, `CLI_AGENTS`, `DEFAULT_WIKI_DIR`, `config_requires_manual_recovery`, `get_agent_config_path`, `inspect_config`, `require_committed_config`, `require_config_inspection_unchanged`, `require_safe_config_path`, `validate_path`, `write_config` |
 | `..services.current_contracts` | `current_contract_defaults`, `upgrade_current_knowledge` |
 | `..services.extractor_helpers` | `helper_preparation_failure_hint` |
-| `..services.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
 | `..services.helper_preparation` | `ensure_source_helpers` |
 | `..services.rendering_lifecycle` | `reference_recovery_command`, `select_render_profile` |
 | `..services.schema` | `CONSTRAINT_START`, `SCHEMA_FILENAMES`, `ManagedSchemaBlockError`, `ManagedSchemaBlockState`, `ManagedSchemaPathError`, `SchemaRenderProfile`, `build_schema_content`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `encode_managed_document_text`, `replace_schema_block_content`, `require_managed_schema_profile`, `require_replaceable_managed_schema`, `require_safe_schema_path` |
 | `..services.skills` | `REFERENCE_SKILL_ID`, `ReferenceSkillState`, `_provision_reference_skill_guarded`, `list_bundled_skills`, `skills_install_dir`, `verify_reference_skill` |
-| `..services.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `..services.wiki_lifecycle` | `WikiScaffoldPathError`, `provision_wiki_scaffold`, `require_safe_wiki_scaffold` |
 | `.upgrade_cmd` | `_seed_legacy_for_current_defaults` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `pathlib` | `Path` |
 | `shutil` | `shutil` |
 | `sys` | `sys` |
@@ -54,9 +54,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (11) |
+| Outbound | `src` (10) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

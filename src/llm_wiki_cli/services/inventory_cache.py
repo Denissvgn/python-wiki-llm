@@ -11,19 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from .. import __version__ as LLM_WIKI_VERSION
-from ..config import (
-    AGENT_WORKTREE_DIR_PATTERNS,
-    COMPOSE_PATTERNS,
-    DOCKERFILE_PATTERNS,
-    EXCLUDED_DIRS,
-    is_agent_worktree_path,
-)
+from .extractor_registry import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS
+from llm_wiki_engine.path_policy import AGENT_WORKTREE_DIR_PATTERNS, EXCLUDED_DIRS, is_agent_worktree_path
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from .plugins import lock_path, plugin_store
 from .source_snapshot import SourceFile, SourceSnapshot
-from .io import write_json_atomic
-from .progress import observed_phase
-from .runtime_output import (
+from llm_wiki_engine.io import write_json_atomic
+from llm_wiki_engine.progress import observed_phase
+from llm_wiki_engine.runtime_output import (
     RuntimeDestination,
     RuntimeOutputError,
     WarningSink,
@@ -237,13 +232,13 @@ def build_inventory_cache_key(
 ) -> dict[str, Any] | None:
     """Return a cache key only if all selected bundled helpers were observed."""
     from .analysis_capture import capture_analysis
-    from .analysis_compatibility import digest
-    from .helper_runtime import required_helper_languages
+    from llm_wiki_engine.analysis_compatibility import digest
+    from .domain_pack import current_pack
 
     languages = {language for language, files in source_snapshot.files_by_language.items() if files}
     analysis = capture_analysis(extractor_registry, source_root=source_snapshot.root,
                                 helper_cache_dir=helper_cache_dir, languages=languages)
-    for language in required_helper_languages(source_snapshot, extractor_registry):
+    for language in current_pack().helper_toolchain.languages(source_snapshot, extractor_registry):
         if not analysis or "llm-wiki/extractor/" + language not in analysis:
             # Partial observations cannot distinguish an unqualified runtime
             # that produced data from a missing helper that cannot execute.
@@ -319,9 +314,19 @@ def resolve_inventory_cache_path(
 
 
 def cache_options_from_args(args) -> InventoryCacheOptions:
-    disabled = bool(getattr(args, "no_cache", False))
-    rebuild = bool(getattr(args, "rebuild_cache", False))
-    cache_dir = getattr(args, "cache_dir", None)
+    return cache_options_for(
+        disabled=bool(getattr(args, "no_cache", False)),
+        rebuild=bool(getattr(args, "rebuild_cache", False)),
+        cache_dir=getattr(args, "cache_dir", None),
+        stats_enabled=bool(getattr(args, "cache_stats", False)),
+    )
+
+
+def cache_options_for(
+    *, disabled: bool = False, rebuild: bool = False, cache_dir: str | None = None,
+    stats_enabled: bool = False,
+) -> InventoryCacheOptions:
+    """Validated inventory cache options for one run."""
     if cache_dir is not None and not str(cache_dir).strip():
         raise RuntimeOutputError("--cache-dir must be a non-empty directory path")
     if disabled and (rebuild or cache_dir is not None):
@@ -332,7 +337,7 @@ def cache_options_from_args(args) -> InventoryCacheOptions:
         enabled=not disabled,
         rebuild=rebuild,
         cache_dir=cache_dir,
-        stats_enabled=bool(getattr(args, "cache_stats", False)),
+        stats_enabled=stats_enabled,
         warning=stderr_warning,
     )
 
@@ -494,7 +499,7 @@ def make_cache_entry(
 
 def extraction_bundle_hash(entry: dict) -> str:
     """Commit every raw analysis value reused together, excluding file metadata."""
-    from .knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
     return hash_json({key: entry.get(key) for key in (
         "language", "hash", "inventory", "python_observations", "python_implementation",
     )})

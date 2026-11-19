@@ -49,7 +49,7 @@ def change_registry(root, edit):
     path = root / p.REGISTRY
     value = json.loads(path.read_bytes())
     edit(value)
-    path.write_text(json.dumps(value))
+    path.write_text(json.dumps(value), encoding="utf-8", newline="")
 
 
 @pytest.mark.parametrize("omitted", ["contract-canary", "knowledge-maintenance"])
@@ -59,7 +59,7 @@ def test_rebound_registry_cannot_drop_an_early_admission_owner(repository, omitt
     before = "needs: [readiness, contract-canary, windows-canary, smoke-parity, knowledge-maintenance]"
     after = before.replace(omitted + ", ", "").replace(", " + omitted + "]", "]")
     assert before in text
-    path.write_text(text.replace(before, after, 1))
+    path.write_text(text.replace(before, after, 1), encoding="utf-8", newline="")
     _, actual = p.workflow_declarations(repository)
 
     def rebind(value):
@@ -197,7 +197,7 @@ def test_new_policy_dependency_requires_mapping(repository):
         "POLICY_INPUTS = (LEAF_PATH,",
         'POLICY_INPUTS = ("new-policy-input.py", LEAF_PATH,',
     )
-    path.write_text(text)
+    path.write_text(text, encoding="utf-8", newline="")
     assert any(
         "unmapped maintenance policy inputs" in error
         for error in p.validate_workflow_contracts(repository)
@@ -252,7 +252,7 @@ def test_agent_matrix_independently_requires_every_member_and_fallback(
         config.write_text(
             config.read_text().replace(
                 "AGENT_CHOICES = [", 'AGENT_CHOICES = ["future-agent", '
-            )
+            ), encoding="utf-8", newline=""
         )
     errors = p.audit_agent_variants(repository, path)
     assert bool(errors) is (fault is not None)

@@ -1,6 +1,6 @@
 # VerificationReceiptError
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:87`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:87`
 **Kind:** Class
 **Bases:** `VerificationContractError`
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -24,20 +24,20 @@ Field-specific failure for a verification receipt.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["VerificationReceiptError (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n1["VerificationContractError (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n2["_array (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n3["_exact_fields (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n4["_nonnegative_int (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n5["_object (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n6["_parse_check (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n7["_parse_coverage (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n8["_parse_diagnostic (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n9["_read_regular_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n10["_receipt_anchor_mapping (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n11["_receipt_hash (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n12["_string (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n13["deserialize_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["VerificationReceiptError (src/llm_wiki_engine/verification_contracts.py)"]
+    n1["VerificationContractError (src/llm_wiki_engine/verification_contracts.py)"]
+    n2["_array (src/llm_wiki_engine/verification_contracts.py)"]
+    n3["_exact_fields (src/llm_wiki_engine/verification_contracts.py)"]
+    n4["_nonnegative_int (src/llm_wiki_engine/verification_contracts.py)"]
+    n5["_object (src/llm_wiki_engine/verification_contracts.py)"]
+    n6["_parse_check (src/llm_wiki_engine/verification_contracts.py)"]
+    n7["_parse_coverage (src/llm_wiki_engine/verification_contracts.py)"]
+    n8["_parse_diagnostic (src/llm_wiki_engine/verification_contracts.py)"]
+    n9["_read_regular_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n10["_receipt_anchor_mapping (src/llm_wiki_engine/verification_contracts.py)"]
+    n11["_receipt_hash (src/llm_wiki_engine/verification_contracts.py)"]
+    n12["_string (src/llm_wiki_engine/verification_contracts.py)"]
+    n13["deserialize_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

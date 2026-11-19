@@ -21,21 +21,25 @@ Typed request/result contract for deterministic wiki bootstrap.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/bootstrap_service.py"]
-    n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n4["src/llm_wiki_cli/services/publication_snapshot.py"]
-    n0 --> n1
+    n1["src/llm_wiki_cli/engine/__init__.py"]
+    n2["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n3["src/llm_wiki_cli/services/bootstrap_service.py"]
+    n4["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n5["src/llm_wiki_cli/services/publication_snapshot.py"]
     n0 --> n2
+    n0 --> n3
     n1 --> n2
-    n3 --> n2
-    n4 --> n1
-    n4 --> n2
+    n1 --> n3
+    n2 --> n3
+    n4 --> n3
+    n5 --> n2
+    n5 --> n3
     click n0 "../modules/api.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/bootstrap_service.md"
-    click n3 "../modules/documentation_run_dependencies.md"
-    click n4 "../modules/publication_snapshot.md"
+    click n1 "../modules/engine___init__.md"
+    click n2 "../modules/bootstrap_runtime.md"
+    click n3 "../modules/bootstrap_service.md"
+    click n4 "../modules/documentation_run_dependencies.md"
+    click n5 "../modules/publication_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -43,6 +47,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
+| Inbound | [engine___init__](../modules/engine___init__.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
 | Inbound | [publication_snapshot](../modules/publication_snapshot.md) |

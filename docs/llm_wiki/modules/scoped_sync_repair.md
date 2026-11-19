@@ -16,23 +16,24 @@ Scope does not narrow discovery or bypass normal count/ratio review. Full analys
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_capture`, `analysis_compatibility` |
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `.` | `analysis_capture` |
 | `.implementation_evidence` | `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
-| `.knowledge_artifacts` | `KnowledgeCommitPlan`, `validate_knowledge_artifacts` |
-| `.knowledge_model` | `knowledge_index_to_payload` |
 | `.knowledge_orchestration` | `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options`, `runtime_source_snapshot_hash`, `RUNTIME_GENERATION_OPTION_DEFAULTS` |
 | `.knowledge_reuse` | `implementation_hash`, `wiki_input_hashes` |
-| `.knowledge_storage` | `canonical_bytes`, `MAX_EXPANDED_BYTES` |
-| `.knowledge_storage_io` | `read_guarded` |
 | `.source_snapshot` | `SourceSnapshotError`, `source_snapshot_matches_current_files` |
-| `.validation` | `require_repository_relative_path` |
-| `.wiki_surface` | `collect_wiki_pages` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `asdict`, `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility` |
+| `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.knowledge_artifacts` | `KnowledgeCommitPlan`, `validate_knowledge_artifacts` |
+| `llm_wiki_engine.knowledge_model` | `knowledge_index_to_payload` |
+| `llm_wiki_engine.knowledge_storage` | `canonical_bytes`, `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_surface` | `collect_wiki_pages` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -62,8 +63,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedRepairError](../entities/ScopedRepairError.md) | 21 | `ValueError` | The requested repair cannot preserve its declared scope. |
-| [ScopedRepairBoundary](../entities/ScopedRepairBoundary.md) | 137 | — | Original global inputs and the only concept pages allowed to change. |
+| [ScopedRepairError](../entities/ScopedRepairError.md) | 22 | `ValueError` | The requested repair cannot preserve its declared scope. |
+| [ScopedRepairBoundary](../entities/ScopedRepairBoundary.md) | 138 | — | Original global inputs and the only concept pages allowed to change. |
 
 ## Functions
 

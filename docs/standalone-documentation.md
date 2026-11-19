@@ -913,7 +913,7 @@ Remote deployment is always a separate, explicitly authorized workflow.
 ## Protocol versioning
 
 Shared machine-readable payload identifiers declared in
-`llm_wiki_cli.services.contracts` are registered in that module's
+`llm_wiki_engine.contracts` are registered in that module's
 `PROTOCOL_VERSIONS` tuple. Component-owned identifiers follow the same
 versioning rules below. Adding optional fields to an open record is
 backward-compatible and never bumps the protocol version. Readers of open

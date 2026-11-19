@@ -1,6 +1,6 @@
 # CanonicalArray
 
-**Location:** `src/llm_wiki_cli/services/canonical_json.py:21`
+**Location:** `src/llm_wiki_engine/canonical_json.py:59`
 **Kind:** Class
 **Bases:** —
 **Module:** [canonical_json](../modules/canonical_json.md)
@@ -25,8 +25,8 @@ Marks a repeatable internal array stream for canonical JSON hashing. Spill-backe
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["CanonicalArray (src/llm_wiki_cli/services/canonical_json.py)"]
-    n1["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n0["CanonicalArray (src/llm_wiki_engine/canonical_json.py)"]
+    n1["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n1 --> n0
     click n0 "../modules/canonical_json.md"
     click n1 "../modules/knowledge_stream_audit.md"

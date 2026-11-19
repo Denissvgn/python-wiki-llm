@@ -1,0 +1,540 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-maintenance-basis/v1",
+  "schema": "llm-wiki-maintenance-basis-v1.schema.json",
+  "cases": [
+    {
+      "name": "captured",
+      "valid": true,
+      "description": "Captured source and prose for one semantic section.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "source-deleted",
+      "valid": true,
+      "description": "A deleted declaration keeps no source digests.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": null,
+        "executable_hash": null,
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": null,
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "target-deleted",
+      "valid": true,
+      "description": "A deleted section keeps no prose digest.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": null,
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1/Second%20note~1"
+        }
+      }
+    },
+    {
+      "name": "implementation-unavailable",
+      "valid": true,
+      "description": "Source the producer could not qualify.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": null,
+        "executable_hash": null,
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "A basis is closed.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        },
+        "captured_at": "2026-01-01"
+      }
+    },
+    {
+      "name": "missing-scope",
+      "valid": false,
+      "description": "A basis names its declaration scope.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "unknown-scope",
+      "valid": false,
+      "description": "Scope is module, class or callable.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "function",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "zero-occurrence",
+      "valid": false,
+      "description": "Occurrences count from one.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 0,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "bad-comparison-id",
+      "valid": false,
+      "description": "The comparison id is a sha256 digest.",
+      "document": {
+        "comparison_id": "sha1:abc",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "null-producer-hash",
+      "valid": false,
+      "description": "Every basis names its producer.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": null,
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "generated-target",
+      "valid": false,
+      "description": "Only semantic sections are maintained.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "generated",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "empty-source-path",
+      "valid": false,
+      "description": "A coordinate names its source file.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": ""
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "null-target",
+      "valid": false,
+      "description": "A basis names its semantic section.",
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": null
+      }
+    },
+    {
+      "name": "absolute-source-path",
+      "valid": false,
+      "description": "Source paths are relative to the source root.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "/src/policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "parent-source-path",
+      "valid": false,
+      "description": "Source paths stay inside the source root.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "../policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "owner-with-space",
+      "valid": false,
+      "description": "A qualified owner is a dotted name of identifiers.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch cap",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "owner-with-empty-part",
+      "valid": false,
+      "description": "Every part of a qualified owner is an identifier.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch..cap",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "target-not-markdown",
+      "valid": false,
+      "description": "Semantic sections live in Markdown pages.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.txt",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "backslash-target-path",
+      "valid": false,
+      "description": "Page paths use forward slashes.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities\\Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "locator-for-other-page",
+      "valid": false,
+      "description": "The section locator points into the target page.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Other#section/Batch~1/Description~1"
+        }
+      }
+    },
+    {
+      "name": "locator-without-ordinal",
+      "valid": false,
+      "description": "Every heading in a locator carries its sibling ordinal.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description"
+        }
+      }
+    },
+    {
+      "name": "locator-zero-ordinal",
+      "valid": false,
+      "description": "Sibling ordinals count from one.",
+      "schema_valid": true,
+      "document": {
+        "comparison_id": "sha256:461635def992de0c378fb90049b7de1776b415ceede086bb13ba5dd0aa805783",
+        "coordinate": {
+          "occurrence": 1,
+          "qualified_owner": "Batch",
+          "source_path": "policy.py"
+        },
+        "documentation_hash": "sha256:40096e3250d76d9ded31077d0195912661ce964c1b3a234dc6a50e860dedfbea",
+        "executable_hash": "sha256:d82fc54a2f161f8bc0f932e13950ed93de0d34ed540f1b19a026f8b13041f7a1",
+        "producer_hash": "sha256:a71c003d19a5cfe681740d42fcd98a27012ecc639d097bb4f35eab545e37b2e3",
+        "prose_hash": "sha256:6741231c5bcc7d5e563fa26c00822b92c22994470a5433bf448d98a03f478bdc",
+        "scope": "class",
+        "source_hash": "sha256:5bfa08734fe4e90f2c6ff4e0fe591aa8a8dbfba651fa60fa1d1a15ee286cb6de",
+        "target": {
+          "canonical_path": "entities/Batch.md",
+          "ownership": "semantic",
+          "section_locator": "llm-wiki://entities/Batch#section/Batch~1/Description~0"
+        }
+      }
+    }
+  ]
+}

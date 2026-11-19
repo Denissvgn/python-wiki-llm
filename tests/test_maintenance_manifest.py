@@ -14,18 +14,18 @@ import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
 from llm_wiki_cli.services.analysis_capture import capture_analysis
-from llm_wiki_cli.services.knowledge_storage import (
+from llm_wiki_engine.knowledge_storage import (
     KnowledgeStorageError,
     canonical_bytes,
     digest,
 )
-from llm_wiki_cli.services.maintenance_state import (
+from llm_wiki_engine.maintenance_state import (
     canonical_hash,
     maintenance_core,
     maintenance_state_hash,
     new_identity,
 )
-from llm_wiki_cli.services.manifest_storage import (
+from llm_wiki_engine.manifest_storage import (
     ManifestStoreReader,
     build_manifest_store,
     current_manifest_format,
@@ -37,8 +37,8 @@ from llm_wiki_cli.services.python_implementation import (
     capture,
     producer,
 )
-from llm_wiki_cli.services.source_selection import resolve_source_selection
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.source_selection import resolve_source_selection
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     MANIFEST_VERSION,
     ManifestEvidenceBaseline,
@@ -304,7 +304,7 @@ def test_codec_authority_is_detached_and_cannot_bypass_shared_state_limit(monkey
     payload = _payload(updated)
     payload["maintenance_state"]["generation"] += 1
     assert updated.maintenance_state == state
-    from llm_wiki_cli.services import maintenance_state
+    from llm_wiki_engine import maintenance_state
     monkeypatch.setitem(maintenance_state.LIMITS, "state_bytes", len(canonical_bytes(state)) - 1)
     with pytest.raises(SyncManifestError, match="64 MiB"):
         SyncManifest.from_payload(manifest.to_payload())

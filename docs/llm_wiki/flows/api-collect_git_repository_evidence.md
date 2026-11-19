@@ -2,7 +2,7 @@
 
 **Entry point:** `collect_git_repository_evidence` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [validation](../modules/validation.md)
+**Modules touched:** [host](../modules/host.md), [knowledge_envelope](../modules/knowledge_envelope.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -28,17 +28,18 @@ sequenceDiagram
     participant p14 as _default_path_error
     participant p15 as _check_path_collision
     participant p16 as require_portable_path_component
-    participant p17 as KnowledgeEnvelopeError
-    participant p18 as _GitCommandResult
-    participant p19 as _syntax_key
-    participant p20 as _known_syntax
-    participant p21 as _remember_syntax
-    participant p22 as SharedValidationError
-    participant p23 as portable_path_key
-    participant p24 as Path (src/llm_wiki_cli/services…t_git_repository_evidence)
-    participant p25 as Path(…).resolve (src/llm_wiki_cli/services…t_git_repository_evidence)
-    participant p26 as bool
-    participant p27 as len (src/llm_wiki_cli/services…t_git_repository_evidence)
+    participant p17 as current_host
+    participant p18 as KnowledgeEnvelopeError
+    participant p19 as _GitCommandResult
+    participant p20 as _syntax_key
+    participant p21 as _known_syntax
+    participant p22 as _remember_syntax
+    participant p23 as SharedValidationError
+    participant p24 as portable_path_key
+    participant p25 as Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)
+    participant p26 as Path(…).resolve (src/llm_wiki_engine/knowl…t_git_repository_evidence)
+    participant p27 as bool
+    participant p28 as len (src/llm_wiki_engine/knowl…t_git_repository_evidence)
     p0->>p1: _run_git
     p0->>p2: _worktree_pathspecs
     p0->>p3: _effective_line_ending_overrides
@@ -55,39 +56,39 @@ sequenceDiagram
     p13->>p14: _default_path_error
     p13->>p15: _check_path_collision
     p13->>p16: require_portable_path_component
-    p11->>p17: KnowledgeEnvelopeError
-    p8->>p18: _GitCommandResult
-    p12->>p19: _syntax_key
-    p12->>p20: _known_syntax
-    p12->>p21: _remember_syntax
-    p14->>p22: SharedValidationError
-    p15->>p23: portable_path_key
-    p0-->>p24: Path (src/llm_wiki_cli/services…t_git_repository_evidence)(root)
-    p0-->>p25: Path(…).resolve (src/llm_wiki_cli/services…t_git_repository_evidence)
-    p0-->>p24: Path (src/llm_wiki_cli/services…t_git_repository_evidence)(raw_top_level)
-    p0-->>p26: bool(status)
-    p0-->>p27: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_remotes)
-    p0-->>p27: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_merges)
-    p0-->>p27: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_remotes)
+    p8->>p17: current_host
+    p11->>p18: KnowledgeEnvelopeError
+    p8->>p19: _GitCommandResult
+    p12->>p20: _syntax_key
+    p12->>p21: _known_syntax
+    p12->>p22: _remember_syntax
+    p14->>p23: SharedValidationError
+    p15->>p24: portable_path_key
+    p0-->>p25: Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)(root)
+    p0-->>p26: Path(…).resolve (src/llm_wiki_engine/knowl…t_git_repository_evidence)
+    p0-->>p25: Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)(raw_top_level)
+    p0-->>p27: bool(status)
+    p0-->>p28: len (src/llm_wiki_engine/knowl…t_git_repository_evidence)(branch_remotes)
+    p0-->>p28: len (src/llm_wiki_engine/knowl…t_git_repository_evidence)(branch_merges)
 ```
 
-> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 187 interactions; 157 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 70 (64 omitted); unresolved 1 of 55 (54 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 66 (61 omitted); unresolved 1 of 60 (59 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git` | 3 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:collect_git_repository_evidence` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 7 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_is_full_git_oid` | 14 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_worktree_pathspecs` | 18 | - | external | 20 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_worktree_pathspecs` | 18 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-> Omission summary shows 8 of 38 groups; 30 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/knowledge_envelope.py:_run_git` | 3 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_run_git_result` | 4 | - | unresolved | 4 |
+| `src/llm_wiki_engine/host.py:current_host` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_run_git_result` | 4 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_envelope.py:collect_git_repository_evidence` | 1 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 7 |
+| `src/llm_wiki_engine/knowledge_envelope.py:_is_full_git_oid` | 17 | - | external | 3 |
+> Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -100,9 +101,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 58; effect analysis evaluated: 39, partial: 3, unavailable: 16. Counts include steps omitted from the displayed trace.
+Source steps: 62; effect analysis evaluated: 43, partial: 3, unavailable: 16. Counts include steps omitted from the displayed trace.
 
-Collector observations for 42 source steps with known totals: observed: 300, emitted: 285, omitted: 15. Unavailable totals are excluded.
+Collector observations for 46 source steps with known totals: observed: 299, emitted: 284, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -111,53 +112,49 @@ Collector observations for 42 source steps with known totals: observed: 300, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `collect_git_repository_evidence` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
-| `Path (src/llm_wiki_cli/services…t_git_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_run_git` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `_run_git_result` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
-| `os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `str (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_run_git_result` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `current_host().environ.items (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.startswith (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().run (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `str (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_GitCommandResult` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_GitCommandResult` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `RepositoryEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. collect_git_repository_evidence"]
-    s2["2. Path (src/llm_wiki_cli/services…t_git_repository_evidence)"]
+    s2["2. Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)"]
     s3["3. _run_git"]
     s4["4. _run_git_result"]
-    s5["5. os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)"]
-    s6["6. key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)"]
-    s7["7. subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)"]
-    s8["8. str (src/llm_wiki_cli/services…velope.py:_run_git_result)"]
-    s9["9. _GitCommandResult"]
-    s10["10. result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)"]
-    s11["11. _GitCommandResult"]
-    s12["12. RepositoryEvidence"]
-    s1 -. "Path (src/llm_wiki_cli/services…t_git_repository_evidence)(root)" .-> s2
+    s5["5. current_host().environ.items (src/llm_wiki_engine/knowl…velope.py:_run_git_result)"]
+    s6["6. current_host"]
+    s7["7. _ACTIVE.get"]
+    s8["8. key.startswith (src/llm_wiki_engine/knowl…velope.py:_run_git_result)"]
+    s9["9. current_host().run (src/llm_wiki_engine/knowl…velope.py:_run_git_result)"]
+    s10["10. current_host"]
+    s11["11. str (src/llm_wiki_engine/knowl…velope.py:_run_git_result)"]
+    s12["12. _GitCommandResult"]
+    s1 -. "Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)(root)" .-> s2
     s1 -->|"_run_git(checkout, 'rev-parse', '--is-inside-work-tree')"| s3
     s3 -->|"_run_git_result(root, ...)"| s4
-    s4 -. "os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)(data not statically known)" .-> s5
-    s4 -. "key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)('GIT_')" .-> s6
-    s4 -. "subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)(…)" .-> s7
-    s4 -. "str (src/llm_wiki_cli/services…velope.py:_run_git_result)(root)" .-> s8
-    s4 -->|"_GitCommandResult(available=False, returncode=None)"| s9
-    s4 -. "result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)(data not statically known)" .-> s10
-    s4 -->|"_GitCommandResult(available=True, returncode=result.returncode, output=output)"| s11
-    s1 -->|"RepositoryEvidence(data not statically known)"| s12
-    b0["process subprocess.run"]
-    s4 -. "process subprocess.run" .-> b0
+    s4 -. "current_host().environ.items (src/llm_wiki_engine/knowl…velope.py:_run_git_result)(data not statically known)" .-> s5
+    s4 -->|"current_host(data not statically known)"| s6
+    s6 -. "_ACTIVE.get(data not statically known)" .-> s7
+    s4 -. "key.startswith (src/llm_wiki_engine/knowl…velope.py:_run_git_result)('GIT_')" .-> s8
+    s4 -. "current_host().run (src/llm_wiki_engine/knowl…velope.py:_run_git_result)(…)" .-> s9
+    s4 -->|"current_host(data not statically known)"| s10
+    s4 -. "str (src/llm_wiki_engine/knowl…velope.py:_run_git_result)(root)" .-> s11
+    s4 -->|"_GitCommandResult(available=False, returncode=None)"| s12
     click s1 "../modules/knowledge_envelope.md"
     click s3 "../modules/knowledge_envelope.md"
     click s4 "../modules/knowledge_envelope.md"
-    click s9 "../modules/knowledge_envelope.md"
-    click s11 "../modules/knowledge_envelope.md"
+    click s6 "../modules/host.md"
+    click s10 "../modules/host.md"
     click s12 "../modules/knowledge_envelope.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
 ```
 
 ### Step data
@@ -165,47 +162,46 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `collect_git_repository_evidence` | `root: str \| Path`, `included_worktree_paths: Iterable[str \| Path] \| None`, `excluded_worktree_paths: Iterable[str \| Path]`, `excluded_worktree_globs: Iterable[str]`, `worktree_path_filter: Callable[[Path], bool] \| None` | `WorkingTreeState`, `WorkingTreeState`, `WorkingTreeState` | - | `RepositoryEvidence(...)`, `RepositoryEvidence(...)` |
-| `Path (src/llm_wiki_cli/services…t_git_repository_evidence)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/knowl…t_git_repository_evidence)` | - | - | - | - |
 | `_run_git` | `root: Path`, `args: str`, `preserve_empty: bool` | - | - | `None`, `result.output`, `None` |
 | `_run_git_result` | `root: Path`, `args: str`, `preserve_output: bool` | `os`, `subprocess` | `git_environment[...]`, `git_environment[...]`, `git_environment[...]`, `git_environment[...]` | `_GitCommandResult(...)`, `_GitCommandResult(...)` |
-| `os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)` | - | - | - | - |
-| `key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)` | - | - | - | - |
-| `subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)` | - | - | - | - |
-| `str (src/llm_wiki_cli/services…velope.py:_run_git_result)` | - | - | - | - |
+| `current_host().environ.items (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
+| `key.startswith (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | - | - | - | - |
+| `current_host().run (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `str (src/llm_wiki_engine/knowl…velope.py:_run_git_result)` | - | - | - | - |
 | `_GitCommandResult` | - | - | - | - |
-| `result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)` | - | - | - | - |
-| `_GitCommandResult` | - | - | - | - |
-| `RepositoryEvidence` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| collect_git_repository_evidence | Path (src/llm_wiki_cli/services…t_git_repository_evidence) | 311 | `Path(root)` |
-| collect_git_repository_evidence | _run_git | 312 | `_run_git(checkout, 'rev-parse', '--is-inside-work-tree')` |
-| _run_git | _run_git_result | 1188 | `_run_git_result(root, ...)` |
-| _run_git_result | os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1202 | `os.environ.items(data not statically known)` |
-| _run_git_result | key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1202 | `key.startswith('GIT_')` |
-| _run_git_result | subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1209 | `subprocess.run([...], input='', capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
-| _run_git_result | str (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1210 | `str(root)` |
-| _run_git_result | _GitCommandResult | 1228 | `_GitCommandResult(available=False, returncode=None)` |
-| _run_git_result | result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1229 | `result.stdout.strip(data not statically known)` |
-| _run_git_result | _GitCommandResult | 1230 | `_GitCommandResult(available=True, returncode=result.returncode, output=output)` |
-| collect_git_repository_evidence | RepositoryEvidence | 314 | `RepositoryEvidence(data not statically known)` |
+| collect_git_repository_evidence | Path (src/llm_wiki_engine/knowl…t_git_repository_evidence) | 312 | `Path(root)` |
+| collect_git_repository_evidence | _run_git | 313 | `_run_git(checkout, 'rev-parse', '--is-inside-work-tree')` |
+| _run_git | _run_git_result | 1189 | `_run_git_result(root, ...)` |
+| _run_git_result | current_host().environ.items (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1203 | `current_host().environ.items(data not statically known)` |
+| _run_git_result | current_host | 1203 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| _run_git_result | key.startswith (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1203 | `key.startswith('GIT_')` |
+| _run_git_result | current_host().run (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1210 | `current_host().run([...], input='', capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
+| _run_git_result | current_host | 1210 | `current_host(data not statically known)` |
+| _run_git_result | str (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1211 | `str(root)` |
+| _run_git_result | _GitCommandResult | 1229 | `_GitCommandResult(available=False, returncode=None)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| process | `subprocess.run` | `_run_git_result` | 1209 |
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_run_git_result` | `os.environ.items` | 1202 |
-| unresolved_call | `_run_git_result` | `key.startswith` | 1202 |
-| unresolved_call | `_run_git_result` | `result.stdout.strip` | 1229 |
+| unresolved_call | `_run_git_result` | `current_host().environ.items` | 1203 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `_run_git_result` | `key.startswith` | 1203 |
+| unresolved_call | `_run_git_result` | `current_host().run` | 1210 |
 | step_limit | `collect_git_repository_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `collect_git_repository_evidence` | `depth limit` | 0 |
 

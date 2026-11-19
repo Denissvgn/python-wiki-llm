@@ -11,7 +11,6 @@ Documentation-run record services.
 | Source | Symbols |
 |--------|---------|
 | `.` | `publication`, `publication` |
-| `..markdown_sections` | `GENERATED_INDEX_INTROS` |
 | `.contracts` | `*` |
 | `.dependencies` | `*` |
 | `.integrity` | `*` |
@@ -19,6 +18,7 @@ Documentation-run record services.
 | `.schema` | `*` |
 | `.workspace` | `*` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.markdown_sections` | `GENERATED_INDEX_INTROS` |
 
 ## Local dependency map
 
@@ -36,7 +36,7 @@ flowchart LR
     n8["src/llm_wiki_cli/services/documentation_run/schema.py"]
     n9["src/llm_wiki_cli/services/documentation_run/verify.py"]
     n10["src/llm_wiki_cli/services/documentation_run/workspace.py"]
-    n11["src/llm_wiki_cli/services/markdown_sections.py"]
+    n11["src/llm_wiki_engine/markdown_sections.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3

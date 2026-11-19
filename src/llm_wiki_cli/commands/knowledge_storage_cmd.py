@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ..services.knowledge_storage_diagnostics import storage_report, review_storage
-from ..services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report, review_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, recover_knowledge_storage,
     export_knowledge_v1, prune_knowledge_storage, restore_pruned_storage,
 )
@@ -23,15 +23,15 @@ def run(args) -> None:
         elif args.knowledge_action == "export-storage":
             result = export_knowledge_v1(root, args.output)
         elif args.knowledge_action == "prune-storage":
-            from ..services.knowledge_storage import decode_bytes, canonical_bytes, MAX_OBJECT_BYTES
-            from ..services.knowledge_storage_io import read_guarded
-            from ..services.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+            from llm_wiki_engine.knowledge_storage import decode_bytes, canonical_bytes, MAX_OBJECT_BYTES
+            from llm_wiki_engine.knowledge_storage_io import read_guarded
+            from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
             plan = None if getattr(args, "plan", None) is None else decode_bytes(read_guarded(Path(args.plan), MAX_OBJECT_BYTES).content,
                                                                limit=MAX_OBJECT_BYTES, field="prune plan")
             result = prune_knowledge_storage(root, dry_run=not args.apply, plan=plan,
                                              recovery_dir=getattr(args, "recovery_dir", None), max_bytes=getattr(args, "max_bytes", 1_073_741_824))
             if getattr(args, "save_plan", None) is not None:
-                from ..services.knowledge_storage_lifecycle import _outside_tree
+                from llm_wiki_engine.knowledge_storage_lifecycle import _outside_tree
                 target = _outside_tree(Path(args.save_plan), root)
                 ensure_guarded_directory(target.parent, mode=0o700)
                 atomic_write_guarded_bytes(target, canonical_bytes(result["plan"]), mode=0o600, expected_existing=None)
@@ -49,7 +49,7 @@ def run(args) -> None:
             if args.stream:
                 if args.full or args.git_base is not None or args.git_head is not None or getattr(args, "require_referenced", False):
                     raise ValueError("Use --stream separately from --full, --require-referenced and Git range options")
-                from ..services.knowledge_stream_audit import audit_knowledge_stream
+                from llm_wiki_engine.knowledge_stream_audit import audit_knowledge_stream
                 result = audit_knowledge_stream(root)
             else:
                 result = storage_report(root, full=args.full, git_base=args.git_base, git_head=args.git_head,

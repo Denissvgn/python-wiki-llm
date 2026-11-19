@@ -329,8 +329,16 @@ def _verify_source_additions(root: Path, names: set[str]) -> None:
                 metadata = (len(relative.parts) >= 2
                             and relative.parts[0] == "src"
                             and relative.parts[1].endswith(".egg-info"))
+                # Installing the engine project builds it in place under
+                # src/build/lib. Only byte copies of frozen sources qualify.
+                built = (len(relative.parts) >= 4
+                         and relative.parts[:3] == ("src", "build", "lib")
+                         and PurePosixPath("src", *relative.parts[3:]).as_posix() in names
+                         and path.is_file() and not path.is_symlink()
+                         and path.read_bytes() == (root.joinpath("src", *relative.parts[3:])).read_bytes())
                 generated = ((cache and path.suffix == ".pyc")
                              or (metadata and path.suffix.casefold() not in executable_suffixes)
+                             or built
                              or (path.name == ".DS_Store" and path.is_file()))
                 require(generated, f"unfrozen source input: {text}")
 

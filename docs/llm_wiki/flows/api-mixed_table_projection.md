@@ -2,7 +2,7 @@
 
 **Entry point:** `mixed_table_projection` (`api`)
 **Source:** [markdown_sections](../modules/markdown_sections.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md)
 
 ## Call sequence
 
@@ -19,14 +19,14 @@ sequenceDiagram
     participant p5 as format_table_row
     participant p6 as is_placeholder_description
     participant p7 as MixedTableProjection
-    participant p8 as canonical_json_bytes
-    participant p9 as sha256_bytes
+    participant p8 as compact_bytes
+    participant p9 as sha256_digest
     participant p10 as _line_content
     participant p11 as split_table_row
     participant p12 as is_table_separator
     participant p13 as semantic_table_key
     participant p14 as TableDescriptionCell
-    participant p15 as canonical_json_text
+    participant p15 as compact_text
     participant p16 as list
     participant p17 as normalized.endswith
     participant p18 as semantic_by_key.items
@@ -46,14 +46,14 @@ sequenceDiagram
     p0->>p5: format_table_row
     p0->>p6: is_placeholder_description
     p0->>p7: MixedTableProjection
-    p3->>p8: canonical_json_bytes
-    p3->>p9: sha256_bytes
+    p3->>p8: compact_bytes
+    p3->>p9: sha256_digest
     p1->>p10: _line_content
     p2->>p11: split_table_row
     p2->>p12: is_table_separator
     p2->>p13: semantic_table_key
     p2->>p14: TableDescriptionCell
-    p8->>p15: canonical_json_text
+    p8->>p15: compact_text
     p0-->>p16: list(lines)
     p0-->>p17: normalized.endswith('\n')
     p0-->>p16: list(cell.cells)
@@ -79,14 +79,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 5 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 8 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 14 | - | unresolved | 12 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 14 | - | external | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 11 | - | external | 7 |
-| `src/llm_wiki_cli/services/markdown_sections.py:is_table_separator` | 32 | - | external | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 5 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 11 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 14 | - | unresolved | 12 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 14 | - | external | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 11 | - | external | 7 |
+| `src/llm_wiki_engine/markdown_sections.py:is_table_separator` | 32 | - | external | 2 |
 > Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 21; effect analysis evaluated: 19, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
-Collector observations for 19 source steps with known totals: observed: 70, emitted: 70, omitted: 0. Unavailable totals are excluded.
+Collector observations for 19 source steps with known totals: observed: 72, emitted: 72, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.

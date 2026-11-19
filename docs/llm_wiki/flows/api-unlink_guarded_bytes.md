@@ -38,9 +38,9 @@ sequenceDiagram
     participant p24 as WindowsObjectIdentity
     participant p25 as WindowsSecurityGuardError
     participant p26 as _windows_sid_string
-    participant p27 as Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)
-    participant p28 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    participant p29 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    participant p27 as Path (src/llm_wiki_engine/files….py:_unlink_guarded_bytes)
+    participant p28 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)
+    participant p29 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…basis.py:after_wiki_write)
     participant p30 as basis.before_write
     p0->>p1: _unlink_guarded_bytes
     p0->>p2: before_wiki_write
@@ -68,9 +68,9 @@ sequenceDiagram
     p11->>p24: WindowsObjectIdentity
     p12->>p25: WindowsSecurityGuardError
     p14->>p26: _windows_sid_string
-    p1-->>p27: Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(path)
-    p2-->>p28: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    p3-->>p29: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    p1-->>p27: Path (src/llm_wiki_engine/files….py:_unlink_guarded_bytes)(path)
+    p2-->>p28: ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)
+    p3-->>p29: ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…basis.py:after_wiki_write)
     p2-->>p30: basis.before_write(Path(...), content)
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 12 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 12 | - | external | 27 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 19 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 19 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 19 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 27 | - | external | 14 |
+| `src/llm_wiki_engine/wiki_write_basis.py:before_wiki_write` | 2 | - | external | 3 |
+| `src/llm_wiki_engine/wiki_write_basis.py:before_wiki_write` | 2 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_unlink_guarded_bytes` | 12 | - | unresolved | 6 |
+| `src/llm_wiki_engine/filesystem_guard.py:_unlink_guarded_bytes` | 12 | - | external | 27 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 19 | - | external | 9 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 19 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 19 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 27 | - | external | 14 |
 > Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -115,41 +115,41 @@ Collector observations for 45 source steps with known totals: observed: 325, emi
 |---|---|---|---|---:|---:|---:|
 | `unlink_guarded_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `before_wiki_write` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `basis.before_write` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `journal.before_write` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `bootstrap.before_write` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_unlink_guarded_bytes` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
 
 ```mermaid
 flowchart LR
     s1["1. unlink_guarded_bytes"]
     s2["2. before_wiki_write"]
-    s3["3. ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s3["3. ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
     s4["4. basis.before_write"]
-    s5["5. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
-    s6["6. ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s5["5. Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
+    s6["6. ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
     s7["7. journal.before_write"]
-    s8["8. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
-    s9["9. ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s8["8. Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
+    s9["9. ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
     s10["10. bootstrap.before_write"]
-    s11["11. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s11["11. Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)"]
     s12["12. _unlink_guarded_bytes"]
     s1 -->|"before_wiki_write(path, None)"| s2
-    s2 -. "ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s3
+    s2 -. "ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(data not statically known)" .-> s3
     s2 -. "basis.before_write(Path(...), content)" .-> s4
-    s2 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s5
-    s2 -. "ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s6
+    s2 -. "Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(path)" .-> s5
+    s2 -. "ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(data not statically known)" .-> s6
     s2 -. "journal.before_write(Path(...), content)" .-> s7
-    s2 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s8
-    s2 -. "ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s9
+    s2 -. "Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(path)" .-> s8
+    s2 -. "ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(data not statically known)" .-> s9
     s2 -. "bootstrap.before_write(Path(...), content)" .-> s10
-    s2 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s11
+    s2 -. "Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)(path)" .-> s11
     s1 -->|"_unlink_guarded_bytes(path, expected=expected)"| s12
     b0["filesystem_write quarantine.unlink"]
     s12 -. "filesystem_write quarantine.unlink" .-> b0
@@ -172,15 +172,15 @@ flowchart LR
 |---|---|---|---|---|
 | `unlink_guarded_bytes` | `path: Path`, `expected: bytes` | - | - | - |
 | `before_wiki_write` | `path: str \| Path`, `content: bytes \| None` | - | - | - |
-| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
 | `basis.before_write` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
-| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
+| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
 | `journal.before_write` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
-| `ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
+| `ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
 | `bootstrap.before_write` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write)` | - | - | - | - |
 | `_unlink_guarded_bytes` | `path: Path`, `expected: bytes` | `os`, `os`, `os`, `os`, `os` | - | `none` |
 
 ### Call data
@@ -188,15 +188,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | unlink_guarded_bytes | before_wiki_write | 1685 | `before_wiki_write(path, None)` |
-| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 36 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
-| before_wiki_write | basis.before_write | 38 | `basis.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 38 | `Path(path)` |
-| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 39 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
-| before_wiki_write | journal.before_write | 41 | `journal.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 41 | `Path(path)` |
-| before_wiki_write | ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 42 | `ACTIVE_BOOTSTRAP_JOURNAL.get(data not statically known)` |
-| before_wiki_write | bootstrap.before_write | 44 | `bootstrap.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 44 | `Path(path)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 34 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 36 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 36 | `Path(path)` |
+| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 37 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
+| before_wiki_write | journal.before_write | 39 | `journal.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 39 | `Path(path)` |
+| before_wiki_write | ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 40 | `ACTIVE_BOOTSTRAP_JOURNAL.get(data not statically known)` |
+| before_wiki_write | bootstrap.before_write | 42 | `bootstrap.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_engine/wiki_…asis.py:before_wiki_write) | 42 | `Path(path)` |
 | unlink_guarded_bytes | _unlink_guarded_bytes | 1686 | `_unlink_guarded_bytes(path, expected=expected)` |
 
 ### Boundary effects
@@ -211,12 +211,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 36 |
-| unresolved_call | `before_wiki_write` | `basis.before_write` | 38 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 39 |
-| unresolved_call | `before_wiki_write` | `journal.before_write` | 41 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_BOOTSTRAP_JOURNAL.get` | 42 |
-| unresolved_call | `before_wiki_write` | `bootstrap.before_write` | 44 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 34 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 36 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 37 |
+| unresolved_call | `before_wiki_write` | `journal.before_write` | 39 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_BOOTSTRAP_JOURNAL.get` | 40 |
+| unresolved_call | `before_wiki_write` | `bootstrap.before_write` | 42 |
 | step_limit | `unlink_guarded_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `unlink_guarded_bytes` | `depth limit` | 0 |
 

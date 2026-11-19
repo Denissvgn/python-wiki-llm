@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import config as config_module
+from llm_wiki_engine import path_policy
 from llm_wiki_cli.config import (
     AGENT_CHOICES,
     AgentConfigState,
@@ -215,9 +216,9 @@ class TestValidatePath:
         os.chdir(project)
         inspected: list[Path] = []
 
-        monkeypatch.setattr(config_module.sys, "platform", "win32")
+        monkeypatch.setattr(path_policy.sys, "platform", "win32")
         monkeypatch.setattr(
-            config_module,
+            path_policy,
             "windows_current_user_sid",
             lambda: "S-1-5-21-current",
         )
@@ -226,7 +227,7 @@ class TestValidatePath:
             inspected.append(path)
             return path_owner_sid
 
-        monkeypatch.setattr(config_module, "windows_path_owner_sid", owner_sid)
+        monkeypatch.setattr(path_policy, "windows_path_owner_sid", owner_sid)
 
         if accepted:
             with pytest.warns(UserWarning, match="external source root"):
@@ -263,13 +264,13 @@ class TestValidatePath:
         except OSError:
             pytest.skip("Directory symlinks are unavailable to this test account.")
         os.chdir(project)
-        monkeypatch.setattr(config_module.sys, "platform", "win32")
+        monkeypatch.setattr(path_policy.sys, "platform", "win32")
 
         def unavailable_sid():
             raise OSError("SID lookup unavailable")
 
         monkeypatch.setattr(
-            config_module,
+            path_policy,
             "windows_current_user_sid",
             unavailable_sid,
         )
@@ -434,7 +435,7 @@ class TestValidatePath:
             return link
 
         monkeypatch.setattr(
-            config_module,
+            path_policy,
             "first_unsafe_path_component",
             untrusted_component,
         )

@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
-from llm_wiki_cli.services.io import read_md
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_LOCK_FILENAME
-from llm_wiki_cli.services.maintenance_protocol import STORAGE_LOCK_FILENAME
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.io import read_md
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_LOCK_FILENAME
+from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_sync import _make_bootstrap_args, _make_sync_args
 
 
@@ -159,8 +159,8 @@ def _check_added_twin(
 ) -> None:
     from llm_wiki_cli import cli
     from llm_wiki_cli.commands import knowledge_cmd
-    from llm_wiki_cli.services.knowledge_governance import load_governance
-    from llm_wiki_cli.services.wiki_surface import PageKind, mcp_uri
+    from llm_wiki_engine.knowledge_governance import load_governance
+    from llm_wiki_engine.wiki_surface import PageKind, mcp_uri
 
     original_doc = "A draft in module alpha."
     new_doc = "A draft in module beta."
@@ -320,6 +320,79 @@ def test_rename_and_unchanged_page_repairs_share_one_sync(tmp_path, monkeypatch)
     stable = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
     _sync(wiki)
     assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == stable
+
+
+MODULE_ALIAS = "import sys\n\nfrom engine import model\n\nsys.modules[__name__] = model\n"
+
+
+@pytest.mark.parametrize("leaves_alias", [False, True])
+def test_module_moved_to_another_directory_keeps_its_page(
+    tmp_path, monkeypatch, leaves_alias
+):
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    _author_description(
+        wiki_dir / "modules/model.md",
+        "_Auto-generated from `pkg/model.py`._",
+        "AUTHORED: module purpose.",
+    )
+    _author_description(
+        wiki_dir / "entities/Draft.md", "Original description.", "AUTHORED: entity."
+    )
+    _sync(wiki_dir)
+    (project / "engine").mkdir()
+    (project / "pkg/model.py").rename(project / "engine/model.py")
+    if leaves_alias:
+        (project / "pkg/model.py").write_text(MODULE_ALIAS, encoding="utf-8")
+
+    _sync(wiki_dir)
+
+    _assert_module_page(wiki_dir, "model", "engine/model.py")
+    module = read_md(wiki_dir / "modules/model.md")
+    assert "AUTHORED: module purpose." in module
+    assert not module.startswith(sync_cmd._DEPRECATION_HEADER)
+    _assert_entity_page(wiki_dir, "Draft", "engine/model.py", "AUTHORED: entity.")
+    assert {p.name for p in (wiki_dir / "modules").glob("*.md")} == {"model.md"}
+    assert "pkg/model.py" not in SyncManifest.load(wiki_dir).sources
+    _assert_consistent(wiki_dir)
+    stable = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+    _sync(wiki_dir)
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == stable
+
+
+@pytest.mark.parametrize("leaves_alias", [False, True])
+def test_shared_class_name_moved_with_its_module_keeps_its_page(
+    tmp_path, monkeypatch, leaves_alias
+):
+    project, wiki_dir = _bootstrap_project(
+        tmp_path,
+        monkeypatch,
+        {
+            "model.py": _draft_source("Model draft."),
+            "other.py": _draft_source("Other draft."),
+        },
+    )
+    # Both modules declare Draft, so each page carries its module's name.
+    _author_description(wiki_dir / "entities/model_Draft.md", "Model draft.", "AUTHORED: model.")
+    _sync(wiki_dir)
+    (project / "engine").mkdir()
+    (project / "pkg/model.py").rename(project / "engine/model.py")
+    if leaves_alias:
+        (project / "pkg/model.py").write_text(MODULE_ALIAS, encoding="utf-8")
+
+    _sync(wiki_dir)
+
+    _assert_entity_page(wiki_dir, "model_Draft", "engine/model.py", "AUTHORED: model.")
+    _assert_entity_page(wiki_dir, "other_Draft", "pkg/other.py", "Other draft.")
+    entity = read_md(wiki_dir / "entities/model_Draft.md")
+    assert "AUTHORED: model." in entity
+    assert not entity.startswith(sync_cmd._DEPRECATION_HEADER)
+    assert {p.name for p in (wiki_dir / "entities").glob("*.md")} == {"model_Draft.md", "other_Draft.md"}
+    _assert_consistent(wiki_dir)
+    stable = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+    _sync(wiki_dir)
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == stable
 
 
 @pytest.mark.parametrize("dry_run", [False, True])

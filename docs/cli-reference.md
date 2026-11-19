@@ -1832,7 +1832,11 @@ prompt templates, lint rules, and agent skill blocks. Plugin references are
 resolved from project-local paths or `.llm-wiki/catalog.json`. Extractor,
 lint-rule, entry-point detector, and diagram-style entry points must resolve to
 Python files inside the plugin directory; installed entry points are checked
-again before runtime import. Extractor components may set `"parallel_safe": true`
+again before runtime import. Each installed plugin is imported as its own
+package, so plugins never share module names with each other or with the host
+and nothing is added to `sys.path`. Reach a sibling module of the same plugin
+with a relative import such as `from . import helpers`; a bare `import helpers`
+does not look inside the plugin directory. Extractor components may set `"parallel_safe": true`
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 
@@ -2626,7 +2630,8 @@ a larger value is requested. Blank queries and invalid limits exit `2`, leave
 stdout empty, and print argument diagnostics to stderr in both output formats.
 A valid query with no matches exits `0` with empty results.
 
-JSON responses from both the CLI and MCP disclose `mode` (`ranked`,
+JSON responses from both the CLI and MCP name their format
+(`schema_version: "llm-wiki-search-result/v1"`) and disclose `mode` (`ranked`,
 `ranked-v1`, `ranked-v2` or `substring`), `total`, `returned`, and
 `bounds.results`, including truncation.
 Ranked scores and provenance remain specific to ranked mode.
@@ -2914,7 +2919,7 @@ modified, incomplete, extra-bearing, or unverifiable trees are retained.
 Managed schema cleanup completes before reference removal, and both legacy and
 profiled blocks use the same ownership boundaries. The command does not
 uninstall the CLI itself; remove the Python package separately with
-`pip uninstall agent-wiki-cli`.
+`pip uninstall agent-wiki-cli llm-wiki-engine`.
 
 [native-knowledge]: native-knowledge.md
 [native-knowledge-strict]: native-knowledge.md#strict-lint-policy

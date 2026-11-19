@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-engine-capabilities-v1.schema.json",
+  "title": "What an embedded engine may do",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-engine-capabilities/v1"
+    },
+    "granted": {
+      "$ref": "#/$defs/capabilities"
+    },
+    "missing": {
+      "$ref": "#/$defs/capabilities"
+    },
+    "helper_preparation": {
+      "enum": [
+        "auto",
+        "never"
+      ]
+    },
+    "comparison_policy": {
+      "$ref": "#/$defs/text"
+    },
+    "validators": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/text"
+      },
+      "uniqueItems": true
+    },
+    "kinds": {
+      "type": "object",
+      "properties": {
+        "concept": {
+          "$ref": "#/$defs/names"
+        },
+        "relationship": {
+          "$ref": "#/$defs/names"
+        },
+        "graph_relationship": {
+          "$ref": "#/$defs/names"
+        },
+        "page": {
+          "$ref": "#/$defs/names"
+        },
+        "undeclared": {
+          "enum": [
+            "accept",
+            "reject"
+          ]
+        }
+      },
+      "required": [
+        "concept",
+        "graph_relationship",
+        "page",
+        "relationship",
+        "undeclared"
+      ],
+      "additionalProperties": false
+    },
+    "pack": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/text"
+        },
+        "source_kinds": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/names"
+          }
+        },
+        "classifier": {
+          "$ref": "#/$defs/text"
+        },
+        "page_namer": {
+          "$ref": "#/$defs/text"
+        },
+        "page_renderer": {
+          "$ref": "#/$defs/text"
+        },
+        "context_source": {
+          "$ref": "#/$defs/text"
+        },
+        "reference_providers": {
+          "$ref": "#/$defs/names"
+        },
+        "helper_toolchain": {
+          "$ref": "#/$defs/text"
+        },
+        "extractors": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      },
+      "required": [
+        "classifier",
+        "context_source",
+        "extractors",
+        "helper_toolchain",
+        "name",
+        "page_namer",
+        "page_renderer",
+        "reference_providers",
+        "source_kinds"
+      ],
+      "additionalProperties": false
+    },
+    "publication_targets": {
+      "type": "object",
+      "properties": {
+        "kinds": {
+          "$ref": "#/$defs/names"
+        }
+      },
+      "required": [
+        "kinds"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "granted",
+    "missing",
+    "helper_preparation",
+    "comparison_policy",
+    "validators",
+    "kinds",
+    "pack",
+    "publication_targets"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "names": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/text"
+      },
+      "uniqueItems": true
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "clock",
+          "cwd",
+          "environment",
+          "subprocess"
+        ]
+      },
+      "uniqueItems": true
+    }
+  }
+}

@@ -31,22 +31,12 @@ retains its full inventory cost.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.dependencies` | `build_dependency_graph`, `dependency_metrics`, `detect_cycles`, `topological_order` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
 | `.flow_followup` | `segment` |
-| `.immutable` | `freeze` |
 | `.implementation_evidence` | `compact_implementation_summary` |
-| `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `_validated_artifacts_for_view` |
-| `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
-| `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
-| `.knowledge_model` | `knowledge_index_to_payload` |
-| `.knowledge_observability` | `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `knowledge_status_payload` |
-| `.maintenance_status` | `compact_maintenance_summary` |
 | `.relationships` | `build_entity_relationship_summaries` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `normalize_legacy_portable_relative_path`, `require_nonempty_text` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Iterable` |
@@ -55,6 +45,18 @@ retains its full inventory cost.
 | `functools` | `wraps` |
 | `itertools` | `islice` |
 | `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `compact_text` |
+| `llm_wiki_engine.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
+| `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `_validated_artifacts_for_view` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
+| `llm_wiki_engine.knowledge_model` | `knowledge_index_to_payload` |
+| `llm_wiki_engine.knowledge_observability` | `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `knowledge_status_payload` |
+| `llm_wiki_engine.maintenance_status` | `compact_maintenance_summary` |
+| `llm_wiki_engine.validation` | `normalize_legacy_portable_relative_path`, `require_nonempty_text` |
 | `pathlib` | `PurePosixPath` |
 | `re` | `re` |
 | `typing` | `Any`, `Callable`, `Iterable`, `Mapping`, `Optional`, `ParamSpec`, `Sequence`, `cast` |
@@ -79,17 +81,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (16) |
+| Outbound | `src` (18) |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 135 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 355 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 859 | — | Read-only graph query service over already-derived documentation payloads. |
+| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 138 | `ValueError` | Raised when a documentation graph query request is invalid. |
+| [_BoundedResult](../entities/BoundedResult.md) | 358 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 857 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

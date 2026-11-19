@@ -1,7 +1,7 @@
 # scan_python_files
 
 **Entry point:** `python_extractor._scan_python_files`
-**Modules involved:** [common](../modules/common.md), [config](../modules/config.md), [fastapi_contracts](../modules/fastapi_contracts.md), [imports](../modules/imports.md), [python_bindings](../modules/python_bindings.md), [python_contracts](../modules/python_contracts.md), [python_extractor](../modules/python_extractor.md), [python_implementation](../modules/python_implementation.md)
+**Modules involved:** [common](../modules/common.md), [fastapi_contracts](../modules/fastapi_contracts.md), [gitignore](../modules/gitignore.md), [imports](../modules/imports.md), [python_bindings](../modules/python_bindings.md), [python_contracts](../modules/python_contracts.md), [python_extractor](../modules/python_extractor.md), [python_implementation](../modules/python_implementation.md)
 
 > Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -13,7 +13,7 @@ are responsible for stamping it.
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.build_gitignore_matcher`
+1. `gitignore.build_gitignore_matcher`
 2. `common.discover_source_files`
 3. `python_implementation.capture`
 4. `python_implementation.producer`
@@ -32,8 +32,8 @@ are responsible for stamping it.
 ## Touches
 
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [fastapi_contracts](../modules/fastapi_contracts.md)
+- [gitignore](../modules/gitignore.md)
 - [imports](../modules/imports.md)
 - [python_bindings](../modules/python_bindings.md)
 - [python_contracts](../modules/python_contracts.md)

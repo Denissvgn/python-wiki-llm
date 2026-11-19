@@ -7,9 +7,9 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.services.markdown_sections import section_body
-from llm_wiki_cli.services.sync_manifest import SyncManifest
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.markdown_sections import section_body
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.lint_service import build_report
 
 SOURCE = """import math
@@ -99,7 +99,7 @@ def test_repairs_current_source_projection_and_preserves_other_content(
     elif change == "type":
         damaged = original.replace("`int`", "`str`")
     else:
-        from llm_wiki_cli.services.markdown_sections import parse_markdown_document
+        from llm_wiki_engine.markdown_sections import parse_markdown_document
 
         section = next(
             s

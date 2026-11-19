@@ -1,6 +1,6 @@
 # WikiSurfacePage
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:82`
+**Location:** `src/llm_wiki_engine/wiki_surface.py:82`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface](../modules/wiki_surface.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `WikiSurfacePage` in `src/llm_wiki_cli/services/wiki_surface.py`._
+_Auto-generated from `WikiSurfacePage` in `src/llm_wiki_engine/wiki_surface.py`._
 
 ## Attributes
 
@@ -33,7 +33,7 @@ _Auto-generated from `WikiSurfacePage` in `src/llm_wiki_cli/services/wiki_surfac
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WikiSurfacePage (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n0["WikiSurfacePage (src/llm_wiki_engine/wiki_surface.py)"]
     n1["_add_imported_page_candidates (src/llm_wiki_cli/services/documentation_worklist.py)"]
     n2["_add_missing_flow_candidates (src/llm_wiki_cli/services/documentation_worklist.py)"]
     n3["_add_page_candidate (src/llm_wiki_cli/services/documentation_worklist.py)"]
@@ -41,11 +41,11 @@ flowchart LR
     n5["_is_copied_docstring_only (src/llm_wiki_cli/services/documentation_worklist.py)"]
     n6["_graph_concepts (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n7["_structural_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n8["_expected_page_coordinates (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n9["_validate_surface_page (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n10["_validated_content (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n11["_validated_pages (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n12["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n8["_expected_page_coordinates (src/llm_wiki_engine/knowledge_index.py)"]
+    n9["_validate_surface_page (src/llm_wiki_engine/knowledge_index.py)"]
+    n10["_validated_content (src/llm_wiki_engine/knowledge_index.py)"]
+    n11["_validated_pages (src/llm_wiki_engine/knowledge_index.py)"]
+    n12["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

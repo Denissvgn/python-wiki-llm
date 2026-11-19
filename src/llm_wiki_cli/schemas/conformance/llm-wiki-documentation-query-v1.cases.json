@@ -1,0 +1,1731 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-documentation-query/v1",
+  "schema": "llm-wiki-documentation-query-v1.schema.json",
+  "cases": [
+    {
+      "name": "concept-result",
+      "valid": true,
+      "description": "A real concept query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "dependency-result",
+      "valid": true,
+      "description": "A real dependency query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "cost": {
+          "full_inventory_performed": true,
+          "scope": "full-inventory",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "matches": [
+          {
+            "value": "app.py"
+          }
+        ],
+        "operation": "dependency",
+        "path": "app.py",
+        "query": "app.py",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "entrypoint-result",
+      "valid": true,
+      "description": "A real entrypoint query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "cost": {
+          "full_inventory_performed": true,
+          "scope": "full-inventory",
+          "supplied_paths": 0
+        },
+        "data_flow": null,
+        "flow": null,
+        "found": true,
+        "matches": [
+          {
+            "value": "cli"
+          }
+        ],
+        "operation": "entrypoint",
+        "query": "cli",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "flow-segment-result",
+      "valid": true,
+      "description": "A real flow-segment query result.",
+      "document": {
+        "ambiguous": false,
+        "basis": "sha256:990f9fc792fcabac7df7f6a9917021ded6fd699c571be95cf18f9544e5a1aff1",
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          },
+          "steps": {
+            "returned": 9,
+            "total": 21,
+            "truncated": true
+          }
+        },
+        "cost": {
+          "full_inventory_performed": true,
+          "scope": "full-inventory",
+          "supplied_paths": 0
+        },
+        "coverage": {
+          "depth_limit": 6,
+          "depth_omitted": 0,
+          "eligible": 21,
+          "observed": 21,
+          "omitted_after": 0,
+          "omitted_before": 12,
+          "returned": 9,
+          "runtime_completeness": false,
+          "step_limit": 12
+        },
+        "follow_up": {
+          "reason": "no-more-rows-at-this-depth",
+          "status": "unavailable"
+        },
+        "found": true,
+        "limitations": [
+          "captured-static-graph-not-runtime-completeness",
+          "a-small-segment-does-not-limit-inventory-or-graph-counting-work"
+        ],
+        "matches": [
+          {
+            "file": "app.py",
+            "line": 2,
+            "symbol": "root"
+          }
+        ],
+        "operation": "flow-segment",
+        "owner": {
+          "file": "app.py",
+          "symbol": "root"
+        },
+        "query": "app.py:root",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "segment_schema": "llm-wiki-flow-segment/v1",
+        "steps": [
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 14,
+              "name": "leaf11",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf11"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf11"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 15,
+              "name": "leaf12",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf12"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf12"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 16,
+              "name": "leaf13",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf13"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf13"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 17,
+              "name": "leaf14",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf14"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf14"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 18,
+              "name": "leaf15",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf15"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf15"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 19,
+              "name": "leaf16",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf16"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf16"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 20,
+              "name": "leaf17",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf17"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf17"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 21,
+              "name": "leaf18",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf18"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf18"
+          },
+          {
+            "depth": 1,
+            "edge": {
+              "args": [
+                {
+                  "kind": "name",
+                  "value": "value"
+                }
+              ],
+              "from": {
+                "file": "app.py",
+                "symbol": "root"
+              },
+              "kind": "internal",
+              "line": 22,
+              "name": "leaf19",
+              "to": {
+                "file": "app.py",
+                "symbol": "leaf19"
+              }
+            },
+            "file": "app.py",
+            "kind": "internal",
+            "symbol": "leaf19"
+          }
+        ],
+        "truncated": true,
+        "work": {
+          "binding_bytes": 15453,
+          "captured_files": 1,
+          "counted_edges": 20,
+          "expanded_nodes": 21,
+          "graph_edges": 20,
+          "inventory_files": 1,
+          "traversed_edges": 20
+        }
+      }
+    },
+    {
+      "name": "impact-result",
+      "valid": true,
+      "description": "A real impact query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "concepts": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "matches": {
+            "returned": 1,
+            "total": 2,
+            "truncated": true
+          },
+          "pages": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "paths": {
+            "returned": 1,
+            "total": 2,
+            "truncated": true
+          },
+          "relationships": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          }
+        },
+        "concepts": [],
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "targeted-extraction",
+          "supplied_paths": 2
+        },
+        "found": true,
+        "impacted_paths": [
+          "a.py"
+        ],
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "limitations": [
+          "knowledge and page attribution use the committed snapshot; targeted source extraction does not establish global live freshness"
+        ],
+        "matches": [
+          {
+            "counts": {
+              "classes": 0,
+              "functions": 1,
+              "imports": 0
+            },
+            "language": "python",
+            "path": "a.py",
+            "present": true
+          }
+        ],
+        "operation": "impact",
+        "pages": [],
+        "query": {
+          "diff_supplied": false,
+          "paths": [
+            "a.py",
+            "b.py"
+          ]
+        },
+        "relationships": [],
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": true
+      }
+    },
+    {
+      "name": "related-result",
+      "valid": true,
+      "description": "A real related query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "value": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "related",
+        "query": "llm-wiki://entities/User",
+        "related_concepts": [],
+        "relationships": [],
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "surface-result",
+      "valid": true,
+      "description": "A real surface query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          },
+          "pages": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "canonical_path": "api-contracts.md",
+            "mcp_uri": "llm-wiki://api-contracts"
+          }
+        ],
+        "operation": "surface",
+        "pages": [
+          {
+            "canonical_path": "api-contracts.md",
+            "mcp_uri": "llm-wiki://api-contracts"
+          }
+        ],
+        "query": "api-contracts.md",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "symbol-result",
+      "valid": true,
+      "description": "A real symbol query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "callees": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "callers": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          },
+          "pages": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          }
+        },
+        "callees": [],
+        "callers": [],
+        "cost": {
+          "full_inventory_performed": true,
+          "scope": "full-inventory",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "matches": [
+          {
+            "value": "run"
+          }
+        ],
+        "operation": "symbol",
+        "pages": [],
+        "query": "run",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "symbol": {
+          "name": "run"
+        },
+        "truncated": false
+      }
+    },
+    {
+      "name": "typed-result",
+      "valid": true,
+      "description": "A real typed query result.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "edges": [],
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "value": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "typed",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "oversized-result-omitted",
+      "valid": true,
+      "description": "Records omitted to fit the serialized byte limit.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "evidence.relationships": {
+            "returned": 0,
+            "total": 8,
+            "truncated": true
+          },
+          "matches": {
+            "returned": 0,
+            "total": 1,
+            "truncated": true
+          },
+          "raw_evidence_bytes": {
+            "limit": 65536,
+            "returned": 0,
+            "total": 1886,
+            "truncated": true
+          },
+          "result_bytes": {
+            "limit": 65536,
+            "returned": 832,
+            "total": 1052339,
+            "truncated": true
+          }
+        },
+        "concept": null,
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "evidence": null,
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true,
+          "reason": "all-projection-commitments-match"
+        },
+        "matches": [],
+        "operation": "explain",
+        "query": "llm-wiki://modules/accounts",
+        "result_omitted": {
+          "reason": "serialized-result-byte-limit",
+          "records_returned": 0
+        },
+        "returned": 0,
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "total": 8,
+        "truncated": true
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The result names this format.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v2",
+        "truncated": false
+      }
+    },
+    {
+      "name": "unknown-operation",
+      "valid": false,
+      "description": "Operations are the published set.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "grep",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "Results have a closed field set.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false,
+        "extra": 1
+      }
+    },
+    {
+      "name": "missing-cost",
+      "valid": false,
+      "description": "Every result discloses its cost.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "unknown-cost-scope",
+      "valid": false,
+      "description": "Cost scopes are the published set.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "everything",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "full-inventory-not-performed",
+      "valid": false,
+      "description": "A full-inventory scope performs a full inventory.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "callees": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "callers": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          },
+          "pages": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          }
+        },
+        "callees": [],
+        "callers": [],
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "full-inventory",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "matches": [
+          {
+            "value": "run"
+          }
+        ],
+        "operation": "symbol",
+        "pages": [],
+        "query": "run",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "symbol": {
+          "name": "run"
+        },
+        "truncated": false
+      }
+    },
+    {
+      "name": "cost-extra-field",
+      "valid": false,
+      "description": "Cost has a closed field set.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0,
+          "seconds": 1
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "missing-matches-bound",
+      "valid": false,
+      "description": "bounds.matches is required.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {},
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "bound-extra-field",
+      "valid": false,
+      "description": "Bounds have a closed field set.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false,
+            "omitted": 0
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "found-not-boolean",
+      "valid": false,
+      "description": "found is a boolean.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": "yes",
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "match-not-object",
+      "valid": false,
+      "description": "Matches are objects.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          "llm-wiki://modules/x"
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "negative-total",
+      "valid": false,
+      "description": "Counts are non-negative.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false,
+        "total": -1
+      }
+    },
+    {
+      "name": "empty-direction",
+      "valid": false,
+      "description": "Text fields are not empty.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false,
+        "direction": ""
+      }
+    },
+    {
+      "name": "concept-without-knowledge",
+      "valid": false,
+      "description": "A concept result reports knowledge.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "symbol-without-callers",
+      "valid": false,
+      "description": "A symbol result lists callers.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "callees": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "callers": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          },
+          "pages": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          }
+        },
+        "callees": [],
+        "cost": {
+          "full_inventory_performed": true,
+          "scope": "full-inventory",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "matches": [
+          {
+            "value": "run"
+          }
+        ],
+        "operation": "symbol",
+        "pages": [],
+        "query": "run",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "symbol": {
+          "name": "run"
+        },
+        "truncated": false
+      }
+    },
+    {
+      "name": "impact-without-paths",
+      "valid": false,
+      "description": "An impact result lists impacted paths.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "concepts": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "matches": {
+            "returned": 1,
+            "total": 2,
+            "truncated": true
+          },
+          "pages": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          },
+          "paths": {
+            "returned": 1,
+            "total": 2,
+            "truncated": true
+          },
+          "relationships": {
+            "returned": 0,
+            "total": 0,
+            "truncated": false
+          }
+        },
+        "concepts": [],
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "targeted-extraction",
+          "supplied_paths": 2
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "limitations": [
+          "knowledge and page attribution use the committed snapshot; targeted source extraction does not establish global live freshness"
+        ],
+        "matches": [
+          {
+            "counts": {
+              "classes": 0,
+              "functions": 1,
+              "imports": 0
+            },
+            "language": "python",
+            "path": "a.py",
+            "present": true
+          }
+        ],
+        "operation": "impact",
+        "pages": [],
+        "query": {
+          "diff_supplied": false,
+          "paths": [
+            "a.py",
+            "b.py"
+          ]
+        },
+        "relationships": [],
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": true
+      }
+    },
+    {
+      "name": "omitted-with-matches",
+      "valid": false,
+      "description": "An omitted result returns no records.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "evidence.relationships": {
+            "returned": 0,
+            "total": 8,
+            "truncated": true
+          },
+          "matches": {
+            "returned": 0,
+            "total": 1,
+            "truncated": true
+          },
+          "raw_evidence_bytes": {
+            "limit": 65536,
+            "returned": 0,
+            "total": 1886,
+            "truncated": true
+          },
+          "result_bytes": {
+            "limit": 65536,
+            "returned": 832,
+            "total": 1052339,
+            "truncated": true
+          }
+        },
+        "concept": null,
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "evidence": null,
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true,
+          "reason": "all-projection-commitments-match"
+        },
+        "matches": [
+          {
+            "name": "x"
+          }
+        ],
+        "operation": "explain",
+        "query": "llm-wiki://modules/accounts",
+        "result_omitted": {
+          "reason": "serialized-result-byte-limit",
+          "records_returned": 0
+        },
+        "returned": 0,
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "total": 8,
+        "truncated": true
+      }
+    },
+    {
+      "name": "omitted-other-reason",
+      "valid": false,
+      "description": "Omission reasons are the published set.",
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "evidence.relationships": {
+            "returned": 0,
+            "total": 8,
+            "truncated": true
+          },
+          "matches": {
+            "returned": 0,
+            "total": 1,
+            "truncated": true
+          },
+          "raw_evidence_bytes": {
+            "limit": 65536,
+            "returned": 0,
+            "total": 1886,
+            "truncated": true
+          },
+          "result_bytes": {
+            "limit": 65536,
+            "returned": 832,
+            "total": 1052339,
+            "truncated": true
+          }
+        },
+        "concept": null,
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "evidence": null,
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true,
+          "reason": "all-projection-commitments-match"
+        },
+        "matches": [],
+        "operation": "explain",
+        "query": "llm-wiki://modules/accounts",
+        "result_omitted": {
+          "reason": "too-slow",
+          "records_returned": 0
+        },
+        "returned": 0,
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "total": 8,
+        "truncated": true
+      }
+    },
+    {
+      "name": "returned-over-total",
+      "valid": false,
+      "description": "A bound never returns more than its total.",
+      "schema_valid": true,
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "total": 0,
+            "returned": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "truncated-bound-mismatch",
+      "valid": false,
+      "description": "A bound is truncated exactly when total exceeds returned.",
+      "schema_valid": true,
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": true
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [
+          {
+            "locator": "llm-wiki://entities/User"
+          }
+        ],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "matches-not-counted",
+      "valid": false,
+      "description": "bounds.matches counts the returned matches.",
+      "schema_valid": true,
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "matches": {
+            "returned": 1,
+            "total": 1,
+            "truncated": false
+          }
+        },
+        "concept": {
+          "locator": "llm-wiki://entities/User"
+        },
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "snapshot-only",
+          "freshness_evaluated": false,
+          "reason": "knowledge-ready"
+        },
+        "matches": [],
+        "operation": "concept",
+        "query": "llm-wiki://entities/User",
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "truncated": false
+      }
+    },
+    {
+      "name": "truncation-not-reported",
+      "valid": false,
+      "description": "A truncated bound makes the result truncated.",
+      "schema_valid": true,
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "evidence.relationships": {
+            "returned": 0,
+            "total": 8,
+            "truncated": true
+          },
+          "matches": {
+            "returned": 0,
+            "total": 1,
+            "truncated": true
+          },
+          "raw_evidence_bytes": {
+            "limit": 65536,
+            "returned": 0,
+            "total": 1886,
+            "truncated": true
+          },
+          "result_bytes": {
+            "limit": 65536,
+            "returned": 832,
+            "total": 1052339,
+            "truncated": true
+          }
+        },
+        "concept": null,
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "evidence": null,
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true,
+          "reason": "all-projection-commitments-match"
+        },
+        "matches": [],
+        "operation": "explain",
+        "query": "llm-wiki://modules/accounts",
+        "returned": 0,
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "total": 8,
+        "truncated": false
+      }
+    },
+    {
+      "name": "bytes-over-limit",
+      "valid": false,
+      "description": "A byte bound never returns more than its limit.",
+      "schema_valid": true,
+      "document": {
+        "ambiguous": false,
+        "bounds": {
+          "evidence.relationships": {
+            "returned": 0,
+            "total": 8,
+            "truncated": true
+          },
+          "matches": {
+            "returned": 0,
+            "total": 1,
+            "truncated": true
+          },
+          "raw_evidence_bytes": {
+            "limit": 65536,
+            "returned": 0,
+            "total": 1886,
+            "truncated": true
+          },
+          "result_bytes": {
+            "limit": 65536,
+            "returned": 70000,
+            "total": 1052339,
+            "truncated": true
+          }
+        },
+        "concept": null,
+        "cost": {
+          "full_inventory_performed": false,
+          "scope": "snapshot-index-only",
+          "supplied_paths": 0
+        },
+        "evidence": null,
+        "found": true,
+        "knowledge": {
+          "availability": "ready",
+          "freshness": "evaluated (6 concepts)",
+          "freshness_evaluated": true,
+          "reason": "all-projection-commitments-match"
+        },
+        "matches": [],
+        "operation": "explain",
+        "query": "llm-wiki://modules/accounts",
+        "result_omitted": {
+          "reason": "serialized-result-byte-limit",
+          "records_returned": 0
+        },
+        "returned": 0,
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "total": 8,
+        "truncated": true
+      }
+    }
+  ]
+}

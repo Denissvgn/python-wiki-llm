@@ -14,12 +14,12 @@ from ..config import (
     validate_path,
     validate_source_root,
 )
-from ..services import circuit_breaker
-from ..services.lockfile import LockAcquisitionError, WikiLock
+from llm_wiki_engine import circuit_breaker
+from llm_wiki_engine.lockfile import LockAcquisitionError, WikiLock
 from ..services.metrics import record_event
 from ..services.plugins import PluginError
-from ..services.secure_file import write_private_text
-from ..services.source_selection import (
+from llm_wiki_engine.secure_file import write_private_text
+from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
@@ -28,12 +28,12 @@ from ..services.source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from ..services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from ..services.team import TeamConfigError, team_prompt_template_default
+from ..cli_declarations import DEFAULT_MAX_PROMPT_BYTES
 from .generate_prompt_cmd import _build_prompt, _redact_prompt_artifact
 
 GIT_DIR = Path(".git")
-DEFAULT_MAX_PROMPT_BYTES = 2_000_000
 
 
 class TriggerFailure(RuntimeError):

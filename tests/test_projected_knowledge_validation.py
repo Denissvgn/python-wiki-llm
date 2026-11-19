@@ -7,12 +7,13 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_generation as generation, knowledge_index as index
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_cli.services import knowledge_generation as generation
+from llm_wiki_engine import knowledge_index as index
+from llm_wiki_engine.knowledge_governance import (
     GovernanceLedger, concept_references_from_knowledge, reconcile_concepts,
 )
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
-from llm_wiki_cli.services.maintenance_state import maintenance_core, new_identity
+from llm_wiki_engine.knowledge_model import parse_knowledge_index
+from llm_wiki_engine.maintenance_state import maintenance_core, new_identity
 from tests.test_knowledge_generation import _planner_inputs
 
 

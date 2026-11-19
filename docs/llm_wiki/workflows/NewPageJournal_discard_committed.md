@@ -1,7 +1,7 @@
 # NewPageJournal_discard_committed
 
 **Entry point:** `sync_recovery.NewPageJournal.discard_committed`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [sync_recovery](../modules/sync_recovery.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [sync_recovery](../modules/sync_recovery.md)
 
 > Remove only this successful operation's verified private scratch.
 
@@ -10,12 +10,13 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_storage.canonical_bytes`
 2. `knowledge_storage_io.read_guarded`
-3. `knowledge_storage.digest`
+3. `canonical_json.sha256_digest`
 4. `knowledge_storage_io.read_guarded`
 5. `filesystem_guard.unlink_guarded_bytes`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)

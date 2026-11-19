@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from . import analysis_compatibility as ac
+from llm_wiki_engine.host import current_host
+from llm_wiki_engine import analysis_compatibility as ac
 
 from collections import OrderedDict
 from collections.abc import Callable, Mapping
@@ -19,14 +20,14 @@ import time
 from typing import Any
 
 from .. import __version__
-from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from . import context_packet as packets
-from .immutable import freeze
-from .io import first_unsafe_path_component
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from . import context_packet_builder as packet_builder
+from llm_wiki_engine.immutable import freeze
+from llm_wiki_engine.io import first_unsafe_path_component
 from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
 from .task_compact import CompactTaskContext, _CheckedCounter, normalize_view_options, render_compact_task_context
 from .task_context import TaskCancelledError, TaskRead, _counter, build_task_read, plan_source_read, validate_task_context
-from .workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields
+from llm_wiki_engine.workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields
 
 SESSION_SCHEMA = "llm-wiki-context-session/v1"
 DELTA_SCHEMA = "llm-wiki-task-delta/v1"
@@ -70,9 +71,9 @@ def _git_identity(root, metrics=None):
         if metrics is not None:
             metrics["git_queries"] = metrics.get("git_queries", 0) + 1
         try:
-            result = subprocess.run(["git", "-C", str(root), *args], capture_output=True,
+            result = current_host().run(["git", "-C", str(root), *args], capture_output=True,
                                     stdin=subprocess.DEVNULL, timeout=5, check=False,
-                                    env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"})
+                                    env={**current_host().environ, "GIT_OPTIONAL_LOCKS": "0"})
         except (OSError, subprocess.TimeoutExpired):
             return None
         return result.stdout.strip() if result.returncode == 0 else None
@@ -117,7 +118,7 @@ def _producer_identity(metrics=None):
         if metrics is not None:
             metrics["producer_files"] = metrics.get("producer_files", 0) + 1
             metrics["producer_bytes"] = metrics.get("producer_bytes", 0) + len(raw)
-    environment = {key: value for key, value in os.environ.items() if key.startswith("LLM_WIKI_")}
+    environment = {key: value for key, value in current_host().environ.items() if key.startswith("LLM_WIKI_")}
     return content_id("llm-wiki-workflow-producer/v1", {"provider": __version__, "python": sys.version,
                                                        "files": files, "environment": environment})
 
@@ -232,7 +233,7 @@ class ContextSession:
         if (isinstance(ttl_seconds, bool) or not isinstance(ttl_seconds, (int, float))
                 or not math.isfinite(ttl_seconds) or not 0 < ttl_seconds <= 86400):
             raise WorkflowRequestError("ttl_seconds", "must be finite and between 0 and 86400")
-        self._cwd = Path.cwd().resolve()
+        self._cwd = current_host().cwd().resolve()
         self._source = validate_source_root(src_dir, "--src-dir", allow_external=allow_external_src)
         self._wiki = validate_path(wiki_dir, "--wiki-dir")
         self._source_stamp = _root_stamp(self._source)
@@ -256,7 +257,7 @@ class ContextSession:
         self._validation_work = {}
 
     def _roots_current(self):
-        if Path.cwd().resolve() != self._cwd:
+        if current_host().cwd().resolve() != self._cwd:
             raise WorkflowRequestError("workspace", "session cannot follow a changed working directory")
         if _root_stamp(self._source) != self._source_stamp:
             raise WorkflowRequestError("workspace", "source root object changed; create a new session")
@@ -335,15 +336,15 @@ class ContextSession:
                 self._environment(), request, profile, counter, cold=True,
                 after_portable=lambda: self._publication_cancelled(cancelled)):
             self._clear()
-            raise packets.ContextPacketSourceMutationError("session-inputs")
+            raise packet_builder.ContextPacketSourceMutationError("session-inputs")
         if (self._closed or self._unsaved or counter_basis != (counter.identity, counter.exact)
                 or environment != self._environment()):
             self._clear()
-            raise packets.ContextPacketSourceMutationError("session-environment")
+            raise packet_builder.ContextPacketSourceMutationError("session-environment")
         try:
             self._roots_current()
             if roots != (_root_stamp(self._source), _root_stamp(self._wiki)):
-                raise packets.ContextPacketSourceMutationError("session-roots")
+                raise packet_builder.ContextPacketSourceMutationError("session-roots")
         except (ValueError, OSError, RuntimeError):
             self._clear()
             raise
@@ -419,9 +420,9 @@ class ContextSession:
                 state.revalidate(settings, source_metrics=source_work, wiki_metrics=wiki_work)
                 return True
             if captured is not None:
-                packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor, metrics=source_work)
-                packets._assert_selection_unchanged(captured)
-            packets._assert_wiki_unchanged(self._wiki, read.wiki_anchor, reject_all_symlinks=True,
+                packet_builder._assert_source_unchanged(captured.source_snapshot, captured.source_anchor, metrics=source_work)
+                packet_builder._assert_selection_unchanged(captured)
+            packet_builder._assert_wiki_unchanged(self._wiki, read.wiki_anchor, reject_all_symlinks=True,
                                          max_bytes=profile.settings["max_wiki_bytes"], metrics=wiki_work,
                                          expected_integrity=read.wiki_integrity)
         except (ValueError, OSError, RuntimeError):

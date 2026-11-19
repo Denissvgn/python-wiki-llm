@@ -1,6 +1,6 @@
 # wiki_surface Module
 
-**Path:** `src/llm_wiki_cli/services/wiki_surface.py`
+**Path:** `src/llm_wiki_engine/wiki_surface.py`
 
 ## Description
 
@@ -28,7 +28,7 @@ directory. It intentionally avoids source inventory and command-module imports.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/wiki_surface.py"]
+    n1["src/llm_wiki_engine/wiki_surface.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/wiki_surface.md"
@@ -40,10 +40,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (41) |
+| Inbound | `src` (46) |
 | Outbound | `src` (1) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

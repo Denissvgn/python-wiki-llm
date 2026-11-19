@@ -4,12 +4,12 @@ from copy import deepcopy
 
 import pytest
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     SECTION_OWNERSHIP_SCHEMA_VERSION,
 )
-from llm_wiki_cli.services.markdown_sections import table_description_cells
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.markdown_sections import table_description_cells
+from llm_wiki_engine.section_ownership import (
     SectionOwnership,
     SectionOwnershipError,
     merge_entity_semantics,
@@ -18,11 +18,11 @@ from llm_wiki_cli.services.section_ownership import (
     section_ownership_extension,
     validate_section_ownership,
 )
-from llm_wiki_cli.services.markdown_sections import (
+from llm_wiki_engine.markdown_sections import (
     GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
 )
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 
 
 def _by_title(markdown: str, kind: PageKind):
@@ -529,7 +529,7 @@ Authored guidance belongs to the user.
 
 def test_adding_overloads_keeps_authored_implementation_description():
     from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md
-    from llm_wiki_cli.services.section_ownership import merge_module_semantics
+    from llm_wiki_engine.section_ownership import merge_module_semantics
     before = {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'unknown'}]}
     old = _generate_module_md('types.ts', {'classes': [], 'functions': [before]})
     old = old.replace('| `read` | `(value: unknown)` | — | — |', '| `read` | `(value: unknown)` | — | AUTHORED meaning |')
@@ -543,7 +543,7 @@ def test_adding_overloads_keeps_authored_implementation_description():
 
 @pytest.mark.parametrize('merge', ['entity', 'module'])
 def test_unmarked_overload_guidance_survives_regeneration_and_removal(merge):
-    from llm_wiki_cli.services.section_ownership import merge_module_semantics
+    from llm_wiki_engine.section_ownership import merge_module_semantics
     apply = merge_entity_semantics if merge == 'entity' else merge_module_semantics
     authored = '## Overloads\n\nAUTHORED guidance.\n\n### Details\n\nKeep exact context.\n'
     current = '# Example\n\n## Description\n\nHuman meaning.\n\n' + authored
@@ -556,3 +556,15 @@ def test_unmarked_overload_guidance_survives_regeneration_and_removal(merge):
     removed = apply(first.text, '# Example\n\n## Description\n\n_Auto-generated from `Example`._\n')
     assert authored in removed.text
     assert 'llm-wiki-generated:overloads' not in removed.text
+
+
+def test_semantic_merge_keeps_the_final_newline_after_a_preserved_description() -> None:
+    from llm_wiki_engine.section_ownership import merge_entity_semantics
+
+    generated = "# Box\n\n## Description\n\n_Auto-generated._\n\n## Owner\n\nTeam\n"
+    existing = generated.replace("_Auto-generated._", "Holds one item.")
+
+    merged = merge_entity_semantics(existing, generated)
+
+    assert merged.preserved == 1
+    assert merged.text == existing

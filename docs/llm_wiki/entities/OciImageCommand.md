@@ -1,6 +1,6 @@
 # OciImageCommand
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:155`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:156`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

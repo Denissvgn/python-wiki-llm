@@ -10,7 +10,7 @@ import re
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 from typing import Any
 
-from .validation import portable_path_key, require_portable_relative_path
+from llm_wiki_engine.validation import portable_path_key, require_portable_relative_path
 
 
 MAX_WIKI_FILES = 5_000
@@ -604,7 +604,7 @@ def _page_html(tokens):
 
 def _simple_atx_section(text, anchor):
     """Resolve only unambiguous top-level ATX documents without the optional parser."""
-    from .markdown_sections import parse_markdown_document
+    from llm_wiki_engine.markdown_sections import parse_markdown_document
 
     for line in text.split("\n"):
         if not line.strip() or re.match(r"^#{1,6}(?:[ \t]|$)", line):
@@ -627,7 +627,7 @@ def _simple_atx_section(text, anchor):
 
 def public_atx_section(markdown: str, anchor: str) -> bytes | None:
     """Return the rendered, unique plain ATX section, preserving its normalized bytes."""
-    from .markdown_sections import normalize_markdown
+    from llm_wiki_engine.markdown_sections import normalize_markdown
 
     text = normalize_markdown(markdown)
     if re.match(r"\A\ufeff?---[ \t]*\n", text):

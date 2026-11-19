@@ -2,7 +2,7 @@
 
 **Entry point:** `authored_event_time` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [knowledge_governance](../modules/knowledge_governance.md)
+**Modules touched:** [host](../modules/host.md), [knowledge_governance](../modules/knowledge_governance.md)
 
 ## Call sequence
 
@@ -12,35 +12,39 @@
 ```mermaid
 sequenceDiagram
     participant p0 as authored_event_time
-    participant p1 as datetime.now
-    participant p2 as isinstance
-    participant p3 as datetime.fromisoformat
-    participant p4 as raw.replace
-    participant p5 as GovernanceError
-    participant p6 as parsed.utcoffset
-    participant p7 as parsed.astimezone
-    participant p8 as utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)
-    participant p9 as utc.isoformat
-    participant p10 as utc.isoformat(…).replace (src/llm_wiki_cli/services….py:authored_event_time, 1)
-    p0-->>p1: datetime.now(timezone.utc)
-    p0-->>p2: isinstance(selected, str)
-    p0-->>p3: datetime.fromisoformat(raw.replace(...))
-    p0-->>p4: raw.replace('Z', '+00:00')
-    p0->>p5: GovernanceError
-    p0-->>p2: isinstance(selected, datetime)
-    p0->>p5: GovernanceError
-    p0-->>p6: parsed.utcoffset
-    p0->>p5: GovernanceError
-    p0-->>p7: parsed.astimezone(timezone.utc)
-    p0-->>p8: utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)('+00:00', 'Z')
-    p0-->>p9: utc.isoformat(timespec='microseconds')
-    p0-->>p10: utc.isoformat(…).replace (src/llm_wiki_cli/services….py:authored_event_time, 1)('+00:00', 'Z')
-    p0-->>p9: utc.isoformat(timespec='seconds')
+    participant p1 as current_host().now
+    participant p2 as current_host
+    participant p3 as isinstance
+    participant p4 as datetime.fromisoformat
+    participant p5 as raw.replace
+    participant p6 as GovernanceError
+    participant p7 as parsed.utcoffset
+    participant p8 as parsed.astimezone
+    participant p9 as utc.isoformat(…).replace (src/llm_wiki_engine/knowl…nce.py:authored_event_time)
+    participant p10 as utc.isoformat
+    participant p11 as utc.isoformat(…).replace (src/llm_wiki_engine/knowl….py:authored_event_time, 1)
+    participant p12 as _ACTIVE.get
+    p0-->>p1: current_host().now
+    p0->>p2: current_host
+    p0-->>p3: isinstance(selected, str)
+    p0-->>p4: datetime.fromisoformat(raw.replace(...))
+    p0-->>p5: raw.replace('Z', '+00:00')
+    p0->>p6: GovernanceError
+    p0-->>p3: isinstance(selected, datetime)
+    p0->>p6: GovernanceError
+    p0-->>p7: parsed.utcoffset
+    p0->>p6: GovernanceError
+    p0-->>p8: parsed.astimezone(timezone.utc)
+    p0-->>p9: utc.isoformat(…).replace (src/llm_wiki_engine/knowl…nce.py:authored_event_time)('+00:00', 'Z')
+    p0-->>p10: utc.isoformat(timespec='microseconds')
+    p0-->>p11: utc.isoformat(…).replace (src/llm_wiki_engine/knowl….py:authored_event_time, 1)('+00:00', 'Z')
+    p0-->>p10: utc.isoformat(timespec='seconds')
+    p2-->>p12: _ACTIVE.get
 ```
 
-> Call sequence diagram shows 14 of 14 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 16 of 16 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 4 (0 omitted); unresolved 7 of 7 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 9 of 9 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -51,17 +55,19 @@ sequenceDiagram
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 4; effect analysis evaluated: 1, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
+Source steps: 5; effect analysis evaluated: 2, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+Collector observations for 2 source steps with known totals: observed: 7, emitted: 7, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `authored_event_time` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
-| `datetime.now` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `authored_event_time` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `current_host().now` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `datetime.fromisoformat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `raw.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -70,46 +76,47 @@ Collector observations for 1 source steps with known totals: observed: 6, emitte
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `parsed.utcoffset` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `parsed.astimezone` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. authored_event_time"]
-    s2["2. datetime.now"]
-    s3["3. isinstance"]
-    s4["4. datetime.fromisoformat"]
-    s5["5. raw.replace"]
-    s6["6. GovernanceError"]
-    s7["7. isinstance"]
+    s2["2. current_host().now"]
+    s3["3. current_host"]
+    s4["4. _ACTIVE.get"]
+    s5["5. isinstance"]
+    s6["6. datetime.fromisoformat"]
+    s7["7. raw.replace"]
     s8["8. GovernanceError"]
-    s9["9. parsed.utcoffset"]
+    s9["9. isinstance"]
     s10["10. GovernanceError"]
-    s11["11. parsed.astimezone"]
-    s12["12. utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)"]
-    s1 -. "datetime.now(timezone.utc)" .-> s2
-    s1 -. "isinstance(selected, str)" .-> s3
-    s1 -. "datetime.fromisoformat(raw.replace(...))" .-> s4
-    s1 -. "raw.replace('Z', '+00:00')" .-> s5
-    s1 -->|"GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')"| s6
-    s1 -. "isinstance(selected, datetime)" .-> s7
-    s1 -->|"GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')"| s8
-    s1 -. "parsed.utcoffset(data not statically known)" .-> s9
-    s1 -->|"GovernanceError('authored_at', 'must include a timezone')"| s10
-    s1 -. "parsed.astimezone(timezone.utc)" .-> s11
-    s1 -. "utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)('+00:00', 'Z')" .-> s12
+    s11["11. parsed.utcoffset"]
+    s12["12. GovernanceError"]
+    s1 -. "current_host().now(data not statically known)" .-> s2
+    s1 -->|"current_host(data not statically known)"| s3
+    s3 -. "_ACTIVE.get(data not statically known)" .-> s4
+    s1 -. "isinstance(selected, str)" .-> s5
+    s1 -. "datetime.fromisoformat(raw.replace(...))" .-> s6
+    s1 -. "raw.replace('Z', '+00:00')" .-> s7
+    s1 -->|"GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')"| s8
+    s1 -. "isinstance(selected, datetime)" .-> s9
+    s1 -->|"GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')"| s10
+    s1 -. "parsed.utcoffset(data not statically known)" .-> s11
+    s1 -->|"GovernanceError('authored_at', 'must include a timezone')"| s12
     click s1 "../modules/knowledge_governance.md"
-    click s6 "../modules/knowledge_governance.md"
+    click s3 "../modules/host.md"
     click s8 "../modules/knowledge_governance.md"
     click s10 "../modules/knowledge_governance.md"
+    click s12 "../modules/knowledge_governance.md"
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `authored_event_time` | `value: object` | `timezone`, `datetime`, `timezone` | - | `...`, `...` |
-| `datetime.now` | - | - | - | - |
+| `authored_event_time` | `value: object` | `datetime`, `timezone` | - | `...`, `...` |
+| `current_host().now` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `datetime.fromisoformat` | - | - | - | - |
 | `raw.replace` | - | - | - | - |
@@ -118,24 +125,22 @@ flowchart LR
 | `GovernanceError` | - | - | - | - |
 | `parsed.utcoffset` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
-| `parsed.astimezone` | - | - | - | - |
-| `utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| authored_event_time | datetime.now | 1440 | `datetime.now(timezone.utc)` |
-| authored_event_time | isinstance | 1441 | `isinstance(selected, str)` |
-| authored_event_time | datetime.fromisoformat | 1444 | `datetime.fromisoformat(raw.replace(...))` |
-| authored_event_time | raw.replace | 1444 | `raw.replace('Z', '+00:00')` |
-| authored_event_time | GovernanceError | 1446 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')` |
-| authored_event_time | isinstance | 1450 | `isinstance(selected, datetime)` |
-| authored_event_time | GovernanceError | 1453 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')` |
-| authored_event_time | parsed.utcoffset | 1457 | `parsed.utcoffset(data not statically known)` |
-| authored_event_time | GovernanceError | 1458 | `GovernanceError('authored_at', 'must include a timezone')` |
-| authored_event_time | parsed.astimezone | 1459 | `parsed.astimezone(timezone.utc)` |
-| authored_event_time | utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time) | 1461 | `utc.isoformat(timespec='microseconds').replace('+00:00', 'Z')` |
+| authored_event_time | current_host().now | 1441 | `current_host().now(data not statically known)` |
+| authored_event_time | current_host | 1441 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| authored_event_time | isinstance | 1442 | `isinstance(selected, str)` |
+| authored_event_time | datetime.fromisoformat | 1445 | `datetime.fromisoformat(raw.replace(...))` |
+| authored_event_time | raw.replace | 1445 | `raw.replace('Z', '+00:00')` |
+| authored_event_time | GovernanceError | 1447 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')` |
+| authored_event_time | isinstance | 1451 | `isinstance(selected, datetime)` |
+| authored_event_time | GovernanceError | 1454 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')` |
+| authored_event_time | parsed.utcoffset | 1458 | `parsed.utcoffset(data not statically known)` |
+| authored_event_time | GovernanceError | 1459 | `GovernanceError('authored_at', 'must include a timezone')` |
 
 ### Boundary effects
 
@@ -145,14 +150,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `authored_event_time` | `datetime.now` | 1440 |
-| external_call | `authored_event_time` | `isinstance` | 1441 |
-| external_call | `authored_event_time` | `datetime.fromisoformat` | 1444 |
-| unresolved_call | `authored_event_time` | `raw.replace` | 1444 |
-| external_call | `authored_event_time` | `isinstance` | 1450 |
-| unresolved_call | `authored_event_time` | `parsed.utcoffset` | 1457 |
-| unresolved_call | `authored_event_time` | `parsed.astimezone` | 1459 |
-| unresolved_call | `authored_event_time` | `utc.isoformat(timespec='microseconds').replace` | 1461 |
+| unresolved_call | `authored_event_time` | `current_host().now` | 1441 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| external_call | `authored_event_time` | `isinstance` | 1442 |
+| external_call | `authored_event_time` | `datetime.fromisoformat` | 1445 |
+| unresolved_call | `authored_event_time` | `raw.replace` | 1445 |
+| external_call | `authored_event_time` | `isinstance` | 1451 |
+| unresolved_call | `authored_event_time` | `parsed.utcoffset` | 1458 |
 | step_limit | `authored_event_time` | `first 12 steps` | 0 |
 
 ## Behavior

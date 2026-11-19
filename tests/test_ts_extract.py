@@ -19,7 +19,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from llm_wiki_cli.services.extractor_helpers import (
     resolve_helper_cache_root,
     typescript_dependencies_ready,
@@ -77,7 +77,7 @@ def use_prepared_helper():
 def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
     from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md
     from llm_wiki_cli.services.dependencies import build_dependency_graph
-    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+    from llm_wiki_engine.knowledge_evidence import normalize_module_observation
 
     filename = f"dynamic.{extension}"
     _make_ts(tmp_path, filename, """\
@@ -123,7 +123,7 @@ def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
         malformed = deepcopy(data)
         index = next(i for i, row in enumerate(malformed["imports"]) if row.get("resolution") == "unresolved")
         malformed["imports"][index][field] = wrong
-        from llm_wiki_cli.services.knowledge_evidence import build_module_observation_basis, sha256_bytes
+        from llm_wiki_engine.knowledge_evidence import build_module_observation_basis, sha256_bytes
         rejected = build_module_observation_basis(source_path=filename, file_data=malformed,
             source_content_hash=sha256_bytes(b"source"), extractor_ref="llm-wiki/extractor/typescript", inventory_complete=True)
         assert rejected.unknown_reason == "invalid-inventory-shape"
@@ -137,10 +137,10 @@ def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
 def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeypatch, capsys, request):
     """Released unknown evidence remains qualified until reviewed owning work."""
     from llm_wiki_cli.commands import sync_cmd, upgrade_cmd, extract_cmd, lint_cmd, ci_check_cmd
-    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_artifacts import current_knowledge_format
-    from llm_wiki_cli.services.manifest_storage import current_manifest_format
+    from llm_wiki_engine.knowledge_evidence import normalize_module_observation
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_artifacts import current_knowledge_format
+    from llm_wiki_engine.manifest_storage import current_manifest_format
 
     fixture = PROJECT_ROOT / "tests/fixtures/knowledge-evidence/released-2.5.0-large-files.json"
     provenance = json.loads((fixture.parent / 'released-2.5.0-large.json').read_text(encoding='utf-8'))
@@ -158,7 +158,7 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
     monkeypatch.chdir(tmp_path)
     helper = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper is not None
-    from llm_wiki_cli.services.maintenance_protocol import governance_writer_lock, storage_writer_lock
+    from llm_wiki_engine.maintenance_protocol import governance_writer_lock, storage_writer_lock
 
     # Persistent operational locks are setup state, not canonical prose or
     # provenance. Capture the refusal baseline after provisioning both locks.
@@ -578,7 +578,7 @@ class TestTypeScriptExtractor:
         assert inv == {}
 
     def test_single_file_with_class(self, tmp_path):
-        from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+        from llm_wiki_engine.knowledge_evidence import normalize_module_observation
 
         fixture = json.loads(
             (PROJECT_ROOT / "tests/fixtures/analysis-helper-portability.json").read_text(

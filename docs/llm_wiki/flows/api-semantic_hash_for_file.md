@@ -2,7 +2,7 @@
 
 **Entry point:** `semantic_hash_for_file` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md)
 
 ## Call sequence
 
@@ -15,7 +15,7 @@ sequenceDiagram
     participant p1 as without_line_metadata
     participant p2 as json.dumps(…).encode
     participant p3 as json.dumps
-    participant p4 as sha256_bytes
+    participant p4 as sha256_digest
     participant p5 as isinstance
     participant p6 as hashlib.sha256(…).hexdigest
     participant p7 as hashlib.sha256
@@ -24,11 +24,11 @@ sequenceDiagram
     p0->>p1: without_line_metadata
     p0-->>p2: json.dumps(…).encode('utf-8')
     p0-->>p3: json.dumps(normalized, separators=(...), sort_keys=True)
-    p0->>p4: sha256_bytes
+    p0->>p4: sha256_digest
     p1-->>p5: isinstance(value, dict)
     p4-->>p6: hashlib.sha256(…).hexdigest
     p1->>p1: without_line_metadata
-    p4-->>p7: hashlib.sha256(value)
+    p4-->>p7: hashlib.sha256(data)
     p1-->>p8: sorted(value.items(...))
     p1-->>p9: value.items
     p1-->>p5: isinstance(value, list)
@@ -64,7 +64,7 @@ flowchart LR
     s8["8. without_line_metadata"]
     s9["9. json.dumps(…).encode"]
     s10["10. json.dumps"]
-    s11["11. sha256_bytes"]
+    s11["11. sha256_digest"]
     s12["12. hashlib.sha256(…).hexdigest"]
     s1 -->|"without_line_metadata(file_data)"| s2
     s2 -. "isinstance(value, dict)" .-> s3
@@ -75,13 +75,13 @@ flowchart LR
     s2 -->|"without_line_metadata(item)"| s8
     s1 -. "json.dumps(…).encode('utf-8')" .-> s9
     s1 -. "json.dumps(normalized, separators=(...), sort_keys=True)" .-> s10
-    s1 -->|"sha256_bytes(legacy_bytes)"| s11
+    s1 -->|"sha256_digest(legacy_bytes)"| s11
     s11 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s12
     click s1 "../modules/knowledge_evidence.md"
     click s2 "../modules/knowledge_evidence.md"
     click s4 "../modules/knowledge_evidence.md"
     click s8 "../modules/knowledge_evidence.md"
-    click s11 "../modules/knowledge_evidence.md"
+    click s11 "../modules/canonical_json.md"
 ```
 
 ### Step data
@@ -98,24 +98,24 @@ flowchart LR
 | `without_line_metadata` | `value: Any` | - | - | `...`, `...`, `value` |
 | `json.dumps(…).encode` | - | - | - | - |
 | `json.dumps` | - | - | - | - |
-| `sha256_bytes` | `value: bytes` | - | - | `...` |
+| `sha256_digest` | `data: bytes` | - | - | `...` |
 | `hashlib.sha256(…).hexdigest` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| semantic_hash_for_file | without_line_metadata | 931 | `without_line_metadata(file_data)` |
-| without_line_metadata | isinstance | 917 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 919 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 920 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 920 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 923 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
-| semantic_hash_for_file | json.dumps(…).encode | 934 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
-| semantic_hash_for_file | json.dumps | 934 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
-| semantic_hash_for_file | sha256_bytes | 939 | `sha256_bytes(legacy_bytes)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| semantic_hash_for_file | without_line_metadata | 906 | `without_line_metadata(file_data)` |
+| without_line_metadata | isinstance | 892 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 894 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 895 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 895 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 898 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 899 | `without_line_metadata(item)` |
+| semantic_hash_for_file | json.dumps(…).encode | 909 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
+| semantic_hash_for_file | json.dumps | 909 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
+| semantic_hash_for_file | sha256_digest | 914 | `sha256_bytes(legacy_bytes)` |
+| sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
@@ -125,13 +125,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 917 |
-| external_call | `without_line_metadata` | `sorted` | 920 |
-| unresolved_call | `without_line_metadata` | `value.items` | 920 |
-| external_call | `without_line_metadata` | `isinstance` | 923 |
-| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 934 |
-| external_call | `semantic_hash_for_file` | `json.dumps` | 934 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
+| external_call | `without_line_metadata` | `isinstance` | 892 |
+| external_call | `without_line_metadata` | `sorted` | 895 |
+| unresolved_call | `without_line_metadata` | `value.items` | 895 |
+| external_call | `without_line_metadata` | `isinstance` | 898 |
+| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 909 |
+| external_call | `semantic_hash_for_file` | `json.dumps` | 909 |
+| unresolved_call | `sha256_digest` | `hashlib.sha256(data).hexdigest` | 56 |
 | step_limit | `semantic_hash_for_file` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -11,17 +11,18 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli.services import context_packet, context_service
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services import python_implementation
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
-from llm_wiki_cli.services import analysis_compatibility
+from llm_wiki_engine import analysis_compatibility
 from llm_wiki_cli.services.analysis_capture import capture_analysis
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeReadMode,
     attach_implementation_read_view,
     build_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_freshness import LiveKnowledgeEvaluation
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_freshness import LiveKnowledgeEvaluation
 from llm_wiki_cli.services.documentation_query_builder import (
     build_live_documentation_query_service,
 )
@@ -225,7 +226,7 @@ def test_captured_context_keeps_sidecar_private_and_read_only(
         if path.is_file()
     }
     monkeypatch.chdir(root)
-    captured = context_packet.capture_context_read(
+    captured = context_packet_builder.capture_context_read(
         ".", "docs/llm_wiki", capture_implementation_observations=enabled
     )
     assert (
@@ -248,7 +249,7 @@ def test_invalid_capture_flag_is_rejected_before_io(value):
     with pytest.raises(TypeError, match="capture_implementation_observations"):
         context_service.get_inventory(".", capture_implementation_observations=value)
     with pytest.raises(TypeError, match="capture_implementation_observations"):
-        context_packet.capture_context_read(
+        context_packet_builder.capture_context_read(
             ".", ".", capture_implementation_observations=value
         )
 
@@ -390,7 +391,7 @@ def test_missing_confirmation_does_not_follow_symlink_parent(tmp_path):
         root, only_files=["link/missing.py"], coherent=True, respect_ignores=True
     )
     assert (
-        context_packet.confirmed_missing_source_paths(snapshot, ["link/missing.py"])
+        context_packet_builder.confirmed_missing_source_paths(snapshot, ["link/missing.py"])
         == frozenset()
     )
 
@@ -404,8 +405,8 @@ def test_missing_confirmation_rejects_directory_mutation_during_absence_check(
         root, only_files=["missing.py"], coherent=True, respect_ignores=True
     )
     created = False
-    if context_packet.os.name == "nt":
-        from llm_wiki_cli.services import filesystem_guard
+    if context_packet_builder.os.name == "nt":
+        from llm_wiki_engine import filesystem_guard
 
         real_stat = filesystem_guard.fresh_no_follow_stat
 
@@ -419,7 +420,7 @@ def test_missing_confirmation_rejects_directory_mutation_during_absence_check(
 
         monkeypatch.setattr(filesystem_guard, "fresh_no_follow_stat", concurrent_windows_creation)
     else:
-        real_stat = context_packet.os.stat
+        real_stat = context_packet_builder.os.stat
 
         def concurrent_creation(path, *args, **kwargs):
             nonlocal created
@@ -429,9 +430,9 @@ def test_missing_confirmation_rejects_directory_mutation_during_absence_check(
                 raise FileNotFoundError(path)
             return real_stat(path, *args, **kwargs)
 
-        monkeypatch.setattr(context_packet.os, "stat", concurrent_creation)
-    with pytest.raises(context_packet.ContextPacketSourceMutationError):
-        context_packet.confirmed_missing_source_paths(snapshot, ["missing.py"])
+        monkeypatch.setattr(context_packet_builder.os, "stat", concurrent_creation)
+    with pytest.raises(context_packet_builder.ContextPacketSourceMutationError):
+        context_packet_builder.confirmed_missing_source_paths(snapshot, ["missing.py"])
     assert created and (root / "missing.py").read_text() == "VALUE=1\n"
 
 
@@ -458,7 +459,7 @@ def test_missing_confirmation_respects_configured_selection_and_ignored_absence(
     )
     assert "private.py" not in snapshot.captured_content_hashes
     assert (
-        context_packet.confirmed_missing_source_paths(
+        context_packet_builder.confirmed_missing_source_paths(
             snapshot, ["private.py", "excluded-missing.py"]
         )
         == frozenset()
@@ -470,6 +471,6 @@ def test_missing_confirmation_respects_configured_selection_and_ignored_absence(
         other, only_files=["missing.py"], coherent=True, respect_ignores=True
     )
     assert (
-        context_packet.confirmed_missing_source_paths(ignored, ["missing.py"])
+        context_packet_builder.confirmed_missing_source_paths(ignored, ["missing.py"])
         == frozenset()
     )

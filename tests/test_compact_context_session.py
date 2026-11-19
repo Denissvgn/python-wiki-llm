@@ -209,7 +209,7 @@ def test_view_render_race_is_guarded_even_for_failure_diagnostics(project, monke
         return view
     monkeypatch.setattr(context_session, "render_compact_task_context", mutate)
     owner = session()
-    with pytest.raises((api.WorkspaceStateError, context_session.packets.ContextPacketSourceMutationError)):
+    with pytest.raises((api.WorkspaceStateError, context_session.packet_builder.ContextPacketSourceMutationError)):
         if one_shot:
             task_compact_delivery.build_compact_task_context(tiny_request(),
                 view_options=view_options(budget), src_dir="src", wiki_dir="wiki")

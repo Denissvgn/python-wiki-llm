@@ -117,6 +117,15 @@ def test_all_ten_reported_paths_keep_presence_and_exact_static_owner():
     "import sys\nfrom . import impl\nfrom typing import TYPE_CHECKING\nTYPE_CHECKING = True\nif TYPE_CHECKING:\n    impl = other\nsys.modules[__name__] = impl\n",
     "import sys\nfrom . import impl\nfrom typing import TYPE_CHECKING\nif TYPE_CHECKING:\n    from .other import value\nelse:\n    impl = other\nsys.modules[__name__] = impl\n",
     "import sys\nfrom . import impl\nfrom __future__ import annotations as sys\nsys.modules[__name__] = impl\n",
+    # Only one literal deprecation warning, before the redirect, keeps a shim static.
+    "import sys\nimport warnings\nfrom . import impl\nwarnings.warn('a', DeprecationWarning)\n"
+    "warnings.warn('b', DeprecationWarning)\nsys.modules[__name__] = impl\n",
+    "import sys\nimport warnings\nfrom . import impl\nwarnings.warn(f'{impl}', DeprecationWarning)\nsys.modules[__name__] = impl\n",
+    "import sys\nimport warnings\nfrom . import impl\nwarnings.warn('a', UserWarning)\nsys.modules[__name__] = impl\n",
+    "import sys\nimport warnings\nfrom . import impl, DeprecationWarning\nwarnings.warn('a', DeprecationWarning)\nsys.modules[__name__] = impl\n",
+    "import sys\nimport logging as warnings\nfrom . import impl\nwarnings.warn('a', DeprecationWarning)\nsys.modules[__name__] = impl\n",
+    "import sys\nimport warnings\nfrom . import impl\nsys.modules[__name__] = impl\nwarnings.warn('a', DeprecationWarning)\n",
+    "import sys\nimport warnings\nfrom . import impl\nwarnings.warn('a', DeprecationWarning, stacklevel=depth)\nsys.modules[__name__] = impl\n",
 ])
 def test_only_import_bound_unconditional_static_shims_are_omitted(tmp_path, body):
     assert module_alias_target(ast.parse(body)) == ""
@@ -294,3 +303,17 @@ def test_a_module_file_is_not_treated_as_a_parent_package(tmp_path, body):
     snapshot = build_source_snapshot(tmp_path)
     row = _diagnostic(_coverage(tmp_path, snapshot, _inventory(tmp_path, snapshot)), "pkg/shim.py")
     assert row.reason_code == "alias-package-binding-unproven"
+
+
+DEPRECATED_SHIM = (
+    "import sys\nimport warnings\n\nfrom . import impl\n\n"
+    "warnings.warn(\n    'pkg.shim is deprecated; import pkg.impl instead',\n"
+    "    DeprecationWarning,\n    stacklevel=2,\n)\nsys.modules[__name__] = impl\n"
+)
+
+
+def test_a_shim_that_announces_its_deprecation_is_still_a_static_alias(tmp_path):
+    assert module_alias_target(ast.parse(DEPRECATED_SHIM)) == "impl"
+    _write(tmp_path, {"pkg/shim.py": DEPRECATED_SHIM, "pkg/impl.py": "def run():\n    return 1\n"})
+    snapshot = build_source_snapshot(tmp_path)
+    assert "pkg/shim.py" not in _inventory(tmp_path, snapshot)

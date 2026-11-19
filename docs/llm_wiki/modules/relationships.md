@@ -18,9 +18,9 @@ Inheritance and module type references use matching captured Python module bindi
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
 | `.python_imports` | `is_python_source`, `module_binding_imports` |
-| `.validation` | `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
+| `llm_wiki_engine.validation` | `positive_int_or_none` |
 | `pathlib` | `PurePosixPath` |
 | `re` | `re` |
 | `typing` | `Iterable`, `Mapping`, `Optional` |
@@ -35,7 +35,7 @@ flowchart LR
     n2["src/llm_wiki_cli/services/imports.py"]
     n3["src/llm_wiki_cli/services/python_imports.py"]
     n4["src/llm_wiki_cli/services/relationships.py"]
-    n5["src/llm_wiki_cli/services/validation.py"]
+    n5["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4

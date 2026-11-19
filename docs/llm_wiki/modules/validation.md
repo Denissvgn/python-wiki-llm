@@ -1,6 +1,6 @@
 # validation Module
 
-**Path:** `src/llm_wiki_cli/services/validation.py`
+**Path:** `src/llm_wiki_engine/validation.py`
 
 ## Description
 
@@ -35,7 +35,7 @@ preserving domain diagnostics without allocating exceptions for valid values.
 flowchart LR
     n0["integrations"]
     n1["src"]
-    n2["src/llm_wiki_cli/services/validation.py"]
+    n2["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n1 --> n2
     click n2 "../modules/validation.md"
@@ -48,9 +48,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (2) |
-| Inbound | `src` (80) |
+| Inbound | `src` (83) |
 
-> All 82 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 85 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

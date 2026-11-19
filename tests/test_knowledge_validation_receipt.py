@@ -10,17 +10,18 @@ from typing import Any
 
 import pytest
 
-from llm_wiki_cli.services import contracts, knowledge_artifacts as artifacts
-from llm_wiki_cli.services import knowledge_index as index, knowledge_model as model
-from llm_wiki_cli.services import implementation_evidence, knowledge_graph, validation
+from llm_wiki_engine import contracts, knowledge_artifacts as artifacts
+from llm_wiki_engine import knowledge_index as index, knowledge_model as model
+from llm_wiki_cli.services import implementation_evidence
+from llm_wiki_engine import knowledge_graph, validation
 from llm_wiki_cli.services import python_implementation
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan
 from tests.test_knowledge_generation import _planner_inputs
-from llm_wiki_cli.services.knowledge_packs import build_storage
+from llm_wiki_engine.knowledge_packs import build_storage
 
 
 def _case(root):

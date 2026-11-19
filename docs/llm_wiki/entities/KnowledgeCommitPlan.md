@@ -1,6 +1,6 @@
 # KnowledgeCommitPlan
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:216`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:218`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -35,18 +35,18 @@ A fully validated, immutable three-artifact commit plan.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeCommitPlan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n0["KnowledgeCommitPlan (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n1["_prepare_existing_mutation (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
-    n2["_commit_sharded (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n3["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n4["commit_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n5["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n6["build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n7["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n9["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n10["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n11["ScopedRepairBoundary.validate_plan (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
+    n2["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n3["build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n4["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["ScopedRepairBoundary.validate_plan (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
+    n8["_commit_sharded (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n9["build_knowledge_commit_plan (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n10["commit_knowledge_artifacts (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n11["_recover_knowledge_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -60,16 +60,16 @@ flowchart LR
     n11 --> n0
     click n0 "../modules/knowledge_artifacts.md"
     click n1 "../modules/knowledge_cmd.md"
-    click n2 "../modules/knowledge_artifacts.md"
-    click n3 "../modules/knowledge_artifacts.md"
-    click n4 "../modules/knowledge_artifacts.md"
-    click n5 "../modules/knowledge_generation.md"
-    click n6 "../modules/knowledge_generation.md"
-    click n7 "../modules/knowledge_orchestration.md"
-    click n8 "../modules/knowledge_orchestration.md"
-    click n9 "../modules/knowledge_orchestration.md"
-    click n10 "../modules/knowledge_storage_lifecycle.md"
-    click n11 "../modules/scoped_sync_repair.md"
+    click n2 "../modules/knowledge_generation.md"
+    click n3 "../modules/knowledge_generation.md"
+    click n4 "../modules/knowledge_orchestration.md"
+    click n5 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_orchestration.md"
+    click n7 "../modules/scoped_sync_repair.md"
+    click n8 "../modules/knowledge_artifacts.md"
+    click n9 "../modules/knowledge_artifacts.md"
+    click n10 "../modules/knowledge_artifacts.md"
+    click n11 "../modules/knowledge_storage_lifecycle.md"
 ```
 
 ### Summary
@@ -83,14 +83,14 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_prepare_existing_mutation` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
-| `_commit_sharded` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `build_knowledge_commit_plan` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
-| `build_knowledge_commit_plan` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `commit_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
-| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `ScopedRepairBoundary.validate_plan` | type_reference | [scoped_sync_repair](../modules/scoped_sync_repair.md) | — |
+| `_commit_sharded` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `build_knowledge_commit_plan` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `build_knowledge_commit_plan` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `commit_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

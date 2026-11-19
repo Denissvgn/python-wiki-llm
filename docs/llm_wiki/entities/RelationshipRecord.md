@@ -1,6 +1,6 @@
 # RelationshipRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:464`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:466`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `RelationshipRecord` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `RelationshipRecord` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -32,15 +32,15 @@ _Auto-generated from `RelationshipRecord` in `src/llm_wiki_cli/services/knowledg
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["RelationshipRecord (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_derived_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_link_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_validate_builder_derived (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["_validate_builder_link (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n5["_parse_relationship (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n6["_relationship_to_payload (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n7["_validate_index_references (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n8["_validate_relationship_shape (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["RelationshipRecord (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_derived_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_link_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_validate_builder_derived (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["_parse_relationship (src/llm_wiki_engine/knowledge_model.py)"]
+    n6["_relationship_to_payload (src/llm_wiki_engine/knowledge_model.py)"]
+    n7["_validate_index_references (src/llm_wiki_engine/knowledge_model.py)"]
+    n8["_validate_relationship_shape (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

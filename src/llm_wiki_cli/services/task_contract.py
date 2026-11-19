@@ -10,7 +10,7 @@ from types import MappingProxyType
 
 from .change_selection import validate_changes
 from .documentation_query_builder import normalize_concept_coordinate, normalize_supplied_paths
-from .workflow_profile import (
+from llm_wiki_engine.workflow_profile import (
     WorkflowPolicy, WorkflowProfile, WorkflowRequestError, bounded_text,
     canonical_json, content_id, exact_fields, normalize_profile,
 )

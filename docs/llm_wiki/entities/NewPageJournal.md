@@ -1,6 +1,6 @@
 # NewPageJournal
 
-**Location:** `src/llm_wiki_cli/services/sync_recovery.py:138`
+**Location:** `src/llm_wiki_engine/sync_recovery.py:140`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_recovery](../modules/sync_recovery.md)
@@ -42,8 +42,8 @@ only unchanged private scratch. This observer supplies no publication authority.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["NewPageJournal (src/llm_wiki_cli/services/sync_recovery.py)"]
-    n1["capture_new_sync_pages (src/llm_wiki_cli/services/sync_recovery.py)"]
+    n0["NewPageJournal (src/llm_wiki_engine/sync_recovery.py)"]
+    n1["capture_new_sync_pages (src/llm_wiki_engine/sync_recovery.py)"]
     n1 --> n0
     click n0 "../modules/sync_recovery.md"
     click n1 "../modules/sync_recovery.md"

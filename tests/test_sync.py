@@ -30,7 +30,7 @@ from llm_wiki_cli.commands.sync_cmd import (
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import knowledge_orchestration, plugins
-from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from llm_wiki_cli.services.diagrams import (
     GENERATED_DIAGRAM_CHAR_LIMIT,
     GENERATED_DIAGRAM_LINE_LIMIT,
@@ -38,33 +38,33 @@ from llm_wiki_cli.services.diagrams import (
 )
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_evidence import (
     is_valid_sha256,
     semantic_hash_for_file,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     current_review_evidence,
     evaluate_review_event,
     load_governance,
     review_scope_hash,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME as SERVICE_MANIFEST_FILENAME,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     PRODUCER_BASIS_INCOMPATIBLE,
     TOMBSTONE_UNKNOWN_PROVENANCE,
     ManifestEvidenceBaseline,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     SyncManifest as ServiceSyncManifest,
 )
 from llm_wiki_cli.services.wiki_lifecycle import bootstrap_guidance
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

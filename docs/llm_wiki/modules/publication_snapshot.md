@@ -13,25 +13,25 @@ Complete, read-only native page commitments for documentation publication.
 | `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `is_agent_worktree_path` |
 | `.bootstrap_runtime` | `execute_bootstrap` |
 | `.bootstrap_service` | `BootstrapRequest`, `BootstrapServiceError` |
-| `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.documentation_native` | `DocumentationNativeError`, `evaluate_documentation_native_freshness` |
 | `.helper_runtime` | `helper_operation`, `helper_operation` |
-| `.io` | `decode_markdown_bytes` |
-| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME` |
-| `.knowledge_model` | `_bundle_to_payload` |
-| `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
-| `.knowledge_storage_io` | `_absolute_path` |
-| `.knowledge_storage_lifecycle` | `_committed_inputs` |
-| `.maintenance_protocol` | `guard_maintenance_owner` |
-| `.markdown_sections` | `parse_markdown_document` |
 | `.source_snapshot` | `_is_compose_candidate`, `_is_dockerfile_candidate`, `_is_package_marker`, `_is_rescuable_typescript_src_lib_file`, `_language_for_path`, `_unsupported_language_for_path`, `build_source_snapshot` |
-| `.sync_manifest` | `MANIFEST_FILENAME` |
-| `.validation` | `require_portable_relative_path` |
-| `.wiki_surface` | `collect_wiki_pages` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME` |
+| `llm_wiki_engine.knowledge_model` | `_bundle_to_payload` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
+| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path` |
+| `llm_wiki_engine.knowledge_storage_lifecycle` | `_committed_inputs` |
+| `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner` |
+| `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
+| `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface` | `collect_wiki_pages` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `tempfile` | `TemporaryDirectory` |

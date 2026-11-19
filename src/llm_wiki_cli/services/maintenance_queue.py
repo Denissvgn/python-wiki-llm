@@ -8,7 +8,7 @@ from collections import Counter
 from dataclasses import asdict
 from pathlib import Path
 
-from .context_packet import (
+from .context_packet_builder import (
     capture_context_read,
     _assert_source_unchanged,
     _assert_wiki_unchanged,
@@ -241,7 +241,7 @@ def compose_queue(
             }
         )
     if maintenance_report is not None:
-        from .maintenance_status import compact_maintenance_summary
+        from llm_wiki_engine.maintenance_status import compact_maintenance_summary
 
         by_path = {item["path"]: item for item in items}
         for path, record_ids in maintenance_report.by_path.items():
@@ -341,7 +341,7 @@ def compose_queue(
                     *row["mapping"]["candidates"],
                 ]
             )
-            from .knowledge_storage import canonical_bytes
+            from llm_wiki_engine.knowledge_storage import canonical_bytes
 
             item["semantic_targets"] = targets[:128]
             item["semantic_target_bounds"] = {
@@ -420,7 +420,7 @@ def compose_queue(
                 items.append(item)
                 by_path[path] = item
             selected_gaps = list(entries[:128])
-            from .knowledge_storage import canonical_bytes
+            from llm_wiki_engine.knowledge_storage import canonical_bytes
 
             while len(canonical_bytes(selected_gaps)) > 65536 and selected_gaps:
                 selected_gaps.pop()
@@ -545,7 +545,7 @@ def build_maintenance_queue(
         and captured.knowledge_view.manifest_basis.maintenance_state is None
     ):
         from .maintenance_service import capture_maintenance_observations
-        from .maintenance_status import build_maintenance_status
+        from llm_wiki_engine.maintenance_status import build_maintenance_status
 
         # Current structural freshness cannot discharge untracked prose review.
         # Reuse exact captured owners/sections without allocating durable state.

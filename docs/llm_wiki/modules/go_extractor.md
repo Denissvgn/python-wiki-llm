@@ -27,6 +27,7 @@ An explicit diagnostic request enables the bundled native helper response, valid
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `HostCapabilityError`, `current_host` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
@@ -43,20 +44,25 @@ flowchart LR
     n3["src/llm_wiki_cli/services/extraction_service.py"]
     n4["src/llm_wiki_cli/services/extractor_helpers.py"]
     n5["src/llm_wiki_cli/services/go_calls.py"]
+    n6["src/llm_wiki_engine/host.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n4
     n1 --> n5
+    n1 --> n6
     n2 --> n0
     n3 --> n0
     n3 --> n1
     n3 --> n5
+    n3 --> n6
+    n4 --> n6
     click n0 "../modules/common.md"
     click n1 "../modules/go_extractor.md"
     click n2 "../modules/native_diagnostics.md"
     click n3 "../modules/extraction_service.md"
     click n4 "../modules/extractor_helpers.md"
     click n5 "../modules/go_calls.md"
+    click n6 "../modules/host.md"
 ```
 
 ### Internal neighbors
@@ -68,10 +74,11 @@ flowchart LR
 | Outbound | [native_diagnostics](../modules/native_diagnostics.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [go_calls](../modules/go_calls.md) |
+| Outbound | [host](../modules/host.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GoExtractionRequest](../entities/GoExtractionRequest.md) | 39 | — | Internal request object for Go extraction orchestration. |
-| [GoExtractor](../entities/GoExtractor.md) | 57 | — | Extractor for Go source files using a prepared helper binary. |
+| [GoExtractionRequest](../entities/GoExtractionRequest.md) | 40 | — | Internal request object for Go extraction orchestration. |
+| [GoExtractor](../entities/GoExtractor.md) | 58 | — | Extractor for Go source files using a prepared helper binary. |

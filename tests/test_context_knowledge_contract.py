@@ -14,7 +14,7 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import context_service, schema
-from llm_wiki_cli.services.context_knowledge_contract import (
+from llm_wiki_engine.context_knowledge_contract import (
     CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
     LEGACY_CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
     KNOWLEDGE_MODE_CLI_OPTION,
@@ -26,7 +26,7 @@ from llm_wiki_cli.services.context_knowledge_contract import (
     context_knowledge_contract,
     validate_context_knowledge_contract,
 )
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     CONTEXT_PROTOCOL_VERSION,
     PROTOCOL_VERSIONS,

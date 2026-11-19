@@ -11,17 +11,18 @@ from enum import Enum
 from pathlib import Path
 from typing import Union
 
+from llm_wiki_engine.host import current_host
 from ..config import AGENT_CHOICES
-from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
-from .io import first_unsafe_path_component, formatted_json_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+from llm_wiki_engine.io import first_unsafe_path_component, formatted_json_bytes
 from .rendering_lifecycle import RenderReason
 from .schema import SCHEMA_BLOCK_VERSION, SchemaRenderProfile
-from .sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 from .wiki_scaffold import (
     INITIAL_WIKI_INDEX_MARKDOWN,
     INITIAL_WIKI_LOG_MARKDOWN,
 )
-from .wiki_surface import iter_directory_kinds, iter_page_kinds
+from llm_wiki_engine.wiki_surface import iter_directory_kinds, iter_page_kinds
 
 
 class WikiScaffoldPathError(ValueError):
@@ -83,7 +84,7 @@ def provision_wiki_scaffold(wiki_dir: Union[str, Path]) -> WikiScaffoldProvision
     created_files: list[str] = []
 
     def absolute(path: Path) -> Path:
-        return path if path.is_absolute() else Path.cwd().resolve() / path
+        return path if path.is_absolute() else current_host().cwd().resolve() / path
 
     try:
         for directory in directories:

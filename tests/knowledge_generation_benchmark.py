@@ -10,18 +10,18 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ConsumedInput,
     ConsumedInputKind,
     ProducerComponentInput,
     RepositoryEvidence,
 )
-from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import (
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfacePage,
     canonical_path,

@@ -1,6 +1,6 @@
 # _JoinedPage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:182`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:182`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_JoinedPage` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_JoinedPage` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -35,15 +35,15 @@ _Auto-generated from `_JoinedPage` in `src/llm_wiki_cli/services/knowledge_index
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_JoinedPage (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n1["_concept_for_page (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_derived_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_link_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["_structural_facet (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n5["_validate_and_join_inputs (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n6["_validate_observation_endpoint (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n7["_validate_page_evidence (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n8["_validated_observations (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_JoinedPage (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["_concept_for_page (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_derived_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_link_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["_structural_facet (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["_validate_and_join_inputs (src/llm_wiki_engine/knowledge_index.py)"]
+    n6["_validate_observation_endpoint (src/llm_wiki_engine/knowledge_index.py)"]
+    n7["_validate_page_evidence (src/llm_wiki_engine/knowledge_index.py)"]
+    n8["_validated_observations (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -1,6 +1,6 @@
 # request_json Module
 
-**Path:** `src/llm_wiki_cli/services/request_json.py`
+**Path:** `src/llm_wiki_engine/request_json.py`
 
 ## Description
 
@@ -22,7 +22,7 @@ Loads explicit JSON request files or stdin under a one-mebibyte UTF-8 bound. Dup
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/request_json.py"]
+    n1["src/llm_wiki_engine/request_json.py"]
     n0 --> n1
     click n1 "../modules/request_json.md"
 ```

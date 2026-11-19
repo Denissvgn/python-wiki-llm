@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from .sync_analysis_cache import EXTENSION as SYNC_ANALYSIS_EXTENSION
 
-from .progress import observed_phase
+from llm_wiki_engine.progress import observed_phase
 
 import re
 import json
@@ -30,8 +30,8 @@ from ..extractors.common import (
     BUNDLED_HELPER_IMPLEMENTATION_PATHS,
     is_bundled_helper_implementation_path,
 )
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
-from .knowledge_artifacts import (
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     FaultInjector,
     KnowledgeArtifactError,
@@ -43,7 +43,7 @@ from .knowledge_artifacts import (
     require_validated_artifacts,
     validated_artifact_bytes,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     EvaluatedEnvelope,
     ConsumedInput,
     ConsumedInputKind,
@@ -55,7 +55,7 @@ from .knowledge_envelope import (
     hash_source_snapshot,
     plugin_producer_inputs,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
@@ -63,8 +63,8 @@ from .knowledge_evidence import (
     build_module_observation_basis,
     is_valid_sha256,
 )
-from .knowledge_freshness import LiveKnowledgeEvaluation
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_freshness import LiveKnowledgeEvaluation
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     ConceptGovernanceReference,
     GovernanceConflictError,
@@ -88,20 +88,20 @@ from .knowledge_generation import (
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     KnowledgeIndex,
     ObservationScope,
     ProducerRecord,
     concept_kind_for_page_kind,
 )
 from .source_snapshot import SourceSnapshot, source_snapshot_matches_current_files
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     selection_may_contain_path,
     with_source_selection_generation_input,
 )
-from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
-from .wiki_surface_index import (
+from llm_wiki_engine.sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexEvaluation,
@@ -235,12 +235,12 @@ def capture_committed_knowledge(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
 ) -> CommittedKnowledgeState:
-    from .immutable import freeze
-    from .knowledge_artifacts import _decode_json_object
-    from .knowledge_storage_io import read_guarded
+    from llm_wiki_engine.immutable import freeze
+    from llm_wiki_engine.knowledge_artifacts import _decode_json_object
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     root = Path(wiki_dir).resolve()
-    from .maintenance_protocol import guard_maintenance_owner, ADOPTION_FILENAME
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner, ADOPTION_FILENAME
 
     maintenance_marker = guard_maintenance_owner(root, manifest)
     captured = {}
@@ -446,7 +446,7 @@ def build_runtime_knowledge_plan(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
-    from .maintenance_protocol import ADOPTION_FILENAME
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
     from .source_snapshot import confirmed_missing_source_paths
 
     marker_bytes = committed_state.captured_bytes.get(ADOPTION_FILENAME)
@@ -458,7 +458,7 @@ def build_runtime_knowledge_plan(
     old_targets = {row["target"]["canonical_path"] for row in (previous_maintenance["observations"].values() if previous_maintenance is not None else ())}
     target_root = Path(inputs.target_wiki_dir)
     absent_pages = {path for path in old_targets if not (target_root / path).exists() and not (target_root / path).is_symlink()}
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
     operation_basis = ACTIVE_WRITE_BASIS.get()
     raw_content = operation_basis.expected if operation_basis is not None else None
@@ -612,7 +612,7 @@ def build_runtime_live_evaluation(
     if not isinstance(inputs.infrastructure_inventory, Mapping):
         raise TypeError("inputs.infrastructure_inventory must be a mapping")
 
-    from .analysis_compatibility import has_contract
+    from llm_wiki_engine.analysis_compatibility import has_contract
     if not has_contract(inputs.knowledge.bundle.producer):
         inputs = replace(inputs, analysis_components=None)
     inventory = dict(inputs.inventory)
@@ -920,7 +920,7 @@ def finalize_runtime_knowledge(
             fault_injector=fault_injector,
         )
 
-    from .maintenance_protocol import governance_writer_lock
+    from llm_wiki_engine.maintenance_protocol import governance_writer_lock
 
     with governance_writer_lock(root):
         try:

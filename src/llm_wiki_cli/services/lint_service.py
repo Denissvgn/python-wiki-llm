@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -14,7 +15,7 @@ from typing import TypeVar
 
 from ..config import validate_path, validate_source_root
 from ..extractors.common import normalize_include_tests
-from . import wiki_media
+from llm_wiki_engine import wiki_media
 from .data_flow import analyze_data_flow
 from .dependencies import analyze_dependencies, describe_unscanned_scopes, startup_cycle_groups
 from .module_coverage import classify_uncovered_python_sources
@@ -32,7 +33,7 @@ from .entrypoints import (
 from .extraction_jobs import (
     ExtractionJobPlan,
     ExtractionJobRequest,
-    extraction_job_request_from_args,
+    extraction_job_request_for,
     print_extraction_job_plan,
 )
 from .infrastructure_inventory import (
@@ -46,43 +47,45 @@ from .infrastructure_sync import (
 )
 from .inventory_cache import (
     InventoryCacheOptions,
-    cache_options_from_args,
+    cache_options_for,
     prepare_cache_options,
     InventoryCacheStats,
     format_cache_stats,
 )
-from .progress import phase as progress_phase
-from .io import read_md
-from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from .analysis_compatibility import comparison_entrypoint
+from .lint_request import LintRequest, LintRequestError
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, PathValidationError
+from llm_wiki_engine.progress import phase as progress_phase
+from llm_wiki_engine.io import read_md
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.analysis_compatibility import comparison_entrypoint
 from .health_details import CapturedHealthDetails, capture_health_details
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     MachineVerificationAvailability,
     build_knowledge_read_view,
 )
-from .knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadIssue,
     KnowledgeLoadResult,
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
     KnowledgeLoadState,
     ObservationScope,
 )
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_EXTENSION_KEY,
     GOVERNANCE_FILENAME,
     evaluate_review_event,
     load_governance,
 )
-from .validation import path_is_in_top_level_directory
-from .knowledge_observability import (
+from llm_wiki_engine.validation import path_is_in_top_level_directory
+from llm_wiki_engine.knowledge_observability import (
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
     freshness_analysis_diagnostic,
@@ -95,7 +98,7 @@ from .knowledge_orchestration import (
     build_runtime_live_evaluation,
     runtime_generation_options,
 )
-from .knowledge_verification import attach_machine_verification_read_view
+from llm_wiki_engine.knowledge_verification import attach_machine_verification_read_view
 from .plugins import (
     PluginError,
     iter_components,
@@ -111,25 +114,25 @@ from .source_snapshot import (
     unsupported_source_label,
     unsupported_source_summary,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .source_retirement import (
+from llm_wiki_engine.source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
     source_retirement_projection,
     retained_empty_module_paths,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     ManifestPageSource,
     SyncManifest,
     SyncManifestError,
 )
-from .verification_contracts import (
+from llm_wiki_engine.verification_contracts import (
     VERIFICATION_RECEIPT_FILENAME,
     VerificationResult,
     load_verification_receipt,
@@ -141,8 +144,8 @@ from .team import (
     resolve_team_policy,
     team_config_issue,
 )
-from .wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
-from .wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from .wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,
@@ -162,6 +165,7 @@ from .extraction_service import (
     get_inventory_result,
     resolve_call_edges,
 )
+from llm_wiki_engine.host import emit
 
 MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')
@@ -3336,49 +3340,94 @@ def render_markdown(report: LintReport, *, health: Mapping | None = None) -> str
     return render_validation_markdown(report_to_dict(report), health=health)
 
 
-def run(args):
-    wiki_dir = Path(args.wiki_dir)
-    src_dir = getattr(args, "src_dir", ".")
-    knowledge_drift_report = bool(getattr(args, "knowledge_drift_report", False))
-    strict = bool(getattr(args, "strict", False) or knowledge_drift_report)
-    profile = bool(getattr(args, "profile", False))
-    cache_stats = bool(getattr(args, "cache_stats", False))
-    allow_external_src = bool(getattr(args, "allow_external_src", False))
-    source_selection = getattr(args, "source_selection", None)
+def lint_request_from_args(args) -> LintRequest:
+    """Translate parsed ``lint`` arguments into a :class:`LintRequest`."""
+    return LintRequest(
+        wiki_root=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
+        source_root=getattr(args, "src_dir", "."),
+        strict=bool(getattr(args, "strict", False)),
+        knowledge_drift_report=bool(getattr(args, "knowledge_drift_report", False)),
+        allow_external_source=bool(getattr(args, "allow_external_src", False)),
+        source_selection=getattr(args, "source_selection", None),
+        include_tests=getattr(args, "include_tests", None),
+        helper_cache_dir=getattr(args, "helper_cache_dir", None),
+        media_size_warn_bytes=getattr(args, "media_size_warn_bytes", None),
+        jobs=getattr(args, "jobs", 1),
+        requested_jobs=getattr(args, "requested_jobs", None),
+        cache=not bool(getattr(args, "no_cache", False)),
+        rebuild_cache=bool(getattr(args, "rebuild_cache", False)),
+        cache_dir=getattr(args, "cache_dir", None),
+        cache_stats=bool(getattr(args, "cache_stats", False)),
+    )
+
+
+def _build_requested_report(
+    request: LintRequest, profiler: _LintProfiler | None = None
+) -> LintReport:
+    """Validate the request's paths and build its report; paths may raise."""
+    wiki_dir = Path(request.wiki_root)
+    src_dir = os.fspath(request.source_root)
     validate_path(str(wiki_dir), "--wiki-dir")
     src_root = validate_source_root(
-        src_dir, "--src-dir", allow_external=allow_external_src
+        src_dir, "--src-dir", allow_external=request.allow_external_source
     )
-    if allow_external_src:
+    if request.allow_external_source:
         src_dir = str(src_root)
-
-    profiler = _LintProfiler() if profile else None
-    cache_options = cache_options_from_args(args)
-    job_request = extraction_job_request_from_args(args)
-    report = build_report(
+    return build_report(
         wiki_dir,
         src_dir,
-        strict=strict,
-        knowledge_drift_report=knowledge_drift_report,
+        strict=bool(request.strict or request.knowledge_drift_report),
+        knowledge_drift_report=request.knowledge_drift_report,
         profiler=profiler,
-        cache_options=cache_options,
-        parallel_jobs=getattr(args, "jobs", 1),
-        helper_cache_dir=getattr(args, "helper_cache_dir", None),
-        include_tests=getattr(args, "include_tests", None),
-        media_size_warn_bytes=(
-            getattr(args, "media_size_warn_bytes", None)
-            or wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES
+        cache_options=cache_options_for(
+            disabled=not request.cache,
+            rebuild=request.rebuild_cache,
+            cache_dir=None if request.cache_dir is None else os.fspath(request.cache_dir),
+            stats_enabled=request.cache_stats,
         ),
-        job_request=job_request,
+        parallel_jobs=request.jobs,
+        helper_cache_dir=(
+            None if request.helper_cache_dir is None else os.fspath(request.helper_cache_dir)
+        ),
+        include_tests=request.include_tests,
+        media_size_warn_bytes=(
+            request.media_size_warn_bytes or wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES
+        ),
+        job_request=extraction_job_request_for(request.jobs, request.requested_jobs),
         plan_reporter=print_extraction_job_plan,
-        source_selection=source_selection,
+        include_plugins=request.plugins,
+        source_selection=request.source_selection,
     )
+
+
+def execute_lint(request: LintRequest) -> LintReport:
+    """Lint without exiting; the report says whether the wiki passed.
+
+    Extractor failures are issues in the report. Raises
+    :class:`LintRequestError` when a path breaks the workspace policy.
+    """
+    if not isinstance(request, LintRequest):
+        raise TypeError("request must be a LintRequest")
+    try:
+        return _build_requested_report(request)
+    except PathValidationError as exc:
+        raise LintRequestError(str(exc)) from exc
+
+
+def run(args):
+    request = lint_request_from_args(args)
+    strict = bool(request.strict or request.knowledge_drift_report)
+    profile = bool(getattr(args, "profile", False))
+    cache_stats = request.cache_stats
+
+    profiler = _LintProfiler() if profile else None
+    report = _build_requested_report(request, profiler)
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):
-            print(f"Error: {issue.message}", file=sys.stderr)
+            emit(f"Error: {issue.message}", stream="stderr")
         sys.exit(1)
     if profile and profiler is not None:
-        print(
+        emit(
             json.dumps(
                 _profile_report_to_dict(report, profiler, include_cache=cache_stats),
                 indent=2,
@@ -3386,7 +3435,7 @@ def run(args):
             )
         )
     else:
-        print(render_text(report), end="")
+        emit(render_text(report), end="")
 
     if strict:
         try:
@@ -3398,8 +3447,8 @@ def run(args):
                 issue_count=report.issue_count,
                 strict=True,
                 duration_ms=None,
-                wiki_dir=str(wiki_dir),
-                src_dir=src_dir,
+                wiki_dir=str(Path(request.wiki_root)),
+                src_dir=report.src_dir,
                 knowledge_summary=(
                     None
                     if report.knowledge_summary is None

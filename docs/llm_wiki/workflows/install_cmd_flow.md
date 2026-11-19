@@ -1,12 +1,12 @@
 # install_cmd_flow
 
 **Entry point:** `install_cmd.run`
-**Modules involved:** [config](../modules/config.md), [install_cmd](../modules/install_cmd.md), [plugins](../modules/plugins.md), [services_schema](../modules/services_schema.md)
+**Modules involved:** [config](../modules/config.md), [install_cmd](../modules/install_cmd.md), [path_policy](../modules/path_policy.md), [plugins](../modules/plugins.md), [services_schema](../modules/services_schema.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_path`
+1. `path_policy.validate_path`
 2. `plugins.install_plugin`
 3. `config.read_config`
 4. `services_schema.refresh_skill_blocks`
@@ -15,6 +15,7 @@
 
 - [config](../modules/config.md)
 - [install_cmd](../modules/install_cmd.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [services_schema](../modules/services_schema.md)
 

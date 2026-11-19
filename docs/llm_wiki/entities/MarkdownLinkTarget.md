@@ -1,6 +1,6 @@
 # MarkdownLinkTarget
 
-**Location:** `src/llm_wiki_cli/services/wiki_media.py:52`
+**Location:** `src/llm_wiki_engine/wiki_media.py:52`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_media](../modules/wiki_media.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `MarkdownLinkTarget` in `src/llm_wiki_cli/services/wiki_media.py`._
+_Auto-generated from `MarkdownLinkTarget` in `src/llm_wiki_engine/wiki_media.py`._
 
 ## Attributes
 
@@ -31,12 +31,12 @@ _Auto-generated from `MarkdownLinkTarget` in `src/llm_wiki_cli/services/wiki_med
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MarkdownLinkTarget (src/llm_wiki_cli/services/wiki_media.py)"]
-    n1["_index_source_link_occurrences (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_validate_observation_source_syntax (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n4["iter_markdown_link_targets (src/llm_wiki_cli/services/wiki_media.py)"]
-    n5["iter_mermaid_click_targets (src/llm_wiki_cli/services/wiki_media.py)"]
+    n0["MarkdownLinkTarget (src/llm_wiki_engine/wiki_media.py)"]
+    n1["_index_source_link_occurrences (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_validate_observation_source_syntax (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
+    n4["iter_markdown_link_targets (src/llm_wiki_engine/wiki_media.py)"]
+    n5["iter_mermaid_click_targets (src/llm_wiki_engine/wiki_media.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

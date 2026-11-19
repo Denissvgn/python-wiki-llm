@@ -7,6 +7,267 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `llm_wiki_cli.engine` embeds wiki operations in another application. An
+  `Engine` runs each call against a `Host` that supplies processes,
+  environment, working directory, clock and output streams; `NoProcessHost`
+  refuses subprocesses, and helper preparation stays off unless granted.
+  The date bootstrap and sync write to the wiki log comes from the host's
+  calendar (`Host.today()`).
+- `api.sync_wiki()` and `Engine.sync()` run an incremental sync without the
+  CLI. The API call is silent and returns a `SyncOutcome` with page counts;
+  `Engine.sync()` writes progress to the host's streams. Source plugins load
+  through the API only with `trust_source_plugins=True`.
+- `api.lint_wiki()` and `Engine.lint()` run lint without the CLI. The API
+  call is silent and returns the JSON-ready lint report; `Engine.lint()`
+  returns the report object. A failing lint is a result, not an exception.
+  `Engine.bootstrap()` runs a first-use bootstrap the same way.
+- `api.migrate_wiki()` and `Engine.migrate()` run a legacy wiki migration,
+  including chunked migration, without the CLI and return a `MigrateOutcome`
+  with page totals. Migration archive names use the host's clock.
+- `Engine.upgrade()` refreshes the managed agent schema, skills and wiki
+  layout from an `UpgradeRequest` and returns an `UpgradeOutcome`; stops
+  raise `UpgradeError` instead of exiting.
+- A `Host` built with `events=` receives an `EngineEvent` for each engine
+  use case: `operation.started`, one `message` per line written to the host's
+  streams, then `operation.finished` with the JSON-ready result or
+  `operation.failed` with the error. Events of one call share an
+  `operation_id`, so one event sink can serve several engines.
+- Knowledge index validation runs through a `ValidatorRegistry`. An embedding
+  application can add a `ModelValidator` with `with_validator()` and pass the
+  registry as `Engine(validators=...)`; earlier validation results are not
+  reused under a different registry.
+- A `KindRegistry` declares the custom concept, relationship and typed-graph
+  edge kinds (`namespace/name`) a knowledge index may use. A declared concept
+  kind names the page kinds it may appear on and can be document-only;
+  `rejecting_undeclared()` refuses custom kinds the registry does not
+  declare. Pass it as `Engine(kinds=...)`. By default every qualified custom
+  kind is still accepted, and page kinds stay those of the knowledge format.
+- A `DomainPack` decides which repository files are sources, how generated
+  module and entity pages are named, how every generated page is written,
+  and what budgeted context shows. A pack combines a
+  `SourceClassifier` (for example an `ExtensionSourceClassifier` mapping
+  source kinds to file extensions) with a `PageNamer` (by default
+  `StemPageNamer`, today's names) and a `PageRenderer` that writes the
+  Markdown of generated pages. Subclass `BuiltInPageRenderer` to adjust
+  today's pages: each `ModulePageRequest` or `EntityPageRequest` carries the
+  source data and the built-in Markdown, and a `PageRequest` does the same
+  for the index, workflow, flow, infrastructure, API contract, dependency
+  and load-order pages. Sync keeps what people wrote in each page kind's
+  reviewed sections (`Description` and table description cells on module
+  and entity pages, `Behavior` on workflows and flows, `Notes` on
+  infrastructure, API contract, dependency and load-order pages, custom
+  index sections) and takes the rest of the page from the renderer. A
+  `ContextSource` decides which sources are
+  related to a changed one and what budgeted context shows of each source
+  at each detail level; `CodeContextSource` keeps today's import neighbors
+  and class/function entries. Qualified context packets, and task context
+  that seals them, refuse a replaced context source because their policy
+  names the built-in ranking. Pass a pack as `Engine(pack=...)`; built-in
+  extractors only read the files the pack classifies for their language.
+  `CODE_DOCS_PACK` is the default and keeps current behavior.
+- Domain packs contribute the reference providers a publication policy may
+  declare (`DomainPack.reference_providers`). A `ReferenceProvider` serves one
+  `kind`: it reads a repository JSON file (`reads_file`, configuration
+  `{"kind", "path"}`) or captures its contract from the installation,
+  normalizes the selectors topics use to depend on part of it, checks stored
+  contracts and commits the selected part. The code-documentation pack keeps
+  `llm-wiki-cli`, `llm-wiki-behavior` and `contract-file`; add more with
+  `DomainPack.with_reference_provider()`. Custom providers change the
+  candidate provider fingerprint. Existing policies and evidence are
+  unchanged.
+- Engine events and capabilities are published formats.
+  `EngineEvent.to_dict()` writes `llm-wiki-engine-event/v1` and
+  `Engine.capabilities()` returns `llm-wiki-engine-capabilities/v1`; both
+  carry a `schema_version` and ship JSON Schemas
+  (`llm-wiki-engine-event-v1.schema.json`,
+  `llm-wiki-engine-capabilities-v1.schema.json`). `validate_engine_event()`
+  and `EngineEvent.from_dict()` check and read serialized events. Shared
+  conformance cases for each format (`schemas/conformance/*.cases.json`,
+  format `llm-wiki-conformance-cases/v1`) list valid and invalid documents
+  so tools in any language can test their own validators.
+- Qualified context packets have JSON Schemas:
+  `llm-wiki-qualified-context-packet-v1.schema.json` and
+  `llm-wiki-qualified-context-packet-v2.schema.json`. They describe the
+  packet structure; the canonical encoding, the `packet_id` digest, the path
+  policy receipt and cross-field consistency still need
+  `validate_context_packet`. Their conformance cases mark documents that
+  only those checks reject (`schema_valid: true`, `valid: false`).
+- Responses to `llm-wiki-context/v1` and `llm-wiki-context/v2` requests have
+  JSON Schemas: `llm-wiki-context-response-v1.schema.json` and
+  `llm-wiki-context-response-v2.schema.json`. Each covers the successful
+  budgeted context, which is the body a qualified packet carries as
+  `response`, and the error envelopes. `validate_context_response()` in
+  `llm_wiki_cli.engine` also checks what a schema cannot: the response
+  fields form a normalized request, `used_tokens` stays within the budget,
+  and version 2 knowledge follows the native selection rules.
+- Documentation query results and wiki search results have JSON Schemas:
+  `llm-wiki-documentation-query-v1.schema.json` and
+  `llm-wiki-search-result-v1.schema.json`. The query schema covers the
+  shared envelope of every `llm-wiki query` operation and the type of each
+  payload field; the search schema covers each search mode.
+  `validate_documentation_query_result()` and `validate_search_result()` in
+  `llm_wiki_cli.engine` also check the bound arithmetic a schema cannot.
+- The wiki surface index (`.llm-wiki-surface.json`) has a JSON Schema:
+  `llm-wiki-surface-index-v1.schema.json`. `validate_surface_index()` in
+  `llm_wiki_cli.engine` also checks what a schema cannot: each page's path
+  and MCP URI follow from its kind and id, pages are in canonical order,
+  links and assets name indexed pages, counts match what they count, and
+  flows describe exactly the indexed flow pages.
+- `extract` output has a JSON Schema: `llm-wiki-extract-v1.schema.json`. The
+  format is additive, so file records and analysis blocks accept fields the
+  schema does not list; `data_flow_details` is strict. `validate_extract_payload()`
+  in `llm_wiki_cli.engine` also checks that the `--deep` blocks appear
+  together, data flows follow the entry points, symbol lists are all names
+  (`--summary`) or all records, and `data_flow_details` agrees with the rest
+  of the payload.
+- `maintenance status` output has a JSON Schema:
+  `llm-wiki-maintenance-status-v1.schema.json`, covering the per-page form
+  documentation queries embed. `validate_maintenance_status()` in
+  `llm_wiki_cli.engine` also checks that availability and evaluation match the
+  analysis scope, bounds count what they bound, each record's qualification
+  follows from what was evaluated, and a per-page summary counts its records.
+- `queue` output has a JSON Schema: `llm-wiki-maintenance-queue-v1.schema.json`.
+  The format is additive, so consumers accept fields the schema does not list.
+  `validate_maintenance_queue()` in `llm_wiki_cli.engine` also checks that
+  counts add up, items are ranked by score and each score is the sum of its
+  reasons, review details count what they list, and `queue_id` hashes the
+  rest of the report.
+- The maintenance ledger schemas (`llm-wiki-maintenance-adoption`, `-state`,
+  `-event`, `-basis`, `-binding` and `-record-binding`, all v1) have
+  conformance cases. Cases with `schema_valid: true` and `valid: false` cover
+  what only the ledger enforces: adoption and record ids are canonical
+  UUIDv4, source paths are relative and owners are dotted identifiers,
+  section locators point into their page, record projections count the
+  records they list, and a state's records, observations, acknowledgments and
+  bases agree with each other.
+- Responses to `llm-wiki-context/v3` (budgeted context) requests have a JSON
+  Schema: `llm-wiki-context-response-v3.schema.json`. It covers the JSON and
+  packet envelopes, the JSON block that opens Markdown output, the
+  invalid-request envelope and the `cannot-fit` refusal with its diagnostics.
+  The embedded body is a version 2 context response or a version 2 qualified
+  packet, with the same definitions as those schemas.
+  `validate_budgeted_context_response()` in `llm_wiki_cli.engine` checks the
+  document on its own: usage stays within the budget (and a refused candidate
+  exceeds it), exact compliance follows the mode, change paths are portable,
+  sorted and hashed into `paths_id`, refusal counts agree, and the embedded
+  context or packet passes its own checks. Binding `request_id` to a request
+  and recounting the text still needs the request and the counter
+  (`validate_budgeted_context()`). A failure to provide required knowledge is
+  still reported with the version 2 error envelope.
+- A domain pack can extract source kinds of its own:
+  `DomainPack.extractors` maps each kind its classifier declares to a
+  `"module:attribute"` entry point the host can import (also
+  `DomainPack.with_extractor()`). The extractor receives the files the pack
+  classified for that kind. Together with a classifier, renderer, context
+  source and `NoHelperToolchain`, a pack can document non-code sources, such
+  as a folder of notes, through bootstrap, sync, lint, search and context.
+- A domain pack's `HelperToolchain` names the analysis helpers a source tree
+  needs and prepares them before extraction. The code-documentation pack uses
+  `BundledHelperToolchain` (today's bundled helpers and helper cache);
+  `NoHelperToolchain` prepares none. Replace it with
+  `DomainPack.with_helper_toolchain()`.
+- A `PublicationTarget` serves one `target.kind` of a publication policy:
+  it validates repository names, prepares each owned page for publishing
+  and checks the composed candidate tree. `GitHubWikiTarget`
+  (`"github-wiki"`) is built in. Add targets with
+  `PublicationTargetRegistry.with_target()` and pass the registry as
+  `Engine(publication_targets=...)`; a policy may then name the new kind.
+  A candidate prepared with custom targets has a different provider
+  fingerprint, so it is only rechecked and delivered under the same
+  targets. Candidates and deliveries to a GitHub wiki are unchanged.
+
+### Changed
+
+- The standard-library-only core of the engine is now its own distribution,
+  `llm-wiki-engine` (import package `llm_wiki_engine`), and `agent-wiki-cli`
+  pins its exact version. Both are released together under the same version
+  number, and each release publishes both. It holds canonical JSON encodings
+  and digests, the host boundary, path and request validation, guarded
+  filesystem writes and wiki file I/O, path, ignore-file and source-selection
+  rules, protected-artifact checks, the knowledge graph and evidence
+  vocabularies, the knowledge store (model, index, governance, packed
+  storage, the sync manifest, maintenance state and recovery, freshness,
+  consumption and verification), analysis-compatibility records, wiki
+  surface, media and surface-index rules, search ranking and the
+  published-format validators. The store borrows what depends on source
+  analysis (implementation evidence, source snapshots, the active domain pack
+  and a few issued state types) through `llm_wiki_engine.integrations`;
+  `agent-wiki-cli` provides them once `llm_wiki_cli` is imported, and an
+  operation that needs a missing provider fails with `IntegrationUnavailable`. `pip install agent-wiki-cli` installs it
+  automatically; a source checkout installs it from `src/`
+  (`pip install ./src .`). The old `llm_wiki_cli.services.<module>` import
+  paths for the moved modules remain as aliases of the same modules, so
+  existing imports and patches keep working; they are deprecated (see
+  Deprecated). Classes from these modules
+  now report `llm_wiki_engine.<module>` as their `__module__`.
+- Wiki search results name their format: `llm-wiki search --format json`,
+  MCP `search_wiki` and `api.search_wiki()` return
+  `"schema_version": "llm-wiki-search-result/v1"`. The other fields are
+  unchanged.
+- A Python module whose whole body redirects itself
+  (`sys.modules[__name__] = impl`) still counts as an alias, not a module of
+  its own, when it first announces its deprecation with one literal
+  `warnings.warn(..., DeprecationWarning)` or `PendingDeprecationWarning`
+  call. Such a shim gets no wiki page, like any other alias.
+- Bundled analysis helpers are built, probed and run through the engine's
+  host. Under a `NoProcessHost` a helper is reported as unavailable instead
+  of being started. Changed-file selection for context asks the host for Git
+  as well; without it, no files count as changed.
+- Checking a qualified context packet's format no longer loads the source
+  analyzers or the packet builders. `services.context_packet` now holds only
+  the packet wire format and `validate_context_packet`, and the new
+  `services.context_request_format` holds the context, budget and
+  change-selection request checks. Building and reconciling packets moved to
+  `services.context_packet_builder`; the builder names stay importable from
+  `services.context_packet`, and the moved request checks from their old
+  modules.
+- `llm-wiki reference cli` and `api.get_cli_contract()` describe the CLI
+  without loading command implementations or the Python API. Custom option
+  types and actions in the contract are now named under
+  `llm_wiki_cli.cli_declarations` instead of `llm_wiki_cli.cli`, so contracts
+  saved by earlier versions have a different `contract_id`.
+- **Breaking for plugin authors:** each installed plugin is imported as its
+  own package instead of being added to `sys.path`. Plugins can now reuse
+  module names already taken by other plugins or by the host, but a plugin
+  module that imports a sibling by bare name (`import helpers`) must switch
+  to a relative import (`from . import helpers`). The unused
+  `plugins.activate_plugin_paths()` helper is removed.
+
+### Deprecated
+
+- The `llm_wiki_cli.services.<module>` import paths of modules that moved to
+  `llm-wiki-engine` now raise a `DeprecationWarning` naming the
+  `llm_wiki_engine.<module>` path to use instead. They still return the same
+  module object and will be removed in a future release.
+
+### Fixed
+
+- When sync kept a hand-written entity or module description, it wrote the
+  page without its final newline and then rewrote it to restore it, so the
+  wiki log could count the page as updated twice.
+- `llm-wiki sync`, `api.sync_wiki()` and `Engine.sync()` now reject a
+  `--src-dir` that does not exist or is not a directory before reading the
+  wiki. Before, sync treated every page as removed, marked them stale and
+  rewrote the index and log, then failed with a misleading "directory changed
+  during missing-source confirmation" error.
+- `llm-wiki sync` no longer stops when a documented Python module becomes a
+  static self-module alias (`sys.modules[__name__] = impl`). The built-in
+  parser's alias classification now retires the module like a removed
+  source: classes that moved to another module keep their pages and authored
+  text, and the old module page is marked stale for audit. Parse failures and
+  unreported or unavailable outcomes still stop sync.
+- `llm-wiki sync` no longer stops with "Occupied target has no verified
+  outgoing owner" when a Python module moves to another directory under the
+  same page name, with or without an alias left at the old path. The moved
+  module now continues its existing page, keeping authored text, instead of
+  the old page being marked stale.
+- The same applies to classes whose name another module also uses. Their
+  pages carry the module's name (`model_Draft`), so sync could not match the
+  move by class name and stopped with the same error. A class that moves
+  with its module now keeps its page and authored text.
+
 ## [4.1.1] - 2026-11-13
 
 ### Fixed

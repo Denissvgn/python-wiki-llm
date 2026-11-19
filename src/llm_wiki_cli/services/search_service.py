@@ -7,15 +7,16 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
-from ..config import validate_path, validate_source_root
-from . import wiki_surface
+from llm_wiki_engine.path_policy import validate_path, validate_source_root
+from llm_wiki_engine.query_result_format import SEARCH_RESULT_SCHEMA_VERSION
+from llm_wiki_engine import wiki_surface
 from .documentation_query_builder import (
     normalize_documentation_query_limit,
     validate_live_query_source_selection,
 )
-from .io import read_md, decode_markdown_bytes
-from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, rank_pages
-from .source_selection import resolve_source_selection
+from llm_wiki_engine.io import read_md, decode_markdown_bytes
+from llm_wiki_engine.search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, rank_pages
+from llm_wiki_engine.source_selection import resolve_source_selection
 from .source_snapshot import (
     build_source_snapshot, capture_source_selection_inputs, source_snapshot_matches_current_files,
 )
@@ -49,7 +50,7 @@ def search_records(records: Iterable[dict[str, Any]], query: str, *, limit: int,
         result["mode"] = mode
         return result
     if mode in {"ranked", "ranked-v2"}:
-        from .search_lexical import rank_pages as rank_candidate
+        from llm_wiki_engine.search_lexical import rank_pages as rank_candidate
         result = rank_candidate(records, query, limit=limit)
         result.update(mode=mode, experimental=False, definitive_answer=False)
         return result
@@ -151,12 +152,12 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
             live_selection_inputs=snapshot.source_selection_inputs,
             operation="wiki search")
     if not guarded:
-        return search_records(page_records(wiki_root, kinds, reader=reader), query, limit=limit, mode=mode)
-    from .knowledge_storage import KnowledgeStorageError
-    from .knowledge_storage_io import StorageReadSession
-    from .search_source import MAX_SOURCE_INDEX_BYTES, capture_source_index, captured_manifest, source_page_selected
-    from .source_selection import path_is_selected, validate_persisted_source_selection_identity
-    from .workflow_profile import canonical_json
+        return _published(search_records(page_records(wiki_root, kinds, reader=reader), query, limit=limit, mode=mode))
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+    from llm_wiki_engine.search_source import MAX_SOURCE_INDEX_BYTES, capture_source_index, captured_manifest, source_page_selected
+    from llm_wiki_engine.source_selection import path_is_selected, validate_persisted_source_selection_identity
+    from llm_wiki_engine.workflow_profile import canonical_json
 
     wiki_reads = StorageReadSession(wiki_root, max_bytes=MAX_SEARCH_BYTES * 2)
     source_reads = StorageReadSession(source_root, max_bytes=MAX_SOURCE_INDEX_BYTES * 2)
@@ -211,10 +212,10 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
             ranked_pages, accounting = capture_source_index(original_pages, snapshot, wiki_reads, source_reads, manifest=manifest)
         else:
             ranked_pages = original_pages
-        result = search_records(ranked_pages, query, limit=limit, mode=mode)
+        result = _published(search_records(ranked_pages, query, limit=limit, mode=mode))
         if discovery is not None:
-            from .search_discovery_capture import capture_discovery
-            from .search_discovery import DiscoveryError, enrich_search
+            from llm_wiki_engine.search_discovery_capture import capture_discovery
+            from llm_wiki_engine.search_discovery import DiscoveryError, enrich_search
             returned = {match["path"]: pages_by_path[match["path"]] for match in result["results"]}
             captured = capture_discovery(wiki_root, wiki_reads, returned, manifest=manifest)
             owners = {}
@@ -279,6 +280,11 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
         result["source_indexing"] = accounting
 
     return result
+
+
+def _published(result: dict[str, Any]) -> dict[str, Any]:
+    """Name the result format a search returns to its callers."""
+    return {"schema_version": SEARCH_RESULT_SCHEMA_VERSION, **result}
 
 
 def _page_membership(wiki_root: Path, kinds: set[str]) -> tuple[str, ...]:

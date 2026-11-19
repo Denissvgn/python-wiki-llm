@@ -1,6 +1,6 @@
 # _TreeBuilder
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:238`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:238`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)
@@ -26,8 +26,8 @@ Builds deterministic radix catalogs and record objects from stable owner and rec
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_TreeBuilder (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n1["build_knowledge_store (src/llm_wiki_cli/services/knowledge_storage.py)"]
+    n0["_TreeBuilder (src/llm_wiki_engine/knowledge_storage.py)"]
+    n1["build_knowledge_store (src/llm_wiki_engine/knowledge_storage.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_storage.md"
     click n1 "../modules/knowledge_storage.md"

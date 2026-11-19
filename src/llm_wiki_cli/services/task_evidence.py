@@ -7,8 +7,8 @@ from typing import Any
 
 from . import context_packet as packets
 from .documentation_query_builder import build_documentation_query_service_from_view
-from .markdown_sections import parse_markdown_document
-from .workflow_profile import content_id
+from llm_wiki_engine.markdown_sections import parse_markdown_document
+from llm_wiki_engine.workflow_profile import content_id
 
 
 def declaration_records(inventory):

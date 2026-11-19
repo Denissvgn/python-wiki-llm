@@ -12,9 +12,9 @@ import sys
 from jsonschema import Draft202012Validator
 import pytest
 
-from llm_wiki_cli import cli
+from llm_wiki_cli import cli, cli_declarations
 from llm_wiki_cli.services import cli_reference as reference
-from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 
 
 PACKAGE = {"name": "example-app", "version": "1.2.3", "requires_python": ">=3.11"}
@@ -244,17 +244,17 @@ def test_saved_contract_requires_explicit_namespace_defaults(command_path):
         reference.parse_cli_contract(json.dumps(value))
 
 
-def test_installed_reference_uses_public_parser_owner_and_is_independent_of_argv(
+def test_installed_reference_uses_cli_declarations_and_is_independent_of_argv(
     monkeypatch,
 ):
-    original = cli.build_cli_parser
+    original = cli_declarations.build_cli_parser
     calls = []
 
     def build():
         calls.append(True)
         return original()
 
-    monkeypatch.setattr(cli, "build_cli_parser", build)
+    monkeypatch.setattr(cli_declarations, "build_cli_parser", build)
     monkeypatch.setattr(sys, "argv", ["/private/arbitrary/runner"])
     first = reference.get_cli_contract()
     monkeypatch.setattr(sys, "argv", ["different-command", "unrelated"])

@@ -1,6 +1,6 @@
 # OciStreamEvidence
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:763`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:764`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

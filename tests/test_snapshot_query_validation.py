@@ -10,14 +10,9 @@ import json
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import (
-    documentation_query_builder,
-    knowledge_graph,
-    knowledge_index,
-    knowledge_model,
-    verification_contracts,
-)
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_cli.services import documentation_query_builder
+from llm_wiki_engine import knowledge_graph, knowledge_index, knowledge_model, verification_contracts
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
@@ -25,15 +20,15 @@ from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
     require_validated_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
-from llm_wiki_cli.services.knowledge_evidence import formatted_json_bytes, sha256_bytes
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes, sha256_bytes
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     GovernanceActor,
     GovernanceError,
@@ -49,12 +44,12 @@ from llm_wiki_cli.services.knowledge_governance import (
     validate_governance_projection,
 )
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_packs import open_knowledge_store
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_packs import open_knowledge_store
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     VerificationContractError,
     build_artifact_verification_context,

@@ -281,8 +281,8 @@ def test_spec_only_change_bypasses_clean_source_return_and_updates_page(
     assert "Revised contract summary" in (wiki / "api-contracts.md").read_text(
         encoding="utf-8"
     )
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
     model = load_knowledge_state(wiki).knowledge
     assert model is not None
     knowledge = knowledge_index_to_payload(model)

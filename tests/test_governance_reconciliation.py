@@ -16,8 +16,8 @@ from llm_wiki_cli.commands import (
     sync_cmd,
 )
 from llm_wiki_cli.commands.migrate_cmd import ExistingPage, MigrationPlan, TargetPage
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_governance import (
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
     ConceptGovernanceReference,
@@ -29,17 +29,17 @@ from llm_wiki_cli.services.knowledge_governance import (
     save_governance,
     validate_governance_projection,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.knowledge_orchestration import (
     finalize_runtime_knowledge,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     ManifestArtifactHashes,
     SyncManifest,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.wiki_surface import PageKind, mcp_uri
+from llm_wiki_engine.wiki_surface import PageKind, mcp_uri
 from tests.test_knowledge_generation import _runtime_input_case
 
 

@@ -9,12 +9,12 @@ import json
 from typing import Any
 
 from .context_budget import _accounted_render
-from .immutable import freeze
-from .request_json import _pairs, _constant
+from llm_wiki_engine.immutable import freeze
+from llm_wiki_engine.request_json import _pairs, _constant
 from .task_context import validate_task_context, _counter, _LIMITATIONS
 from .task_contract import TaskContext, TASK_REQUEST_SCHEMA_V2, normalize_task_request
-from .workflow_profile import canonical_json, content_id
-from .task_compact_readable import readable_projection, readable_expansion
+from llm_wiki_engine.workflow_profile import canonical_json, content_id
+from llm_wiki_engine.task_compact_readable import readable_projection, readable_expansion
 
 COMPACT_SCHEMA = "llm-wiki-task-compact/v1"
 VIEW_REQUEST_SCHEMA = "llm-wiki-task-view-request/v1"

@@ -1,6 +1,6 @@
 # ProducerComponent
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:327`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:329`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `ProducerComponent` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `ProducerComponent` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -30,18 +30,18 @@ _Auto-generated from `ProducerComponent` in `src/llm_wiki_cli/services/knowledge
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProducerComponent (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["ProducerComponent (src/llm_wiki_engine/knowledge_model.py)"]
     n1["src/llm_wiki_cli/services/health_contract.py"]
     n2["_component (src/llm_wiki_cli/services/health_details.py)"]
-    n3["_build_component (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n4["build_producer_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n5["plugin_producer_inputs (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n6["_component_basis_payload (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n7["_component_change_reason (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n8["_components_by_id (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n9["_configuration_marked_unknown (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n10["_configuration_unknown (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n11["_version_unknown (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n3["_build_component (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n4["build_producer_record (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n5["plugin_producer_inputs (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n6["_component_basis_payload (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n7["_component_change_reason (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n8["_components_by_id (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n9["_configuration_marked_unknown (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n10["_configuration_unknown (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n11["_version_unknown (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

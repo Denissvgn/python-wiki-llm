@@ -252,7 +252,7 @@ def producer(tmp_path):
     for name, text in files.items():
         target = root / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(text)
+        target.write_text(text, encoding="utf-8", newline="")
     _git(root, "init", "-q")
     _git(root, "add", ".")
     _git(root, "commit", "-qm", "capture source")
@@ -471,14 +471,14 @@ def test_stale_review_and_foreign_edits_never_start_import(
     elif fault == "source":
         (producer.root / "src/llm_wiki_cli/__init__.py").write_bytes(b"CHANGED = 1\n")
     elif fault == "ignored-occupied":
-        (producer.root / ".git/info/exclude").write_text("docs/llm_wiki/created.md\n")
+        (producer.root / ".git/info/exclude").write_text("docs/llm_wiki/created.md\n", encoding="utf-8", newline="")
         (wiki / "created.md").write_bytes(b"occupied")
     elif fault == "new-file":
         (wiki / "foreign.md").write_bytes(b"foreign")
     elif fault == "artifact":
         producer.artifact["digest"] = "sha256:" + "0" * 64
     elif fault == "lease":
-        (producer.root / ".git/manual-release-active.json").write_text("{}")
+        (producer.root / ".git/manual-release-active.json").write_text("{}", encoding="utf-8", newline="")
     before = {
         p.relative_to(wiki).as_posix(): p.read_bytes()
         for p in wiki.rglob("*")
@@ -502,7 +502,7 @@ def test_stale_review_and_foreign_edits_never_start_import(
 
 
 def test_interrupted_import_resumes_only_its_expected_images(producer, monkeypatch):
-    from llm_wiki_cli.services import filesystem_guard
+    from llm_wiki_engine import filesystem_guard
 
     plan = reviewed_plan(producer, monkeypatch)
     recovery = producer.root / "reports/recovery"
@@ -531,13 +531,13 @@ def test_interrupted_import_resumes_only_its_expected_images(producer, monkeypat
 def test_later_harness_commit_keeps_capture_usable_and_selected_source_change_requires_new_preview(
     producer, monkeypatch
 ):
-    (producer.root / "release/harness.py").write_text("# harmless harness change\n")
+    (producer.root / "release/harness.py").write_text("# harmless harness change\n", encoding="utf-8", newline="")
     _git(producer.root, "add", ".")
     _git(producer.root, "commit", "-qm", "later harness")
     plan = reviewed_plan(producer, monkeypatch)
     assert plan["candidate_sha"] != producer.sha
     (producer.root / "src/llm_wiki_cli/__init__.py").write_text(
-        "# selected nonsemantic change\nVALUE = 1\n"
+        "# selected nonsemantic change\nVALUE = 1\n", encoding="utf-8", newline=""
     )
     _git(producer.root, "add", ".")
     _git(producer.root, "commit", "-qm", "selected source")
@@ -556,7 +556,7 @@ def test_occupied_fetch_destination_retains_previous_evidence(producer):
 
 def test_capture_namespace_uses_original_objects_despite_replace_refs(producer):
     before = capture._basis(producer.root, producer.sha)
-    (producer.root / "src/llm_wiki_cli/__init__.py").write_text("changed\n")
+    (producer.root / "src/llm_wiki_cli/__init__.py").write_text("changed\n", encoding="utf-8", newline="")
     _git(producer.root, "add", ".")
     _git(producer.root, "commit", "-qm", "other source")
     replacement = _git(producer.root, "rev-parse", "HEAD")
@@ -570,7 +570,7 @@ def test_capture_namespace_uses_original_objects_despite_replace_refs(producer):
 def test_occupied_creation_destination_is_rejected_during_preview(
     producer, monkeypatch, kind
 ):
-    from llm_wiki_cli.services.filesystem_guard import ensure_guarded_directory
+    from llm_wiki_engine.filesystem_guard import ensure_guarded_directory
 
     path = producer.root / capture.WIKI / "created.md"
     if kind == "directory":
@@ -585,7 +585,7 @@ def test_occupied_creation_destination_is_rejected_during_preview(
 def test_foreign_edit_after_interruption_keeps_preimage_and_refuses_resume(
     producer, monkeypatch
 ):
-    from llm_wiki_cli.services import filesystem_guard
+    from llm_wiki_engine import filesystem_guard
 
     plan = reviewed_plan(producer, monkeypatch)
     recovery = producer.root / "reports/recovery"
@@ -620,13 +620,13 @@ def test_selected_source_comparison_ignores_replaced_capture_history(
     producer, monkeypatch
 ):
     root = producer.root
-    (root / "src/llm_wiki_cli/__init__.py").write_text("# selected change\nVALUE = 1\n")
+    (root / "src/llm_wiki_cli/__init__.py").write_text("# selected change\nVALUE = 1\n", encoding="utf-8", newline="")
     _git(root, "add", ".")
     _git(root, "commit", "-qm", "selected source")
     target = _git(root, "rev-parse", "HEAD")
     # A replacement tree hides the selected change and leaves a harmless path
     # difference. Reading the replaced history would admit this stale capture.
-    (root / "release/extra.py").write_text("# unrelated tree difference\n")
+    (root / "release/extra.py").write_text("# unrelated tree difference\n", encoding="utf-8", newline="")
     _git(root, "add", ".")
     _git(root, "commit", "-qm", "replacement tree")
     replacement = _git(root, "rev-parse", "HEAD")
@@ -643,9 +643,9 @@ def test_later_wiki_changes_require_fresh_preview_and_preserve_newer_ownership(
     producer, monkeypatch
 ):
     root = producer.root
-    (root / capture.WIKI / "index.md").write_text("new authored prose\n")
+    (root / capture.WIKI / "index.md").write_text("new authored prose\n", encoding="utf-8", newline="")
     (root / capture.WIKI / ".llm-wiki-maintenance-adoption.json").write_text(
-        "new owner sentinel\n"
+        "new owner sentinel\n", encoding="utf-8", newline=""
     )
     _git(root, "add", ".")
     _git(root, "commit", "-qm", "newer wiki owner and prose")

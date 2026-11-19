@@ -1,13 +1,13 @@
 # Lifecycle
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:187`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:189`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
 
 ## Description
 
-_Auto-generated from `Lifecycle` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `Lifecycle` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -28,20 +28,20 @@ _Auto-generated from `Lifecycle` in `src/llm_wiki_cli/services/knowledge_model.p
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["Lifecycle (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["Lifecycle (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n4["src/llm_wiki_cli/services/context_packet.py"]
-    n5["_lifecycle_event_digest_payload (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n6["_lifecycle_event_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n7["_ordered_lifecycle_events (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n8["_parse_lifecycle_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n9["_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["_supersession_records (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n11["_validate_concept_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n12["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n13["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n6["_lifecycle_event_digest_payload (src/llm_wiki_engine/knowledge_governance.py)"]
+    n7["_lifecycle_event_summary (src/llm_wiki_engine/knowledge_governance.py)"]
+    n8["_ordered_lifecycle_events (src/llm_wiki_engine/knowledge_governance.py)"]
+    n9["_parse_lifecycle_event (src/llm_wiki_engine/knowledge_governance.py)"]
+    n10["_supersession_edges (src/llm_wiki_engine/knowledge_governance.py)"]
+    n11["_supersession_records (src/llm_wiki_engine/knowledge_governance.py)"]
+    n12["_validate_concept_summary (src/llm_wiki_engine/knowledge_governance.py)"]
+    n13["_validate_lifecycle_event_fields (src/llm_wiki_engine/knowledge_governance.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -58,7 +58,7 @@ flowchart LR
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/knowledge_cmd.md"
     click n4 "../modules/context_packet.md"
-    click n5 "../modules/knowledge_governance.md"
+    click n5 "../modules/knowledge_projection.md"
     click n6 "../modules/knowledge_governance.md"
     click n7 "../modules/knowledge_governance.md"
     click n8 "../modules/knowledge_governance.md"
@@ -88,6 +88,7 @@ flowchart LR
 |---|---|---|---:|
 | `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `_lifecycle_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_lifecycle_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
@@ -97,6 +98,5 @@ flowchart LR
 | `_supersession_records` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_concept_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 
 > References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

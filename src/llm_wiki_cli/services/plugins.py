@@ -3,14 +3,24 @@
 Plugins are installed from local directories only.  Each plugin must provide a
 ``llm-wiki-plugin.json`` manifest and is copied into ``.llm-wiki/plugins`` so
 runtime behavior is reproducible from project-local state.
+
+Each installed plugin is imported as its own package, named by
+:func:`plugin_package_name`, whose search path is only the plugin directory.
+An entry point ``module:attribute`` resolves inside that package, so modules
+of different plugins never collide with each other or with host modules, and
+nothing is added to ``sys.path``. A plugin reaches its own sibling modules
+with relative imports (``from . import helpers``); bare imports such as
+``import helpers`` resolve against the host interpreter, not the plugin.
 """
 
 from __future__ import annotations
 
 import hashlib
 import importlib
+import importlib.machinery
 import importlib.util
 import json
+import os
 import re
 import shutil
 import sys
@@ -21,7 +31,7 @@ from typing import Any
 
 from .. import __version__
 from ..config import EXTRACTOR_REGISTRY
-from .validation import (
+from llm_wiki_engine.validation import (
     path_is_within as shared_path_is_within,
     require_existing_file,
     resolve_portable_workspace_path,
@@ -520,21 +530,40 @@ def iter_components(
     return components
 
 
-_ACTIVATED_PATHS: set[str] = set()
 _PLUGIN_CODE_FINGERPRINTS: dict[str, str] = {}
 _PLUGIN_LOAD_LOCK = threading.RLock()
+_PLUGIN_PACKAGE_PREFIX = "_llm_wiki_plugin_"
 
 
-def _activate_plugin_path(path: Path) -> None:
-    resolved = str(path.resolve())
-    if resolved not in _ACTIVATED_PATHS:
-        sys.path.insert(0, resolved)
-        _ACTIVATED_PATHS.add(resolved)
+def plugin_package_name(plugin_dir: str | Path) -> str:
+    """The import name of the package holding one installed plugin's modules.
+
+    The name is derived from the resolved plugin directory, so it is stable
+    across processes and distinct for every installed copy.
+    """
+
+    resolved = Path(plugin_dir).resolve()
+    digest = hashlib.sha256(os.fsencode(resolved)).hexdigest()[:16]
+    label = re.sub(r"[^A-Za-z0-9_]", "_", resolved.name)
+    return f"{_PLUGIN_PACKAGE_PREFIX}{label}_{digest}"
 
 
-def activate_plugin_paths(root: str | Path = ".") -> None:
-    for plugin in list_plugins(root):
-        _activate_plugin_path(plugin_store(root) / plugin["id"])
+def _plugin_package(plugin_dir: Path) -> str:
+    """Register the package whose only search location is ``plugin_dir``."""
+
+    name = plugin_package_name(plugin_dir)
+    location = str(plugin_dir.resolve())
+    package = sys.modules.get(name)
+    if package is not None:
+        if list(getattr(package, "__path__", ()) or ()) != [location]:
+            raise PluginError(
+                f"Plugin package {name!r} is not bound to its installed directory."
+            )
+        return name
+    spec = importlib.machinery.ModuleSpec(name, None, is_package=True)
+    spec.submodule_search_locations = [location]
+    sys.modules[name] = importlib.util.module_from_spec(spec)
+    return name
 
 
 def runtime_plugin_fallback_root(
@@ -680,10 +709,10 @@ def load_entry_point(entry_point: str, *, root: str | Path = ".") -> Any:
         if previous_fingerprint is not None and previous_fingerprint != fingerprint:
             _purge_changed_plugin_modules(plugin_dir)
         _PLUGIN_CODE_FINGERPRINTS[plugin_key] = fingerprint
-        _ensure_loaded_module_not_shadowed(module_name, plugin_dir)
-        _activate_plugin_path(plugin_dir)
+        qualified_name = f"{_plugin_package(plugin_dir)}.{module_name}"
+        _ensure_loaded_module_not_shadowed(qualified_name, plugin_dir)
         importlib.invalidate_caches()
-        obj = importlib.import_module(module_name)
+        obj = importlib.import_module(qualified_name)
     if not _module_loaded_from_plugin(obj, plugin_dir):
         raise PluginError(
             f"Entry point {entry_point!r} resolved outside its installed plugin directory."

@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services.io import read_md
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.io import read_md
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_sync_page_transitions import (
     _assert_consistent,
     _assert_entity_page,
@@ -267,7 +267,7 @@ def test_manifest_seed_and_repair_remain_nonmutating_first_pass(tmp_path, monkey
 
 
 def test_source_selection_repairs_only_selected_live_pages(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+    from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
     project, wiki = _bootstrap_project(tmp_path, monkeypatch, {
         "model.py": _draft_source("Selected."),
@@ -329,9 +329,9 @@ def test_surface_initialization_defers_core_page_repairs(tmp_path, monkeypatch):
 def test_repair_preserves_governance_identity_and_storage_layout(tmp_path, monkeypatch, sharded):
     from llm_wiki_cli import cli
     from llm_wiki_cli.commands import knowledge_cmd
-    from llm_wiki_cli.services.knowledge_governance import load_governance
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+    from llm_wiki_engine.knowledge_governance import load_governance
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_model import KnowledgeLoadState
 
     _, wiki = _bootstrap_project(tmp_path, monkeypatch, {"model.py": _draft_source("Generated.")})
     if sharded:

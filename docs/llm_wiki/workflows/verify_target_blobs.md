@@ -1,7 +1,7 @@
 # verify_target_blobs
 
 **Entry point:** `checkout._verify_target_blobs`
-**Modules involved:** [checkout](../modules/checkout.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [publication_candidate](../modules/publication_candidate.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [checkout](../modules/checkout.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [publication_candidate](../modules/publication_candidate.md)
 
 > Bind the public bytes used by the exporter to the unfiltered Git tree.
 
@@ -9,13 +9,13 @@
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `publication_candidate._read_tree`
-2. `knowledge_evidence.sha256_bytes`
+2. `canonical_json.sha256_digest`
 3. `knowledge_storage_io.read_guarded`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [checkout](../modules/checkout.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [publication_candidate](../modules/publication_candidate.md)
 

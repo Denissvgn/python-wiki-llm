@@ -18,11 +18,11 @@ sequenceDiagram
     participant p4 as str
     participant p5 as uuid.UUID
     participant p6 as require_nonempty_text
-    participant p7 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
+    participant p7 as isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)
     participant p8 as _validation_error
     participant p9 as value.strip
     participant p10 as contains_control_character
-    participant p11 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p11 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p12 as pattern.search
     participant p13 as error
     p0->>p1: SharedValidationError
@@ -31,14 +31,14 @@ sequenceDiagram
     p2-->>p4: str(uuid.UUID(...))
     p2-->>p5: uuid.UUID(parsed)
     p3->>p6: require_nonempty_text
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
+    p6-->>p7: isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)
     p6->>p8: _validation_error
     p6-->>p9: value.strip
     p6->>p8: _validation_error
     p6->>p8: _validation_error
     p6->>p10: contains_control_character
     p6->>p8: _validation_error
-    p8-->>p11: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p8-->>p11: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p10-->>p12: pattern.search(value)
     p8-->>p13: error(context)
 ```
@@ -70,9 +70,9 @@ Collector observations for 9 source steps with known totals: observed: 40, emitt
 | `require_uuid` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `require_trimmed_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `require_nonempty_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -85,9 +85,9 @@ flowchart LR
     s3["3. require_uuid"]
     s4["4. require_trimmed_text"]
     s5["5. require_nonempty_text"]
-    s6["6. isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)"]
+    s6["6. isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)"]
     s7["7. _validation_error"]
-    s8["8. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s8["8. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s9["9. error"]
     s10["10. value.strip"]
     s11["11. _validation_error"]
@@ -96,9 +96,9 @@ flowchart LR
     s1 -->|"require_uuid(value, text_error=error, uuid_error=error, canonical_error=error)"| s3
     s3 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s4
     s4 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
-    s5 -. "isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)" .-> s6
     s5 -->|"_validation_error(error, error_context)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s8
     s7 -. "error(context)" .-> s9
     s5 -. "value.strip(data not statically known)" .-> s10
     s5 -->|"_validation_error(error, error_context)"| s11
@@ -122,9 +122,9 @@ flowchart LR
 | `require_uuid` | `value: object`, `text_error: Exception`, `uuid_error: Exception`, `canonical_error: Exception`, `reject_control_characters: bool` | - | - | `parsed` |
 | `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -138,9 +138,9 @@ flowchart LR
 | is_canonical_uuid | require_uuid | 1205 | `require_uuid(value, text_error=error, uuid_error=error, canonical_error=error)` |
 | require_uuid | require_trimmed_text | 1186 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
 | require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
 | require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |

@@ -8,28 +8,28 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     canonical_json_bytes,
     sha256_bytes,
 )
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     GraphConcept,
     KnowledgeGraphInputs,
     materialize_typed_graph,
 )
-from llm_wiki_cli.services.knowledge_model import serialize_knowledge_index
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.knowledge_model import serialize_knowledge_index
+from llm_wiki_engine.section_ownership import (
     observe_page_sections,
     section_ownership_extension,
 )
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.knowledge_fixtures import GOLDEN_PRODUCER_VERSION
 from tests.test_knowledge_queries import (
     MODULE_LOCATOR,

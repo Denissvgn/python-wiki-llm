@@ -18,7 +18,7 @@ from llm_wiki_cli.services.documentation_run.publication import (
     bind_publication_workspace,
     collect_reviewed_publication_edits,
 )
-from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from tests.test_documentation_protocol import _agent_result
 
 

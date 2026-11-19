@@ -37,10 +37,10 @@ sequenceDiagram
     participant p23 as WindowsFileGuardError
     participant p24 as WindowsDurabilityError
     participant p25 as WindowsSecurityGuardError
-    participant p26 as Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
+    participant p26 as Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)
     participant p27 as target.is_absolute
-    participant p28 as OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p29 as uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
+    participant p28 as OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)
+    participant p29 as uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)
     p0->>p1: guard_windows_directory_chain
     p0->>p2: windows_object_identity
     p0->>p3: _guarded_tree_manifest_windows_path
@@ -66,11 +66,11 @@ sequenceDiagram
     p10->>p23: WindowsFileGuardError
     p6->>p24: WindowsDurabilityError
     p11->>p25: WindowsSecurityGuardError
-    p0-->>p26: Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(path)
+    p0-->>p26: Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)(path)
     p0-->>p27: target.is_absolute
-    p0-->>p28: OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(...)
-    p0-->>p29: uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    p0-->>p26: Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(target.parent.anchor)
+    p0-->>p28: OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)(...)
+    p0-->>p29: uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)
+    p0-->>p26: Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)(target.parent.anchor)
 ```
 
 > Call sequence diagram shows 30 of 385 interactions; 355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -81,14 +81,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 7 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 7 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
 > Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -111,43 +111,43 @@ Collector observations for 50 source steps with known totals: observed: 355, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `remove_guarded_tree` | `available` | `evaluated` | `available` | `15` | `15` | `0` |
-| `Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_windows_directory_chain` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. remove_guarded_tree"]
-    s2["2. Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)"]
+    s2["2. Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)"]
     s3["3. target.is_absolute"]
-    s4["4. OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)"]
-    s5["5. uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)"]
+    s4["4. OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)"]
+    s5["5. uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)"]
     s6["6. guard_windows_directory_chain"]
     s7["7. WindowsDirectoryGuardError"]
-    s8["8. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
-    s9["9. os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
-    s10["10. os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s8["8. Path (src/llm_wiki_engine/files…d_windows_directory_chain)"]
+    s9["9. os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)"]
+    s10["10. os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)"]
     s11["11. WindowsDirectoryGuardError"]
-    s12["12. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
-    s1 -. "Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(path)" .-> s2
+    s12["12. Path (src/llm_wiki_engine/files…d_windows_directory_chain)"]
+    s1 -. "Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)(path)" .-> s2
     s1 -. "target.is_absolute(data not statically known)" .-> s3
-    s1 -. "OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(...)" .-> s4
-    s1 -. "uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(data not statically known)" .-> s5
+    s1 -. "OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)(...)" .-> s4
+    s1 -. "uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)(data not statically known)" .-> s5
     s1 -->|"guard_windows_directory_chain(Path(...), ...)"| s6
     s6 -->|"WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')"| s7
-    s6 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(os.path.abspath(...))" .-> s8
-    s6 -. "os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)(os.fspath(...))" .-> s9
-    s6 -. "os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)(root)" .-> s10
+    s6 -. "Path (src/llm_wiki_engine/files…d_windows_directory_chain)(os.path.abspath(...))" .-> s8
+    s6 -. "os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)(os.fspath(...))" .-> s9
+    s6 -. "os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)(root)" .-> s10
     s6 -->|"WindowsDirectoryGuardError(...)"| s11
-    s6 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(root_path.anchor)" .-> s12
+    s6 -. "Path (src/llm_wiki_engine/files…d_windows_directory_chain)(root_path.anchor)" .-> s12
     b0["filesystem_write claimed.rmdir"]
     s1 -. "filesystem_write claimed.rmdir" .-> b0
     b1["filesystem_write quarantine.rmdir"]
@@ -184,33 +184,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `remove_guarded_tree` | `path: Path`, `expected_identity: tuple[int, int] \| None`, `expected_manifest: GuardedTreeManifest \| None` | `os`, `os`, `os`, `os` | - | `none` |
-| `Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)` | - | - | - | - |
 | `target.is_absolute` | - | - | - | - |
-| `OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)` | - | - | - | - |
-| `uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)` | - | - | - | - |
+| `OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)` | - | - | - | - |
+| `uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree)` | - | - | - | - |
 | `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
-| `os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| remove_guarded_tree | Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree) | 1804 | `Path(path)` |
+| remove_guarded_tree | Path (src/llm_wiki_engine/files…rd.py:remove_guarded_tree) | 1804 | `Path(path)` |
 | remove_guarded_tree | target.is_absolute | 1805 | `target.is_absolute(data not statically known)` |
-| remove_guarded_tree | OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree) | 1806 | `OSError(...)` |
-| remove_guarded_tree | uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree) | 1808 | `uuid.uuid4(data not statically known)` |
+| remove_guarded_tree | OSError (src/llm_wiki_engine/files…rd.py:remove_guarded_tree) | 1806 | `OSError(...)` |
+| remove_guarded_tree | uuid.uuid4 (src/llm_wiki_engine/files…rd.py:remove_guarded_tree) | 1808 | `uuid.uuid4(data not statically known)` |
 | remove_guarded_tree | guard_windows_directory_chain | 1925 | `guard_windows_directory_chain(Path(...), ...)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
-| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
-| guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
-| guard_windows_directory_chain | os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.fspath(root)` |
+| guard_windows_directory_chain | Path (src/llm_wiki_engine/files…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
+| guard_windows_directory_chain | os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
+| guard_windows_directory_chain | os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain) | 174 | `os.fspath(root)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 176 | `WindowsDirectoryGuardError(...)` |
-| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 179 | `Path(root_path.anchor)` |
+| guard_windows_directory_chain | Path (src/llm_wiki_engine/files…d_windows_directory_chain) | 179 | `Path(root_path.anchor)` |
 
 ### Boundary effects
 

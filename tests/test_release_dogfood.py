@@ -21,8 +21,8 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
 
 from llm_wiki_cli import api
 from llm_wiki_cli.commands import init_cmd, status_cmd, uninstall_cmd, upgrade_cmd
-from llm_wiki_cli.services.context_packet import build_qualified_context
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_cli.services.context_packet_builder import build_qualified_context
+from llm_wiki_engine.knowledge_artifacts import (
     KnowledgeCommitResult,
     commit_knowledge_artifacts,
 )
@@ -37,7 +37,7 @@ from llm_wiki_cli.services.skills import (
     skills_install_dir,
     verify_reference_skill,
 )
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 from tests import release_artifact_smoke
 from tests.knowledge_fixtures import (
     fixture_hash,

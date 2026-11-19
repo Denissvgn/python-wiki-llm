@@ -10,11 +10,10 @@ from typing import Any, Mapping
 from . import publication_candidate_cmd, publication_cmd
 
 from ..config import PathValidationError, validate_source_root
-from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
+from llm_wiki_engine.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
 from ..services.documentation_run import (
     DocumentationAgentResult,
     DocumentationRunError,
-    SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
     build_documentation_agent_packet,
     export_documentation_run,
     get_documentation_run_status,
@@ -23,7 +22,7 @@ from ..services.documentation_run import (
     record_documentation_agent_result,
     verify_documentation_run,
 )
-from ..services.filesystem_guard import atomic_write_private_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes
 
 
 _MAX_INTAKE_BYTES = 1_000_000
@@ -32,19 +31,12 @@ _BASELINE_STRATEGIES = {
     "bootstrap-source": "bootstrap_source",
     "existing-wiki": "adopt_existing_wiki",
 }
-KNOWLEDGE_MODE_CHOICES = tuple(
-    sorted(SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES)
-)
 _INTAKE_KEYS = {
     "project_purpose",
     "audiences",
     "audience_intent",
     "live_service",
 }
-
-
-def add_publication_candidate_commands(docs_sub):
-    publication_candidate_cmd.add_commands(docs_sub)
 
 
 def _read_bounded_text(path: str, *, label: str) -> str:

@@ -9,6 +9,7 @@ import sys
 import tempfile
 import tarfile
 import zipfile
+from email.message import Message
 from email.parser import BytesParser
 from pathlib import Path
 
@@ -24,11 +25,15 @@ import sys
 import llm_wiki_cli
 from importlib.metadata import distribution
 from llm_wiki_cli import api
-from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION, NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
-from llm_wiki_cli.services.knowledge_model import load_knowledge_schema
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION, NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_model import load_knowledge_schema
 
 target = Path(sys.argv[1]).resolve()
 Path(llm_wiki_cli.__file__).resolve().relative_to(target)
+import llm_wiki_engine
+Path(llm_wiki_engine.__file__).resolve().relative_to(target)
+import llm_wiki_engine.validation as _alias, llm_wiki_engine.validation as _engine
+assert _alias is _engine
 schema = load_knowledge_schema()
 assert KNOWLEDGE_SCHEMA_VERSION == "llm-wiki-knowledge/v1"
 assert schema["properties"]["schema_version"]["const"] == KNOWLEDGE_SCHEMA_VERSION
@@ -103,6 +108,39 @@ _REQUIRED_HELPERS = {
     "llm_wiki_cli/py.typed",
     "llm_wiki_cli/schemas/llm-wiki-behavior-facts-v1.schema.json",
     "llm_wiki_cli/schemas/llm-wiki-normalization-diagnostic-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-engine-event-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-engine-capabilities-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-conformance-cases-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-qualified-context-packet-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-qualified-context-packet-v2.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-qualified-context-packet-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-qualified-context-packet-v2.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-engine-event-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-engine-capabilities-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-context-response-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-context-response-v2.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-context-response-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-context-response-v2.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-documentation-query-v1.schema.json",
+    "llm_wiki_cli/schemas/llm-wiki-search-result-v1.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-documentation-query-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-search-result-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-surface-index-v1.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-surface-index-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-extract-v1.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-extract-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-maintenance-status-v1.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-status-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-maintenance-queue-v1.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-queue-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-adoption-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-basis-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-binding-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-event-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-record-binding-v1.cases.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-maintenance-state-v1.cases.json",
+    "llm_wiki_cli/schemas/llm-wiki-context-response-v3.schema.json",
+    "llm_wiki_cli/schemas/conformance/llm-wiki-context-response-v3.cases.json",
     "llm_wiki_cli/extractors/go_scripts/go.mod",
     "llm_wiki_cli/extractors/go_scripts/main.go",
     "llm_wiki_cli/extractors/haskell_scripts/Main.hs",
@@ -132,6 +170,59 @@ def _validate_member_names(names: set[str]) -> None:
                 raise RuntimeError(
                     f"artifact contains a repository-only tutorial: {name}"
                 )
+
+
+_ENGINE = "llm_wiki_engine"
+_ENGINE_DISTRIBUTION = "llm-wiki-engine"
+
+
+def _wheel_metadata(archive: zipfile.ZipFile) -> Message:
+    paths = {
+        name
+        for name in archive.namelist()
+        if len(Path(name).parts) == 2 and name.endswith(".dist-info/METADATA")
+    }
+    if len(paths) != 1:
+        raise RuntimeError("wheel must contain exactly one package metadata file")
+    return BytesParser().parsebytes(archive.read(paths.pop()))
+
+
+def _verify_engine_contents(wheel: Path, sdist: Path, cli_wheel: Path) -> None:
+    """The engine ships alone, and the CLI pins exactly this engine version."""
+    with zipfile.ZipFile(wheel) as archive:
+        names = set(archive.namelist())
+        metadata = _wheel_metadata(archive)
+    _validate_member_names(names)
+    if metadata["Name"] != _ENGINE_DISTRIBUTION or metadata.get_all("Requires-Dist"):
+        raise RuntimeError("engine wheel must be the dependency-free llm-wiki-engine")
+    version = metadata["Version"]
+    roots = {Path(name).parts[0] for name in names}
+    if roots != {_ENGINE, f"{_ENGINE}-{version}.dist-info"}:
+        raise RuntimeError(f"engine wheel has unexpected top-level entries: {sorted(roots)}")
+    if not {f"{_ENGINE}/__init__.py", f"{_ENGINE}/py.typed"} <= names:
+        raise RuntimeError("engine wheel is missing its package marker files")
+    with tarfile.open(sdist, "r:gz") as archive:
+        sdist_names = {member.name for member in archive.getmembers()}
+    _validate_member_names(sdist_names)
+    if {Path(name).parts[0] for name in sdist_names} != {f"{_ENGINE}-{version}"}:
+        raise RuntimeError("engine sdist has an unexpected root")
+    if any("llm_wiki_cli" in Path(name).parts for name in sdist_names):
+        raise RuntimeError("engine sdist must not contain the CLI package")
+    packaged = {
+        Path(*Path(name).parts[1:]).as_posix()
+        for name in sdist_names
+        if len(Path(name).parts) > 2 and Path(name).parts[1] == _ENGINE
+    }
+    if packaged != {name for name in names if name.startswith(_ENGINE + "/")}:
+        raise RuntimeError("engine wheel and sdist package different modules")
+    with zipfile.ZipFile(cli_wheel) as archive:
+        cli_names = set(archive.namelist())
+        requirements = _wheel_metadata(archive).get_all("Requires-Dist") or []
+    if any(Path(name).parts[0] == _ENGINE for name in cli_names):
+        raise RuntimeError("CLI wheel must not bundle the engine package")
+    pins = [value for value in requirements if value.split("=")[0].strip() == _ENGINE_DISTRIBUTION]
+    if pins != [f"{_ENGINE_DISTRIBUTION}=={version}"]:
+        raise RuntimeError(f"CLI must pin {_ENGINE_DISTRIBUTION}=={version}, found {pins}")
 
 
 def _verify_contents(wheel: Path, sdist: Path) -> None:
@@ -213,7 +304,7 @@ def _single_artifact(dist_dir: Path, pattern: str) -> Path:
 
 
 def _verify_install(
-    artifact: Path, root: Path, *, build_isolation: bool = True
+    artifact: Path, engine: Path, root: Path, *, build_isolation: bool = True
 ) -> None:
     target = root / artifact.name.replace(".", "-")
     subprocess.run(
@@ -228,6 +319,7 @@ def _verify_install(
             "--target",
             str(target),
             *([] if build_isolation else ["--no-build-isolation"]),
+            str(engine),
             str(artifact),
         ],
         check=True,
@@ -249,21 +341,39 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("dist", type=Path, nargs="?", default=Path("dist"))
     parser.add_argument(
+        "--engine",
+        type=Path,
+        help="Directory holding the llm-wiki-engine wheel and sdist (default: DIST/engine, else DIST)",
+    )
+    parser.add_argument(
         "--no-build-isolation",
         action="store_true",
         help="Use the explicitly hash-locked validation environment's backend",
     )
     args = parser.parse_args()
     dist_dir = args.dist.resolve()
+    # Names select each distribution, so a flat release directory works too.
     artifacts = (
-        _single_artifact(dist_dir, "*.whl"),
-        _single_artifact(dist_dir, "*.tar.gz"),
+        _single_artifact(dist_dir, "agent_wiki_cli-*.whl"),
+        _single_artifact(dist_dir, "agent_wiki_cli-*.tar.gz"),
+    )
+    engine_dir = args.engine or dist_dir / "engine"
+    if args.engine is None and not engine_dir.is_dir():
+        engine_dir = dist_dir
+    engine_dir = engine_dir.resolve()
+    engine = (
+        _single_artifact(engine_dir, "llm_wiki_engine-*.whl"),
+        _single_artifact(engine_dir, "llm_wiki_engine-*.tar.gz"),
     )
     _verify_contents(*artifacts)
+    _verify_engine_contents(*engine, artifacts[0])
     with tempfile.TemporaryDirectory(prefix="llm-wiki-package-check-") as temporary:
         root = Path(temporary)
-        for artifact in artifacts:
-            _verify_install(artifact, root, build_isolation=not args.no_build_isolation)
+        # Each CLI artifact installs beside the engine artifact of the same kind.
+        for artifact, engine_artifact in zip(artifacts, engine):
+            _verify_install(
+                artifact, engine_artifact, root, build_isolation=not args.no_build_isolation
+            )
             print(f"verified installed schema from {artifact.name}")
 
 

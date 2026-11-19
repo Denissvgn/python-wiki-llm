@@ -1,6 +1,6 @@
 # ProtectedArtifactStore
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:149`
+**Location:** `src/llm_wiki_engine/protected_artifacts.py:143`
 **Kind:** Class
 **Bases:** —
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)
@@ -59,7 +59,7 @@ direct I/O or an unbounded store, consistent with this module's trust model.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProtectedArtifactStore (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n0["ProtectedArtifactStore (src/llm_wiki_engine/protected_artifacts.py)"]
     n1["_admit_external_broker (src/llm_wiki_cli/services/calibration/controller.py)"]
     n2["_admit_local_oci (src/llm_wiki_cli/services/calibration/controller.py)"]
     n3["_authority_freshness_failure (src/llm_wiki_cli/services/calibration/controller.py)"]

@@ -8,11 +8,12 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services import context_packet, knowledge_coverage
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_coverage import build_knowledge_coverage
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness, EvidenceState
+from llm_wiki_engine import knowledge_coverage
+from llm_wiki_cli.services import context_packet_builder
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import ComputedFreshness, EvidenceState
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from tests.test_knowledge_freshness import _live_evaluation
 from tests.test_knowledge_loader import _committed_state
@@ -199,7 +200,7 @@ def test_coverage_adapters_read_a_foreign_project_without_initialization(
     query_service = api.build_documentation_query_service("src", wiki_dir="wiki")
     assert api.get_knowledge_coverage(service=query_service) == public
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "capture_context_read",
         lambda *a, **k: pytest.fail("snapshot scanned source"),
     )

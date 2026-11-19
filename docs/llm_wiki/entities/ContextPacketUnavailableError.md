@@ -1,9 +1,9 @@
 # ContextPacketUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:257`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:142`
 **Kind:** Class
 **Bases:** `ContextPacketError`
-**Module:** [context_packet](../modules/context_packet.md)
+**Module:** [context_packet_builder](../modules/context_packet_builder.md)
 
 ## Description
 
@@ -24,14 +24,15 @@ A required read-only packet capability is unavailable.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextPacketUnavailableError (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextPacketUnavailableError (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["_fit_knowledge_packet_response (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["_guard_windows_inputs (src/llm_wiki_cli/services/context_packet.py)"]
-    n4["_packet_basis (src/llm_wiki_cli/services/context_packet.py)"]
-    n5["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
-    n6["_source_capture (src/llm_wiki_cli/services/task_context_v2.py)"]
-    n7["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n2["_fit_knowledge_packet_response (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n3["_guard_windows_inputs (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n4["_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n5["capture_context_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n6["packet_from_captured_response (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n7["_source_capture (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n8["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -39,21 +40,23 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
-    click n0 "../modules/context_packet.md"
+    n8 --> n0
+    click n0 "../modules/context_packet_builder.md"
     click n1 "../modules/context_packet.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/context_packet.md"
-    click n5 "../modules/context_packet.md"
-    click n6 "../modules/task_context_v2.md"
+    click n2 "../modules/context_packet_builder.md"
+    click n3 "../modules/context_packet_builder.md"
+    click n4 "../modules/context_packet_builder.md"
+    click n5 "../modules/context_packet_builder.md"
+    click n6 "../modules/context_packet_builder.md"
     click n7 "../modules/task_context_v2.md"
+    click n8 "../modules/task_context_v2.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 1 | — |
+| [context_packet_builder](../modules/context_packet_builder.md) | 1 | — |
 
 ### Structure
 
@@ -65,9 +68,10 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_fit_knowledge_packet_response` | call | [context_packet](../modules/context_packet.md) | 2 |
-| `_guard_windows_inputs` | call | [context_packet](../modules/context_packet.md) | 2 |
-| `_packet_basis` | call | [context_packet](../modules/context_packet.md) | 1 |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 4 |
+| `_fit_knowledge_packet_response` | call | [context_packet_builder](../modules/context_packet_builder.md) | 2 |
+| `_guard_windows_inputs` | call | [context_packet_builder](../modules/context_packet_builder.md) | 2 |
+| `_packet_basis` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
+| `capture_context_read` | call | [context_packet_builder](../modules/context_packet_builder.md) | 4 |
+| `packet_from_captured_response` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
 | `_source_capture` | call | [task_context_v2](../modules/task_context_v2.md) | 1 |
 | `build_scoped_task_read` | call | [task_context_v2](../modules/task_context_v2.md) | 3 |

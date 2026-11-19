@@ -25,7 +25,7 @@ from typing import Any
 from .imports import build_module_path_resolver
 from .plugins import PluginError, entrypoint_detector_components, load_entry_point
 from .source_snapshot import SourceSnapshot
-from .validation import positive_int_or_none, resolved_paths_equal
+from llm_wiki_engine.validation import positive_int_or_none, resolved_paths_equal
 
 # ── Entry-point categories ────────────────────────────────────────────
 

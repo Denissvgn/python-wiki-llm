@@ -1,6 +1,6 @@
 # _Encoder
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:212`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:212`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)
@@ -25,9 +25,9 @@ Encodes repeated source, target and basis values as stable references while esca
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_Encoder (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n1["expected_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
-    n2["build_knowledge_store (src/llm_wiki_cli/services/knowledge_storage.py)"]
+    n0["_Encoder (src/llm_wiki_engine/knowledge_storage.py)"]
+    n1["expected_records (src/llm_wiki_engine/knowledge_audit.py)"]
+    n2["build_knowledge_store (src/llm_wiki_engine/knowledge_storage.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_storage.md"

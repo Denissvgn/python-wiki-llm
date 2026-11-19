@@ -1,6 +1,6 @@
 # wiki_surface_index Module
 
-**Path:** `src/llm_wiki_cli/services/wiki_surface_index.py`
+**Path:** `src/llm_wiki_engine/wiki_surface_index.py`
 
 ## Description
 
@@ -11,14 +11,14 @@ Machine-readable index for generated wiki surfaces.
 | Source | Symbols |
 |--------|---------|
 | `.io` | `write_bytes_atomic` |
-| `.paths` | `normalize_source_path` |
-| `.validation` | `normalize_optional_portable_relative_path` |
-| `.wiki_media` | `build_asset_index`, `is_assets_path`, `iter_markdown_link_targets`, `normalize_markdown_link_target` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `WikiSurfacePage`, `collect_wiki_pages`, `iter_page_kinds` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.paths` | `normalize_source_path` |
+| `llm_wiki_engine.validation` | `normalize_optional_portable_relative_path` |
+| `llm_wiki_engine.wiki_media` | `build_asset_index`, `is_assets_path`, `iter_markdown_link_targets`, `normalize_markdown_link_target` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `WikiSurfacePage`, `collect_wiki_pages`, `iter_page_kinds` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any`, `Mapping`, `Optional`, `Sequence`, `Union` |
@@ -30,7 +30,7 @@ Machine-readable index for generated wiki surfaces.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n1["src/llm_wiki_engine/wiki_surface_index.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/wiki_surface_index.md"
@@ -42,10 +42,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (25) |
+| Inbound | `src` (26) |
 | Outbound | `src` (5) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

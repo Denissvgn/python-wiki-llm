@@ -35,12 +35,12 @@ sequenceDiagram
     participant p21 as type
     participant p22 as _PATH_SYNTAX.get
     participant p23 as component.encode
-    participant p24 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…dation.py:_remember_syntax)
-    participant p25 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p26 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
+    participant p24 as _PATH_SYNTAX.move_to_end (src/llm_wiki_engine/validation.py:_remember_syntax)
+    participant p25 as len (src/llm_wiki_engine/validation.py:_syntax_key)
+    participant p26 as _PATH_SYNTAX.move_to_end (src/llm_wiki_engine/validation.py:_known_syntax)
     participant p27 as collision_seen.setdefault
-    participant p28 as len (src/llm_wiki_cli/services…dation.py:_remember_syntax)
-    participant p29 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p28 as len (src/llm_wiki_engine/validation.py:_remember_syntax)
+    participant p29 as any (src/llm_wiki_engine/validation.py:_syntax_key)
     p0->>p1: _default_path_error
     p0->>p2: _check_path_collision
     p0->>p3: require_portable_path_component
@@ -65,12 +65,12 @@ sequenceDiagram
     p4-->>p21: type(value)
     p5-->>p22: _PATH_SYNTAX.get(key)
     p3-->>p23: component.encode('utf-8')
-    p6-->>p24: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…dation.py:_remember_syntax)(key)
-    p4-->>p25: len (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)
-    p5-->>p26: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)(key)
+    p6-->>p24: _PATH_SYNTAX.move_to_end (src/llm_wiki_engine/validation.py:_remember_syntax)(key)
+    p4-->>p25: len (src/llm_wiki_engine/validation.py:_syntax_key)(value)
+    p5-->>p26: _PATH_SYNTAX.move_to_end (src/llm_wiki_engine/validation.py:_known_syntax)(key)
     p2-->>p27: collision_seen.setdefault(key, canonical)
-    p6-->>p28: len (src/llm_wiki_cli/services…dation.py:_remember_syntax)(_PATH_SYNTAX)
-    p4-->>p29: any (src/llm_wiki_cli/services/validation.py:_syntax_key)(...)
+    p6-->>p28: len (src/llm_wiki_engine/validation.py:_remember_syntax)(_PATH_SYNTAX)
+    p4-->>p29: any (src/llm_wiki_engine/validation.py:_syntax_key)(...)
 ```
 
 > Call sequence diagram shows 30 of 58 interactions; 28 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -81,14 +81,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 1 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 8 | - | external | 3 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 19 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 19 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 18 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 18 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 40 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 40 | - | external | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 1 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 7 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 8 | - | external | 3 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 19 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 18 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 18 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 40 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_engine/validation.py:require_portable_path_component` | 40 | - | external | 5 |
 > Omission summary shows 8 of 10 groups; 2 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -119,8 +119,8 @@ Collector observations for 15 source steps with known totals: observed: 71, emit
 | `_default_path_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -134,8 +134,8 @@ flowchart LR
     s7["7. _default_path_error"]
     s8["8. _syntax_key"]
     s9["9. type"]
-    s10["10. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
-    s11["11. any (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
+    s10["10. len (src/llm_wiki_engine/validation.py:_syntax_key)"]
+    s11["11. any (src/llm_wiki_engine/validation.py:_syntax_key)"]
     s12["12. type"]
     s1 -. "isinstance(value, (...))" .-> s2
     s1 -->|"_default_path_error(value)"| s3
@@ -145,8 +145,8 @@ flowchart LR
     s1 -->|"_default_path_error(value)"| s7
     s1 -->|"_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)"| s8
     s8 -. "type(value)" .-> s9
-    s8 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)" .-> s10
-    s8 -. "any (src/llm_wiki_cli/services/validation.py:_syntax_key)(...)" .-> s11
+    s8 -. "len (src/llm_wiki_engine/validation.py:_syntax_key)(value)" .-> s10
+    s8 -. "any (src/llm_wiki_engine/validation.py:_syntax_key)(...)" .-> s11
     s8 -. "type(v)" .-> s12
     click s1 "../modules/validation.md"
     click s3 "../modules/validation.md"
@@ -168,8 +168,8 @@ flowchart LR
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `_syntax_key` | `kind`, `value`, `options` | - | - | `None`, `(...)` |
 | `type` | - | - | - | - |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
+| `len (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
+| `any (src/llm_wiki_engine/validation.py:_syntax_key)` | - | - | - | - |
 | `type` | - | - | - | - |
 
 ### Call data
@@ -184,8 +184,8 @@ flowchart LR
 | require_portable_relative_path | _default_path_error | 225 | `_default_path_error(value)` |
 | require_portable_relative_path | _syntax_key | 226 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
 | _syntax_key | type | 54 | `type(value)` |
-| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
-| _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
+| _syntax_key | len (src/llm_wiki_engine/validation.py:_syntax_key) | 54 | `len(value)` |
+| _syntax_key | any (src/llm_wiki_engine/validation.py:_syntax_key) | 55 | `any(...)` |
 | _syntax_key | type | 55 | `type(v)` |
 
 ### Boundary effects

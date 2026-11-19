@@ -11,7 +11,7 @@ from llm_wiki_cli import api
 from llm_wiki_cli.commands import doctor_cmd
 from llm_wiki_cli.services import analysis_capture as capture
 from llm_wiki_cli.services import extraction_service, sync_analysis_cache
-from llm_wiki_cli.services.knowledge_envelope import ProducerComponentInput
+from llm_wiki_engine.knowledge_envelope import ProducerComponentInput
 
 
 @pytest.fixture
@@ -251,3 +251,75 @@ def test_diagnostics_cannot_claim_ready_or_forge_bounds(package):
             value["authority"] = "trusted"
         with pytest.raises(ValueError):
             capture.validate_analysis_diagnostics(value)
+
+
+@pytest.fixture
+def side_by_side(tmp_path):
+    """Provider and engine packages installed beside each other."""
+    site = tmp_path / "site"
+    root = site / "provider"
+    (root / "services").mkdir(parents=True)
+    (root / "core.py").write_text("VALUE=1\n")
+    engine = site / "llm_wiki_engine"
+    engine.mkdir()
+    (engine / "__init__.py").write_text("")
+    (engine / "shared.py").write_text("RULE=1\n")
+    rules = capture.registry()
+    rules.update(shared=["core.py"], providers={"python": ["core.py"]},
+                 classified_python_files=["core.py"], classified_helper_files=[],
+                 engine_shared=["llm_wiki_engine/shared.py"],
+                 engine_classified_python_files=["llm_wiki_engine/__init__.py",
+                                                 "llm_wiki_engine/shared.py"])
+    (root / "services/analysis_contracts.json").write_text(json.dumps(rules))
+    return root, engine, rules, {"python": rules["executors"]["python"]}
+
+
+def test_engine_inputs_resolve_beside_the_provider_and_shape_its_identity(side_by_side):
+    root, engine, _, entries = side_by_side
+    assert capture.analysis_input_status(package_root=root)["status"] == "ready"
+    before = capture.capture_analysis(entries, package_root=root)["agent-wiki-cli"]["implementation"]
+    (engine / "shared.py").write_text("RULE=2\n")
+    after = capture.capture_analysis(entries, package_root=root)["agent-wiki-cli"]["implementation"]
+    assert before != after
+
+
+def test_unclassified_engine_module_is_reported_with_its_package_prefix(side_by_side):
+    root, engine, _, entries = side_by_side
+    (engine / "added.py").write_text('raise RuntimeError("must never execute")\n')
+    report = capture.analysis_input_status(package_root=root)
+    assert report["reason"] == "unclassified-analysis-inputs"
+    assert report["paths"] == [{"kind": "unclassified-python", "path": "llm_wiki_engine/added.py"}]
+    assert capture.capture_analysis(entries, package_root=root) == {}
+
+
+def test_missing_engine_input_is_unavailable_not_silently_skipped(side_by_side):
+    root, engine, _, entries = side_by_side
+    (engine / "shared.py").unlink()
+    rules = json.loads((root / "services/analysis_contracts.json").read_text())
+    rules["engine_classified_python_files"].remove("llm_wiki_engine/shared.py")
+    (root / "services/analysis_contracts.json").write_text(json.dumps(rules))
+    report = capture.analysis_input_status(package_root=root)
+    assert report["reason"] == "analysis-inputs-unavailable"
+    assert report["paths"] == [{"kind": "missing-or-unsafe-producer-input",
+                                "path": "llm_wiki_engine/shared.py"}]
+    assert "agent-wiki-cli" not in capture.capture_analysis(entries, package_root=root)
+
+
+@pytest.mark.parametrize("name", ["llm_wiki_engine/../provider/core.py", "other/shared.py",
+                                  "/llm_wiki_engine/shared.py", "llm_wiki_engine"])
+def test_engine_inputs_outside_the_engine_package_are_unsafe(side_by_side, name):
+    root, _, rules, entries = side_by_side
+    rules["engine_shared"] = [name]
+    (root / "services/analysis_contracts.json").write_text(json.dumps(rules))
+    assert capture.analysis_input_status(package_root=root)["reason"] == "unsafe-registry-input"
+    assert capture.capture_analysis(entries, package_root=root) == {}
+
+
+def test_installed_registry_names_every_engine_module():
+    rules = capture.registry()
+    engine = capture.engine_package_root(Path(capture.__file__).resolve().parents[1])
+    modules = {"llm_wiki_engine/" + path.relative_to(engine).as_posix()
+               for path in engine.rglob("*.py") if "__pycache__" not in path.parts}
+    assert set(rules["engine_classified_python_files"]) == modules
+    assert set(rules["engine_shared"]) <= modules
+    assert not any(name.startswith("llm_wiki_engine/") for name in rules["shared"])

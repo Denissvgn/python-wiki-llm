@@ -21,11 +21,11 @@ import re
 from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
-from .contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION,
     DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_fields,
     require_mapping,
     require_mapping_tuple,

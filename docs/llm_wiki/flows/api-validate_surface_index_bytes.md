@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_decode_json_object` | 2 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_decode_json_object` | 2 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 4 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_decode_json_object` | 2 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_unique_json_object` | 8 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_reject_json_constant` | 10 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_utf8_json` | 17 | - | external | 5 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_utf8_json` | 17 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_utf8_json` | 17 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 5 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_decode_json_object` | 2 | - | external | 4 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_decode_json_object` | 2 | [src/llm_wiki_engine/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 4 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_decode_json_object` | 2 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_unique_json_object` | 8 | [src/llm_wiki_engine/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_reject_json_constant` | 10 | [src/llm_wiki_engine/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_validate_utf8_json` | 17 | - | external | 5 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_validate_utf8_json` | 17 | - | unresolved | 2 |
+| `src/llm_wiki_engine/knowledge_artifacts.py:_validate_utf8_json` | 17 | [src/llm_wiki_engine/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 5 |
 > Omission summary shows 8 of 78 groups; 70 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -115,7 +115,7 @@ Collector observations for 83 source steps with known totals: observed: 333, emi
 |---|---|---|---|---:|---:|---:|
 | `validate_surface_index_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_decode_json_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -124,13 +124,13 @@ Collector observations for 83 source steps with known totals: observed: 333, emi
 | `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_reject_json_constant` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. validate_surface_index_bytes"]
     s2["2. _decode_json_object"]
-    s3["3. isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)"]
+    s3["3. isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)"]
     s4["4. KnowledgeArtifactError"]
     s5["5. content.decode"]
     s6["6. KnowledgeArtifactError"]
@@ -139,9 +139,9 @@ flowchart LR
     s9["9. KnowledgeArtifactError"]
     s10["10. _reject_json_constant"]
     s11["11. KnowledgeArtifactError"]
-    s12["12. isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)"]
+    s12["12. isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)"]
     s1 -->|"_decode_json_object(surface_index_bytes, 'surface_index_bytes')"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)(content, bytes)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)(content, bytes)" .-> s3
     s2 -->|"KnowledgeArtifactError(field, 'must be bytes')"| s4
     s2 -. "content.decode('utf-8')" .-> s5
     s2 -->|"KnowledgeArtifactError(field, 'must be valid UTF-8')"| s6
@@ -150,7 +150,7 @@ flowchart LR
     s8 -->|"KnowledgeArtifactError(field, ...)"| s9
     s2 -->|"_reject_json_constant(value, field)"| s10
     s10 -->|"KnowledgeArtifactError(field, ...)"| s11
-    s2 -. "isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)(exc, KnowledgeArtifactError)" .-> s12
+    s2 -. "isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)(exc, KnowledgeArtifactError)" .-> s12
     click s1 "../modules/knowledge_artifacts.md"
     click s2 "../modules/knowledge_artifacts.md"
     click s4 "../modules/knowledge_artifacts.md"
@@ -167,7 +167,7 @@ flowchart LR
 |---|---|---|---|---|
 | `validate_surface_index_bytes` | `surface_index_bytes: bytes` | - | - | `surface_payload` |
 | `_decode_json_object` | `content: bytes`, `field: str` | `KnowledgeArtifactError`, `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)` | - | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
 | `content.decode` | - | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
@@ -176,23 +176,23 @@ flowchart LR
 | `KnowledgeArtifactError` | - | - | - | - |
 | `_reject_json_constant` | `value: str`, `field: str` | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_surface_index_bytes | _decode_json_object | 278 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 1072 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 1073 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 1075 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 1077 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads | 1079 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 1081 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 1100 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 1082 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 1106 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 1085 | `isinstance(exc, KnowledgeArtifactError)` |
+| validate_surface_index_bytes | _decode_json_object | 280 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object) | 1075 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 1076 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 1078 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 1080 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads | 1082 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 1084 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 1103 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 1085 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 1109 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | isinstance (src/llm_wiki_engine/knowl…ts.py:_decode_json_object) | 1088 | `isinstance(exc, KnowledgeArtifactError)` |
 
 ### Boundary effects
 
@@ -202,10 +202,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 1072 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 1075 |
-| external_call | `_decode_json_object` | `json.loads` | 1079 |
-| external_call | `_decode_json_object` | `isinstance` | 1085 |
+| external_call | `_decode_json_object` | `isinstance` | 1075 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 1078 |
+| external_call | `_decode_json_object` | `json.loads` | 1082 |
+| external_call | `_decode_json_object` | `isinstance` | 1088 |
 | step_limit | `validate_surface_index_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `validate_surface_index_bytes` | `depth limit` | 0 |
 

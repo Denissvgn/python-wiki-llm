@@ -63,7 +63,7 @@ jobs:
       - name: Create the isolated contract environment
         run: python -I release/qualification.py create-venv --path "${RUNNER_TEMP}/contract-venv"
       - name: Install the exact candidate noneditably
-        run: python -m pip install --no-cache-dir "${RUNNER_TEMP}/contract-candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir "${RUNNER_TEMP}/contract-candidate/src" "${RUNNER_TEMP}/contract-candidate[dev,tokens]"
       - name: Run bounded native contract checks
         env:
           CANDIDATE_SHA: ${{ inputs.candidate-sha }}
@@ -136,7 +136,7 @@ jobs:
       - name: Create the isolated contract environment
         run: python -I release/qualification.py create-venv --path "${RUNNER_TEMP}/contract-venv"
       - name: Install the exact candidate noneditably
-        run: python -m pip install --no-cache-dir "${RUNNER_TEMP}/contract-candidate[dev,tokens]"
+        run: python -m pip install --no-cache-dir "${RUNNER_TEMP}/contract-candidate/src" "${RUNNER_TEMP}/contract-candidate[dev,tokens]"
       - name: Run bounded native contract checks
         env:
           CANDIDATE_SHA: ${{ inputs.candidate-sha }}

@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests import release_artifact_smoke
 
 
@@ -823,6 +823,13 @@ def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     assert verify_job["env"]["SDIST_SHA256"] == (
         "${{ inputs.sdist-sha256 }}"
     )
+    for kind in ("wheel", "sdist"):
+        assert verify_job["env"][f"ENGINE_{kind.upper()}_SHA256"] == (
+            "${{ inputs.engine-" + kind + "-sha256 }}"
+        )
+        assert dispatch["inputs"][f"engine-{kind}-sha256"]["required"] is False
+    assert '--engine-wheel-sha256 "${ENGINE_WHEEL_SHA256}"' in verify_text
+    assert '--engine-sdist-sha256 "${ENGINE_SDIST_SHA256}"' in verify_text
     assert "--check-registry" in verify_text
     assert "verify-workflow-run" in verify_text
     assert ".github/workflows/release-qualification.yml" in verify_text
@@ -856,10 +863,14 @@ def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     publish = workflow["jobs"]["publish"]
     assert publish["environment"]["name"] == "pypi"
     assert publish["permissions"] == {"actions": "read", "id-token": "write"}
-    uses = [step["uses"] for step in publish["steps"]]
-    assert len(uses) == 2
-    assert any(value.startswith("actions/download-artifact@") for value in uses)
-    assert any(value.startswith("pypa/gh-action-pypi-publish@") for value in uses)
+    uses = [step["uses"] for step in publish["steps"] if "uses" in step]
+    assert len(uses) == 3
+    assert uses[0].startswith("actions/download-artifact@")
+    # The engine reaches PyPI before the CLI that pins it.
+    uploads = [step for step in publish["steps"] if "pypa/gh-action-pypi-publish@" in step.get("uses", "")]
+    assert [step["with"]["packages-dir"] for step in uploads] == ["upload/engine/", "upload/cli/"]
+    assert uploads[0]["if"] == "${{ steps.split.outputs.engine == '1' }}"
+    assert "if" not in uploads[1]
     combined = "\n".join(str(step) for step in publish["steps"])
     assert "checkout" not in combined
     assert "setup-python" not in combined
@@ -1521,7 +1532,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
         },
     ]
     core_text = "\n".join(str(step) for step in core["steps"])
-    assert 'python -m pip install --no-cache-dir "./candidate[dev,tokens]"' in core_text
+    assert 'python -m pip install --no-cache-dir ./candidate/src "./candidate[dev,tokens]"' in core_text
     assert " -e " not in core_text
     assert "--strict-config" in core_text
     assert "--strict-markers" in core_text
@@ -1586,7 +1597,7 @@ def test_routine_ci_runs_only_validated_selected_contracts() -> None:
     assert job["strategy"]["matrix"] == "${{ fromJSON(needs.plan.outputs.matrix) }}"
     assert job["needs"] == ["plan", "typescript-ownership"]
     install = _named_step(job, "Install exact candidate noneditably")
-    assert 'pip install ".[${PR_CI_PROFILE}]"' in install["run"] and " -e " not in install["run"]
+    assert 'pip install ./src ".[${PR_CI_PROFILE}]"' in install["run"] and " -e " not in install["run"]
     assert install["env"]["PR_CI_PROFILE"] == "${{ matrix.profile }}"
     selected = _named_step(job, "Run and account for every selected case")
     assert "pr_ci.py run --root ." in selected["run"]
@@ -2135,7 +2146,7 @@ def test_windows_release_covers_the_noneditable_venv_probe_topology() -> None:
     assert probe["if"] == "${{ !inputs.discovery-mode }}"
     assert probe["working-directory"] == "candidate"
     assert "python -m venv" in probe["run"]
-    assert 'stdio-venv/Scripts/python.exe" -m pip install ".[dev]"' in probe["run"]
+    assert 'stdio-venv/Scripts/python.exe" -m pip install ./src ".[dev]"' in probe["run"]
     assert "tests/test_readonly_subprocess_stdin.py" in probe["run"]
     assert "--strict-config" in probe["run"] and "--strict-markers" in probe["run"]
     assert "-W error -o xfail_strict=true" in probe["run"]
@@ -2385,3 +2396,36 @@ def test_native_provider_builder_cannot_mutate_the_collected_owner_environment()
     upload = _named_step(native, "Upload independently bound native Windows evidence")
     assert 'evidence/context-final.json' in upload["with"]["path"]
     assert native["steps"].index(after) < native["steps"].index(upload)
+
+
+def test_qualification_builds_smokes_and_binds_the_engine_beside_the_cli() -> None:
+    jobs = _yaml("release-qualification.yml")["jobs"]
+    build = "\n".join(str(step.get("run", "")) for step in jobs["build"]["steps"])
+    assert "--outdir dist candidate\n" in build
+    assert "--outdir dist/engine candidate/src" in build
+    assert "twine check dist/*.whl dist/*.tar.gz dist/engine/*" in build
+    smoke = "\n".join(str(step.get("run", "")) for step in jobs["artifact-smoke"]["steps"])
+    assert '-name "agent_wiki_cli-*${suffix}"' in smoke
+    assert '-name "llm_wiki_engine-*${suffix}"' in smoke
+    assert '--no-cache-dir "${engine}" "${artifact}"' in smoke
+    assert '--no-cache-dir "${engine}" "${artifact}[mcp]"' in smoke
+    assert '--engine-artifact "${ENGINE_ARTIFACT}"' in smoke
+    bundle = jobs["bundle"]
+    for kind in ("engine-wheel", "engine-sdist"):
+        assert bundle["outputs"][kind + "-sha256"] == (
+            "${{ steps.bundle.outputs." + kind + "-sha256 }}"
+        )
+    verify = "\n".join(str(step.get("run", "")) for step in bundle["steps"])
+    assert '--engine-wheel-sha256 "${{ steps.bundle.outputs.engine-wheel-sha256 }}"' in verify
+    assert '--engine-sdist-sha256 "${{ steps.bundle.outputs.engine-sdist-sha256 }}"' in verify
+
+
+def test_every_qualification_source_install_includes_the_engine() -> None:
+    text = (ROOT / ".github/workflows/release-qualification.yml").read_text(encoding="utf-8")
+    installs = [
+        line for line in text.splitlines()
+        if "pip install" in line and ("./candidate" in line or '".[' in line)
+    ]
+    assert len(installs) > 20
+    for line in installs:
+        assert "./candidate/src" in line or "./src" in line, line

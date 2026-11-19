@@ -7,10 +7,10 @@ import sys
 import pytest
 
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError, build_knowledge_store, canonical_bytes, digest, object_path
-from llm_wiki_cli.services.knowledge_storage_diagnostics import inspect_git_range, storage_report
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, build_knowledge_store, canonical_bytes, digest, object_path
+from llm_wiki_engine.knowledge_storage_diagnostics import inspect_git_range, storage_report
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, recover_knowledge_storage, export_knowledge_v1, prune_knowledge_storage,
 )
 from tests.test_knowledge_loader import _committed_state
@@ -180,7 +180,7 @@ def test_bootstrap_sync_and_governance_keep_the_selected_format(tmp_path, monkey
     validated = api.validate_task_context(scoped.rendered, native_request)
     assert all(item["satisfied"] for item in validated["coverage"]), validated["coverage"]
     assert all(fact["qualification"]["semantic_review"] == "not-evaluated" for fact in validated["facts"])
-    from llm_wiki_cli.services.knowledge_governance import load_governance
+    from llm_wiki_engine.knowledge_governance import load_governance
     ledger = load_governance(root).ledger
     allocation = next(a for a in ledger.concepts.values() if a.locator == "llm-wiki://modules/app")
     command("knowledge", "alias", "--wiki-dir", "wiki", "--uid", allocation.uid,
@@ -247,7 +247,7 @@ def test_git_check_never_guesses_refs_or_accepts_partial_repository(tmp_path):
     (95 * 1_048_576 - 1, 1, 0), (95 * 1_048_576, 0, 1), (100 * 1_048_576 + 1, 0, 1),
 ])
 def test_git_metadata_policy_boundaries(tmp_path, monkeypatch, size, warnings, failures):
-    from llm_wiki_cli.services import knowledge_storage_diagnostics as diagnostics
+    from llm_wiki_engine import knowledge_storage_diagnostics as diagnostics
     oid = b"a" * 40
     def metadata(root, arguments, **options):
         if arguments[0] == "config":
@@ -264,7 +264,7 @@ def test_git_metadata_policy_boundaries(tmp_path, monkeypatch, size, warnings, f
 
 
 def test_shallow_history_is_incomplete_before_object_inspection(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import knowledge_storage_diagnostics as diagnostics
+    from llm_wiki_engine import knowledge_storage_diagnostics as diagnostics
     def shallow(root, arguments, **options):
         assert arguments == ["rev-parse", "--is-shallow-repository"]
         return 0, b"true\n"

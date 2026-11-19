@@ -1,6 +1,6 @@
 # GovernanceActor
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:145`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:146`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -29,12 +29,12 @@ Explicit event author; never inferred from Git metadata.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GovernanceActor (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["GovernanceActor (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["_lifecycle_mutation (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
-    n2["_actor (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["_parse_actor (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n4["add_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n5["set_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["_actor (src/llm_wiki_engine/knowledge_governance.py)"]
+    n3["_parse_actor (src/llm_wiki_engine/knowledge_governance.py)"]
+    n4["add_review_event (src/llm_wiki_engine/knowledge_governance.py)"]
+    n5["set_lifecycle (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

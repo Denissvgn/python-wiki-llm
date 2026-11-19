@@ -1,6 +1,6 @@
 # OciAdmissionProbeRequest
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1744`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1745`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

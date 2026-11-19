@@ -1,6 +1,6 @@
 # IdentityCollision
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:171`
+**Location:** `src/llm_wiki_engine/concept_identity.py:171`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -31,10 +31,10 @@ One deterministic registry conflict found without resolving it.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["IdentityCollision (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["allocate_concept (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["find_identity_collisions (src/llm_wiki_cli/services/concept_identity.py)"]
-    n3["IdentityCollisionError.__init__ (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["IdentityCollision (src/llm_wiki_engine/concept_identity.py)"]
+    n1["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n2["find_identity_collisions (src/llm_wiki_engine/concept_identity.py)"]
+    n3["IdentityCollisionError.__init__ (src/llm_wiki_engine/concept_identity.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

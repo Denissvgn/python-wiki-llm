@@ -44,13 +44,13 @@ def changes_since(root: Path, base: str, head: str) -> list[dict]:
 
 def source_status(root: Path, config: dict) -> dict:
     """Compare captured source bytes without extracting or changing the wiki."""
-    from llm_wiki_cli.services.knowledge_envelope import hash_source_snapshot
-    from llm_wiki_cli.services.knowledge_model import _parse_bundle
-    from llm_wiki_cli.services.knowledge_packs import PACKED_SCHEMAS, parse_packed_root
-    from llm_wiki_cli.services.knowledge_storage import parse_store_root
-    from llm_wiki_cli.services.source_selection import validate_persisted_source_selection_identity
+    from llm_wiki_engine.knowledge_envelope import hash_source_snapshot
+    from llm_wiki_engine.knowledge_model import _parse_bundle
+    from llm_wiki_engine.knowledge_packs import PACKED_SCHEMAS, parse_packed_root
+    from llm_wiki_engine.knowledge_storage import parse_store_root
+    from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
     from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     root = manual.safe(root)
     try:

@@ -2,12 +2,13 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [plugins_cmd](../modules/plugins_cmd.md)
-**Modules touched:** [config](../modules/config.md), [io](../modules/io.md), [plugin_samples](../modules/plugin_samples.md), [plugins](../modules/plugins.md), and 4 more
+**Modules touched:** [host](../modules/host.md), [io](../modules/io.md), [path_policy](../modules/path_policy.md), [plugin_samples](../modules/plugin_samples.md), and 5 more
 
 **Complete modules touched:**
 
-- [config](../modules/config.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
+- [path_policy](../modules/path_policy.md)
 - [plugin_samples](../modules/plugin_samples.md)
 - [plugins](../modules/plugins.md)
 - [plugins_cmd](../modules/plugins_cmd.md)
@@ -48,9 +49,9 @@ sequenceDiagram
     participant p23 as _version_satisfies
     participant p24 as _normalize_component
     participant p25 as lock_path
-    participant p26 as _ensure_entry_point
-    participant p27 as _safe_component_path
-    participant p28 as _validate_prompt_template_vcs_boundary
+    participant p26 as first_unsafe_path_component
+    participant p27 as _ensure_entry_point
+    participant p28 as _safe_component_path
     participant p29 as getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)
     participant p30 as plugin.get
     p0->>p1: list_plugins
@@ -78,16 +79,16 @@ sequenceDiagram
     p3->>p23: _version_satisfies
     p3->>p24: _normalize_component
     p9->>p25: lock_path
-    p24->>p26: _ensure_entry_point
-    p24->>p27: _safe_component_path
-    p24->>p28: _validate_prompt_template_vcs_boundary
+    p12->>p26: first_unsafe_path_component
+    p24->>p27: _ensure_entry_point
+    p24->>p28: _safe_component_path
     p0-->>p29: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'plugins_action', None)
     p7-->>p30: plugin.get('components', [...])
 ```
 
-> Call sequence diagram shows 30 of 380 interactions; 350 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 384 interactions; 354 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 141 (140 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 122 (121 omitted); unresolved 1 of 145 (144 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +102,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/plugins.py:list_plugins` | 3 | - | external | 1 |
 | `src/llm_wiki_cli/services/plugins.py:list_plugins` | 3 | - | unresolved | 2 |
 | `src/llm_wiki_cli/commands/plugins_cmd.py:run` | 1 | - | external | 28 |
-> Omission summary shows 8 of 98 groups; 90 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 99 groups; 91 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -114,9 +115,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 115; effect analysis evaluated: 74, partial: 3, unavailable: 38. Counts include steps omitted from the displayed trace.
+Source steps: 118; effect analysis evaluated: 77, partial: 3, unavailable: 38. Counts include steps omitted from the displayed trace.
 
-Collector observations for 77 source steps with known totals: observed: 359, emitted: 341, omitted: 18. Unavailable totals are excluded.
+Collector observations for 80 source steps with known totals: observed: 365, emitted: 347, omitted: 18. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -219,15 +220,15 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run) | 26 | `getattr(args, 'plugins_action', None)` |
 | run | list_plugins | 29 | `list_plugins(data not statically known)` |
-| list_plugins | read_lock | 500 | `read_lock(root)` |
-| read_lock | lock_path | 77 | `lock_path(root)` |
-| lock_path | plugin_home | 69 | `plugin_home(root)` |
-| plugin_home | Path (src/llm_wiki_cli/services/plugins.py:plugin_home) | 61 | `Path(root)` |
-| read_lock | path.exists (src/llm_wiki_cli/services/plugins.py:read_lock) | 78 | `path.exists(data not statically known)` |
-| read_lock | _default_lock | 79 | `_default_lock(data not statically known)` |
-| read_lock | json.loads (src/llm_wiki_cli/services/plugins.py:read_lock) | 81 | `json.loads(path.read_text(...))` |
-| read_lock | path.read_text | 81 | `path.read_text(encoding='utf-8')` |
-| read_lock | PluginError | 83 | `PluginError(...)` |
+| list_plugins | read_lock | 510 | `read_lock(root)` |
+| read_lock | lock_path | 87 | `lock_path(root)` |
+| lock_path | plugin_home | 79 | `plugin_home(root)` |
+| plugin_home | Path (src/llm_wiki_cli/services/plugins.py:plugin_home) | 71 | `Path(root)` |
+| read_lock | path.exists (src/llm_wiki_cli/services/plugins.py:read_lock) | 88 | `path.exists(data not statically known)` |
+| read_lock | _default_lock | 89 | `_default_lock(data not statically known)` |
+| read_lock | json.loads (src/llm_wiki_cli/services/plugins.py:read_lock) | 91 | `json.loads(path.read_text(...))` |
+| read_lock | path.read_text | 91 | `path.read_text(encoding='utf-8')` |
+| read_lock | PluginError | 93 | `PluginError(...)` |
 
 ### Boundary effects
 
@@ -247,9 +248,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 26 |
-| unresolved_call | `read_lock` | `path.exists` | 78 |
-| external_call | `read_lock` | `json.loads` | 81 |
-| unresolved_call | `read_lock` | `path.read_text` | 81 |
+| unresolved_call | `read_lock` | `path.exists` | 88 |
+| external_call | `read_lock` | `json.loads` | 91 |
+| unresolved_call | `read_lock` | `path.read_text` | 91 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

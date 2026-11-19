@@ -255,16 +255,27 @@ def test_remote_provider_requires_an_immutable_revision(tmp_path, monkeypatch):
         provider.build_input(ROOT, tmp_path)
 
 
-@pytest.mark.parametrize("mutation", ["none", "changed-code", "missing-data"])
+@pytest.mark.parametrize(
+    "mutation",
+    ["none", "changed-code", "missing-data", "missing-glob-data", "unmatched-glob"],
+)
 def test_provider_attestation_checks_installed_code_and_package_data(tmp_path, mutation):
     from tests.test_wiki_impact_action import _installed_fixture
 
     python, source, expected, installed, _, consumer = _installed_fixture(tmp_path)
+    # Package data may be declared by glob, as setuptools accepts.
     (source / "pyproject.toml").write_text(
-        '[project]\nversion="1.0.0"\n[tool.setuptools.package-data]\nllm_wiki_cli=["py.typed"]\n',
+        '[project]\nversion="1.0.0"\n[tool.setuptools.package-data]\n'
+        'llm_wiki_cli=["py.typed", "schemas/conformance/*.cases.json"]\n',
         encoding="utf-8",
     )
     (expected / "py.typed").touch()
+    if mutation != "unmatched-glob":
+        (expected / "schemas/conformance").mkdir(parents=True)
+        (expected / "schemas/conformance/one.cases.json").write_text("{}\n", encoding="utf-8")
+    if mutation not in {"missing-glob-data", "unmatched-glob"}:
+        (installed / "schemas/conformance").mkdir(parents=True)
+        (installed / "schemas/conformance/one.cases.json").write_text("{}\n", encoding="utf-8")
     if mutation != "missing-data":
         (installed / "py.typed").touch()
     if mutation == "changed-code":

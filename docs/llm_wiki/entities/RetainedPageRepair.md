@@ -31,15 +31,15 @@ _Auto-generated from `RetainedPageRepair` in `src/llm_wiki_cli/services/sync_tra
 ```mermaid
 flowchart LR
     n0["RetainedPageRepair (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n1["_plan_source_page_transitions (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n2["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n1["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n2["_plan_source_page_transitions (src/llm_wiki_cli/services/sync_runtime.py)"]
     n3["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     click n0 "../modules/sync_transitions.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/sync_generated_sections.md"
+    click n1 "../modules/sync_generated_sections.md"
+    click n2 "../modules/sync_runtime.md"
     click n3 "../modules/sync_transitions.md"
 ```
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_plan_source_page_transitions` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `plan_generated_source_repairs` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
+| `_plan_source_page_transitions` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_retained_page_repairs` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 | `_retained_page_repairs` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |

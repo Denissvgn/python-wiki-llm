@@ -1,7 +1,7 @@
 # committed_inputs
 
 **Entry point:** `knowledge_storage_lifecycle._committed_inputs`
-**Modules involved:** [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_protocol](../modules/maintenance_protocol.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_projection](../modules/maintenance_projection.md), [maintenance_protocol](../modules/maintenance_protocol.md), [sync_manifest](../modules/sync_manifest.md)
 
 ## Sequence
 
@@ -17,19 +17,20 @@
 9. `knowledge_storage.KnowledgeStorageError`
 10. `maintenance_protocol.guard_maintenance_owner`
 11. `knowledge_storage_io.StorageReadSession.read`
-12. `knowledge_storage.digest`
+12. `canonical_json.sha256_digest`
 13. `knowledge_storage.KnowledgeStorageError`
 14. `knowledge_storage_io.StorageReadSession.read`
-15. `knowledge_storage.digest`
+15. `canonical_json.sha256_digest`
 16. `io.decode_markdown_bytes`
 17. `knowledge_storage.KnowledgeStorageError`
 18. `knowledge_storage_io.StorageReadSession.read`
-19. `knowledge_storage.digest`
+19. `canonical_json.sha256_digest`
 20. `knowledge_storage.KnowledgeStorageError`
 21. `maintenance_projection.validate_maintenance_prose`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_loader](../modules/knowledge_loader.md)

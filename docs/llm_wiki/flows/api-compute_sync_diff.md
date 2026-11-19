@@ -2,7 +2,16 @@
 
 **Entry point:** `compute_sync_diff` (`api`)
 **Source:** [sync_analysis](../modules/sync_analysis.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [knowledge_evidence](../modules/knowledge_evidence.md), [sync_analysis](../modules/sync_analysis.md), [validation](../modules/validation.md)
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [domain_pack](../modules/domain_pack.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 2 more
+
+**Complete modules touched:**
+
+- [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
+- [domain_pack](../modules/domain_pack.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [sync_analysis](../modules/sync_analysis.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -26,22 +35,20 @@ sequenceDiagram
     participant p12 as _page_name_for_entity
     participant p13 as _safe_page_component
     participant p14 as portable_page_component
-    participant p15 as _disambiguate_paths
-    participant p16 as _globally_disambiguate_module_pages
-    participant p17 as portable_page_component.<locals>.sanitize
-    participant p18 as _page_name_from_source_path
-    participant p19 as _RecordedEntityPages
-    participant p20 as SyncOwnershipError
-    participant p21 as sha256_bytes
-    participant p22 as _legacy_entity_page_map
-    participant p23 as _entity_occurrences
-    participant p24 as portable_path_key
-    participant p25 as _page_name_with_extension
-    participant p26 as is_portable_path_component
-    participant p27 as Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    participant p28 as manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    participant p29 as old_cls_counts.update
-    participant p30 as info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p15 as portable_page_component.<locals>.sanitize
+    participant p16 as _RecordedEntityPages
+    participant p17 as SyncOwnershipError
+    participant p18 as sha256_digest
+    participant p19 as _legacy_entity_page_map
+    participant p20 as current_pack
+    participant p21 as is_portable_path_component
+    participant p22 as Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p23 as manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p24 as old_cls_counts.update
+    participant p25 as info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p26 as old_cls_to_files.setdefault(…).add
+    participant p27 as old_cls_to_files.setdefault
+    participant p28 as set
     p0->>p1: _recorded_entity_pages
     p0->>p2: _ownership_error
     p0->>p3: hash_file
@@ -56,27 +63,27 @@ sequenceDiagram
     p1->>p12: _page_name_for_entity
     p12->>p13: _safe_page_component
     p13->>p14: portable_page_component
-    p7->>p15: _disambiguate_paths
-    p7->>p16: _globally_disambiguate_module_pages
-    p14->>p17: portable_page_component.<locals>.sanitize
-    p16->>p18: _page_name_from_source_path
-    p1->>p19: _RecordedEntityPages
-    p2->>p20: SyncOwnershipError
-    p3->>p21: sha256_bytes
-    p5->>p22: _legacy_entity_page_map
-    p10->>p23: _entity_occurrences
-    p10->>p24: portable_path_key
-    p15->>p25: _page_name_with_extension
-    p17->>p26: is_portable_path_component
-    p0-->>p27: Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    p0-->>p28: manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    p0-->>p29: old_cls_counts.update(info.get(...))
-    p0-->>p30: info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)('entities', [...])
+    p14->>p15: portable_page_component.<locals>.sanitize
+    p1->>p16: _RecordedEntityPages
+    p2->>p17: SyncOwnershipError
+    p3->>p18: sha256_digest
+    p5->>p19: _legacy_entity_page_map
+    p10->>p20: current_pack
+    p15->>p21: is_portable_path_component
+    p0-->>p22: Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p23: manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p24: old_cls_counts.update(info.get(...))
+    p0-->>p25: info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)('entities', [...])
+    p0-->>p25: info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)('entities', [...])
+    p0-->>p26: old_cls_to_files.setdefault(…).add(filepath)
+    p0-->>p27: old_cls_to_files.setdefault(class_name, set(...))
+    p0-->>p28: set
+    p0-->>p22: Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
 ```
 
-> Call sequence diagram shows 30 of 209 interactions; 179 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 72 (71 omitted); unresolved 3 of 86 (83 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 42 (39 omitted); unresolved 6 of 58 (52 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -85,12 +92,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | external | 12 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | unresolved | 14 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | [src/llm_wiki_cli/services/sync_analysis.py](../modules/sync_analysis.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | external | 3 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component` | 35 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | unresolved | 26 |
-| `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | external | 18 |
-> Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | unresolved | 6 |
+| `src/llm_wiki_engine/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | external | 3 |
+| `src/llm_wiki_engine/validation.py:portable_page_component` | 35 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | unresolved | 23 |
+| `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | external | 16 |
+> Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +110,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 52; effect analysis evaluated: 47, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+Source steps: 31; effect analysis evaluated: 26, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
-Collector observations for 47 source steps with known totals: observed: 149, emitted: 149, omitted: 0. Unavailable totals are excluded.
+Collector observations for 26 source steps with known totals: observed: 84, emitted: 84, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.

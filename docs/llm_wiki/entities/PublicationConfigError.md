@@ -1,6 +1,6 @@
 # PublicationConfigError
 
-**Location:** `src/llm_wiki_cli/services/publication_config.py:79`
+**Location:** `src/llm_wiki_cli/services/publication_config.py:95`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [publication_config](../modules/publication_config.md)
@@ -90,9 +90,9 @@ flowchart LR
 | `_content_profile` | call | [publication_config](../modules/publication_config.md) | 9 |
 | `_content_repository_url` | call | [publication_config](../modules/publication_config.md) | 1 |
 | `_content_source_path` | call | [publication_config](../modules/publication_config.md) | 3 |
-| `_dependency` | call | [publication_config](../modules/publication_config.md) | 8 |
+| `_dependency` | call | [publication_config](../modules/publication_config.md) | 9 |
 | `_json_object` | call | [publication_config](../modules/publication_config.md) | 1 |
 | `_object` | call | [publication_config](../modules/publication_config.md) | 2 |
 | `_public_content_path` | call | [publication_config](../modules/publication_config.md) | 2 |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

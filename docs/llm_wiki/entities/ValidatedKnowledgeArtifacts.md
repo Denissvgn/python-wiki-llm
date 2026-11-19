@@ -1,6 +1,6 @@
 # ValidatedKnowledgeArtifacts
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:130`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:132`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -36,18 +36,18 @@ Validated canonical projections and their exact-byte commitments.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ValidatedKnowledgeArtifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n0["ValidatedKnowledgeArtifacts (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n1["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n2["DocumentationGraphQueryService._build_typed_graph_indexes (src/llm_wiki_cli/services/documentation_queries.py)"]
     n3["_validate_native_markdown_snapshot (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n4["_validate_native_marker (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n5["_validated_native_artifacts (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
-    n6["_ArtifactValidation.__init__ (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n7["_reuse_same_store_candidate (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n8["_validate_artifact_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n9["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n10["require_validated_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n11["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n6["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n7["_previous_committed_artifacts (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["_ArtifactValidation.__init__ (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n9["_reuse_same_store_candidate (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n10["_validate_artifact_parity (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n11["build_knowledge_commit_plan (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -65,8 +65,8 @@ flowchart LR
     click n3 "../modules/documentation_wiki_input.md"
     click n4 "../modules/documentation_wiki_input.md"
     click n5 "../modules/documentation_wiki_input.md"
-    click n6 "../modules/knowledge_artifacts.md"
-    click n7 "../modules/knowledge_artifacts.md"
+    click n6 "../modules/knowledge_generation.md"
+    click n7 "../modules/knowledge_orchestration.md"
     click n8 "../modules/knowledge_artifacts.md"
     click n9 "../modules/knowledge_artifacts.md"
     click n10 "../modules/knowledge_artifacts.md"
@@ -88,12 +88,12 @@ flowchart LR
 | `_validate_native_markdown_snapshot` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_validate_native_marker` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_validated_native_artifacts` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_previous_committed_artifacts` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_ArtifactValidation.__init__` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_reuse_same_store_candidate` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_validate_artifact_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_validate_artifact_parity` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `build_knowledge_commit_plan` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `require_validated_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `validate_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 
 > References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.

@@ -1,6 +1,6 @@
 # AssetIndex
 
-**Location:** `src/llm_wiki_cli/services/wiki_media.py:62`
+**Location:** `src/llm_wiki_engine/wiki_media.py:62`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_media](../modules/wiki_media.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `AssetIndex` in `src/llm_wiki_cli/services/wiki_media.py`._
+_Auto-generated from `AssetIndex` in `src/llm_wiki_engine/wiki_media.py`._
 
 ## Attributes
 
@@ -31,8 +31,8 @@ _Auto-generated from `AssetIndex` in `src/llm_wiki_cli/services/wiki_media.py`._
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["AssetIndex (src/llm_wiki_cli/services/wiki_media.py)"]
-    n1["build_asset_index (src/llm_wiki_cli/services/wiki_media.py)"]
+    n0["AssetIndex (src/llm_wiki_engine/wiki_media.py)"]
+    n1["build_asset_index (src/llm_wiki_engine/wiki_media.py)"]
     n1 --> n0
     click n0 "../modules/wiki_media.md"
     click n1 "../modules/wiki_media.md"

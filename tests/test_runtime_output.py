@@ -9,7 +9,8 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.services import extraction_service, runtime_output
+from llm_wiki_cli.services import extraction_service
+from llm_wiki_engine import runtime_output
 from llm_wiki_cli.services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,

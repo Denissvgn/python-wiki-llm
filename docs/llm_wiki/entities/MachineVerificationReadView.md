@@ -1,6 +1,6 @@
 # MachineVerificationReadView
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:116`
+**Location:** `src/llm_wiki_engine/knowledge_consumption.py:119`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -37,9 +37,9 @@ One receipt evaluation shared by all consumers in a read operation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MachineVerificationReadView (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n1["load_machine_verification_read_view (src/llm_wiki_cli/services/knowledge_verification.py)"]
-    n2["verification_summaries_for_concepts (src/llm_wiki_cli/services/knowledge_verification.py)"]
+    n0["MachineVerificationReadView (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n1["load_machine_verification_read_view (src/llm_wiki_engine/knowledge_verification.py)"]
+    n2["verification_summaries_for_concepts (src/llm_wiki_engine/knowledge_verification.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_consumption.md"

@@ -18,9 +18,7 @@ Python alias normalization and model lookup respect captured module bindings. A 
 | Source | Symbols |
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
-| `.paths` | `is_test_source_path` |
 | `.python_imports` | `module_binding_imports` |
-| `.source_selection` | `SourceSelectionError`, `path_is_link_or_reparse`, `path_is_selected` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
@@ -28,6 +26,8 @@ Python alias normalization and model lookup respect captured module bindings. A 
 | `copy` | `deepcopy` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.paths` | `is_test_source_path` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `path_is_link_or_reparse`, `path_is_selected` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -39,82 +39,82 @@ Python alias normalization and model lookup respect captured module bindings. A 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/api_contracts.py"]
-    n2["src/llm_wiki_cli/services/api_diff.py"]
-    n3["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n4["src/llm_wiki_cli/services/documentation_native.py"]
-    n5["src/llm_wiki_cli/services/extraction_service.py"]
-    n6["src/llm_wiki_cli/services/impact.py"]
-    n7["src/llm_wiki_cli/services/imports.py"]
-    n8["src/llm_wiki_cli/services/paths.py"]
-    n9["src/llm_wiki_cli/services/python_imports.py"]
-    n10["src/llm_wiki_cli/services/source_selection.py"]
-    n11["src/llm_wiki_cli/services/source_snapshot.py"]
-    n0 --> n1
-    n0 --> n3
-    n0 --> n5
+    n0["src/llm_wiki_cli/services/api_contracts.py"]
+    n1["src/llm_wiki_cli/services/api_diff.py"]
+    n2["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n3["src/llm_wiki_cli/services/documentation_native.py"]
+    n4["src/llm_wiki_cli/services/extraction_service.py"]
+    n5["src/llm_wiki_cli/services/impact.py"]
+    n6["src/llm_wiki_cli/services/imports.py"]
+    n7["src/llm_wiki_cli/services/python_imports.py"]
+    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n9["src/llm_wiki_cli/services/sync_runtime.py"]
+    n10["src/llm_wiki_engine/paths.py"]
+    n11["src/llm_wiki_engine/source_selection.py"]
+    n0 --> n6
+    n0 --> n7
     n0 --> n8
     n0 --> n10
     n0 --> n11
-    n1 --> n7
-    n1 --> n8
-    n1 --> n9
-    n1 --> n10
-    n1 --> n11
-    n2 --> n1
-    n3 --> n1
-    n3 --> n5
-    n3 --> n7
+    n1 --> n0
+    n2 --> n0
+    n2 --> n4
+    n2 --> n6
+    n2 --> n7
+    n2 --> n8
+    n2 --> n10
+    n2 --> n11
+    n3 --> n0
+    n3 --> n2
+    n3 --> n4
     n3 --> n8
-    n3 --> n9
     n3 --> n10
     n3 --> n11
-    n4 --> n1
-    n4 --> n3
-    n4 --> n5
+    n4 --> n0
+    n4 --> n6
+    n4 --> n7
     n4 --> n8
-    n4 --> n10
     n4 --> n11
-    n5 --> n1
-    n5 --> n7
-    n5 --> n9
-    n5 --> n10
-    n5 --> n11
-    n6 --> n1
-    n6 --> n11
-    n7 --> n9
-    n7 --> n11
-    n11 --> n10
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/api_contracts.md"
-    click n2 "../modules/api_diff.md"
-    click n3 "../modules/bootstrap_runtime.md"
-    click n4 "../modules/documentation_native.md"
-    click n5 "../modules/extraction_service.md"
-    click n6 "../modules/impact.md"
-    click n7 "../modules/imports.md"
-    click n8 "../modules/paths.md"
-    click n9 "../modules/python_imports.md"
-    click n10 "../modules/source_selection.md"
-    click n11 "../modules/source_snapshot.md"
+    n5 --> n0
+    n5 --> n8
+    n6 --> n7
+    n6 --> n8
+    n8 --> n11
+    n9 --> n0
+    n9 --> n2
+    n9 --> n4
+    n9 --> n8
+    n9 --> n10
+    n9 --> n11
+    click n0 "../modules/api_contracts.md"
+    click n1 "../modules/api_diff.md"
+    click n2 "../modules/bootstrap_runtime.md"
+    click n3 "../modules/documentation_native.md"
+    click n4 "../modules/extraction_service.md"
+    click n5 "../modules/impact.md"
+    click n6 "../modules/imports.md"
+    click n7 "../modules/python_imports.md"
+    click n8 "../modules/source_snapshot.md"
+    click n9 "../modules/sync_runtime.md"
+    click n10 "../modules/paths.md"
+    click n11 "../modules/source_selection.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
 | Inbound | [api_diff](../modules/api_diff.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [documentation_native](../modules/documentation_native.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Inbound | [impact](../modules/impact.md) |
+| Inbound | [sync_runtime](../modules/sync_runtime.md) |
 | Outbound | [imports](../modules/imports.md) |
-| Outbound | [paths](../modules/paths.md) |
 | Outbound | [python_imports](../modules/python_imports.md) |
-| Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [paths](../modules/paths.md) |
+| Outbound | [source_selection](../modules/source_selection.md) |
 
 ### External packages
 

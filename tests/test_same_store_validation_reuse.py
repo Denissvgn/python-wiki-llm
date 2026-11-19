@@ -6,12 +6,12 @@ from unittest.mock import patch
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_artifacts as artifacts
-from llm_wiki_cli.services.knowledge_evidence import formatted_json_bytes
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_packs import PackedKnowledgeStoreReader
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStoreReader
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine import knowledge_artifacts as artifacts
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_packs import PackedKnowledgeStoreReader
+from llm_wiki_engine.knowledge_storage import KnowledgeStoreReader
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_knowledge_loader import _committed_state
 
 
@@ -87,8 +87,8 @@ def test_changed_root_keeps_full_validation_and_matches_independent_builder(stor
 
 
 def test_same_store_prior_cannot_skip_changed_validator(stored, monkeypatch):
-    from llm_wiki_cli.services import knowledge_index
-    from llm_wiki_cli.services.knowledge_model import KnowledgeModelError
+    from llm_wiki_engine import knowledge_index
+    from llm_wiki_engine.knowledge_model import KnowledgeModelError
 
     def refuse(*args, **kwargs):
         raise KnowledgeModelError("knowledge", "changed validator refuses this model")
@@ -99,7 +99,7 @@ def test_same_store_prior_cannot_skip_changed_validator(stored, monkeypatch):
 
 @pytest.mark.parametrize("policy", ["decoder", "route_audit", "object_limit", "open_alias", "objects_alias"])
 def test_same_store_prior_cannot_skip_changed_storage_policy(stored, monkeypatch, policy):
-    from llm_wiki_cli.services import knowledge_packs, knowledge_storage
+    from llm_wiki_engine import knowledge_packs, knowledge_storage
 
     def refuse(*args, **kwargs):
         raise knowledge_storage.KnowledgeStorageError("objects", "new physical storage policy")
@@ -122,7 +122,7 @@ def test_same_store_prior_cannot_skip_changed_storage_policy(stored, monkeypatch
 
 @pytest.mark.parametrize("helper", ["_parse_concept", "_parse_extensions"])
 def test_same_store_prior_cannot_skip_changed_semantic_helper(stored, monkeypatch, helper):
-    from llm_wiki_cli.services import knowledge_model
+    from llm_wiki_engine import knowledge_model
 
     def refuse(*args, **kwargs):
         raise knowledge_model.KnowledgeModelError("knowledge", "new nested semantic policy")
@@ -134,7 +134,7 @@ def test_same_store_prior_cannot_skip_changed_semantic_helper(stored, monkeypatc
 
 
 def test_same_store_prior_cannot_skip_changed_local_semantic_helper(stored, monkeypatch):
-    from llm_wiki_cli.services import knowledge_index, knowledge_model
+    from llm_wiki_engine import knowledge_index, knowledge_model
 
     def refuse(*args, **kwargs):
         raise knowledge_model.KnowledgeModelError("structure", "changed local semantic helper")
@@ -146,7 +146,7 @@ def test_same_store_prior_cannot_skip_changed_local_semantic_helper(stored, monk
 
 
 def test_same_store_prior_cannot_skip_changed_local_semantic_policy(stored, monkeypatch):
-    from llm_wiki_cli.services import knowledge_index, knowledge_model
+    from llm_wiki_engine import knowledge_index, knowledge_model
 
     monkeypatch.setitem(knowledge_index._STRUCTURAL_SCOPE_BY_PAGE_KIND,
                         knowledge_index.PageKind.MODULES, knowledge_model.ObservationScope.ENTITY)
@@ -156,7 +156,7 @@ def test_same_store_prior_cannot_skip_changed_local_semantic_policy(stored, monk
 
 
 def test_same_store_reuse_supports_cyclic_callable_defaults(stored, monkeypatch):
-    from llm_wiki_cli.services import knowledge_model
+    from llm_wiki_engine import knowledge_model
 
     original = knowledge_model._parse_concept
 
@@ -176,7 +176,7 @@ def test_same_store_reuse_supports_cyclic_callable_defaults(stored, monkeypatch)
 
 @pytest.mark.parametrize("wrapped", [False, True])
 def test_same_store_prior_cannot_skip_changed_partial_validator_policy(stored, monkeypatch, wrapped):
-    from llm_wiki_cli.services import knowledge_model
+    from llm_wiki_engine import knowledge_model
 
     original = knowledge_model._parse_concept
 
@@ -265,7 +265,7 @@ def test_same_store_rechecks_prepared_objects_after_parity_callbacks(stored, mon
 
 
 def test_same_store_rechecks_storage_policy_after_parity_callbacks(stored, monkeypatch):
-    from llm_wiki_cli.services import knowledge_packs
+    from llm_wiki_engine import knowledge_packs
 
     real = artifacts._validate_surface_knowledge_parity
 
@@ -288,7 +288,7 @@ def test_same_store_does_not_waive_actual_disk_corruption(stored):
 
 @pytest.mark.parametrize("before,after", [(0, False), (0.0, -0.0), (1, 1.0)])
 def test_same_store_proof_uses_exact_json_identity_not_python_equality(stored, monkeypatch, before, after):
-    from llm_wiki_cli.services import knowledge_index
+    from llm_wiki_engine import knowledge_index
     root, state, original = stored
     initial = replace(state.knowledge, extensions={**state.knowledge.extensions, "example/exact": before})
     artifacts.commit_knowledge_artifacts(build(stored, knowledge_index=initial))

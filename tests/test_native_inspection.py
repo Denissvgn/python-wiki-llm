@@ -5,7 +5,8 @@ import json
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import context_packet, native_inspection
+from llm_wiki_cli.services import native_inspection
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.mcp_server import McpWikiService
 
@@ -34,7 +35,7 @@ def test_live_inspection_matches_independent_queries_with_one_inventory(
         "graph": api.traverse_typed_graph(TARGET, service=service),
         "sections": api.list_concept_sections(TARGET, service=service),
     }
-    inventory = context_packet.context_service.get_inventory
+    inventory = context_packet_builder.context_service.get_inventory
     build = native_inspection.build_documentation_query_service_from_view
     counts = {"inventory": 0, "service": 0}
 
@@ -46,7 +47,7 @@ def test_live_inspection_matches_independent_queries_with_one_inventory(
         counts["service"] += 1
         return build(*args, **kwargs)
 
-    monkeypatch.setattr(context_packet.context_service, "get_inventory", capture)
+    monkeypatch.setattr(context_packet_builder.context_service, "get_inventory", capture)
     monkeypatch.setattr(
         native_inspection, "build_documentation_query_service_from_view", assemble
     )
@@ -76,7 +77,7 @@ def test_snapshot_never_scans_source_and_keeps_scope_after_source_change(
         source.read_text().replace("price: int", "price: float"), encoding="utf-8"
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "capture_context_read",
         lambda *a, **k: pytest.fail("snapshot scanned source"),
     )

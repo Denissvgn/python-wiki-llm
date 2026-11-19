@@ -2,16 +2,18 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [trigger_cmd](../modules/trigger_cmd.md)
-**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [extraction_service](../modules/extraction_service.md), and 22 more
+**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [domain_pack](../modules/domain_pack.md), [extraction_service](../modules/extraction_service.md), and 25 more
 
 **Complete modules touched:**
 
 - [circuit_breaker](../modules/circuit_breaker.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
+- [domain_pack](../modules/domain_pack.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [generate_prompt_cmd](../modules/generate_prompt_cmd.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [imports](../modules/imports.md)
 - [io](../modules/io.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -21,6 +23,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [redaction](../modules/redaction.md)
@@ -64,11 +67,11 @@ sequenceDiagram
     participant p21 as _run_agent
     participant p22 as load_state
     participant p23 as SyncManifest.load
-    participant p24 as filter_source_diff
-    participant p25 as _redact_prompt_artifact
-    participant p26 as _iso_now
-    participant p27 as _record_trigger_failure
-    participant p28 as get_inventory_result
+    participant p24 as breaker_ttl_seconds
+    participant p25 as filter_source_diff
+    participant p26 as _redact_prompt_artifact
+    participant p27 as _timestamp_expired
+    participant p28 as _iso_now
     participant p29 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
     participant p30 as raw_value.strip
     p0->>p1: reset_breaker
@@ -94,32 +97,32 @@ sequenceDiagram
     p10->>p21: _run_agent
     p11->>p22: load_state
     p13->>p23: SyncManifest.load
-    p15->>p24: filter_source_diff
-    p20->>p25: _redact_prompt_artifact
-    p12->>p26: _iso_now
-    p14->>p27: _record_trigger_failure
-    p18->>p28: get_inventory_result
+    p11->>p24: breaker_ttl_seconds
+    p15->>p25: filter_source_diff
+    p20->>p26: _redact_prompt_artifact
+    p11->>p27: _timestamp_expired
+    p12->>p28: _iso_now
     p0-->>p29: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)
     p4-->>p30: raw_value.strip
 ```
 
-> Call sequence diagram shows 30 of 860 interactions; 830 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 875 interactions; 845 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 328 (327 omitted); unresolved 1 of 197 (196 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 313 (312 omitted); unresolved 1 of 210 (209 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | [src/llm_wiki_cli/services/circuit_breaker.py](../modules/circuit_breaker.md) | internal | 1 |
-| `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | - | external | 5 |
-| `src/llm_wiki_cli/services/circuit_breaker.py:reset_breaker` | 3 | - | external | 1 |
+| `src/llm_wiki_engine/circuit_breaker.py:save_state` | 4 | [src/llm_wiki_engine/circuit_breaker.py](../modules/circuit_breaker.md) | internal | 1 |
+| `src/llm_wiki_engine/circuit_breaker.py:save_state` | 4 | - | external | 5 |
+| `src/llm_wiki_engine/circuit_breaker.py:reset_breaker` | 3 | - | external | 1 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:run` | 1 | - | external | 7 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:_lock_wait_seconds` | 18 | - | external | 5 |
 | `src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync` | 25 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 27 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 27 | - | unresolved | 3 |
-> Omission summary shows 8 of 230 groups; 222 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 27 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 27 | - | unresolved | 5 |
+> Omission summary shows 8 of 242 groups; 234 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -132,9 +135,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 336; effect analysis evaluated: 242, partial: 15, unavailable: 79. Counts include steps omitted from the displayed trace.
+Source steps: 353; effect analysis evaluated: 259, partial: 15, unavailable: 79. Counts include steps omitted from the displayed trace.
 
-Collector observations for 257 source steps with known totals: observed: 1694, emitted: 1644, omitted: 50. Unavailable totals are excluded.
+Collector observations for 274 source steps with known totals: observed: 1740, emitted: 1690, omitted: 50. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -152,7 +155,7 @@ Collector observations for 257 source steps with known totals: observed: 1694, e
 | `json.dump` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `os.unlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -167,7 +170,7 @@ flowchart LR
     s8["8. json.dump"]
     s9["9. os.replace"]
     s10["10. os.unlink"]
-    s11["11. dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)"]
+    s11["11. dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)"]
     s12["12. print (src/llm_wiki_cli/commands/trigger_cmd.py:run)"]
     s1 -. "getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)" .-> s2
     s1 -->|"reset_breaker(GIT_DIR)"| s3
@@ -178,7 +181,7 @@ flowchart LR
     s4 -. "json.dump(state, f, indent=2)" .-> s8
     s4 -. "os.replace(tmp, path)" .-> s9
     s4 -. "os.unlink(tmp)" .-> s10
-    s3 -. "dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)(_DEFAULT_STATE)" .-> s11
+    s3 -. "dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)(_DEFAULT_STATE)" .-> s11
     s1 -. "print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
@@ -219,7 +222,7 @@ flowchart LR
 | `json.dump` | - | - | - | - |
 | `os.replace` | - | - | - | - |
 | `os.unlink` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | - | - | - | - |
+| `dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker)` | - | - | - | - |
 | `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | - | - | - | - |
 
 ### Call data
@@ -228,14 +231,14 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 49 | `getattr(args, 'reset_breaker', False)` |
 | run | reset_breaker | 50 | `circuit_breaker.reset_breaker(GIT_DIR)` |
-| reset_breaker | save_state | 139 | `save_state(git_dir, dict(...))` |
-| save_state | _state_path | 55 | `_state_path(git_dir)` |
-| save_state | tempfile.mkstemp | 56 | `tempfile.mkstemp(dir=git_dir, suffix='.tmp')` |
-| save_state | os.fdopen | 58 | `os.fdopen(fd, 'w')` |
-| save_state | json.dump | 59 | `json.dump(state, f, indent=2)` |
-| save_state | os.replace | 60 | `os.replace(tmp, path)` |
-| save_state | os.unlink | 63 | `os.unlink(tmp)` |
-| reset_breaker | dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker) | 139 | `dict(_DEFAULT_STATE)` |
+| reset_breaker | save_state | 142 | `save_state(git_dir, dict(...))` |
+| save_state | _state_path | 58 | `_state_path(git_dir)` |
+| save_state | tempfile.mkstemp | 59 | `tempfile.mkstemp(dir=git_dir, suffix='.tmp')` |
+| save_state | os.fdopen | 61 | `os.fdopen(fd, 'w')` |
+| save_state | json.dump | 62 | `json.dump(state, f, indent=2)` |
+| save_state | os.replace | 63 | `os.replace(tmp, path)` |
+| save_state | os.unlink | 66 | `os.unlink(tmp)` |
+| reset_breaker | dict (src/llm_wiki_engine/circu…_breaker.py:reset_breaker) | 142 | `dict(_DEFAULT_STATE)` |
 | run | print (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 51 | `print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')` |
 
 ### Boundary effects
@@ -247,17 +250,17 @@ flowchart LR
 | output | `print` | `run` | 56 |
 | output | `print` | `run` | 59 |
 | output | `print` | `run` | 67 |
-| filesystem_write | `os.unlink` | `save_state` | 63 |
+| filesystem_write | `os.unlink` | `save_state` | 66 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 49 |
-| external_call | `save_state` | `tempfile.mkstemp` | 56 |
-| external_call | `save_state` | `os.fdopen` | 58 |
-| external_call | `save_state` | `json.dump` | 59 |
-| external_call | `save_state` | `os.replace` | 60 |
+| external_call | `save_state` | `tempfile.mkstemp` | 59 |
+| external_call | `save_state` | `os.fdopen` | 61 |
+| external_call | `save_state` | `json.dump` | 62 |
+| external_call | `save_state` | `os.replace` | 63 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

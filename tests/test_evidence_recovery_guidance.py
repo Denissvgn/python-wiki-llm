@@ -12,7 +12,8 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import init_cmd, upgrade_cmd, query_cmd, extract_cmd, sync_cmd, lint_cmd, ci_check_cmd
-from llm_wiki_cli.services import extractor_helpers, knowledge_evidence
+from llm_wiki_cli.services import extractor_helpers
+from llm_wiki_engine import knowledge_evidence
 from llm_wiki_cli.services.schema import SCHEMA_FILENAMES, pin_source_selection_command_recipes
 from llm_wiki_cli.services.skills import skills_install_dir
 

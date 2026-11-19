@@ -1,7 +1,7 @@
 # build_knowledge_commit_plan
 
 **Entry point:** `knowledge_artifacts.build_knowledge_commit_plan`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_state](../modules/maintenance_state.md), [manifest_storage](../modules/manifest_storage.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_state](../modules/maintenance_state.md), [manifest_storage](../modules/manifest_storage.md)
 
 > Validate and plan one manifest-last knowledge artifact commit.
 
@@ -22,7 +22,7 @@ its normal output-memory cost.
 2. `maintenance_state.validate_maintenance_adoption`
 3. `maintenance_protocol.load_adoption_marker`
 4. `knowledge_storage.canonical_bytes`
-5. `knowledge_storage.digest`
+5. `canonical_json.sha256_digest`
 6. `knowledge_index._has_validation_operation`
 7. `knowledge_index._validated_index_receipt`
 8. `knowledge_packs.build_storage`
@@ -32,7 +32,7 @@ its normal output-memory cost.
 12. `knowledge_index._validated_index_serialization`
 13. `knowledge_packs.build_storage`
 14. `knowledge_index._model_to_payload`
-15. `knowledge_evidence.sha256_bytes`
+15. `canonical_json.sha256_digest`
 16. `knowledge_storage.KnowledgeStorageError`
 17. `manifest_storage.build_manifest_store`
 18. `knowledge_storage.KnowledgeStorageError`
@@ -40,6 +40,7 @@ its normal output-memory cost.
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_index](../modules/knowledge_index.md)

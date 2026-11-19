@@ -7,21 +7,21 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services import io, sync_manifest
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine import io, sync_manifest
+from llm_wiki_engine.knowledge_evidence import (
     ENTITY_OBSERVATION_SCOPE,
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
     hash_file,
     sha256_bytes,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
     SOURCE_SELECTION_SCHEMA_VERSION,
     SourceSelectionPolicy,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     LEGACY_EVIDENCE_UNAVAILABLE,
     MANIFEST_FILENAME,

@@ -13,7 +13,6 @@ Imports shared by the mechanically split lifecycle modules.
 | `...` | `__version__` |
 | `..bootstrap_service` | `BootstrapRequest` |
 | `..calibration.contracts` | `build_flow_evidence_census`, `build_p0_calibration_shadow` |
-| `..contracts` | `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_SEMANTIC_READINESS_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION` |
 | `..documentation_claim_evidence` | `DocumentationClaimEvidenceError`, `normalize_claim_evidence_records`, `normalize_runtime_capture_records`, `preflight_runtime_capture_records`, `reconcile_claim_evidence_records`, `reconcile_runtime_capture_records` |
 | `..documentation_native` | `DocumentationNativeError`, `DocumentationNativeRefresh`, `refresh_documentation_native_projection` |
 | `..documentation_policy` | `DocumentationMutationPolicy`, `DocumentationPolicyError`, `IntegrityDifference`, `TreeBaseline`, `capture_tree_baseline`, `compare_source_plugin_tree_baseline`, `compare_source_snapshot_baseline`, `compare_tree_baseline`, `hash_bytes`, `resolve_documentation_policy`, `source_plugin_tree_baseline`, `source_snapshot_tree_baseline`, `source_tree_baseline` |
@@ -22,18 +21,8 @@ Imports shared by the mechanically split lifecycle modules.
 | `..documentation_review` | `DocumentationReviewError`, `DocumentationReviewLedger`, `DocumentationReviewPacket`, `apply_review_loop`, `create_review_ledger`, `normalize_review_findings`, `reconcile_review_ledger` |
 | `..documentation_wiki_input` | `SUPPORTED_MANIFEST_VERSIONS` |
 | `..documentation_worklist` | `DOCUMENTATION_WORKLIST_SCHEMA_VERSION`, `build_documentation_worklist` |
-| `..filesystem_guard` | `WindowsDirectoryGuardError`, `guard_windows_directory_chain` |
-| `..io` | `read_md`, `write_bytes_atomic`, `write_text_output` |
-| `..knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
-| `..knowledge_consumption` | `KnowledgeReadView` |
-| `..knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `..skills` | `REFERENCE_DEPENDENT_SKILLS`, `REFERENCE_SKILL_ID`, `export_skills`, `list_bundled_skills` |
-| `..source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs` |
 | `..source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `..validation` | `parse_utc_timestamp`, `portable_path_key`, `require_exact_fields`, `require_nonempty_text`, `require_portable_relative_path`, `require_sha256`, `require_trimmed_text_list`, `resolve_workspace_path` |
-| `..verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
-| `..wiki_media` | `iter_markdown_link_targets`, `local_link_path`, `strip_fenced_code_blocks` |
-| `..wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `copy` | `copy` |
 | `dataclasses` | `dataclass`, `field` |
@@ -42,6 +31,17 @@ Imports shared by the mechanically split lifecycle modules.
 | `hashlib` | `hashlib` |
 | `importlib.util` | `importlib.util` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_SEMANTIC_READINESS_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION` |
+| `llm_wiki_engine.filesystem_guard` | `WindowsDirectoryGuardError`, `guard_windows_directory_chain` |
+| `llm_wiki_engine.io` | `read_md`, `write_bytes_atomic`, `write_text_output` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs` |
+| `llm_wiki_engine.validation` | `parse_utc_timestamp`, `portable_path_key`, `require_exact_fields`, `require_nonempty_text`, `require_portable_relative_path`, `require_sha256`, `require_trimmed_text_list`, `resolve_workspace_path` |
+| `llm_wiki_engine.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME` |
+| `llm_wiki_engine.wiki_media` | `iter_markdown_link_targets`, `local_link_path`, `strip_fenced_code_blocks` |
+| `llm_wiki_engine.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |

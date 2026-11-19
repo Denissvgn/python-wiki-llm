@@ -1,6 +1,6 @@
 # _Profile
 
-**Location:** `src/llm_wiki_cli/services/helper_cache.py:410`
+**Location:** `src/llm_wiki_cli/services/helper_cache.py:411`
 **Kind:** Class
 **Bases:** —
 **Module:** [helper_cache](../modules/helper_cache.md)

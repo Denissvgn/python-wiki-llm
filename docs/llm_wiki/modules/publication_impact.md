@@ -10,20 +10,20 @@ Portable, deterministic architecture-to-public-topic impact and review.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
-| `.knowledge_storage_io` | `StorageReadSession` |
 | `.publication_config` | `load_publication_config`, `publication_path` |
 | `.publication_contracts` | `PublicationProtocolError`, `validate_publication_basis`, `validate_publication_report`, `validate_publication_reviews` |
 | `.publication_links` | `public_atx_section` |
 | `.publication_references` | `capture_reference_inputs`, `recheck_reference_inputs`, `reference_dependency_basis` |
 | `.publication_snapshot` | `build_publication_snapshot`, `build_bootstrap_publication_snapshot` |
-| `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `copy` | `deepcopy` |
 | `fnmatch` | `fnmatchcase` |
 | `functools` | `partial` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `pathlib` | `Path` |
 | `typing` | `Any`, `Mapping` |
 

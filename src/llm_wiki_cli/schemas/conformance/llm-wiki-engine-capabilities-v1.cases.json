@@ -1,0 +1,816 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-engine-capabilities/v1",
+  "schema": "llm-wiki-engine-capabilities-v1.schema.json",
+  "cases": [
+    {
+      "name": "no-process-host",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+          "extractors": {}
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    },
+    {
+      "name": "local-host",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment",
+          "subprocess"
+        ],
+        "missing": [],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+          "extractors": {}
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    },
+    {
+      "name": "missing-pack",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    },
+    {
+      "name": "unknown-capability",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "network"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+          "extractors": {}
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    },
+    {
+      "name": "unknown-helper-preparation",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "sometimes",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+          "extractors": {}
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    },
+    {
+      "name": "extra-field",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+          "extractors": {}
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        },
+        "plugins": []
+      }
+    },
+    {
+      "name": "pack-without-extractors",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v1",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain"
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-capabilities/v2",
+        "granted": [
+          "clock",
+          "cwd",
+          "environment"
+        ],
+        "missing": [
+          "subprocess"
+        ],
+        "helper_preparation": "never",
+        "comparison_policy": "auto",
+        "validators": [
+          "implementation-evidence",
+          "maintenance-projection",
+          "governance-projection"
+        ],
+        "kinds": {
+          "concept": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ],
+          "relationship": [
+            "derived_from",
+            "links_to"
+          ],
+          "graph_relationship": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ],
+          "page": [
+            "index",
+            "log",
+            "entities",
+            "modules",
+            "workflows",
+            "guides",
+            "flows",
+            "infrastructure",
+            "api-contracts",
+            "dependencies",
+            "load-order"
+          ],
+          "undeclared": "accept"
+        },
+        "pack": {
+          "name": "agent-wiki-cli/code-docs",
+          "source_kinds": {
+            "python": [
+              ".py"
+            ],
+            "typescript": [
+              ".ts",
+              ".tsx",
+              ".js",
+              ".jsx",
+              ".mjs",
+              ".cjs"
+            ],
+            "go": [
+              ".go"
+            ],
+            "rust": [
+              ".rs"
+            ],
+            "haskell": [
+              ".hs",
+              ".lhs"
+            ]
+          },
+          "classifier": "llm_wiki_cli.services.domain_pack.CodeSourceClassifier",
+          "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
+          "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
+          "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
+          "reference_providers": [
+            "llm-wiki-cli",
+            "llm-wiki-behavior",
+            "contract-file"
+          ],
+          "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
+          "extractors": {}
+        },
+        "publication_targets": {
+          "kinds": [
+            "github-wiki"
+          ]
+        }
+      }
+    }
+  ]
+}

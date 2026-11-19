@@ -10,13 +10,13 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import context_service, extraction_service
-from llm_wiki_cli.services import source_selection as source_selection_module
+from llm_wiki_engine import source_selection as source_selection_module
 from llm_wiki_cli.services import source_snapshot as source_snapshot_module
 from llm_wiki_cli.services.extraction_service import (
     build_extract_payload,
     filter_source_diff,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_GENERATION_INPUT_KEY,
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
@@ -1344,6 +1344,7 @@ def test_committed_profile_freezes_intended_product_census():
         "include": [
             "pyproject.toml",
             "src/llm_wiki_cli",
+            "src/llm_wiki_engine",
             "integrations/github-action",
             "integrations/wiki-integrity",
             "integrations/obsidian/llm-wiki",
@@ -1357,6 +1358,7 @@ def test_committed_profile_freezes_intended_product_census():
     assert "integrations/obsidian/llm-wiki/esbuild.config.mjs" in snapshot.language_paths("typescript")
     assert "src/llm_wiki_cli/services/go_calls.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/packet_field_policy.py" in snapshot.language_paths("python")
+    assert "src/llm_wiki_engine/packet_field_policy.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/helper_preparation.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/current_contracts.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/sync_recovery.py" in snapshot.language_paths("python")
@@ -1376,6 +1378,8 @@ def test_committed_profile_freezes_intended_product_census():
     )
     expected_python = {
         "src/llm_wiki_cli/" + path for path in registry["classified_python_files"]
+    } | {
+        "src/" + path for path in registry["engine_classified_python_files"]
     } | {
         "integrations/github-action/render_summary.py",
         "integrations/wiki-impact/observe.py",

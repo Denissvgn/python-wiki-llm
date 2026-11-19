@@ -1,6 +1,6 @@
 # OciProbeSentinel
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1165`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1166`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

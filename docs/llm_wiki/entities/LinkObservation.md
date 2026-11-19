@@ -1,6 +1,6 @@
 # LinkObservation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_links.py:71`
+**Location:** `src/llm_wiki_engine/knowledge_links.py:71`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_links](../modules/knowledge_links.md)
@@ -42,16 +42,16 @@ One lossless link occurrence and its deterministic resolution outcome.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["LinkObservation (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n1["_expected_observation_outcome (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_link_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_observation_contains_authority_userinfo (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["_validate_builder_link (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n5["_validate_observation_endpoint (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n6["_validate_observation_source_syntax (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n7["_validated_observations (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n8["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n9["collect_link_observations (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n0["LinkObservation (src/llm_wiki_engine/knowledge_links.py)"]
+    n1["_expected_observation_outcome (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_link_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_observation_contains_authority_userinfo (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["_validate_observation_endpoint (src/llm_wiki_engine/knowledge_index.py)"]
+    n6["_validate_observation_source_syntax (src/llm_wiki_engine/knowledge_index.py)"]
+    n7["_validated_observations (src/llm_wiki_engine/knowledge_index.py)"]
+    n8["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
+    n9["collect_link_observations (src/llm_wiki_engine/knowledge_links.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -1,7 +1,7 @@
 # regenerate_dependency_pages
 
-**Entry point:** `sync_cmd._regenerate_dependency_pages`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [io](../modules/io.md), [plugins](../modules/plugins.md), [sync_cmd](../modules/sync_cmd.md)
+**Entry point:** `sync_runtime._regenerate_dependency_pages`
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [host](../modules/host.md), [io](../modules/io.md), [plugins](../modules/plugins.md), [sync_runtime](../modules/sync_runtime.md)
 
 > Regenerate dependencies.md / load-order.md, preserving ``## Notes``.
 
@@ -19,14 +19,17 @@ Markdown is not rewritten and human-authored ``## Notes`` is preserved.
 4. `plugins.runtime_project_plugins_enabled`
 5. `bootstrap_runtime._generate_load_order_md`
 6. `io.read_md`
+7. `host.emit`
+8. `host.emit`
 
 ## Touches
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [plugins](../modules/plugins.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._regenerate_dependency_pages`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._regenerate_dependency_pages`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

@@ -1,6 +1,6 @@
 # knowledge_stream_audit Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_stream_audit.py`
+**Path:** `src/llm_wiki_engine/knowledge_stream_audit.py`
 
 ## Description
 
@@ -10,11 +10,8 @@ Audits complete indexed storage, native record shapes and references, logical co
 
 | Source | Symbols |
 |--------|---------|
-| `.canonical_json` | `CanonicalArray` |
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.knowledge_audit` | `audit_spilled_records` |
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
-| `.knowledge_graph` | `_normalise_edge` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_concept_to_payload`, `_relationship_to_payload`, `_validate_index_references`, `Resolution` |
 | `.knowledge_packs` | `PackedKnowledgeStoreReader`, `open_knowledge_store` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `LOGICAL_SCHEMA`, `KnowledgeStorageError`, `canonical_bytes`, `digest`, `logical_digest`, `_validate_selected_record` |
@@ -26,6 +23,9 @@ Audits complete indexed storage, native record shapes and references, logical co
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `contextlib` | `ExitStack` |
+| `llm_wiki_engine.canonical_json` | `CanonicalArray` |
+| `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.knowledge_graph` | `_normalise_edge` |
 | `pathlib` | `Path` |
 
 ## Local dependency map
@@ -34,7 +34,7 @@ Audits complete indexed storage, native record shapes and references, logical co
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n1["src/llm_wiki_engine/knowledge_stream_audit.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_stream_audit.md"

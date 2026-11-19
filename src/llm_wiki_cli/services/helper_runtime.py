@@ -16,8 +16,8 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Literal, TYPE_CHECKING, cast
 
-from ..config import EXTRACTOR_REGISTRY
-from .immutable import freeze
+from .extractor_registry import EXTRACTOR_REGISTRY
+from llm_wiki_engine.immutable import freeze
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot

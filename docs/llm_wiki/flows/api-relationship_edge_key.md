@@ -2,7 +2,7 @@
 
 **Entry point:** `relationship_edge_key` (`api`)
 **Source:** [knowledge_graph](../modules/knowledge_graph.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_graph](../modules/knowledge_graph.md)
 
 ## Call sequence
 
@@ -14,23 +14,23 @@ sequenceDiagram
     participant p0 as relationship_edge_key
     participant p1 as next
     participant p2 as KnowledgeGraphError
-    participant p3 as sha256_bytes
+    participant p3 as sha256_digest
     participant p4 as _canonical_json(…).encode
     participant p5 as _canonical_json
     participant p6 as hashlib.sha256(…).hexdigest
-    participant p7 as canonical_json_text
+    participant p7 as compact_text
     participant p8 as hashlib.sha256
     participant p9 as json.dumps
     p0-->>p1: next(..., None)
     p0->>p2: KnowledgeGraphError
-    p0->>p3: sha256_bytes
+    p0->>p3: sha256_digest
     p0-->>p4: _canonical_json(…).encode('utf-8')
     p0->>p5: _canonical_json
     p3-->>p6: hashlib.sha256(…).hexdigest
-    p5->>p7: canonical_json_text
-    p3-->>p8: hashlib.sha256(value)
+    p5->>p7: compact_text
+    p3-->>p8: hashlib.sha256(data)
     p5->>p2: KnowledgeGraphError
-    p7-->>p9: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
+    p7-->>p9: json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)
 ```
 
 > Call sequence diagram shows 10 of 10 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -48,7 +48,7 @@ sequenceDiagram
 
 Source steps: 6; effect analysis evaluated: 4, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
-Collector observations for 4 source steps with known totals: observed: 9, emitted: 9, omitted: 0. Unavailable totals are excluded.
+Collector observations for 4 source steps with known totals: observed: 10, emitted: 10, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -58,12 +58,12 @@ Collector observations for 4 source steps with known totals: observed: 9, emitte
 | `relationship_edge_key` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `next` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `sha256_digest` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `hashlib.sha256` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_canonical_json(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_canonical_json` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `canonical_json_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `compact_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
@@ -72,29 +72,29 @@ flowchart LR
     s1["1. relationship_edge_key"]
     s2["2. next"]
     s3["3. KnowledgeGraphError"]
-    s4["4. sha256_bytes"]
+    s4["4. sha256_digest"]
     s5["5. hashlib.sha256(…).hexdigest"]
     s6["6. hashlib.sha256"]
     s7["7. _canonical_json(…).encode"]
     s8["8. _canonical_json"]
-    s9["9. canonical_json_text"]
+    s9["9. compact_text"]
     s10["10. json.dumps"]
     s11["11. KnowledgeGraphError"]
     s1 -. "next(..., None)" .-> s2
     s1 -->|"KnowledgeGraphError(..., 'is required for edge identity')"| s3
-    s1 -->|"sha256_bytes(...)"| s4
+    s1 -->|"sha256_digest(...)"| s4
     s4 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s5
-    s4 -. "hashlib.sha256(value)" .-> s6
+    s4 -. "hashlib.sha256(data)" .-> s6
     s1 -. "_canonical_json(…).encode('utf-8')" .-> s7
     s1 -->|"_canonical_json(preimage)"| s8
-    s8 -->|"canonical_json_text(value)"| s9
-    s9 -. "json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)" .-> s10
+    s8 -->|"compact_text(value)"| s9
+    s9 -. "json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)" .-> s10
     s8 -->|"KnowledgeGraphError('value', 'must be finite canonical JSON')"| s11
     click s1 "../modules/knowledge_graph.md"
     click s3 "../modules/knowledge_graph.md"
-    click s4 "../modules/knowledge_evidence.md"
+    click s4 "../modules/canonical_json.md"
     click s8 "../modules/knowledge_graph.md"
-    click s9 "../modules/knowledge_evidence.md"
+    click s9 "../modules/canonical_json.md"
     click s11 "../modules/knowledge_graph.md"
 ```
 
@@ -105,12 +105,12 @@ flowchart LR
 | `relationship_edge_key` | `identity: Mapping[str, Any]` | `TYPED_GRAPH_SCHEMA_VERSION` | - | `sha256_bytes(...)` |
 | `next` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
-| `sha256_bytes` | `value: bytes` | - | - | `...` |
+| `sha256_digest` | `data: bytes` | - | - | `...` |
 | `hashlib.sha256(…).hexdigest` | - | - | - | - |
 | `hashlib.sha256` | - | - | - | - |
 | `_canonical_json(…).encode` | - | - | - | - |
 | `_canonical_json` | `value: object` | - | - | `canonical_json_text(...)` |
-| `canonical_json_text` | `value: Any` | - | - | `json.dumps(...)` |
+| `compact_text` | `value: Any`, `allow_nan: bool` | - | - | `json.dumps(...)` |
 | `json.dumps` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
 
@@ -120,13 +120,13 @@ flowchart LR
 |---|---|---:|---|
 | relationship_edge_key | next | 317 | `next(..., None)` |
 | relationship_edge_key | KnowledgeGraphError | 319 | `KnowledgeGraphError(..., 'is required for edge identity')` |
-| relationship_edge_key | sha256_bytes | 324 | `sha256_bytes(...)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 221 | `hashlib.sha256(value)` |
+| relationship_edge_key | sha256_digest | 324 | `sha256_bytes(...)` |
+| sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
+| sha256_digest | hashlib.sha256 | 56 | `hashlib.sha256(data)` |
 | relationship_edge_key | _canonical_json(…).encode | 324 | `_canonical_json(preimage).encode('utf-8')` |
 | relationship_edge_key | _canonical_json | 324 | `_canonical_json(preimage)` |
-| _canonical_json | canonical_json_text | 2289 | `canonical_json_text(value)` |
-| canonical_json_text | json.dumps | 182 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
+| _canonical_json | compact_text | 2289 | `canonical_json_text(value)` |
+| compact_text | json.dumps | 32 | `json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=allow_nan)` |
 | _canonical_json | KnowledgeGraphError | 2291 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
 
 ### Boundary effects
@@ -138,10 +138,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `relationship_edge_key` | `next` | 317 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 221 |
+| unresolved_call | `sha256_digest` | `hashlib.sha256(data).hexdigest` | 56 |
+| external_call | `sha256_digest` | `hashlib.sha256` | 56 |
 | unresolved_call | `relationship_edge_key` | `_canonical_json(preimage).encode` | 324 |
-| external_call | `canonical_json_text` | `json.dumps` | 182 |
+| external_call | `compact_text` | `json.dumps` | 32 |
 
 ## Behavior
 

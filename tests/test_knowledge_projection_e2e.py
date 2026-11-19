@@ -20,25 +20,25 @@ from llm_wiki_cli.commands import (
 )
 from llm_wiki_cli.services import obsidian, site_export
 from llm_wiki_cli.services import mcp_server
-from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadMode,
     load_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
     GovernanceActor,
@@ -55,11 +55,11 @@ from llm_wiki_cli.services.knowledge_governance import (
     save_governance,
     set_lifecycle,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     parse_knowledge_index,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
 from llm_wiki_cli.services.knowledge_projection import (
@@ -67,10 +67,10 @@ from llm_wiki_cli.services.knowledge_projection import (
     projection_concept_summary,
     serialize_knowledge_projection,
 )
-from llm_wiki_cli.services.knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     verification_summaries_for_concepts,
 )
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     INTERNAL_LINKS_CHECKER_ID,
     build_artifact_verification_context,

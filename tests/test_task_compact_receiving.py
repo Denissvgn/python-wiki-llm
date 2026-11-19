@@ -11,10 +11,10 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import task_compact
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
 from llm_wiki_cli.services.token_counting import EstimatedCounter
-from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from tests.developer_value.fixtures import POLICY_SOURCE, materialize
 
 COMPACT_SCHEMA = "llm-wiki-task-compact/v1"

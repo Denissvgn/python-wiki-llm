@@ -1,6 +1,6 @@
 # OciDispatchOutcome
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1155`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1156`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

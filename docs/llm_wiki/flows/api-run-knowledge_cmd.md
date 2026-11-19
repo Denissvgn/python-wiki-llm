@@ -2,31 +2,34 @@
 
 **Entry point:** `run` (`api`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 74 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 79 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
+- [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_audit](../modules/knowledge_audit.md)
@@ -39,6 +42,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -51,17 +55,18 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_recovery](../modules/maintenance_recovery.md)
-- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
@@ -117,7 +122,7 @@ sequenceDiagram
     participant p22 as _lifecycle_mutation
     participant p23 as build_artifact_verification_context
     participant p24 as _governance_mutation_operation
-    participant p25 as verify (src/llm_wiki_cli/services/verification_contracts.py)
+    participant p25 as verify (src/llm_wiki_engine/verification_contracts.py)
     participant p26 as verify_and_write_receipt
     participant p27 as prune_knowledge_storage
     participant p28 as _assert_snapshot_unchanged
@@ -147,7 +152,7 @@ sequenceDiagram
     p7->>p22: _lifecycle_mutation
     p9->>p23: build_artifact_verification_context
     p2->>p24: _governance_mutation_operation
-    p9->>p25: verify (src/llm_wiki_cli/services/verification_contracts.py)
+    p9->>p25: verify (src/llm_wiki_engine/verification_contracts.py)
     p9->>p26: verify_and_write_receipt
     p1->>p27: prune_knowledge_storage
     p2->>p28: _assert_snapshot_unchanged
@@ -155,23 +160,23 @@ sequenceDiagram
     p5-->>p30: prepare
 ```
 
-> Call sequence diagram shows 30 of 4877 interactions; 4847 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4771 interactions; 4741 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1453 (1452 omitted); unresolved 1 of 1172 (1171 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1382 (1381 omitted); unresolved 1 of 1155 (1154 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | external | 1 |
-| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 5 | - | unresolved | 5 |
-| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
+| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 5 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 4 |
-> Omission summary shows 8 of 1185 groups; 1177 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1213 groups; 1205 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -184,9 +189,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 2253; effect analysis evaluated: 1520, partial: 104, unavailable: 629. Counts include steps omitted from the displayed trace.
+Source steps: 2235; effect analysis evaluated: 1495, partial: 94, unavailable: 646. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1624 source steps with known totals: observed: 10151, emitted: 9517, omitted: 634. Unavailable totals are excluded.
+Collector observations for 1589 source steps with known totals: observed: 9630, emitted: 9036, omitted: 594. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -199,13 +204,13 @@ Collector observations for 1624 source steps with known totals: observed: 10151,
 | `_wiki_root` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR
@@ -214,24 +219,24 @@ flowchart LR
     s3["3. _wiki_root"]
     s4["4. Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)"]
     s5["5. first_unsafe_path_component"]
-    s6["6. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s7["7. os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s8["8. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s9["9. os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s6["6. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s7["7. os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s8["8. Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s9["9. os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
     s10["10. lexical.is_absolute"]
-    s11["11. Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s12["12. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s11["11. current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)"]
+    s12["12. current_host"]
     s1 -->|"run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)(args)"| s2
     s2 -->|"_wiki_root(args.wiki_dir)"| s3
     s3 -. "Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)(value)" .-> s4
     s3 -->|"first_unsafe_path_component(root)"| s5
-    s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s6
-    s5 -. "os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)(path)" .-> s7
-    s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))" .-> s8
-    s5 -. "os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)(lexical)" .-> s9
+    s5 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s6
+    s5 -. "os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(path)" .-> s7
+    s5 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.path.abspath(...))" .-> s8
+    s5 -. "os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(lexical)" .-> s9
     s5 -. "lexical.is_absolute(data not statically known)" .-> s10
-    s5 -. "Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)(data not statically known)" .-> s11
-    s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(absolute.anchor)" .-> s12
+    s5 -. "current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(data not statically known)" .-> s11
+    s5 -->|"current_host(data not statically known)"| s12
     b0["output print"]
     s2 -. "output print" .-> b0
     b1["output print"]
@@ -242,6 +247,7 @@ flowchart LR
     click s2 "../modules/knowledge_storage_cmd.md"
     click s3 "../modules/knowledge_cmd.md"
     click s5 "../modules/io.md"
+    click s12 "../modules/host.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -257,13 +263,13 @@ flowchart LR
 | `_wiki_root` | `value: str \| Path` | - | - | `root` |
 | `Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
 | `lexical.is_absolute` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
 
 ### Call data
 
@@ -273,13 +279,13 @@ flowchart LR
 | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | _wiki_root | 17 | `_wiki_root(args.wiki_dir)` |
 | _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 107 | `Path(value)` |
 | _wiki_root | first_unsafe_path_component | 108 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path.cwd(data not statically known)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 61 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | current_host().cwd (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 67 | `current_host().cwd(data not statically known)` |
+| first_unsafe_path_component | current_host | 67 | `current_host(data not statically known)` |
 
 ### Boundary effects
 
@@ -287,16 +293,16 @@ flowchart LR
 |---|---|---|---:|
 | output | `print` | `run` | 61 |
 | output | `print` | `run` | 63 |
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
-| external_call | `first_unsafe_path_component` | `os.path.abspath` | 59 |
-| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 60 |
-| external_call | `first_unsafe_path_component` | `Path.cwd` | 66 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 52 |
+| external_call | `first_unsafe_path_component` | `os.path.abspath` | 60 |
+| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 61 |
+| unresolved_call | `first_unsafe_path_component` | `current_host().cwd` | 67 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # task_compact_readable Module
 
-**Path:** `src/llm_wiki_cli/services/task_compact_readable.py`
+**Path:** `src/llm_wiki_engine/task_compact_readable.py`
 
 ## Description
 
@@ -30,7 +30,7 @@ costs. Compact-v1 retains its encoded projection and envelope.
 flowchart LR
     n0["src/llm_wiki_cli/services/mcp_server.py"]
     n1["src/llm_wiki_cli/services/task_compact.py"]
-    n2["src/llm_wiki_cli/services/task_compact_readable.py"]
+    n2["src/llm_wiki_engine/task_compact_readable.py"]
     n0 --> n2
     n1 --> n2
     click n0 "../modules/mcp_server.md"

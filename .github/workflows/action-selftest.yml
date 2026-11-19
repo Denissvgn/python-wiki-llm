@@ -41,7 +41,7 @@ jobs:
           "${BOOTSTRAP_VENV}/bin/python" -m pip install \
             --disable-pip-version-check \
             --no-input \
-            .
+            ./src .
           "${BOOTSTRAP_VENV}/bin/llm-wiki" bootstrap \
             --src-dir tests/fixtures/context-health-action/source \
             --wiki-dir .action-selftest/wiki \
@@ -290,7 +290,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m venv "${RUNNER_TEMP}/foreign-bootstrap-venv"
-          "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -m pip install ./.provider
+          "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -m pip install ./.provider/src ./.provider
           "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -I             .provider/tests/provider_conformance/action_fixture.py prepare             --case "${FIXTURE_CASE}" --kind "${FIXTURE_KIND}"             --helper-cache "${RUNNER_TEMP}/foreign-bootstrap-cache"             --evidence "${RUNNER_TEMP}/foreign-caller-evidence"
       - name: Check foreign caller fixture knowledge health
         id: foreign-context
@@ -394,7 +394,7 @@ jobs:
           [[ "${PROVIDER_REF}" =~ ^[0-9a-f]{40}$ ]]
           test "$(git -C .provider rev-parse HEAD)" = "${PROVIDER_REF}"
           "${BOOTSTRAP_PYTHON}" -m venv .tools/.venv
-          .tools/.venv/bin/python -I -m pip install ./.provider
+          .tools/.venv/bin/python -I -m pip install ./.provider/src ./.provider
       - name: Prepare the matching locked caller toolchain
         shell: bash
         env:

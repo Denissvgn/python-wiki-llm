@@ -2,17 +2,17 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), and 34 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [circuit_breaker](../modules/circuit_breaker.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 34 more
 
 **Complete modules touched:**
 
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
+- [canonical_json](../modules/canonical_json.md)
 - [circuit_breaker](../modules/circuit_breaker.md)
-- [common](../modules/common.md)
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -30,13 +30,13 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
-- [source_snapshot](../modules/source_snapshot.md)
 - [status_cmd](../modules/status_cmd.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -56,20 +56,20 @@ sequenceDiagram
     participant p1 as validate_path
     participant p2 as require_safe_wiki_scaffold
     participant p3 as validate_source_root
-    participant p4 as _count_surface_pages
-    participant p5 as _architecture_page_count
-    participant p6 as _print_knowledge_status
-    participant p7 as inspect_config
-    participant p8 as _print_managed_lifecycle
-    participant p9 as inspect_legacy_hooks
-    participant p10 as load_state
-    participant p11 as display_project_path
-    participant p12 as iter_page_kinds
-    participant p13 as _status_label
-    participant p14 as _configured_agent
-    participant p15 as shell_quote
-    participant p16 as first_unsafe_path_component
-    participant p17 as breaker_ttl_seconds
+    participant p4 as display_project_path
+    participant p5 as _count_surface_pages
+    participant p6 as _architecture_page_count
+    participant p7 as _print_knowledge_status
+    participant p8 as inspect_config
+    participant p9 as _print_managed_lifecycle
+    participant p10 as inspect_legacy_hooks
+    participant p11 as load_state
+    participant p12 as breaker_ttl_seconds
+    participant p13 as iter_page_kinds
+    participant p14 as _status_label
+    participant p15 as _configured_agent
+    participant p16 as shell_quote
+    participant p17 as first_unsafe_path_component
     participant p18 as load_snapshot_knowledge_observability
     participant p19 as _hook_directories
     participant p20 as knowledge_status_payload
@@ -86,52 +86,52 @@ sequenceDiagram
     p0->>p1: validate_path
     p0->>p2: require_safe_wiki_scaffold
     p0->>p3: validate_source_root
-    p0->>p4: _count_surface_pages
-    p0->>p5: _architecture_page_count
-    p0->>p6: _print_knowledge_status
-    p0->>p7: inspect_config
-    p0->>p8: _print_managed_lifecycle
-    p0->>p9: inspect_legacy_hooks
-    p0->>p10: load_state
-    p0->>p11: display_project_path
-    p0->>p12: iter_page_kinds
-    p0->>p13: _status_label
-    p0->>p14: _configured_agent
-    p0->>p15: shell_quote
-    p0->>p16: first_unsafe_path_component
-    p0->>p17: breaker_ttl_seconds
-    p6->>p18: load_snapshot_knowledge_observability
-    p9->>p19: _hook_directories
-    p6->>p20: knowledge_status_payload
-    p8->>p21: _diagnostic_schema_target
-    p4->>p22: canonical_path
-    p8->>p23: verify_reference_skill
-    p8->>p24: classify_lifecycle_status
+    p0->>p4: display_project_path
+    p0->>p5: _count_surface_pages
+    p0->>p6: _architecture_page_count
+    p0->>p7: _print_knowledge_status
+    p0->>p8: inspect_config
+    p0->>p9: _print_managed_lifecycle
+    p0->>p10: inspect_legacy_hooks
+    p0->>p11: load_state
+    p0->>p12: breaker_ttl_seconds
+    p0->>p13: iter_page_kinds
+    p0->>p14: _status_label
+    p0->>p15: _configured_agent
+    p0->>p16: shell_quote
+    p0->>p17: first_unsafe_path_component
+    p7->>p18: load_snapshot_knowledge_observability
+    p10->>p19: _hook_directories
+    p7->>p20: knowledge_status_payload
+    p9->>p21: _diagnostic_schema_target
+    p5->>p22: canonical_path
+    p9->>p23: verify_reference_skill
+    p9->>p24: classify_lifecycle_status
     p3->>p25: windows_current_user_sid
-    p7->>p26: inspect_config_path
-    p9->>p27: is_managed_hook_content
-    p8->>p28: _print_reference_summary
+    p8->>p26: inspect_config_path
+    p10->>p27: is_managed_hook_content
+    p9->>p28: _print_reference_summary
     p0-->>p29: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0-->>p30: wiki_path.exists
 ```
 
-> Call sequence diagram shows 30 of 2072 interactions; 2042 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1821 interactions; 1791 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 710 (709 omitted); unresolved 1 of 521 (520 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 633 (632 omitted); unresolved 1 of 454 (453 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 3 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/status_cmd.py:run` | 1 | - | external | 43 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 529 groups; 521 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | - | external | 3 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
+| `src/llm_wiki_engine/wiki_surface.py:iter_directory_kinds` | 18 | - | external | 1 |
+> Omission summary shows 8 of 465 groups; 457 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -144,9 +144,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 842; effect analysis evaluated: 510, partial: 42, unavailable: 290. Counts include steps omitted from the displayed trace.
+Source steps: 735; effect analysis evaluated: 438, partial: 37, unavailable: 260. Counts include steps omitted from the displayed trace.
 
-Collector observations for 552 source steps with known totals: observed: 3735, emitted: 3375, omitted: 360. Unavailable totals are excluded.
+Collector observations for 475 source steps with known totals: observed: 3209, emitted: 2863, omitted: 346. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -158,14 +158,14 @@ Collector observations for 552 source steps with known totals: observed: 3735, e
 | `getattr (src/llm_wiki_cli/commands/status_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `str (src/llm_wiki_cli/commands/status_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `require_safe_wiki_scaffold` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `(…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_ACTIVE.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `resolved.relative_to` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -173,25 +173,25 @@ flowchart LR
     s2["2. getattr (src/llm_wiki_cli/commands/status_cmd.py:run)"]
     s3["3. validate_path"]
     s4["4. PathValidationError"]
-    s5["5. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s6["6. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s7["7. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s8["8. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. PathValidationError"]
-    s11["11. str (src/llm_wiki_cli/commands/status_cmd.py:run)"]
-    s12["12. require_safe_wiki_scaffold"]
+    s5["5. (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)"]
+    s6["6. current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)"]
+    s7["7. current_host"]
+    s8["8. _ACTIVE.get"]
+    s9["9. current_host().cwd().resolve"]
+    s10["10. current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)"]
+    s11["11. current_host"]
+    s12["12. resolved.relative_to"]
     s1 -. "getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s2
     s1 -->|"validate_path(str(...), '--wiki-dir')"| s3
     s3 -->|"PathValidationError(...)"| s4
-    s3 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s5
-    s3 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s6
-    s3 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s7
-    s3 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s3 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s9
-    s3 -->|"PathValidationError(...)"| s10
-    s1 -. "str (src/llm_wiki_cli/commands/status_cmd.py:run)(wiki_dir)" .-> s11
-    s1 -->|"require_safe_wiki_scaffold(wiki_dir)"| s12
+    s3 -. "(…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s5
+    s3 -. "current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s6
+    s3 -->|"current_host(data not statically known)"| s7
+    s7 -. "_ACTIVE.get(data not statically known)" .-> s8
+    s3 -. "current_host().cwd().resolve(data not statically known)" .-> s9
+    s3 -. "current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s10
+    s3 -->|"current_host(data not statically known)"| s11
+    s3 -. "resolved.relative_to(cwd)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -209,10 +209,10 @@ flowchart LR
     b7["output print"]
     s1 -. "output print" .-> b7
     click s1 "../modules/status_cmd.md"
-    click s3 "../modules/config.md"
-    click s4 "../modules/config.md"
-    click s10 "../modules/config.md"
-    click s12 "../modules/wiki_lifecycle.md"
+    click s3 "../modules/path_policy.md"
+    click s4 "../modules/path_policy.md"
+    click s7 "../modules/host.md"
+    click s11 "../modules/host.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -232,14 +232,14 @@ flowchart LR
 | `getattr (src/llm_wiki_cli/commands/status_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `PathValidationError` | - | - | - | - |
-| `str (src/llm_wiki_cli/commands/status_cmd.py:run)` | - | - | - | - |
-| `require_safe_wiki_scaffold` | `wiki_dir: Union[str, Path]` | - | - | - |
+| `(…).resolve (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `_ACTIVE.get` | - | - | - | - |
+| `current_host().cwd().resolve` | - | - | - | - |
+| `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
+| `current_host` | - | `_DEFAULT` | - | `...` |
+| `resolved.relative_to` | - | - | - | - |
 
 ### Call data
 
@@ -247,15 +247,15 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/status_cmd.py:run) | 855 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | validate_path | 856 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 135 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 137 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 139 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 141 | `PathValidationError(...)` |
-| run | str (src/llm_wiki_cli/commands/status_cmd.py:run) | 856 | `str(wiki_dir)` |
-| run | require_safe_wiki_scaffold | 858 | `require_safe_wiki_scaffold(wiki_dir)` |
+| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 102 | `current_host(data not statically known)` |
+| validate_path | resolved.relative_to | 104 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -275,11 +275,12 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 855 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 137 |
-| external_call | `validate_path` | `Path.cwd` | 137 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 139 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 104 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

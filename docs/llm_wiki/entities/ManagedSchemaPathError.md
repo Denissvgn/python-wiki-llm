@@ -28,11 +28,11 @@ flowchart LR
     n3["run (src/llm_wiki_cli/commands/init_cmd.py)"]
     n4["_clean_agent_schemas (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
     n5["_preflight_agent_schemas (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
-    n6["_clean_old_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n7["_require_replaceable_schema_path (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n8["_restore_old_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n9["_upgrade_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n10["require_safe_schema_path (src/llm_wiki_cli/services/schema.py)"]
+    n6["require_safe_schema_path (src/llm_wiki_cli/services/schema.py)"]
+    n7["_clean_old_schema (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n8["_require_replaceable_schema_path (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n9["_restore_old_schema (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n10["_upgrade_schema (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -48,11 +48,11 @@ flowchart LR
     click n3 "../modules/init_cmd.md"
     click n4 "../modules/uninstall_cmd.md"
     click n5 "../modules/uninstall_cmd.md"
-    click n6 "../modules/upgrade_cmd.md"
-    click n7 "../modules/upgrade_cmd.md"
-    click n8 "../modules/upgrade_cmd.md"
-    click n9 "../modules/upgrade_cmd.md"
-    click n10 "../modules/services_schema.md"
+    click n6 "../modules/services_schema.md"
+    click n7 "../modules/upgrade_runtime.md"
+    click n8 "../modules/upgrade_runtime.md"
+    click n9 "../modules/upgrade_runtime.md"
+    click n10 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
@@ -75,8 +75,8 @@ flowchart LR
 | `run` | call | [init_cmd](../modules/init_cmd.md) | 4 |
 | `_clean_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 1 |
 | `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 2 |
-| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
-| `_require_replaceable_schema_path` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
-| `_restore_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
-| `_upgrade_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
 | `require_safe_schema_path` | call | [services_schema](../modules/services_schema.md) | 2 |
+| `_clean_old_schema` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |
+| `_require_replaceable_schema_path` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |
+| `_restore_old_schema` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |
+| `_upgrade_schema` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |

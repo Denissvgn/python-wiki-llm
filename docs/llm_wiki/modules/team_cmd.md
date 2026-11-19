@@ -15,11 +15,11 @@ _Auto-generated from `src/llm_wiki_cli/commands/team_cmd.py`._
 | `..services.extraction_jobs` | `extraction_job_request_from_args` |
 | `..services.extraction_service` | `get_docker_inventory`, `get_inventory_result` |
 | `..services.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `..services.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `..services.sync_manifest` | `SyncManifest`, `SyncManifestError` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `SyncManifestError` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
 
@@ -34,13 +34,12 @@ flowchart LR
     n3["src/llm_wiki_cli/services/extraction_jobs.py"]
     n4["src/llm_wiki_cli/services/extraction_service.py"]
     n5["src/llm_wiki_cli/services/infrastructure_inventory.py"]
-    n6["src/llm_wiki_cli/services/source_selection.py"]
-    n7["src/llm_wiki_cli/services/source_snapshot.py"]
-    n8["src/llm_wiki_cli/services/sync_manifest.py"]
-    n9["src/llm_wiki_cli/services/team.py"]
+    n6["src/llm_wiki_cli/services/source_snapshot.py"]
+    n7["src/llm_wiki_cli/services/team.py"]
+    n8["src/llm_wiki_engine/source_selection.py"]
+    n9["src/llm_wiki_engine/sync_manifest.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
     n0 --> n4
     n1 --> n2
     n1 --> n3
@@ -50,21 +49,17 @@ flowchart LR
     n1 --> n7
     n1 --> n8
     n1 --> n9
-    n4 --> n2
     n4 --> n3
     n4 --> n6
-    n4 --> n7
-    n5 --> n7
-    n6 --> n2
+    n4 --> n8
+    n5 --> n6
+    n6 --> n8
     n7 --> n2
+    n7 --> n4
+    n7 --> n5
     n7 --> n6
-    n8 --> n6
-    n8 --> n7
-    n9 --> n2
-    n9 --> n4
-    n9 --> n5
-    n9 --> n6
-    n9 --> n7
+    n7 --> n8
+    n7 --> n9
     n9 --> n8
     click n0 "../modules/cli.md"
     click n1 "../modules/team_cmd.md"
@@ -72,10 +67,10 @@ flowchart LR
     click n3 "../modules/extraction_jobs.md"
     click n4 "../modules/extraction_service.md"
     click n5 "../modules/infrastructure_inventory.md"
-    click n6 "../modules/source_selection.md"
-    click n7 "../modules/source_snapshot.md"
-    click n8 "../modules/sync_manifest.md"
-    click n9 "../modules/team.md"
+    click n6 "../modules/source_snapshot.md"
+    click n7 "../modules/team.md"
+    click n8 "../modules/source_selection.md"
+    click n9 "../modules/sync_manifest.md"
 ```
 
 ### Internal neighbors
@@ -87,10 +82,10 @@ flowchart LR
 | Outbound | [extraction_jobs](../modules/extraction_jobs.md) |
 | Outbound | [extraction_service](../modules/extraction_service.md) |
 | Outbound | [infrastructure_inventory](../modules/infrastructure_inventory.md) |
-| Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
-| Outbound | [sync_manifest](../modules/sync_manifest.md) |
 | Outbound | [team](../modules/team.md) |
+| Outbound | [source_selection](../modules/source_selection.md) |
+| Outbound | [sync_manifest](../modules/sync_manifest.md) |
 
 ## Functions
 

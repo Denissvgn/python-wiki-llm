@@ -18,9 +18,9 @@ from ..services.inventory_cache import (
     format_cache_stats,
     prepare_cache_options,
 )
-from ..services.io import write_bytes_atomic
-from ..services.progress import observed_phase
-from ..services.runtime_output import (
+from llm_wiki_engine.io import write_bytes_atomic
+from llm_wiki_engine.progress import observed_phase
+from llm_wiki_engine.runtime_output import (
     RuntimeDestination,
     RuntimeOutputError,
     prepare_destination,
@@ -165,7 +165,7 @@ def run(args) -> None:
         comparison_policy=getattr(args, "comparison_policy", "auto"),
     )
     if getattr(args, "storage_check", False) or storage_base is not None:
-        from ..services.knowledge_storage_diagnostics import storage_report
+        from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
         try:
             storage = storage_report(wiki_dir, git_base=storage_base, git_head=storage_head)
         except ValueError as exc:

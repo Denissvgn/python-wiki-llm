@@ -2,48 +2,46 @@
 
 **Entry point:** `evaluate_documentation_native_freshness` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 51 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 49 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_native](../modules/documentation_native.md)
+- [domain_pack](../modules/domain_pack.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
+- [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
 - [helper_cache](../modules/helper_cache.md)
-- [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
-- [maintenance_state](../modules/maintenance_state.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
@@ -132,9 +130,9 @@ sequenceDiagram
     p0-->>p30: (…).lstat
 ```
 
-> Call sequence diagram shows 30 of 3738 interactions; 3708 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3133 interactions; 3103 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1044 (1043 omitted); unresolved 1 of 927 (926 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 845 (844 omitted); unresolved 1 of 825 (824 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -144,11 +142,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | external | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | [src/llm_wiki_cli/services/documentation_native.py](../modules/documentation_native.md) | internal | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 8 |
-| `src/llm_wiki_cli/services/source_selection.py:_override_text` | 20 | - | external | 3 |
-> Omission summary shows 8 of 966 groups; 958 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 16 | - | unresolved | 2 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
+| `src/llm_wiki_engine/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 8 |
+| `src/llm_wiki_engine/source_selection.py:_override_text` | 20 | - | external | 3 |
+> Omission summary shows 8 of 833 groups; 825 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -161,9 +159,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1768; effect analysis evaluated: 1224, partial: 43, unavailable: 501. Counts include steps omitted from the displayed trace.
+Source steps: 1464; effect analysis evaluated: 1038, partial: 38, unavailable: 388. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1267 source steps with known totals: observed: 6531, emitted: 6276, omitted: 255. Unavailable totals are excluded.
+Collector observations for 1076 source steps with known totals: observed: 5531, emitted: 5302, omitted: 229. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

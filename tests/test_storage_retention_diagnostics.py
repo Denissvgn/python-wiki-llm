@@ -7,11 +7,11 @@ import sys
 import pytest
 
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services import knowledge_storage_diagnostics as diagnostics
-from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError, canonical_bytes, digest, object_path
-from llm_wiki_cli.services.knowledge_storage_lifecycle import prune_knowledge_storage, restore_pruned_storage
+from llm_wiki_engine import knowledge_storage_diagnostics as diagnostics
+from llm_wiki_engine.knowledge_artifacts import build_knowledge_commit_plan, commit_knowledge_artifacts
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, canonical_bytes, digest, object_path
+from llm_wiki_engine.knowledge_storage_lifecycle import prune_knowledge_storage, restore_pruned_storage
 from tests.test_knowledge_loader import _committed_state
 from tests.test_knowledge_storage_lifecycle import git, snapshot
 

@@ -10,8 +10,8 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from .knowledge_evidence import hash_json, sha256_bytes
-from .knowledge_storage_io import StorageReadSession
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from .publication_links import public_atx_section
 from .publication_config import load_publication_config, publication_path
 from .publication_contracts import (
@@ -29,7 +29,7 @@ from .publication_references import (
     recheck_reference_inputs,
     reference_dependency_basis,
 )
-from .validation import portable_path_key, require_repository_relative_path
+from llm_wiki_engine.validation import portable_path_key, require_repository_relative_path
 
 
 BASIS_SCHEMA = "llm-wiki-publication-basis/v1"
@@ -702,7 +702,11 @@ def _reason_label(reason):
     record = reason["after"] or reason["before"]
     dep = record["dependency"]
     if "reference" in dep:
-        scope = dep.get("fact") or " ".join(dep.get("command", []))
+        scope = " ".join(
+            value if isinstance(value, str) else " ".join(map(str, value))
+            for key, value in dep.items()
+            if key != "reference"
+        )
         return " ".join(part for part in (dep["reference"], scope) if part)
     if "source_file" in dep:
         return dep["source_file"]

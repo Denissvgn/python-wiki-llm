@@ -1,6 +1,6 @@
 # WikiWriteBasis
 
-**Location:** `src/llm_wiki_cli/services/maintenance_protocol.py:200`
+**Location:** `src/llm_wiki_engine/maintenance_protocol.py:201`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `WikiWriteBasis` in `src/llm_wiki_cli/services/maintenance_protocol.py`._
+_Auto-generated from `WikiWriteBasis` in `src/llm_wiki_engine/maintenance_protocol.py`._
 
 ## Attributes
 
@@ -46,17 +46,17 @@ _Auto-generated from `WikiWriteBasis` in `src/llm_wiki_cli/services/maintenance_
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WikiWriteBasis (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n0["WikiWriteBasis (src/llm_wiki_engine/maintenance_protocol.py)"]
     n1["bootstrap_write_operation (src/llm_wiki_cli/services/bootstrap_recovery.py)"]
-    n2["maintenance_write_operation (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n3["_capture_basis (src/llm_wiki_cli/services/maintenance_service.py)"]
+    n2["_capture_basis (src/llm_wiki_cli/services/maintenance_service.py)"]
+    n3["maintenance_write_operation (src/llm_wiki_engine/maintenance_protocol.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     click n0 "../modules/maintenance_protocol.md"
     click n1 "../modules/bootstrap_recovery.md"
-    click n2 "../modules/maintenance_protocol.md"
-    click n3 "../modules/maintenance_service.md"
+    click n2 "../modules/maintenance_service.md"
+    click n3 "../modules/maintenance_protocol.md"
 ```
 
 ### Summary
@@ -70,5 +70,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `bootstrap_write_operation` | call | [bootstrap_recovery](../modules/bootstrap_recovery.md) | 1 |
-| `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 | `_capture_basis` | call | [maintenance_service](../modules/maintenance_service.md) | 1 |
+| `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |

@@ -44,7 +44,7 @@ def test_extra_or_missing_archives_cannot_be_selected(tmp_path, extra):
         (tmp_path / "another.whl").write_bytes(b"unselected archive")
     else:
         (tmp_path / names["sdist"]).unlink()
-    with pytest.raises(probe.ProbeError, match="only the two expected"):
+    with pytest.raises(probe.ProbeError, match="only the expected archives"):
         probe.verify_archives(tmp_path, names, hashes)
 
 
@@ -196,3 +196,35 @@ def test_adapter_requires_native_build_and_independent_contracts(tmp_path, monke
         assert "plain 2.5.0 remains affected" in receipt["qualification"]
         assert receipt["contracts"]["status"] == "pass"
         assert receipt["source_sha256"] == hashlib.sha256((ROOT / "release/git_stdin_adapter.cs").read_bytes()).hexdigest()
+
+
+def test_engine_releases_select_and_compare_the_engine_archives(tmp_path):
+    names = probe.artifact_names("4.2.0", engine=True)
+    assert names["engine-wheel"] == "llm_wiki_engine-4.2.0-py3-none-any.whl"
+    assert names["engine-sdist"] == "llm_wiki_engine-4.2.0.tar.gz"
+    hashes = {}
+    for kind, name in names.items():
+        content = (kind + " published archive").encode()
+        (tmp_path / name).write_bytes(content)
+        hashes[kind] = hashlib.sha256(content).hexdigest()
+    probe.verify_archives(tmp_path, names, hashes)
+    with pytest.raises(probe.ProbeError, match="only the expected archives"):
+        probe.verify_archives(tmp_path, probe.artifact_names("4.2.0"), hashes)
+
+    output = tmp_path / "evidence"
+    output.mkdir()
+    for kind in ("wheel", "sdist"):
+        (output / f"{kind}.json").write_text(json.dumps({
+            "artifact": {"sha256": hashes[kind]},
+            "engine_artifact": {"sha256": hashes["engine-" + kind]},
+        }))
+    comparison = {"equal": True, "version": "4.2.0", "wheel_sha256": hashes["wheel"],
+                  "sdist_sha256": hashes["sdist"], "engine_wheel_sha256": hashes["engine-wheel"],
+                  "engine_sdist_sha256": hashes["engine-sdist"]}
+    (output / "comparison.json").write_text(json.dumps(comparison))
+    probe.verify_comparison(output, hashes, "4.2.0")
+    (output / "sdist.json").write_text(json.dumps({
+        "artifact": {"sha256": hashes["sdist"]}, "engine_artifact": {"sha256": "0" * 64},
+    }))
+    with pytest.raises(probe.ProbeError, match="another engine archive"):
+        probe.verify_comparison(output, hashes, "4.2.0")

@@ -5,12 +5,12 @@ from pathlib import Path
 import stat
 import sys
 
-from ..services.io import write_text_output, write_utf8_stdout
-from ..services.request_json import load_request
+from llm_wiki_engine.io import write_text_output, write_utf8_stdout
+from llm_wiki_engine.request_json import load_request
 
 
 def _safe_absolute(value):
-    from ..services.io import first_unsafe_path_component
+    from llm_wiki_engine.io import first_unsafe_path_component
 
     raw = Path(value).expanduser()
     if first_unsafe_path_component(raw) is not None:
@@ -33,7 +33,7 @@ def _parent_stamps(path):
 
 def _compact_outputs(args):
     """Pin explicit artifact destinations before any workspace capture."""
-    from ..services.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     if not getattr(args, "canonical_output", None):
         raise ValueError("Compact delivery requires --canonical-output")
@@ -73,7 +73,7 @@ def _compact_outputs(args):
 
 
 def _publish_compact_outputs(outputs, result):
-    from ..services.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+    from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
 
     for path, _, stamps in outputs:
         if _safe_absolute(path) != path or any(
@@ -140,7 +140,7 @@ def run(args):
     except (ValueError, api.LlmWikiApiError) as exc:
         invalid = isinstance(exc, (ValueError, api.InvalidRequestError))
         details = getattr(exc, "details", None) or {}
-        from ..services.knowledge_storage import KnowledgeStorageError
+        from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 
         cause: BaseException | None = exc
         seen = set()

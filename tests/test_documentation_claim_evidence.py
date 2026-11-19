@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import pytest
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
 from llm_wiki_cli.services.documentation_claim_evidence import (

@@ -1,6 +1,6 @@
 # secure_file Module
 
-**Path:** `src/llm_wiki_cli/services/secure_file.py`
+**Path:** `src/llm_wiki_engine/secure_file.py`
 
 ## Description
 
@@ -21,7 +21,7 @@ Helpers for writing local runtime files with best-effort privacy.
 flowchart LR
     n0["src/llm_wiki_cli/commands/generate_prompt_cmd.py"]
     n1["src/llm_wiki_cli/commands/trigger_cmd.py"]
-    n2["src/llm_wiki_cli/services/secure_file.py"]
+    n2["src/llm_wiki_engine/secure_file.py"]
     n0 --> n2
     n1 --> n0
     n1 --> n2

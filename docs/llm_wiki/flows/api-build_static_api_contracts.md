@@ -2,14 +2,14 @@
 
 **Entry point:** `build_static_api_contracts` (`api`)
 **Source:** [api_contracts](../modules/api_contracts.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [config](../modules/config.md), [imports](../modules/imports.md), [packages](../modules/packages.md), and 3 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [imports](../modules/imports.md), [packages](../modules/packages.md), [path_policy](../modules/path_policy.md), and 3 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
-- [config](../modules/config.md)
 - [imports](../modules/imports.md)
 - [packages](../modules/packages.md)
+- [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [python_imports](../modules/python_imports.md)
 - [validation](../modules/validation.md)
@@ -94,8 +94,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/api_contracts.py:_framework_records` | 2 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/api_contracts.py:_framework_records` | 2 | - | external | 2 |
-| `src/llm_wiki_cli/services/paths.py:is_test_source_path` | 8 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/paths.py:is_test_source_path` | 8 | - | external | 3 |
+| `src/llm_wiki_engine/paths.py:is_test_source_path` | 8 | - | unresolved | 8 |
+| `src/llm_wiki_engine/paths.py:is_test_source_path` | 8 | - | external | 3 |
 | `src/llm_wiki_cli/services/api_contracts.py:build_static_api_contracts` | 1 | - | external | 26 |
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | external | 4 |
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | unresolved | 3 |
@@ -132,9 +132,9 @@ Collector observations for 99 source steps with known totals: observed: 680, emi
 | `isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `is_test_source_path` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `str(…).replace(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `str (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str(…).replace (src/llm_wiki_engine/paths.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str (src/llm_wiki_engine/paths.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PurePosixPath (src/llm_wiki_engine/paths.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -147,9 +147,9 @@ flowchart LR
     s7["7. isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)"]
     s8["8. is_test_source_path"]
     s9["9. str(…).replace(…).strip"]
-    s10["10. str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)"]
-    s11["11. str (src/llm_wiki_cli/services…hs.py:is_test_source_path)"]
-    s12["12. PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)"]
+    s10["10. str(…).replace (src/llm_wiki_engine/paths.py:is_test_source_path)"]
+    s11["11. str (src/llm_wiki_engine/paths.py:is_test_source_path)"]
+    s12["12. PurePosixPath (src/llm_wiki_engine/paths.py:is_test_source_path)"]
     s1 -->|"_framework_records(inventory)"| s2
     s2 -. "inventory.items (src/llm_wiki_cli/services…cts.py:_framework_records)(data not statically known)" .-> s3
     s2 -. "file_data.get (src/llm_wiki_cli/services…cts.py:_framework_records)('frameworks')" .-> s4
@@ -158,9 +158,9 @@ flowchart LR
     s2 -. "isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)(fastapi, Mapping)" .-> s7
     s1 -->|"is_test_source_path(filepath)"| s8
     s8 -. "str(…).replace(…).strip('/')" .-> s9
-    s8 -. "str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)('\\', '/')" .-> s10
-    s8 -. "str (src/llm_wiki_cli/services…hs.py:is_test_source_path)(value)" .-> s11
-    s8 -. "PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)(normalized)" .-> s12
+    s8 -. "str(…).replace (src/llm_wiki_engine/paths.py:is_test_source_path)('\\', '/')" .-> s10
+    s8 -. "str (src/llm_wiki_engine/paths.py:is_test_source_path)(value)" .-> s11
+    s8 -. "PurePosixPath (src/llm_wiki_engine/paths.py:is_test_source_path)(normalized)" .-> s12
     b0["mutation diagnostics.append"]
     s1 -. "mutation diagnostics.append" .-> b0
     b1["mutation diagnostics.append"]
@@ -204,9 +204,9 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)` | - | - | - | - |
 | `is_test_source_path` | `value: str \| Path \| None` | `_TEST_FILE_STEMS` | - | `False`, `False`, `True`, `True`, `True`, `...` |
 | `str(…).replace(…).strip` | - | - | - | - |
-| `str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | - | - | - | - |
-| `str (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | - | - | - | - |
-| `PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | - | - | - | - |
+| `str(…).replace (src/llm_wiki_engine/paths.py:is_test_source_path)` | - | - | - | - |
+| `str (src/llm_wiki_engine/paths.py:is_test_source_path)` | - | - | - | - |
+| `PurePosixPath (src/llm_wiki_engine/paths.py:is_test_source_path)` | - | - | - | - |
 
 ### Call data
 
@@ -219,10 +219,10 @@ flowchart LR
 | _framework_records | frameworks.get | 222 | `frameworks.get('fastapi')` |
 | _framework_records | isinstance (src/llm_wiki_cli/services…cts.py:_framework_records) | 223 | `isinstance(fastapi, Mapping)` |
 | build_static_api_contracts | is_test_source_path | 744 | `is_test_source_path(filepath)` |
-| is_test_source_path | str(…).replace(…).strip | 41 | `str(value).replace('\\', '/').strip('/')` |
-| is_test_source_path | str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 41 | `str(value).replace('\\', '/')` |
-| is_test_source_path | str (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 41 | `str(value)` |
-| is_test_source_path | PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 44 | `PurePosixPath(normalized)` |
+| is_test_source_path | str(…).replace(…).strip | 43 | `str(value).replace('\\', '/').strip('/')` |
+| is_test_source_path | str(…).replace (src/llm_wiki_engine/paths.py:is_test_source_path) | 43 | `str(value).replace('\\', '/')` |
+| is_test_source_path | str (src/llm_wiki_engine/paths.py:is_test_source_path) | 43 | `str(value)` |
+| is_test_source_path | PurePosixPath (src/llm_wiki_engine/paths.py:is_test_source_path) | 46 | `PurePosixPath(normalized)` |
 
 ### Boundary effects
 
@@ -246,9 +246,9 @@ flowchart LR
 | external_call | `_framework_records` | `isinstance` | 222 |
 | unresolved_call | `_framework_records` | `frameworks.get` | 222 |
 | external_call | `_framework_records` | `isinstance` | 223 |
-| unresolved_call | `is_test_source_path` | `str(value).replace('\\', '/').strip` | 41 |
-| unresolved_call | `is_test_source_path` | `str(value).replace` | 41 |
-| external_call | `is_test_source_path` | `PurePosixPath` | 44 |
+| unresolved_call | `is_test_source_path` | `str(value).replace('\\', '/').strip` | 43 |
+| unresolved_call | `is_test_source_path` | `str(value).replace` | 43 |
+| external_call | `is_test_source_path` | `PurePosixPath` | 46 |
 | step_limit | `build_static_api_contracts` | `first 12 steps` | 0 |
 | truncated_flow | `build_static_api_contracts` | `depth limit` | 0 |
 

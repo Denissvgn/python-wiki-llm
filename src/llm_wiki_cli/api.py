@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .services import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 import argparse
 import inspect
@@ -31,6 +31,7 @@ from .services.ci_installer import (
     install_documentation_ci_workflow as _install_documentation_ci_workflow,
 )
 from .services import context_service as context_cmd
+from llm_wiki_engine import query_result_format
 from .services import extraction_service as extract_cmd
 from .api_types import (
     CalleesResult,
@@ -73,9 +74,10 @@ from .config import (
     validate_source_root,
 )
 from .services import context_packet as context_packet_service
+from .services import context_packet_builder
 from .services.context_budget import BudgetedContext as BudgetedContext
 from .services.token_counting import TokenCounter as TokenCounter
-from .services.workflow_profile import (
+from llm_wiki_engine.workflow_profile import (
     WorkflowProfile as WorkflowProfile, WorkflowPolicy as WorkflowPolicy, WorkflowRequestError,
 )
 from .services.task_contract import TaskContext as TaskContext
@@ -84,12 +86,12 @@ from .services.context_session import (
     ContextSession as _ContextSession, SessionReply as SessionReply,
     CompactSessionReply as CompactSessionReply, CanonicalReceipt as CanonicalReceipt,
 )
-from .services.context_knowledge_contract import (
+from llm_wiki_engine.context_knowledge_contract import (
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
 )
-from .services import wiki_surface
-from .services.contracts import (
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION,
@@ -118,6 +120,9 @@ from .services.bootstrap_service import (
     BootstrapResult,
     BootstrapServiceError,
 )
+from .services.lint_request import LintRequest, LintRequestError
+from .services.migrate_service import MigrateError, MigrateOutcome, MigrateRequest, MigrateRequestError
+from .services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequestError
 from .services.dependencies import analyze_dependencies
 from .services.doctor_service import build_doctor_report
 from .services.documentation_queries import (
@@ -135,11 +140,11 @@ from .services.documentation_query_builder import (
     normalize_supplied_paths,
     supplied_paths_from_unified_diff,
 )
-from .services.knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
-from .services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
@@ -186,10 +191,10 @@ from .services.documentation_wiki_input import (
 )
 
 from .services.entrypoints import build_flow
-from .services.wiki_surface_index import evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .services.source_snapshot import SourceSnapshotError
-from .services.source_selection import SourceSelectionError
-from .services.knowledge_coverage import KNOWLEDGE_COVERAGE_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SourceSelectionError
+from llm_wiki_engine.knowledge_coverage import KNOWLEDGE_COVERAGE_SCHEMA_VERSION
 from .services.native_inspection import NATIVE_INSPECTION_SCHEMA_VERSION
 
 if TYPE_CHECKING:
@@ -215,14 +220,14 @@ if TYPE_CHECKING:
 
 QualifiedContextPacket = context_packet_service.QualifiedContextPacket
 ContextPacketValidation = context_packet_service.ContextPacketValidation
-ContextBasisComparison = context_packet_service.ContextBasisComparison
-ContextPacketReconciliation = context_packet_service.ContextPacketReconciliation
+ContextBasisComparison = context_packet_builder.ContextBasisComparison
+ContextPacketReconciliation = context_packet_builder.ContextPacketReconciliation
 ContextPacketError = context_packet_service.ContextPacketError
 ContextPacketMalformedError = context_packet_service.ContextPacketMalformedError
 ContextPacketSourceMutationError = (
-    context_packet_service.ContextPacketSourceMutationError
+    context_packet_builder.ContextPacketSourceMutationError
 )
-ContextPacketUnavailableError = context_packet_service.ContextPacketUnavailableError
+ContextPacketUnavailableError = context_packet_builder.ContextPacketUnavailableError
 ContextPacketPathPolicyError = context_packet_service.ContextPacketPathPolicyError
 
 _CALIBRATION_CONTROLLER_TYPE_EXPORTS = frozenset(
@@ -468,7 +473,7 @@ def _path_error_field(message: str) -> str:
 def _raise_context_packet_api_error(exc: BaseException) -> NoReturn:
     """Keep packet exception catch points while preserving safe failure details."""
     _raise_required_knowledge_api_error(exc)
-    failure = context_packet_service.describe_context_packet_error(exc)
+    failure = context_packet_builder.describe_context_packet_error(exc)
     leaf = (
         WorkspaceStateError
         if failure["code"] in {
@@ -670,9 +675,9 @@ def _raise_api_error(exc: Exception) -> NoReturn:
 
 def _is_maintenance_error(exc: Exception) -> bool:
     return type(exc).__module__ in {
-        "llm_wiki_cli.services.maintenance_protocol",
-        "llm_wiki_cli.services.maintenance_shapes",
-        "llm_wiki_cli.services.maintenance_state",
+        "llm_wiki_engine.maintenance_protocol",
+        "llm_wiki_engine.maintenance_shapes",
+        "llm_wiki_engine.maintenance_state",
     } and type(exc).__name__ in {"MaintenanceProtocolError", "MaintenanceError"}
 
 
@@ -858,9 +863,9 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
 
 def _raise_native_query_api_error(exc: Exception) -> NoReturn:
     """Retain public catch points while exposing only fixed query diagnostics."""
-    from .services.knowledge_loader import KnowledgeStateLoadError
-    from .services.knowledge_storage import KnowledgeStorageError
-    from .services.validation import require_portable_relative_path
+    from llm_wiki_engine.knowledge_loader import KnowledgeStateLoadError
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.validation import require_portable_relative_path
 
     chain: list[BaseException] = []
     current: BaseException | None = exc
@@ -910,7 +915,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             (item for item in chain if isinstance(item, PathValidationError)), None
         )
         if path_error is not None and field == "request":
-            field = context_packet_service.describe_context_packet_error(path_error)[
+            field = context_packet_builder.describe_context_packet_error(path_error)[
                 "details"
             ]["field"]
         mutation = next(
@@ -918,7 +923,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
                 item
                 for item in chain
                 if isinstance(
-                    item, context_packet_service.ContextPacketSourceMutationError
+                    item, context_packet_builder.ContextPacketSourceMutationError
                 )
             ),
             None,
@@ -940,7 +945,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
         ):
             leaf, code, field = WorkspaceStateError, "workspace-state-error", "src_dir"
         elif any(
-            isinstance(item, context_packet_service.ContextPacketUnavailableError)
+            isinstance(item, context_packet_builder.ContextPacketUnavailableError)
             for item in chain
         ):
             leaf, code = WorkspaceStateError, "workspace-state-error"
@@ -960,7 +965,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             code = "workspace-state-error" if missing else "artifact-integrity-error"
             field = "wiki_dir"
         elif path_error is not None:
-            failure = context_packet_service.describe_context_packet_error(path_error)
+            failure = context_packet_builder.describe_context_packet_error(path_error)
             code, field = failure["code"], failure["details"]["field"]
             leaf = (
                 WorkspaceStateError
@@ -1051,11 +1056,11 @@ def get_knowledge_coverage(
     apply only to a new live capture; this operation never initializes agents
     or writes projections.
     """
-    from .services.knowledge_consumption import (
+    from llm_wiki_engine.knowledge_consumption import (
         KnowledgeReadView,
         load_knowledge_read_view,
     )
-    from .services.knowledge_coverage import build_knowledge_coverage
+    from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
 
     for field, value in (("live", live), ("allow_external_src", allow_external_src)):
         if not isinstance(value, bool):
@@ -1091,7 +1096,7 @@ def get_knowledge_coverage(
             )
         return cast(KnowledgeCoverageResult, build_knowledge_coverage(view))
     if live:
-        captured = context_packet_service.capture_context_read(
+        captured = context_packet_builder.capture_context_read(
             src_dir,
             wiki_dir,
             read_only=True,
@@ -1102,18 +1107,18 @@ def get_knowledge_coverage(
             else str(helper_cache_dir),
         )
         payload = build_knowledge_coverage(captured.knowledge_view)
-        context_packet_service._assert_source_unchanged(
+        context_packet_builder._assert_source_unchanged(
             captured.source_snapshot, captured.source_anchor
         )
-        context_packet_service._assert_wiki_unchanged(
+        context_packet_builder._assert_wiki_unchanged(
             captured.wiki_root, captured.wiki_anchor
         )
     else:
         wiki_root = _validate_wiki_dir(wiki_dir)
-        anchor = context_packet_service._wiki_anchor(wiki_root)
+        anchor = context_packet_builder._wiki_anchor(wiki_root)
         view = load_knowledge_read_view(wiki_root, snapshot_only=True)
         payload = build_knowledge_coverage(view)
-        context_packet_service._assert_wiki_unchanged(wiki_root, anchor)
+        context_packet_builder._assert_wiki_unchanged(wiki_root, anchor)
     return cast(KnowledgeCoverageResult, payload)
 
 
@@ -1231,6 +1236,153 @@ def bootstrap_wiki(
         raise WorkspaceStateError(str(exc)) from exc
     except BootstrapServiceError as exc:
         raise WorkspaceStateError(str(exc)) from exc
+
+
+@_api_boundary
+def sync_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    dry_run: bool = False,
+    force: bool = False,
+    preserve_semantic: bool = True,
+    initialize_surfaces: list[str] | None = None,
+    flow_categories: list[str] | None = None,
+    exclude_tests: bool = False,
+    include_tests: list[str] | None = None,
+    openapi_file: str | None = None,
+    clear_openapi_file: bool = False,
+    helper_cache_dir: str | None = None,
+    trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
+    knowledge_format: str | None = None,
+    rebuild_knowledge: bool = False,
+) -> SyncOutcome:
+    """Incrementally update a managed wiki from its source tree.
+
+    Runs the same sync as ``llm-wiki sync`` without its console output.
+    Source plugins load only when ``trust_source_plugins`` is true. A wiki
+    that sync cannot update (for example one without a manifest) raises
+    :class:`WorkspaceStateError`; contradictory options raise
+    :class:`InvalidRequestError`.
+    """
+
+    from llm_wiki_engine.host import discarding_output
+    from .services.sync_runtime import execute_sync
+
+    request = SyncRequest(
+        source_root=source_root,
+        wiki_root=wiki_root,
+        dry_run=dry_run,
+        force=force,
+        plugins=trust_source_plugins,
+        preserve_semantic=preserve_semantic,
+        initialize_surfaces=initialize_surfaces,
+        flow_categories=flow_categories,
+        exclude_tests=exclude_tests,
+        include_tests=include_tests,
+        openapi_file=openapi_file,
+        clear_openapi_file=clear_openapi_file,
+        helper_cache_dir=helper_cache_dir,
+        source_selection=source_selection,
+        knowledge_format=knowledge_format,
+        rebuild_knowledge=rebuild_knowledge,
+    )
+    try:
+        with discarding_output():
+            return execute_sync(request)
+    except SyncRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    except SyncError as exc:
+        raise WorkspaceStateError(str(exc)) from exc
+
+
+@_api_boundary
+def migrate_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    dry_run: bool = False,
+    chunk_size: int | None = None,
+    chunk: int | None = None,
+    plan_chunks: bool = False,
+    trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
+) -> MigrateOutcome:
+    """Bring a wiki written by an older llm-wiki to the current page naming.
+
+    Runs the same migration as ``llm-wiki migrate`` without its console
+    output. ``chunk_size`` splits the work into reviewable chunks and
+    ``chunk`` applies one of them. Project plugins load only when
+    ``trust_source_plugins`` is true. A wiki the migration cannot read raises
+    :class:`WorkspaceStateError`; invalid options raise
+    :class:`InvalidRequestError`.
+    """
+
+    from llm_wiki_engine.host import discarding_output
+    from .services.migrate_runtime import execute_migrate
+
+    request = MigrateRequest(
+        source_root=source_root,
+        wiki_root=wiki_root,
+        dry_run=dry_run,
+        chunk_size=chunk_size,
+        chunk=chunk,
+        plan_chunks=plan_chunks,
+        plugins=trust_source_plugins,
+        source_selection=source_selection,
+    )
+    try:
+        with discarding_output():
+            return execute_migrate(request)
+    except MigrateRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    except MigrateError as exc:
+        raise WorkspaceStateError(str(exc)) from exc
+
+
+@_api_boundary
+def lint_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    strict: bool = False,
+    knowledge_drift_report: bool = False,
+    include_tests: list[str] | None = None,
+    helper_cache_dir: str | None = None,
+    trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
+    media_size_warn_bytes: int | None = None,
+) -> dict[str, Any]:
+    """Check a wiki against its source tree and return the lint report.
+
+    Runs the same checks as ``llm-wiki lint`` without its console output and
+    returns the JSON-ready report: ``ok``, ``issue_count``, ``issues`` and
+    ``diagnostics``. A failing lint is a result, not an error. Project plugins
+    run only when ``trust_source_plugins`` is true. Paths outside the
+    workspace raise :class:`InvalidRequestError`.
+    """
+
+    from llm_wiki_engine.host import discarding_output
+    from .services.lint_service import execute_lint, report_to_dict
+
+    request = LintRequest(
+        wiki_root=wiki_root,
+        source_root=source_root,
+        strict=strict,
+        plugins=trust_source_plugins,
+        knowledge_drift_report=knowledge_drift_report,
+        include_tests=include_tests,
+        helper_cache_dir=helper_cache_dir,
+        source_selection=source_selection,
+        media_size_warn_bytes=media_size_warn_bytes,
+    )
+    try:
+        with discarding_output():
+            report = execute_lint(request)
+    except LintRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    return report_to_dict(report)
 
 
 @_api_boundary
@@ -1464,7 +1616,7 @@ def search_wiki(
 ) -> SearchResult:
     """Search canonical wiki pages with bounded, deterministic lexical ranking."""
     from .services.search_service import search_wiki as search
-    from .services.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
+    from llm_wiki_engine.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
     try:
         return cast(SearchResult, search(query, src_dir=src_dir, wiki_dir=wiki_dir,
@@ -1492,7 +1644,7 @@ def load_workflow_profile(
     path: str | Path, *, policy: WorkflowPolicy | None = None,
 ) -> WorkflowProfile:
     """Load an explicitly selected profile within trusted host ceilings."""
-    from .services.workflow_profile import load_profile
+    from llm_wiki_engine.workflow_profile import load_profile
 
     return load_profile(path, policy=policy)
 
@@ -1530,7 +1682,7 @@ def validate_task_context(
 @_api_boundary
 def expand_task_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
     """Expand compact storage proof data; validate its task binding separately."""
-    from .services.storage_receipts import expand_storage_receipt
+    from llm_wiki_engine.storage_receipts import expand_storage_receipt
 
     return expand_storage_receipt(receipt)
 
@@ -1741,7 +1893,7 @@ def acknowledge_maintenance(
 ) -> MaintenanceAcknowledgmentResult:
     """Acknowledge exactly reviewed current source/prose with an explicit actor."""
     from .services.maintenance_service import acknowledge_maintenance_authority
-    from .services.maintenance_state import _detached, maintenance_core
+    from llm_wiki_engine.maintenance_state import _detached, maintenance_core
     if type(allow_external_src) is not bool:
         raise ValueError("allow_external_src must be a boolean")
     basis = _detached(expected_basis)
@@ -1771,7 +1923,7 @@ def recover_maintenance(
 ) -> MaintenanceRecoveryResult:
     """Restore verified authority; unanchored authored bytes require later sync."""
     from .services.maintenance_service import recover_maintenance_authority
-    from .services.maintenance_state import _identity
+    from llm_wiki_engine.maintenance_state import _identity
     if type(allow_prepared_adoption) is not bool or type(allow_captured_preimage) is not bool:
         raise ValueError("Maintenance recovery modes must be booleans")
     _identity(expected_adoption_id)
@@ -1840,7 +1992,7 @@ def build_qualified_context(
             }
 
     try:
-        packet = context_packet_service.build_qualified_context(
+        packet = context_packet_builder.build_qualified_context(
             src_dir,
             wiki_dir,
             packet_request,
@@ -1880,7 +2032,7 @@ def compare_context_packet_basis(
     """Compare caller basis without upgrading it to a currentness claim."""
 
     try:
-        comparison = context_packet_service.compare_context_packet_basis(
+        comparison = context_packet_builder.compare_context_packet_basis(
             packet_bytes,
             expected_basis,
         )
@@ -1904,7 +2056,7 @@ def reconcile_context_packet(
     """Reconcile packet facets against one fresh official read."""
 
     try:
-        reconciliation = context_packet_service.reconcile_context_packet(
+        reconciliation = context_packet_builder.reconcile_context_packet(
             packet_bytes,
             src_dir,
             wiki_dir,
@@ -2676,7 +2828,7 @@ def explain_evidence(
     )
 
 
-DOCUMENTATION_QUERY_SCHEMA_VERSION = "llm-wiki-documentation-query/v1"
+DOCUMENTATION_QUERY_SCHEMA_VERSION = query_result_format.DOCUMENTATION_QUERY_SCHEMA_VERSION
 MAX_RAW_QUERY_EVIDENCE_BYTES = 64 * 1024
 _DOCUMENTATION_QUERY_FIELDS = {
     "explain": frozenset({"operation", "value", "source", "limit", "live", "allow_full_inventory"}),
@@ -3062,7 +3214,7 @@ def _impact_query(
     source_policy = request.get("source_policy", "explicit")
     checked_paths = selected_paths
     if source_policy == "discovery":
-        from .services.source_selection import resolve_source_selection, path_is_selected
+        from llm_wiki_engine.source_selection import resolve_source_selection, path_is_selected
         policy = resolve_source_selection(src_root, source_selection)
         if policy is not None:
             checked_paths = tuple(path for path in selected_paths if path != policy.path and path_is_selected(policy, path))
@@ -4039,6 +4191,9 @@ __all__ = [
     "BootstrapError",
     "BootstrapRequest",
     "BootstrapResult",
+    "MigrateOutcome",
+    "SyncOutcome",
+    "SyncRequest",
     "BootstrapServiceError",
     "CalleesResult",
     "CallersResult",
@@ -4145,6 +4300,9 @@ __all__ = [
     "BudgetedContext",
     "TokenCounter",
     "bootstrap_wiki",
+    "sync_wiki",
+    "lint_wiki",
+    "migrate_wiki",
     "build_documentation_query_service",
     "callees",
     "callers",

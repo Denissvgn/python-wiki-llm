@@ -33,15 +33,13 @@ One command's captured prior commit, including explicit absent/invalid state.
 ```mermaid
 flowchart LR
     n0["CommittedKnowledgeState (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n1["_preflight_sync_governance (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n2["_try_sync_knowledge_reuse (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["_previous_committed_artifacts (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n4["_previous_committed_producer (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n5["capture_committed_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n6["committed_governance_bundle_id (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["committed_runtime_provenance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n9["src/llm_wiki_cli/services/wiki_write_basis.py"]
+    n1["_previous_committed_artifacts (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n2["_previous_committed_producer (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n3["capture_committed_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n4["committed_governance_bundle_id (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["committed_runtime_provenance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["_preflight_sync_governance (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n7["_try_sync_knowledge_reuse (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -49,18 +47,14 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
-    n8 --> n0
-    n9 --> n0
     click n0 "../modules/knowledge_orchestration.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/sync_cmd.md"
+    click n1 "../modules/knowledge_orchestration.md"
+    click n2 "../modules/knowledge_orchestration.md"
     click n3 "../modules/knowledge_orchestration.md"
     click n4 "../modules/knowledge_orchestration.md"
     click n5 "../modules/knowledge_orchestration.md"
-    click n6 "../modules/knowledge_orchestration.md"
-    click n7 "../modules/knowledge_orchestration.md"
-    click n8 "../modules/maintenance_protocol.md"
-    click n9 "../modules/wiki_write_basis.md"
+    click n6 "../modules/sync_runtime.md"
+    click n7 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -73,13 +67,11 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_preflight_sync_governance` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_try_sync_knowledge_reuse` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_previous_committed_artifacts` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_previous_committed_producer` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `capture_committed_knowledge` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
 | `capture_committed_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `committed_governance_bundle_id` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `committed_runtime_provenance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
-| `maintenance_protocol` | import | [maintenance_protocol](../modules/maintenance_protocol.md) | — |
-| `wiki_write_basis` | import | [wiki_write_basis](../modules/wiki_write_basis.md) | — |
+| `_preflight_sync_governance` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_try_sync_knowledge_reuse` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |

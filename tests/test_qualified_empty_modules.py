@@ -12,9 +12,9 @@ import pytest
 from llm_wiki_cli.commands import sync_cmd
 from llm_wiki_cli.services import sync_analysis_cache
 from llm_wiki_cli.services.extraction_service import get_inventory_result
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
 from llm_wiki_cli.services.lint_service import build_report
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from tests.test_sync_page_transitions import _bootstrap_project, _draft_source, _sync, _author_description
 from tests.test_entity_retirement import _snapshot, _assert_retired
@@ -52,15 +52,62 @@ def test_parser_owned_python_empty_keeps_module_and_authored_history(tmp_path, m
     assert _snapshot(wiki) == stable
 
 
-@pytest.mark.parametrize('body', ['class Draft(:\n', 'import sys\nfrom pkg import other\nsys.modules[__name__] = other\n'])
-def test_parse_failure_and_module_alias_do_not_become_empty(tmp_path, monkeypatch, body):
+def test_parse_failure_does_not_become_empty(tmp_path, monkeypatch):
     project, wiki = _bootstrap_project(tmp_path, monkeypatch, {'model.py': _draft_source('Original draft.')})
     before = _snapshot(wiki)
-    (project / 'pkg/model.py').write_text(body)
+    (project / 'pkg/model.py').write_text('class Draft(:\n')
     with pytest.raises(SystemExit):
         _sync(wiki)
     assert _snapshot(wiki) == before
     assert not SyncManifest.load(wiki).generation_inputs.get('entity_retirement')
+
+
+ALIAS = 'import sys\nfrom pkg import other\nsys.modules[__name__] = other\n'
+
+
+def test_module_alias_retires_its_module_and_moves_its_declarations(tmp_path, monkeypatch):
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {
+        'model.py': _draft_source('Original draft.'), 'other.py': 'VALUE = 1\n',
+    })
+    _author_description(wiki / 'entities/Draft.md', 'Original draft.', 'Authored entity history.')
+    _sync(wiki)
+    assert SyncManifest.load(wiki).page_source_mappings['entities/Draft.md'].source_path == 'pkg/model.py'
+    (project / 'pkg/other.py').write_text(_draft_source('Original draft.') + '\nVALUE = 1\n')
+    (project / 'pkg/model.py').write_text(ALIAS)
+    _sync(wiki)
+    current = SyncManifest.load(wiki)
+    assert 'pkg/model.py' not in current.sources
+    assert (wiki / 'modules/model.md').read_text().startswith(sync_cmd._DEPRECATION_HEADER)
+    assert current.page_source_mappings['entities/Draft.md'].source_path == 'pkg/other.py'
+    assert 'Authored entity history.' in (wiki / 'entities/Draft.md').read_text()
+    # Like a removed source, the stale module page waits for its audit.
+    assert {issue.target for issue in build_report(str(wiki), '.', strict=True).by_category()['stale_modules']} == {'model'}
+    (wiki / 'modules/model.md').unlink()
+    _sync(wiki)
+    assert build_report(str(wiki), '.', strict=True).passed
+    stable = _snapshot(wiki)
+    _sync(wiki)
+    assert _snapshot(wiki) == stable
+    _sync(wiki, no_cache=True)
+    assert _snapshot(wiki) == stable
+
+
+@pytest.mark.parametrize('reason', ['no-documentable-content', 'outcome-not-reported'])
+def test_only_a_reported_module_alias_retires_a_still_captured_module(tmp_path, monkeypatch, reason):
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {'model.py': _draft_source('Original draft.')})
+    (project / 'pkg/model.py').write_text(ALIAS)
+    before = _snapshot(wiki)
+    original = sync_cmd.get_inventory_result
+    def collect(*args, **kwargs):
+        result = original(*args, **kwargs)
+        if kwargs.get('capture_path_outcomes'):
+            outcome = {'extraction_state': 'no-documentable-content', 'reason': reason}
+            return replace(result, path_outcomes={'pkg/model.py': outcome})
+        return result
+    monkeypatch.setattr(sync_cmd, 'get_inventory_result', collect)
+    with pytest.raises(SystemExit):
+        _sync(wiki)
+    assert _snapshot(wiki) == before
 
 
 def test_narrow_diagnostic_retry_never_reads_unrequested_source(tmp_path, monkeypatch):

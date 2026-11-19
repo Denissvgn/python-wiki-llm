@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from . import analysis_compatibility as ac
-from ..config import DEFAULT_WIKI_DIR
+from llm_wiki_engine import analysis_compatibility as ac
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR
 from .context_session import ContextSession
 from .task_compact import CompactTaskContext
 

@@ -1,6 +1,6 @@
 # knowledge_verification Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_verification.py`
+**Path:** `src/llm_wiki_engine/knowledge_verification.py`
 
 ## Description
 
@@ -15,12 +15,12 @@ checker, and returns the same coordinate-keyed summaries to every consumer.
 | Source | Symbols |
 |--------|---------|
 | `.knowledge_consumption` | `KnowledgeReadView`, `MachineVerificationAvailability`, `MachineVerificationReadView`, `_validated_artifacts_for_view` |
-| `.knowledge_evidence` | `hash_json` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.verification_contracts` | `VerificationReceipt`, `VerificationResult`, `build_artifact_verification_context`, `evaluate_verification_receipt`, `load_verification_receipt` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `replace` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `pathlib` | `Path` |
 | `types` | `MappingProxyType` |
 | `typing` | `Any` |
@@ -31,54 +31,56 @@ checker, and returns the same coordinate-keyed summaries to every consumer.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/context_packet.py"]
+    n1["src/llm_wiki_cli/services/context_packet_builder.py"]
     n2["src/llm_wiki_cli/services/context_service.py"]
     n3["src/llm_wiki_cli/services/documentation_query_builder.py"]
-    n4["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n6["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n7["src/llm_wiki_cli/services/knowledge_verification.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
-    n9["src/llm_wiki_cli/services/verification_contracts.py"]
+    n4["src/llm_wiki_cli/services/lint_service.py"]
+    n5["src/llm_wiki_engine/knowledge_consumption.py"]
+    n6["src/llm_wiki_engine/knowledge_evidence.py"]
+    n7["src/llm_wiki_engine/knowledge_governance.py"]
+    n8["src/llm_wiki_engine/knowledge_verification.py"]
+    n9["src/llm_wiki_engine/verification_contracts.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n0 --> n7
+    n0 --> n5
+    n0 --> n8
     n1 --> n2
     n1 --> n3
-    n1 --> n4
     n1 --> n5
     n1 --> n6
     n1 --> n7
+    n1 --> n8
     n2 --> n1
     n2 --> n3
-    n2 --> n4
-    n2 --> n7
+    n2 --> n5
+    n2 --> n8
     n3 --> n1
     n3 --> n2
-    n3 --> n4
-    n3 --> n7
+    n3 --> n5
+    n3 --> n8
+    n4 --> n5
     n4 --> n7
-    n6 --> n5
-    n7 --> n4
-    n7 --> n5
+    n4 --> n8
+    n4 --> n9
+    n5 --> n6
+    n5 --> n8
     n7 --> n6
-    n7 --> n9
-    n8 --> n4
+    n8 --> n5
     n8 --> n6
     n8 --> n7
     n8 --> n9
-    n9 --> n5
+    n9 --> n6
     click n0 "../modules/api.md"
-    click n1 "../modules/context_packet.md"
+    click n1 "../modules/context_packet_builder.md"
     click n2 "../modules/context_service.md"
     click n3 "../modules/documentation_query_builder.md"
-    click n4 "../modules/knowledge_consumption.md"
-    click n5 "../modules/knowledge_evidence.md"
-    click n6 "../modules/knowledge_governance.md"
-    click n7 "../modules/knowledge_verification.md"
-    click n8 "../modules/lint_service.md"
+    click n4 "../modules/lint_service.md"
+    click n5 "../modules/knowledge_consumption.md"
+    click n6 "../modules/knowledge_evidence.md"
+    click n7 "../modules/knowledge_governance.md"
+    click n8 "../modules/knowledge_verification.md"
     click n9 "../modules/verification_contracts.md"
 ```
 
@@ -87,11 +89,11 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
-| Inbound | [context_packet](../modules/context_packet.md) |
+| Inbound | [context_packet_builder](../modules/context_packet_builder.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
-| Inbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
+| Inbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 | Outbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |

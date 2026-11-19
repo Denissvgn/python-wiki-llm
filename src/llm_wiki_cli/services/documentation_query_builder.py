@@ -11,12 +11,12 @@ import shlex
 from time import perf_counter_ns
 from typing import Any
 
-from .concept_identity import (
+from llm_wiki_engine.concept_identity import (
     ConceptIdentityError,
     validate_concept_uid,
     validate_natural_key,
 )
-from . import wiki_surface
+from llm_wiki_engine import wiki_surface
 from .dependencies import analyze_dependencies
 from .documentation_queries import (
     DocumentationGraphQueryService,
@@ -24,23 +24,23 @@ from .documentation_queries import (
     QUERY_IDENTITY_BYTE_LIMIT,
 )
 from .entrypoints import build_flow
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeReadView,
     attach_implementation_read_view,
     load_knowledge_read_view,
 )
-from .knowledge_verification import (
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .sync_manifest import SyncManifest, SyncManifestError
-from .validation import require_portable_relative_path
-from .wiki_surface_index import evaluate_surface_index
+from llm_wiki_engine.sync_manifest import SyncManifest, SyncManifestError
+from llm_wiki_engine.validation import require_portable_relative_path
+from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .source_snapshot import SourceSnapshot, build_source_snapshot, capture_source_selection_inputs
 
 _UNSET_LIVE_SELECTION_INPUTS = object()
@@ -436,7 +436,7 @@ def build_snapshot_documentation_query_service(
     limit: int,
 ) -> DocumentationGraphQueryService:
     """Build a snapshot-only service without source extraction."""
-    from .context_packet import _assert_wiki_unchanged, _wiki_anchor
+    from .context_packet_builder import _assert_wiki_unchanged, _wiki_anchor
 
     anchor = _wiki_anchor(wiki_root)
     view = load_knowledge_read_view(
@@ -489,7 +489,7 @@ def build_live_documentation_query_service(
     # Keep heavyweight extraction/context modules out of this builder's import
     # path until a live query service is requested.
     from . import context_service, extraction_service
-    from .context_packet import (
+    from .context_packet_builder import (
         _assert_source_unchanged,
         _assert_wiki_unchanged,
         _source_anchor,
@@ -677,8 +677,8 @@ def build_live_documentation_query_service(
         )
     if (isinstance(knowledge_view, KnowledgeReadView) and inventory_result is not None
             and knowledge_view.manifest_basis is not None and knowledge_view.manifest_basis.maintenance_state is not None):
-        from .maintenance_status import attach_maintenance_view_from_inputs
-        from .knowledge_storage_io import read_guarded
+        from llm_wiki_engine.maintenance_status import attach_maintenance_view_from_inputs
+        from llm_wiki_engine.knowledge_storage_io import read_guarded
         maintenance_surface = surface_evaluation if selected_paths is None else surface_evaluator(wiki_root, inventory, src_dir=source_root, entry_points=entrypoints)
         raw_pages = {path: read_guarded(wiki_root / path, 64 * 1024 * 1024).content for path in maintenance_surface.content_by_path}
         knowledge_view = attach_maintenance_view_from_inputs(knowledge_view, inventory_result,

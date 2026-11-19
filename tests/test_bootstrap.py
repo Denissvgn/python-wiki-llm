@@ -33,9 +33,9 @@ from llm_wiki_cli.services.diagrams import (
     GENERATED_DIAGRAM_NODE_LIMIT,
 )
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.wiki_surface import is_safe_page_id, iter_directory_kinds
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.wiki_surface import is_safe_page_id, iter_directory_kinds
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
 _GIT_AVAILABLE = shutil.which("git") is not None
@@ -4508,7 +4508,7 @@ def test_alias_preview_fence_keeps_its_trailing_line_break(ending):
 
 def test_overload_projection_preserves_implementation_identity_and_declared_signatures():
     from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md, _generate_entity_md
-    from llm_wiki_cli.services.markdown_sections import section_body
+    from llm_wiki_engine.markdown_sections import section_body
     declaration = {'name': 'read', 'line': 2, 'type_params': ['T'],
                    'params': [{'name': 'value', 'type': 'T', 'optional': True}, {'name': 'items', 'type': 'T[]', 'rest': True}],
                    'return_type': 'T'}

@@ -1,6 +1,6 @@
 # KnowledgeLoadIssue
 
-**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:48`
+**Location:** `src/llm_wiki_engine/knowledge_loader.py:48`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_loader](../modules/knowledge_loader.md)
@@ -29,15 +29,16 @@ One stable, path-safe artifact load diagnostic.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeLoadIssue (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n1["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["_unsupported_reason (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n3["KnowledgeReadView.findings (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n4["_issue_from_artifact_error (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n5["_live_governance_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n6["_load_manifest (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n7["_load_once (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n8["_marker_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n0["KnowledgeLoadIssue (src/llm_wiki_engine/knowledge_loader.py)"]
+    n1["capture_context_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n2["_load_knowledge_lint_state (src/llm_wiki_cli/services/lint_service.py)"]
+    n3["_projection_issue_category (src/llm_wiki_cli/services/lint_service.py)"]
+    n4["_unsupported_reason (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n5["KnowledgeReadView.findings (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n6["_issue_from_artifact_error (src/llm_wiki_engine/knowledge_loader.py)"]
+    n7["_live_governance_issues (src/llm_wiki_engine/knowledge_loader.py)"]
+    n8["_load_manifest (src/llm_wiki_engine/knowledge_loader.py)"]
+    n9["_load_once (src/llm_wiki_engine/knowledge_loader.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -46,15 +47,17 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_loader.md"
-    click n1 "../modules/context_packet.md"
-    click n2 "../modules/knowledge_consumption.md"
-    click n3 "../modules/knowledge_consumption.md"
-    click n4 "../modules/knowledge_loader.md"
-    click n5 "../modules/knowledge_loader.md"
+    click n1 "../modules/context_packet_builder.md"
+    click n2 "../modules/lint_service.md"
+    click n3 "../modules/lint_service.md"
+    click n4 "../modules/knowledge_consumption.md"
+    click n5 "../modules/knowledge_consumption.md"
     click n6 "../modules/knowledge_loader.md"
     click n7 "../modules/knowledge_loader.md"
     click n8 "../modules/knowledge_loader.md"
+    click n9 "../modules/knowledge_loader.md"
 ```
 
 ### Summary
@@ -67,7 +70,9 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `capture_context_read` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
+| `_load_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_projection_issue_category` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_unsupported_reason` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `KnowledgeReadView.findings` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `_issue_from_artifact_error` | call | [knowledge_loader](../modules/knowledge_loader.md) | 1 |
@@ -77,7 +82,5 @@ flowchart LR
 | `_load_manifest` | call | [knowledge_loader](../modules/knowledge_loader.md) | 4 |
 | `_load_manifest` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `_load_once` | call | [knowledge_loader](../modules/knowledge_loader.md) | 7 |
-| `_marker_issues` | call | [knowledge_loader](../modules/knowledge_loader.md) | 1 |
-| `_marker_issues` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 
 > References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

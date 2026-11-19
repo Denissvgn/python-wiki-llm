@@ -1,0 +1,2846 @@
+"""Declarations of every ``llm-wiki`` command, option and default.
+
+The parser is built here without importing command implementations, so the
+CLI reference and other readers can describe the CLI without loading the
+application or the public API. ``llm_wiki_cli.cli`` adds dispatch.
+"""
+
+import argparse
+
+from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
+from llm_wiki_engine.contracts import (
+    BOOTSTRAP_SKIP_DATA_FLOW_FLAG,
+    INITIALIZABLE_SURFACES,
+    SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
+)
+from .services.extraction_jobs import ExtractionJobsAction
+from llm_wiki_engine.knowledge_governance import ACTOR_KINDS, ALIAS_LOCATOR, ALIAS_NATURAL_KEY
+from llm_wiki_engine.knowledge_model import KnowledgeProjectionProfile
+from .services.maintenance_queue import (
+    DEFAULT_QUEUE_LIMIT,
+    MAX_QUEUE_LIMIT,
+    MIN_QUEUE_LIMIT,
+    validate_queue_limit,
+)
+from .services.site_export import (
+    SUPPORTED_KNOWLEDGE_METADATA,
+    SUPPORTED_SITE_FORMATS,
+    SUPPORTED_SITE_PROFILES,
+)
+from .services.site_html_check import SUPPORTED_LINK_MODES
+from . import __version__
+
+# Values shared with the command implementations, which import them from here.
+DEFAULT_MAX_PROMPT_BYTES = 2_000_000
+CHANGE_TYPES = ("auto", "refactor", "feature", "bugfix", "dependency", "generic")
+SITE_FORMAT_CHOICES = sorted(SUPPORTED_SITE_FORMATS)
+SITE_PROFILE_CHOICES = sorted(SUPPORTED_SITE_PROFILES)
+LINK_MODE_CHOICES = sorted(SUPPORTED_LINK_MODES)
+KNOWLEDGE_METADATA_CHOICES = sorted(SUPPORTED_KNOWLEDGE_METADATA)
+KNOWLEDGE_PROFILE_CHOICES = sorted(
+    profile.value for profile in KnowledgeProjectionProfile
+)
+KNOWLEDGE_MODE_CHOICES = tuple(
+    sorted(SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES)
+)
+
+
+class _ExplicitContextOption(argparse.Action):
+    """Retain which semantic options were supplied beside a request file."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        supplied = getattr(namespace, "_explicit_context_options", frozenset())
+        setattr(namespace, "_explicit_context_options", supplied | {self.dest})
+
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return parsed
+
+
+def _nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must not be negative")
+    return parsed
+
+
+def _queue_limit(value: str) -> int:
+    try:
+        return validate_queue_limit(int(value))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def _nonblank_query(value: str) -> str:
+    if not value.strip():
+        raise argparse.ArgumentTypeError("must contain a non-whitespace character")
+    return value
+
+
+def _surface_values(value: str) -> tuple[str, ...]:
+    values = tuple(part.strip().lower() for part in value.split(",") if part.strip())
+    if not values:
+        raise argparse.ArgumentTypeError("must name at least one surface")
+    invalid = [
+        surface for surface in values if surface not in INITIALIZABLE_SURFACES
+    ]
+    if invalid:
+        allowed = ", ".join(INITIALIZABLE_SURFACES)
+        raise argparse.ArgumentTypeError(
+            f"unknown surface {invalid[0]!r}; choose from: {allowed}"
+        )
+    return values
+
+
+def _add_helper_cache_argument(parser):
+    parser.add_argument(
+        "--helper-cache-dir",
+        default=None,
+        metavar="PATH",
+        help=HELPER_CACHE_HELP,
+    )
+
+
+def _add_include_tests_argument(parser):
+    parser.add_argument(
+        "--include-tests",
+        action="append",
+        choices=INCLUDE_TEST_LANGUAGES,
+        default=None,
+        help=INCLUDE_TESTS_HELP,
+    )
+
+
+def _add_source_selection_argument(parser):
+    parser.add_argument(
+        "--source-selection",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Repository-relative source-selection JSON override; otherwise "
+            "discover .llm-wiki/source-selection.json under --src-dir"
+        ),
+    )
+
+
+def _add_jobs_argument(parser):
+    parser.set_defaults(requested_jobs=1)
+    parser.add_argument(
+        "--jobs",
+        action=ExtractionJobsAction,
+        default=1,
+        metavar="JOBS",
+        help=(
+            "Parallel extractor jobs for built-ins and opted-in plugins: "
+            "positive integer or 'auto' (default: 1)"
+        ),
+    )
+
+
+HELPER_CACHE_HELP = (
+    "Directory for prepared TypeScript/JavaScript/Go/Rust/Haskell extractor helpers"
+)
+
+
+INCLUDE_TEST_LANGUAGES = ("go",)
+
+
+INCLUDE_TESTS_HELP = (
+    "Include language-specific test files in extraction; may be repeated"
+)
+
+
+def _add_queue_command(subparsers):
+    parser = subparsers.add_parser("queue", help="Rank advisory managed-wiki maintenance work")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument(
+        "--limit",
+        type=_queue_limit,
+        default=DEFAULT_QUEUE_LIMIT,
+        help=(
+            f"Maximum items, {MIN_QUEUE_LIMIT} to {MAX_QUEUE_LIMIT} "
+            f"(default: {DEFAULT_QUEUE_LIMIT})"
+        ),
+    )
+    parser.add_argument("--format", choices=("text", "json"), default="text")
+    _add_source_selection_argument(parser)
+    _add_helper_cache_argument(parser)
+
+
+def _add_maintenance_command(subparsers):
+    parser = subparsers.add_parser("maintenance", help="Adopt, inspect, acknowledge or recover ordinary prose review")
+    actions = parser.add_subparsers(dest="maintenance_action", required=True)
+    for name in ("adopt", "status", "acknowledge", "recover", "recover-new-pages"):
+        action = actions.add_parser(name)
+        action.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+        action.add_argument("--format", choices=("text", "json"), default="text" if name == "status" else "json")
+        if name == "recover-new-pages":
+            action.add_argument("--recovery-dir", required=True)
+            action.add_argument("--expected-journal-hash", required=True)
+            action.add_argument("--dry-run", action="store_true")
+            continue
+        if name != "recover":
+            action.add_argument("--src-dir", default=".")
+            action.add_argument("--allow-external-src", action="store_true")
+            _add_source_selection_argument(action)
+            _add_helper_cache_argument(action)
+        if name in {"adopt", "recover"}:
+            action.add_argument("--recovery-dir", required=True)
+        elif name == "acknowledge":
+            action.add_argument("--recovery-dir")
+        if name == "adopt":
+            action.add_argument("--manifest-format", choices=("v7", "indexed-v8"))
+        elif name == "status":
+            action.add_argument("--record-id")
+            action.add_argument("--limit", type=_queue_limit, default=30)
+            mode = action.add_mutually_exclusive_group()
+            mode.add_argument("--snapshot", action="store_true")
+            mode.add_argument("--live", dest="snapshot", action="store_false")
+            action.set_defaults(snapshot=False)
+        elif name == "acknowledge":
+            action.add_argument("--record-id", required=True)
+            action.add_argument("--expected-state-hash", required=True)
+            action.add_argument("--basis-file", required=True, help="Exact expected_basis JSON from current status; '-' reads stdin")
+            action.add_argument("--actor-kind", choices=("agent", "human"), required=True)
+            action.add_argument("--actor-id", required=True)
+        else:
+            action.add_argument("--src-dir")
+            action.add_argument("--expected-adoption-id", required=True)
+            action.add_argument("--allow-prepared-adoption", action="store_true")
+            action.add_argument("--allow-captured-preimage", action="store_true")
+
+
+def _build_parser():
+    parser = argparse.ArgumentParser(description="LLM Wiki CLI")
+    parser.add_argument(
+        "--version", action="version", version=f"llm-wiki {__version__}"
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    _register_commands(subparsers)
+    _add_helper_preparation_arguments(parser)
+    return parser
+
+
+def build_cli_parser() -> argparse.ArgumentParser:
+    """Build the declared CLI without parsing arguments or running commands."""
+    return _build_parser()
+
+
+def _add_helper_preparation_arguments(parser):
+    """Accept the operation policy before or after nested command names."""
+    parser.add_argument(
+        "--helper-preparation", choices=("auto", "never"), default=argparse.SUPPRESS,
+        help="Prepare needed bundled helpers automatically, or reuse existing helpers only",
+    )
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for child in action.choices.values():
+                _add_helper_preparation_arguments(child)
+
+
+def _add_query_command(subparsers):
+    parser = subparsers.add_parser("query", help="Run an exact documentation query",
+        epilog='Evidence diagnosis: --request FILE accepts {"operation":"explain","source":"SOURCE","limit":5}. '
+        'Snapshot is default; ambiguous sources return choices. Live comparison needs live=true and allow_full_inventory=true (full inventory). '
+        'Keep source/wiki roots, selection and helper cache. Raw one-file JSON: extract --deep --read-only --paths SOURCE. Reads do not repair stored evidence.')
+    parser.add_argument("--request", required=True, help="JSON request file, or - for stdin (1 MiB maximum)")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--output", help="Write the JSON response to this file")
+    parser.add_argument("--helper-cache-dir", help="Helper cache base for evidence explanation")
+    _add_source_selection_argument(parser)
+
+
+def _add_task_context_command(subparsers):
+    parser = subparsers.add_parser("task-context", help="Build bounded qualified context for an explicit task")
+    parser.add_argument("--request", required=True, help="JSON request file, or - for stdin")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--profile", help="Explicit workflow profile JSON")
+    parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON (Python 3.11+ and [tokens])")
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
+    parser.add_argument("--output", help="Write the selected context view to this file")
+    parser.add_argument("--view", choices=["canonical", "compact", "compact-v1", "compact-v2"], default="canonical",
+                        help="Explicit presentation; canonical remains the default")
+    parser.add_argument("--view-budget-tokens", type=int,
+                        help="Separate compact text budget within the host ceiling")
+    parser.add_argument("--canonical-output",
+                        help="Required compact host receipt destination outside source and wiki trees")
+    _add_source_selection_argument(parser)
+    _add_helper_cache_argument(parser)
+
+
+def _register_commands(subparsers):
+    _add_reference_command(subparsers)
+    _add_init_command(subparsers)
+    _add_extract_command(subparsers)
+    _add_lint_command(subparsers)
+    _add_prepare_extractors_command(subparsers)
+    _add_ci_check_command(subparsers)
+    _add_install_ci_command(subparsers)
+    _add_install_command(subparsers)
+    _add_knowledge_command(subparsers)
+    _add_plugins_command(subparsers)
+    _add_team_command(subparsers)
+    _add_trigger_agent_command(subparsers)
+    _add_bootstrap_command(subparsers)
+    _add_bump_command(subparsers)
+    _add_generate_prompt_command(subparsers)
+    _add_metrics_command(subparsers)
+    _add_review_command(subparsers)
+    _add_search_command(subparsers)
+    _add_api_diff_command(subparsers)
+    _add_uninstall_command(subparsers)
+    _add_status_command(subparsers)
+    _add_queue_command(subparsers)
+    _add_maintenance_command(subparsers)
+    _add_query_command(subparsers)
+    _add_task_context_command(subparsers)
+    _add_mcp_command(subparsers)
+    _add_obsidian_command(subparsers)
+    _add_site_command(subparsers)
+    _add_skills_command(subparsers)
+    _add_release_command(subparsers)
+    _add_upgrade_command(subparsers)
+    _add_sync_command(subparsers)
+    _add_migrate_command(subparsers)
+    _add_context_command(subparsers)
+    _add_docs_command(subparsers)
+    _add_doctor_command(subparsers)
+
+
+def _add_doctor_command(subparsers):
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="Report current wiki knowledge health with CI-friendly exit codes",
+    )
+    doctor_contract = doctor_parser.add_mutually_exclusive_group()
+    doctor_contract.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
+    doctor_contract.add_argument("--analysis-inputs", action="store_true", help="Check installed provider input classification without scanning project source")
+    doctor_contract.add_argument("--target-runtime", metavar="JSON", help="Compare committed wiki runtime prerequisites with project-owned target declarations, without scanning source or executing targets")
+    doctor_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
+    doctor_contract.add_argument("--report-schema", choices=("auto", "v1", "v3", "v4"), default="auto", help="Health report schema; v3 includes captured coverage and producer details")
+    doctor_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to inspect (default: docs/llm_wiki)",
+    )
+    doctor_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory to compare with the wiki",
+    )
+    doctor_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    doctor_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    doctor_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help=("Classify indeterminate or source-byte drift as unhealthy"),
+    )
+    _add_helper_cache_argument(doctor_parser)
+    _add_include_tests_argument(doctor_parser)
+    _add_source_selection_argument(doctor_parser)
+    _add_jobs_argument(doctor_parser)
+
+
+def _add_init_command(subparsers):
+    init_parser = subparsers.add_parser(
+        "init", help="Scaffold LLM Wiki structure and schema"
+    )
+    init_parser.add_argument(
+        "--agent",
+        choices=AGENT_CHOICES,
+        default=None,
+        help="Target agent format (default: stored agent, or generic for a new project)",
+    )
+    init_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to create (default: docs/llm_wiki)",
+    )
+    init_parser.add_argument(
+        "--no-quality-hints",
+        action="store_true",
+        default=None,
+        help="Omit agent quality guidelines from the constraint block",
+    )
+    init_parser.add_argument(
+        "--no-skills",
+        action="store_true",
+        default=None,
+        help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
+    )
+    init_parser.add_argument(
+        "--prepare-extractors",
+        action="store_true",
+        help=(
+            "Prepare missing or stale helpers for selected source languages during "
+            "setup; may download dependencies or compile bundled helpers"
+        ),
+    )
+    _add_helper_cache_argument(init_parser)
+    init_issue_reporting = init_parser.add_mutually_exclusive_group()
+    init_issue_reporting.add_argument(
+        "--issue-reporting",
+        dest="issue_reporting",
+        action="store_true",
+        default=None,
+        help="Include local agent instructions for llm-wiki tool issues; does not submit reports",
+    )
+    init_issue_reporting.add_argument(
+        "--no-issue-reporting",
+        dest="issue_reporting",
+        action="store_false",
+        help="Omit local agent instructions for reporting llm-wiki tool issues (default)",
+    )
+    _add_source_selection_argument(init_parser)
+
+
+def _add_extract_command(subparsers):
+    extract_parser = subparsers.add_parser(
+        "extract", help="Extract project AST and structure into wiki",
+        epilog='One-file JSON inspection: llm-wiki extract --deep --read-only --paths SOURCE --src-dir . '
+        'Preserve the original source selection and helper cache. This read does not install helpers or repair a stored manifest. '
+        'Inspect captured qualification with query --request FILE (operation: explain); use the exact authorized helper remedy, then preview owning sync before repair.'
+    )
+    extract_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan"
+    )
+    extract_parser.add_argument(
+        "--changed",
+        action="store_true",
+        help="Only extract files changed in the last git commit",
+    )
+    extract_parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Compact output: file paths with class/function names only",
+    )
+    extract_parser.add_argument(
+        "--paths",
+        nargs="+",
+        metavar="FILE",
+        help="Only extract specific file paths (relative to --src-dir)",
+    )
+    extract_parser.add_argument(
+        "--deep",
+        action="store_true",
+        help="Include docstrings, params, attributes, and imports",
+    )
+    extract_parser.add_argument(
+        "--openapi-file",
+        default=None,
+        metavar="PATH",
+        help="Use a source-contained OpenAPI 3.0/3.1 JSON or YAML contract (requires --deep)",
+    )
+    extract_parser.add_argument(
+        "--package",
+        default=None,
+        metavar="NAME",
+        help="Only include files belonging to the named package",
+    )
+    extract_parser.add_argument(
+        "--include-empty",
+        action="store_true",
+        help="Include all .py files even if they have no extractable components",
+    )
+    _add_include_tests_argument(extract_parser)
+    _add_helper_cache_argument(extract_parser)
+    _add_source_selection_argument(extract_parser)
+    extract_parser.add_argument(
+        "--output", metavar="PATH", help="Write JSON output to a file instead of stdout"
+    )
+    extract_parser.add_argument(
+        "--read-only",
+        action="store_true",
+        help="Guarantee source-adapter mode writes no llm-wiki files except explicit --output",
+    )
+    extract_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+
+
+def _add_progress_arguments(parser):
+    parser.add_argument(
+        "--progress",
+        choices=("auto", "always", "never"),
+        default="auto",
+        help="Emit bounded phase progress on stderr",
+    )
+    parser.add_argument(
+        "--progress-format",
+        choices=("text", "json"),
+        default="text",
+        help="Phase event format on stderr",
+    )
+
+
+def _add_lint_command(subparsers):
+    lint_parser = subparsers.add_parser(
+        "lint", help="Lint LLM Wiki for broken links, orphans, and AST drift"
+    )
+    _add_progress_arguments(lint_parser)
+    lint_parser.add_argument(
+        "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to lint"
+    )
+    lint_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to cross-reference against"
+    )
+    lint_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    lint_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Require core wiki structure and a fresh sync manifest",
+    )
+    lint_parser.add_argument(
+        "--knowledge-drift-report",
+        action="store_true",
+        help=(
+            "Run strict lint and include native freshness/drift findings as "
+            "nonblocking diagnostics (default: disabled)"
+        ),
+    )
+    lint_parser.add_argument(
+        "--profile",
+        action="store_true",
+        help="Print combined lint report and phase timings as JSON",
+    )
+    lint_parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable persistent inventory cache for this run",
+    )
+    lint_parser.add_argument(
+        "--rebuild-cache",
+        action="store_true",
+        help="Ignore existing inventory cache and rewrite it after extraction",
+    )
+    lint_parser.add_argument(
+        "--cache-stats",
+        action="store_true",
+        help="Include inventory cache diagnostics in lint output",
+    )
+    lint_parser.add_argument(
+        "--cache-dir",
+        default=None,
+        metavar="PATH",
+        help="Directory for llm-wiki-inventory-cache.json",
+    )
+    lint_parser.add_argument(
+        "--media-size-warn-bytes",
+        type=_positive_int,
+        default=None,
+        metavar="BYTES",
+        help="Warn when a referenced media asset exceeds this size in bytes",
+    )
+    _add_helper_cache_argument(lint_parser)
+    _add_include_tests_argument(lint_parser)
+    _add_source_selection_argument(lint_parser)
+    _add_jobs_argument(lint_parser)
+
+
+def _add_prepare_extractors_command(subparsers):
+    prepare_parser = subparsers.add_parser(
+        "prepare-extractors",
+        help="Prepare TypeScript/JavaScript, Go, Rust, and Haskell extractor helpers",
+    )
+    prepare_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to inspect"
+    )
+    prepare_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    prepare_parser.add_argument(
+        "--cache-dir",
+        default=None,
+        metavar="PATH",
+        help="Directory for extractor helper cache",
+    )
+    prepare_parser.add_argument(
+        "--language",
+        action="append",
+        choices=["typescript", "go", "rust", "haskell"],
+        help="Helper language to prepare; may be repeated",
+    )
+    prepare_parser.add_argument(
+        "--plan",
+        action="store_true",
+        help="Print the selected helper languages without preparing or writing them",
+    )
+    prepare_parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Plan output format (default: text; requires --plan for JSON)",
+    )
+    _add_source_selection_argument(prepare_parser)
+
+
+def _add_ci_check_command(subparsers):
+    ci_parser = subparsers.add_parser(
+        "ci-check", help="Run strict wiki validation and write a CI report"
+    )
+    _add_progress_arguments(ci_parser)
+    ci_parser.add_argument("--storage-check", action="store_true", help="Include native storage size policy in the existing report")
+    ci_parser.add_argument("--storage-git-base", default=None, help="Explicit excluded ref for the storage Git check")
+    ci_parser.add_argument("--storage-git-head", default=None, help="Explicit included ref for the storage Git check")
+    ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    ci_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    ci_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to validate (default: docs/llm_wiki)",
+    )
+    ci_parser.add_argument(
+        "--format",
+        choices=["text", "json", "markdown"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    report_destination = ci_parser.add_mutually_exclusive_group()
+    report_destination.add_argument(
+        "--report",
+        default=None,
+        help="Markdown report path (default: .git/llm-wiki-ci-report.md)",
+    )
+    report_destination.add_argument(
+        "--no-report", action="store_true", help="Disable the Markdown report file"
+    )
+    ci_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
+    ci_parser.add_argument(
+        "--report-schema",
+        choices=("auto", "v1", "v2", "v3", "v4"),
+        default="auto",
+        help="JSON result schema; v2 includes runtime output status, v3 adds detailed knowledge health",
+    )
+    ci_parser.add_argument(
+        "--cache-dir", metavar="PATH", help="Inventory cache directory"
+    )
+    ci_parser.add_argument(
+        "--no-cache", action="store_true", help="Disable inventory caching"
+    )
+    ci_parser.add_argument(
+        "--rebuild-cache", action="store_true", help="Rebuild inventory cache"
+    )
+    ci_parser.add_argument(
+        "--cache-stats", action="store_true", help="Include cache diagnostics"
+    )
+    ci_parser.add_argument(
+        "--knowledge-drift-report",
+        action="store_true",
+        help=(
+            "Include native freshness/drift findings as nonblocking diagnostics "
+            "(default: disabled)"
+        ),
+    )
+    ci_parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        help="Disable project-local extractor, generation, and lint plugins",
+    )
+    _add_helper_cache_argument(ci_parser)
+    _add_include_tests_argument(ci_parser)
+    _add_source_selection_argument(ci_parser)
+    _add_jobs_argument(ci_parser)
+
+
+def _add_install_ci_command(subparsers):
+    install_ci_parser = subparsers.add_parser(
+        "install-ci",
+        help="Install a portable integrity or documentation workflow",
+    )
+    install_ci_parser.add_argument(
+        "--action-ref",
+        required=True,
+        metavar="SHA",
+        help=(
+            "Immutable 40-hex commit containing the selected reusable action "
+            "(a v4-capable action for integrity); "
+            "SHA spelling checked offline"
+        ),
+    )
+    install_ci_parser.add_argument(
+        "--profile",
+        choices=("integrity", "documentation"),
+        default="integrity",
+        help="Select the managed workflow (default: integrity)",
+    )
+    install_ci_parser.add_argument(
+        "--src-dir",
+        help="Project-relative source directory (defaults to the configured documentation source or .)",
+    )
+    install_ci_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Managed wiki directory (default: docs/llm_wiki)",
+    )
+    install_ci_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the workflow without writing it",
+    )
+    install_ci_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace a workflow not recognized as unmodified llm-wiki output",
+    )
+    docs_ci = install_ci_parser.add_argument_group("documentation profile")
+    docs_ci.add_argument(
+        "--working-directory",
+        help="Consumer directory within the repository (default: .)",
+    )
+    docs_ci.add_argument(
+        "--config",
+        help="Consumer publication configuration (default: .llm-wiki/publication.json)",
+    )
+    docs_ci.add_argument(
+        "--target-dir", help="Project-relative local public wiki snapshot"
+    )
+    docs_ci.add_argument("--baseline", help="Accepted publication basis JSON")
+    docs_ci.add_argument("--reviews", help="Accepted topic review ledger JSON")
+    docs_ci.add_argument(
+        "--previous-receipt", help="Previous accepted ownership receipt JSON"
+    )
+    docs_ci.add_argument(
+        "--candidate-review", help="Accepted exact-artifact approval JSON"
+    )
+    docs_ci.add_argument(
+        "--require-ready",
+        action="store_true",
+        help="Require exact candidate approval in CI",
+    )
+
+
+def _add_install_command(subparsers):
+    install_parser = subparsers.add_parser(
+        "install", help="Install a local llm-wiki plugin"
+    )
+    install_parser.add_argument("ref", help="Local plugin path or local catalog name")
+    install_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory used to refresh active agent skills",
+    )
+    install_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the plugin without installing it",
+    )
+    install_parser.add_argument(
+        "--yes", action="store_true", help="Install without prompting for confirmation"
+    )
+
+
+def _add_knowledge_wiki_argument(parser):
+    parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory (default: docs/llm_wiki)",
+    )
+
+
+def _add_knowledge_dry_run(parser):
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the complete change without writing files",
+    )
+
+
+def _add_governance_actor_arguments(parser):
+    parser.add_argument(
+        "--actor-kind",
+        choices=sorted(ACTOR_KINDS),
+        required=True,
+        help="Explicit lifecycle-event actor kind",
+    )
+    parser.add_argument(
+        "--actor-id",
+        required=True,
+        help="Explicit lifecycle-event actor identifier",
+    )
+    parser.add_argument(
+        "--authored-at",
+        required=True,
+        metavar="RFC3339",
+        help="Real authored event time with timezone",
+    )
+
+
+def _add_lifecycle_arguments(
+    parser,
+    *,
+    reason: str,
+    successor: bool = False,
+):
+    _add_knowledge_wiki_argument(parser)
+    parser.add_argument("--uid", required=True, help="Stable concept UID")
+    if successor:
+        parser.add_argument(
+            "--successor-uid",
+            required=True,
+            help="Different existing UID that supersedes this concept",
+        )
+    _add_governance_actor_arguments(parser)
+    parser.add_argument(
+        "--reason",
+        default=reason,
+        help="Lowercase machine reason recorded with the event",
+    )
+    _add_knowledge_dry_run(parser)
+
+
+def _add_knowledge_command(subparsers):
+    knowledge = subparsers.add_parser(
+        "knowledge",
+        help="Manage durable concept identity, lifecycle, review, and verification",
+    )
+    actions = knowledge.add_subparsers(dest="knowledge_action", required=True)
+
+    storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
+    _add_knowledge_wiki_argument(storage_migrate)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "indexed-v6", "indexed-v8"], required=True)
+    storage_migrate.add_argument("--recovery-dir", default=None,
+                                 help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
+    _add_knowledge_dry_run(storage_migrate)
+    storage_recover = actions.add_parser("recover-storage", help="Restore the verified snapshot of an interrupted storage migration")
+    _add_knowledge_wiki_argument(storage_recover)
+    storage_recover.add_argument("--recovery-dir", required=True)
+    _add_knowledge_dry_run(storage_recover)
+    storage_export = actions.add_parser("export-storage", help="Export complete bounded v1 knowledge for an older consumer")
+    _add_knowledge_wiki_argument(storage_export)
+    storage_export.add_argument("--to", choices=["v1"], required=True)
+    storage_export.add_argument("--output", required=True, help="New output file outside the managed wiki")
+    storage_prune = actions.add_parser("prune-storage", help="Preview cleanup of owned unreferenced storage objects")
+    _add_knowledge_wiki_argument(storage_prune)
+    storage_prune.add_argument("--apply", action="store_true", help="Remove the listed safe objects after full validation")
+    storage_prune.add_argument("--plan", help="Require this exact generation-bound cleanup plan")
+    storage_prune.add_argument("--save-plan", help="Write a new bounded cleanup plan file")
+    storage_prune.add_argument("--recovery-dir", help="Directory for verified cleanup preimages")
+    storage_prune.add_argument("--max-bytes", type=int, default=1_073_741_824, help="Maximum orphan bytes inspected")
+    storage_restore = actions.add_parser("restore-pruned", help="Restore verified cleanup preimages without changing authority")
+    _add_knowledge_wiki_argument(storage_restore)
+    storage_restore.add_argument("--recovery-manifest", required=True)
+    storage_restore.add_argument("--apply", action="store_true", help="Restore absent owned files")
+    storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
+    _add_knowledge_wiki_argument(storage_check)
+    storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
+    storage_check.add_argument("--require-referenced", action="store_true",
+                               help="Require a complete read-only audit with zero unreferenced or unrecognized storage objects")
+    storage_check.add_argument("--stream", action="store_true",
+                               help="Bounded complete storage/routing audit; companion authority is outside this scope")
+    storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
+    storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
+    storage_check.add_argument("--format", choices=["json"], default="json")
+    git_check = actions.add_parser(
+        "git-check",
+        help="Inspect Git delivery policy for every required native snapshot file",
+    )
+    _add_knowledge_wiki_argument(git_check)
+    git_check.add_argument(
+        "--staged",
+        action="store_true",
+        help="Require a complete current staged snapshot and Git-eligible policy",
+    )
+    git_check.add_argument("--format", choices=["json"], default="json")
+    for action in ("inspect-storage", "diff-storage"):
+        review = actions.add_parser(action, help="Review logical knowledge records independently of physical storage")
+        _add_knowledge_wiki_argument(review)
+        review.add_argument("--limit", type=int, default=100, help="Maximum returned records (default: 100)")
+        review.add_argument("--max-bytes", type=int, default=262_144, help="Maximum JSON output bytes (default: 262144)")
+        review.add_argument("--cursor", default=None, help="Continue the same snapshot review using next_cursor")
+        review.add_argument("--record-index", type=int, default=None, help="Read exact canonical record bytes at this review ordinal")
+        review.add_argument("--review-id", default=None, help="Required snapshot/scope binding for --record-index")
+        review.add_argument("--record-offset", type=int, default=0, help="Byte offset for a bounded record chunk (default: 0)")
+        if action == "diff-storage":
+            review.add_argument("--against-wiki", required=True, help="Other complete wiki snapshot to compare")
+        else:
+            review.add_argument("--selector", action="append", default=None,
+                                help="Explicit scoped inspection (repeatable); unread records remain unverified")
+
+    initialize = actions.add_parser(
+        "init",
+        help="Initialize stable bundle identity and allocate concept UIDs",
+    )
+    _add_knowledge_wiki_argument(initialize)
+    initialize.add_argument(
+        "--bundle-id",
+        default=None,
+        help="Explicit stable bundle ID; generated securely when omitted",
+    )
+    _add_knowledge_dry_run(initialize)
+
+    status = actions.add_parser(
+        "status",
+        help="Show validated governance, lifecycle, and review state",
+    )
+    _add_knowledge_wiki_argument(status)
+    status.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format (default: text)",
+    )
+    status.add_argument(
+        "--event-limit",
+        type=_positive_int,
+        default=20,
+        help="Maximum lifecycle and review events shown per concept",
+    )
+
+    coverage = actions.add_parser(
+        "coverage", help="Explain modeled, unmodeled and compared native observations",
+    )
+    _add_knowledge_wiki_argument(coverage)
+    coverage.add_argument("--src-dir", default=".")
+    coverage.add_argument("--allow-external-src", action="store_true")
+    coverage.add_argument("--live", action="store_true", help="Capture a full source inventory and evaluate freshness; default is snapshot-only")
+    coverage.add_argument("--format", choices=("text", "json"), default="text")
+    _add_source_selection_argument(coverage)
+    _add_helper_cache_argument(coverage)
+
+    move = actions.add_parser(
+        "move",
+        help="Explicitly carry one UID to a new current locator and natural key",
+    )
+    _add_knowledge_wiki_argument(move)
+    move.add_argument("--uid", required=True, help="Stable concept UID")
+    move.add_argument(
+        "--locator",
+        "--to-locator",
+        dest="locator",
+        required=True,
+        help="New canonical concept locator",
+    )
+    move.add_argument(
+        "--natural-key",
+        "--to-natural-key",
+        dest="natural_key",
+        required=True,
+        help="New stable-allocation natural key",
+    )
+    _add_knowledge_dry_run(move)
+
+    alias = actions.add_parser(
+        "alias",
+        help="Add one explicit historical locator or natural-key alias",
+    )
+    _add_knowledge_wiki_argument(alias)
+    alias.add_argument("--uid", required=True, help="Stable concept UID")
+    alias.add_argument(
+        "--type",
+        dest="alias_type",
+        choices=(
+            ALIAS_LOCATOR,
+            ALIAS_NATURAL_KEY,
+        ),
+        required=True,
+        help="Alias coordinate type",
+    )
+    alias.add_argument("--value", required=True, help="Historical alias value")
+    _add_knowledge_dry_run(alias)
+
+    lifecycle = actions.add_parser(
+        "lifecycle",
+        help="Append an explicit lifecycle transition",
+    )
+    lifecycle_actions = lifecycle.add_subparsers(
+        dest="lifecycle_action",
+        required=True,
+    )
+    lifecycle_set = lifecycle_actions.add_parser(
+        "set",
+        help="Set an allowed lifecycle state",
+    )
+    _add_lifecycle_arguments(
+        lifecycle_set,
+        reason="explicit-lifecycle-change",
+    )
+    lifecycle_set.add_argument(
+        "--state",
+        choices=("draft", "active", "deprecated", "superseded"),
+        required=True,
+    )
+    lifecycle_set.add_argument(
+        "--successor-uid",
+        default=None,
+        help="Required only when --state superseded",
+    )
+
+    lifecycle_deprecate = lifecycle_actions.add_parser(
+        "deprecate",
+        help="Explicitly deprecate one concept",
+    )
+    _add_lifecycle_arguments(
+        lifecycle_deprecate,
+        reason="explicit-deprecation",
+    )
+    lifecycle_supersede = lifecycle_actions.add_parser(
+        "supersede",
+        help="Explicitly supersede one concept",
+    )
+    _add_lifecycle_arguments(
+        lifecycle_supersede,
+        reason="explicit-supersession",
+        successor=True,
+    )
+
+    deprecate = actions.add_parser(
+        "deprecate",
+        help="Explicitly deprecate one concept",
+    )
+    _add_lifecycle_arguments(
+        deprecate,
+        reason="explicit-deprecation",
+    )
+    supersede = actions.add_parser(
+        "supersede",
+        help="Explicitly supersede one concept",
+    )
+    _add_lifecycle_arguments(
+        supersede,
+        reason="explicit-supersession",
+        successor=True,
+    )
+
+    review = actions.add_parser(
+        "review",
+        help="Record a digest-bound human review of one semantic section",
+    )
+    _add_knowledge_wiki_argument(review)
+    review.add_argument("--uid", required=True, help="Stable concept UID")
+    review.add_argument(
+        "--section",
+        required=True,
+        help="Exact semantic section locator",
+    )
+    review.add_argument(
+        "--reviewer-kind",
+        choices=("human",),
+        required=True,
+        help="Explicit reviewer actor kind",
+    )
+    review.add_argument(
+        "--reviewer-id",
+        required=True,
+        help="Explicit reviewer identifier",
+    )
+    review.add_argument(
+        "--method",
+        required=True,
+        help="Review method identifier",
+    )
+    review.add_argument(
+        "--method-version",
+        required=True,
+        help="Review method version",
+    )
+    review.add_argument(
+        "--authored-at",
+        required=True,
+        metavar="RFC3339",
+        help="Real authored event time with timezone",
+    )
+    _add_knowledge_dry_run(review)
+
+    verify = actions.add_parser(
+        "verify",
+        help="Explicitly run application-owned pure knowledge checkers",
+    )
+    _add_knowledge_wiki_argument(verify)
+    verify.add_argument(
+        "--checker",
+        action="append",
+        choices=("artifact-integrity", "internal-links"),
+        default=None,
+        help="Application-owned checker ID; may be repeated (default: all)",
+    )
+    verify.add_argument(
+        "--uid",
+        default=None,
+        help="Limit checker scope to one current governed concept UID",
+    )
+    _add_knowledge_dry_run(verify)
+
+
+def _add_plugins_command(subparsers):
+    plugins_parser = subparsers.add_parser(
+        "plugins", help="Manage installed llm-wiki plugins"
+    )
+    plugins_sub = plugins_parser.add_subparsers(dest="plugins_action", required=True)
+    plugins_sub.add_parser("list", help="List installed plugins")
+    plugins_samples = plugins_sub.add_parser(
+        "samples", help="List or export bundled sample plugins"
+    )
+    samples_sub = plugins_samples.add_subparsers(dest="samples_action", required=True)
+    samples_sub.add_parser("list", help="List bundled sample plugins")
+    samples_export = samples_sub.add_parser(
+        "export", help="Export a bundled sample plugin to a local directory"
+    )
+    samples_export.add_argument("sample_id", help="Bundled sample plugin id")
+    samples_export.add_argument(
+        "--dest",
+        required=True,
+        metavar="PATH",
+        help="Destination directory for the exported sample plugin",
+    )
+    samples_export.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite an existing exported sample plugin directory",
+    )
+    plugins_remove = plugins_sub.add_parser("remove", help="Remove an installed plugin")
+    plugins_remove.add_argument("plugin_id", help="Plugin id to remove")
+    plugins_remove.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory for path validation",
+    )
+    plugins_validate = plugins_sub.add_parser(
+        "validate", help="Validate a local plugin manifest"
+    )
+    plugins_validate.add_argument(
+        "path", help="Plugin directory or llm-wiki-plugin.json path"
+    )
+
+
+def _add_team_command(subparsers):
+    team_parser = subparsers.add_parser(
+        "team", help="Manage shared llm-wiki team policy"
+    )
+    team_sub = team_parser.add_subparsers(dest="team_action", required=True)
+    team_init = team_sub.add_parser("init", help="Create .llm-wiki/team.json")
+    team_init.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to record in team config",
+    )
+    team_check = team_sub.add_parser(
+        "check", help="Validate team config and conventions"
+    )
+    team_check.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_check.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    team_check.add_argument(
+        "--wiki-dir",
+        default=None,
+        help="Wiki directory to validate (default: configured team wiki)",
+    )
+    team_check.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    _add_source_selection_argument(team_check)
+    _add_helper_cache_argument(team_check)
+    _add_include_tests_argument(team_check)
+    _add_jobs_argument(team_check)
+    team_check.add_argument(
+        "--no-plugins", action="store_true", help="Disable project-local extractors"
+    )
+    team_resolve = team_sub.add_parser(
+        "resolve-conflicts", help="Safely resolve generated wiki conflicts"
+    )
+    team_resolve.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_resolve.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    team_resolve.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to scan for conflict markers",
+    )
+    team_resolve.add_argument(
+        "--write",
+        action="store_true",
+        help="Apply safe resolutions instead of dry-running",
+    )
+    team_resolve.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    _add_source_selection_argument(team_resolve)
+
+
+def _add_trigger_agent_command(subparsers):
+    trigger_parser = subparsers.add_parser(
+        "trigger-agent", help="Manually trigger a CLI agent to update wiki using diff"
+    )
+    trigger_parser.add_argument(
+        "--agent",
+        choices=AGENT_CHOICES,
+        default="claude",
+        help="Agent executable to invoke for manual trigger-agent sync",
+    )
+    trigger_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to update (default: docs/llm_wiki)",
+    )
+    trigger_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory to scan (default: current directory)",
+    )
+    trigger_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    trigger_parser.add_argument(
+        "--reset-breaker",
+        action="store_true",
+        help="Reset the circuit breaker after consecutive failures and exit",
+    )
+    trigger_parser.add_argument(
+        "--timeout",
+        type=int,
+        default=300,
+        help="Timeout in seconds for the subagent process (default: 300)",
+    )
+    trigger_parser.add_argument(
+        "--max-diff-lines",
+        type=int,
+        default=1000,
+        help="Skip sync if diff exceeds this many lines (default: 1000)",
+    )
+    trigger_parser.add_argument(
+        "--max-prompt-bytes",
+        type=_positive_int,
+        default=None,
+        help=f"Skip sync if generated prompt exceeds this many bytes (default: {DEFAULT_MAX_PROMPT_BYTES})",
+    )
+    trigger_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Bypass diff and prompt size guards (does not bypass lock or circuit breaker)",
+    )
+    _add_source_selection_argument(trigger_parser)
+
+
+def _add_bootstrap_command(subparsers):
+    bootstrap_parser = subparsers.add_parser(
+        "bootstrap", help="Generate initial wiki for an existing codebase"
+    )
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
+                                  help="Explicit native storage format; otherwise preserve the adopted format")
+    bootstrap_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan"
+    )
+    bootstrap_parser.add_argument(
+        "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki output directory"
+    )
+    legacy_overwrite = bootstrap_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    setattr(legacy_overwrite, "reference_notes", ["Compatibility flag rejected by bootstrap; use sync for a managed wiki."])
+    bootstrap_parser.add_argument(
+        "--depth",
+        choices=["shallow", "full"],
+        default="full",
+        help="shallow=names only, full=docstrings/attrs/methods/imports/relationships (default: full)",
+    )
+    bootstrap_parser.add_argument(
+        "--skip-workflows",
+        action="store_true",
+        help="Skip automatic workflow page generation from call graph",
+    )
+    bootstrap_parser.add_argument(
+        "--skip-flows",
+        action="store_true",
+        help="Skip automatic user-flow page generation from entry points",
+    )
+    bootstrap_parser.add_argument(
+        BOOTSTRAP_SKIP_DATA_FLOW_FLAG,
+        action="store_true",
+        help="Generate user-flow pages without the generated data-flow section",
+    )
+    bootstrap_parser.add_argument(
+        "--skip-dependencies",
+        action="store_true",
+        help="Skip dependency / load-order architecture page generation",
+    )
+    bootstrap_parser.add_argument(
+        "--api-contracts",
+        action="store_true",
+        help=(
+            "Generate the optional api-contracts.md production HTTP inventory "
+            "from static FastAPI analysis"
+        ),
+    )
+    bootstrap_parser.add_argument(
+        "--openapi-file",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Use a source-root-relative OpenAPI JSON/YAML document as the "
+            "authoritative HTTP contract; implies --api-contracts and full depth"
+        ),
+    )
+    bootstrap_parser.add_argument(
+        "--dependency-graph-detail",
+        choices=["module", "package", "auto"],
+        default="auto",
+        help=(
+            "Dependency graph granularity: full module graph, top-level "
+            "packages, or auto-collapse large graphs (default: auto)"
+        ),
+    )
+    bootstrap_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    bootstrap_parser.add_argument(
+        "--source-adapter",
+        action="store_true",
+        help="Write only under --wiki-dir and skip agent constraint updates",
+    )
+    bootstrap_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    _add_helper_cache_argument(bootstrap_parser)
+    _add_include_tests_argument(bootstrap_parser)
+    _add_source_selection_argument(bootstrap_parser)
+
+
+def _add_bump_command(subparsers):
+    bump_parser = subparsers.add_parser(
+        "bump", help="Bump project version (patch or minor)"
+    )
+    bump_group = bump_parser.add_mutually_exclusive_group(required=True)
+    bump_group.add_argument(
+        "--patch",
+        dest="bump_type",
+        action="store_const",
+        const="patch",
+        help="Bump patch version (0.1.5 -> 0.1.6)",
+    )
+    bump_group.add_argument(
+        "--minor",
+        dest="bump_type",
+        action="store_const",
+        const="minor",
+        help="Bump minor version (0.1.6 -> 0.2.0)",
+    )
+    bump_parser.add_argument(
+        "--stage",
+        action="store_true",
+        help="Stage the version file after bumping",
+    )
+
+
+def _add_generate_prompt_command(subparsers):
+    gp_parser = subparsers.add_parser(
+        "generate-prompt",
+        help="Build a wiki sync prompt for IDE agents (Copilot, Cursor, etc.)",
+    )
+    gp_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory (default: docs/llm_wiki)",
+    )
+    gp_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    gp_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    gp_parser.add_argument(
+        "--output",
+        default=".git/llm-wiki-prompt.txt",
+        help="Output file path (default: .git/llm-wiki-prompt.txt)",
+    )
+    gp_parser.add_argument(
+        "--print",
+        dest="print_prompt",
+        action="store_true",
+        help="Print the prompt to stdout instead of writing to a file",
+    )
+    gp_parser.add_argument(
+        "--change-type",
+        choices=CHANGE_TYPES,
+        default="auto",
+        help="Prompt guidance profile (default: auto)",
+    )
+    gp_parser.add_argument(
+        "--template", help="Installed prompt template id (or plugin_id/template_id)"
+    )
+    _add_source_selection_argument(gp_parser)
+
+
+def _add_metrics_command(subparsers):
+    metrics_parser = subparsers.add_parser(
+        "metrics", help="Show local llm-wiki quality metrics"
+    )
+    metrics_parser.add_argument(
+        "--last",
+        default="30d",
+        help="Time window such as 30d, 12h, or 60m (default: 30d)",
+    )
+    metrics_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    metrics_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan for coverage"
+    )
+    metrics_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    metrics_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to scan for coverage",
+    )
+    _add_source_selection_argument(metrics_parser)
+
+
+def _add_api_diff_command(subparsers):
+    parser = subparsers.add_parser("api-diff", help="Check compatibility of two exported OpenAPI contracts")
+    parser.add_argument("--baseline", required=True)
+    parser.add_argument("--candidate", required=True)
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--format", choices=("json", "markdown"), default="json")
+
+
+def _add_search_command(subparsers):
+    parser = subparsers.add_parser("search", help="Search wiki text, titles, symbols, and paths")
+    parser.add_argument(
+        "query", type=_nonblank_query, help="Nonblank search query or exact page ID"
+    )
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--kind", action="append", help="Restrict page kind; repeatable")
+    parser.add_argument(
+        "--limit",
+        type=_positive_int,
+        default=20,
+        help="Positive maximum results, capped at 100 (default: 20)",
+    )
+    parser.add_argument("--mode", choices=["ranked", "ranked-v1", "ranked-v2", "substring"], default="ranked")
+    parser.add_argument("--include-source", action="store_true",
+                        help="Explicit bounded selected-source indexing with current ranked mode")
+    parser.add_argument("--discovery", choices=["qualified-v1"],
+                        help="Group candidates with captured qualifications and exact inspection routes")
+    parser.add_argument("--format", choices=["json", "text"], default="json")
+    _add_source_selection_argument(parser)
+
+
+def _add_review_command(subparsers):
+    review_parser = subparsers.add_parser(
+        "review", help="Run a static wiki-aware review of proposed code changes"
+    )
+    review_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan"
+    )
+    review_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    review_parser.add_argument(
+        "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to compare against"
+    )
+    review_parser.add_argument("--base", help="Base ref for git diff comparison")
+    review_parser.add_argument("--head", help="Head ref for git diff comparison")
+    review_parser.add_argument("--staged", action="store_true", help="Review staged changes")
+    review_parser.add_argument("--changed-path", action="append", help="Changed path relative to --src-dir; repeatable")
+    review_parser.add_argument(
+        "--patch", metavar="FILE|-", help="Read an explicit patch from a file or stdin"
+    )
+    review_parser.add_argument(
+        "--format",
+        choices=["markdown", "json", "impact-json", "impact-markdown", "github"],
+        default="markdown",
+        help="Output format (default: markdown)",
+    )
+    review_parser.add_argument("--summary-output", metavar="FILE", help="Write a bounded impact summary")
+    review_parser.add_argument("--impact-output", metavar="FILE", help="Write the portable impact JSON")
+    review_parser.add_argument("--helper-cache-dir", metavar="DIR", help="Prepared extractor helper cache for impact")
+    _add_source_selection_argument(review_parser)
+
+
+def _add_uninstall_command(subparsers):
+    uninstall_parser = subparsers.add_parser(
+        "uninstall", help="Remove all LLM Wiki artifacts from the project"
+    )
+    uninstall_parser.add_argument(
+        "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path"
+    )
+    uninstall_parser.add_argument(
+        "--remove-wiki",
+        action="store_true",
+        help="Also remove the wiki documentation directory",
+    )
+    uninstall_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview what would be removed without deleting anything",
+    )
+
+
+def _add_status_command(subparsers):
+    status_parser = subparsers.add_parser(
+        "status", help="Show LLM Wiki status (agent, wiki, legacy cleanup)"
+    )
+    status_parser.add_argument(
+        "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path"
+    )
+    status_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory used to evaluate source-selection identity",
+    )
+    status_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    _add_source_selection_argument(status_parser)
+
+
+def _add_mcp_command(subparsers):
+    mcp_parser = subparsers.add_parser(
+        "mcp",
+        help="Run a local MCP server with workspace read-only tools and optional managed helper preparation",
+    )
+    mcp_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
+    mcp_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    mcp_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    mcp_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to expose (default: docs/llm_wiki)",
+    )
+    mcp_parser.add_argument(
+        "--transport",
+        choices=["stdio", "http"],
+        default="stdio",
+        help="MCP transport to serve (default: stdio)",
+    )
+    mcp_parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="HTTP host for --transport http (default: 127.0.0.1)",
+    )
+    mcp_parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="HTTP port for --transport http (default: 8765)",
+    )
+    mcp_parser.add_argument(
+        "--path",
+        default="/mcp",
+        help="HTTP MCP endpoint path for --transport http (default: /mcp)",
+    )
+    mcp_parser.add_argument(
+        "--allowed-origin",
+        action="append",
+        help="Additional HTTP Origin allowed to call the local MCP endpoint",
+    )
+    _add_source_selection_argument(mcp_parser)
+    _add_helper_cache_argument(mcp_parser)
+    mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting (Python 3.11+ and [tokens])")
+    sessions = mcp_parser.add_mutually_exclusive_group()
+    legacy_sessions = sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
+    setattr(legacy_sessions, "reference_notes", ["Compatibility flag; session tools are enabled by default. Opening a session is explicit."])
+    sessions.add_argument("--disable-sessions", dest="enable_sessions", action="store_false", help="Disable bounded in-memory task sessions")
+
+
+def _add_obsidian_command(subparsers):
+    obsidian_parser = subparsers.add_parser(
+        "obsidian",
+        help="Export and check an Obsidian-friendly mirror of the LLM Wiki",
+    )
+    obsidian_sub = obsidian_parser.add_subparsers(dest="obsidian_action", required=True)
+    obs_export = obsidian_sub.add_parser(
+        "export", help="Export an Obsidian mirror vault"
+    )
+    obs_export.add_argument(
+        "--src-dir",
+        default=".",
+        help=(
+            "Source directory for the legacy unenriched relationship scan; "
+            "knowledge-enriched export does not scan it"
+        ),
+    )
+    obs_export.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    obs_export.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Canonical wiki directory (default: docs/llm_wiki)",
+    )
+    obs_export.add_argument(
+        "--vault-dir",
+        required=True,
+        help="Obsidian vault directory where the mirror is written",
+    )
+    obs_export.add_argument(
+        "--notes-dir",
+        default=".llm-wiki/obsidian-notes",
+        help="Sidecar notes directory, relative to --vault-dir unless absolute",
+    )
+    obs_export.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview mirror writes without changing files",
+    )
+    obs_export.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    _add_source_selection_argument(obs_export)
+    _add_projection_metadata_arguments(
+        obs_export,
+        public_identity_dest="knowledge_public_repository_identity",
+    )
+    obs_check = obsidian_sub.add_parser(
+        "check", help="Check an Obsidian mirror for missing pages and broken wikilinks"
+    )
+    obs_check.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Canonical wiki directory (default: docs/llm_wiki)",
+    )
+    obs_check.add_argument(
+        "--vault-dir", required=True, help="Obsidian vault directory to check"
+    )
+    obs_check.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        obs_check,
+        public_identity_dest="knowledge_public_repository_identity",
+    )
+    obs_install = obsidian_sub.add_parser(
+        "install-plugin", help="Install the companion Obsidian plugin into a vault"
+    )
+    obs_install.add_argument(
+        "--vault-dir", required=True, help="Obsidian vault directory"
+    )
+    obs_install.add_argument(
+        "--plugin-dir",
+        default="integrations/obsidian/llm-wiki",
+        help="Source plugin directory (default: integrations/obsidian/llm-wiki)",
+    )
+
+
+def _add_site_command(subparsers):
+    site_parser = subparsers.add_parser(
+        "site",
+        help="Export and check a static-site-friendly mirror of the LLM Wiki",
+    )
+    site_sub = site_parser.add_subparsers(dest="site_action", required=True)
+    site_export = site_sub.add_parser(
+        "export", help="Export a static-site-friendly Markdown mirror"
+    )
+    site_export.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Canonical wiki directory (default: docs/llm_wiki)",
+    )
+    _add_site_hub_arguments(site_export)
+    site_export.add_argument(
+        "--out-dir",
+        required=True,
+        help="Output directory for the derived static-site mirror",
+    )
+    site_export.add_argument(
+        "--format",
+        choices=SITE_FORMAT_CHOICES,
+        default="plain",
+        help="Static-site output format (default: plain)",
+    )
+    site_export.add_argument(
+        "--file-friendly",
+        action="store_true",
+        help=(
+            "For MkDocs exports opened directly from disk, emit direct-file "
+            "links with use_directory_urls: false"
+        ),
+    )
+    site_export.add_argument(
+        "--profile",
+        choices=SITE_PROFILE_CHOICES,
+        default="reference",
+        help="Documentation profile to export (default: reference)",
+    )
+    site_export.add_argument(
+        "--site-name",
+        default=None,
+        help="Human-facing site name required by --profile user",
+    )
+    site_export.add_argument(
+        "--front-matter",
+        action="store_true",
+        help="Add safe llm_wiki front matter to exported pages",
+    )
+    site_export.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview mirror writes without changing files",
+    )
+    site_export.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        site_export,
+        public_identity_dest="public_repository_identity",
+    )
+    site_check = site_sub.add_parser(
+        "check", help="Check a static-site mirror for missing pages and links"
+    )
+    site_check.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Canonical wiki directory (default: docs/llm_wiki)",
+    )
+    _add_site_hub_arguments(site_check)
+    site_check.add_argument(
+        "--out-dir",
+        required=True,
+        help="Output directory for the derived static-site mirror",
+    )
+    site_check.add_argument(
+        "--format",
+        choices=SITE_FORMAT_CHOICES,
+        default=None,
+        help=(
+            "Require the mirror receipt to use this static-site format "
+            "(default: use the recorded format)"
+        ),
+    )
+    site_check.add_argument(
+        "--built-site-dir",
+        default=None,
+        help="Built static site directory to validate for internal HTML links",
+    )
+    site_check.add_argument(
+        "--link-mode",
+        choices=LINK_MODE_CHOICES,
+        default="http",
+        help=(
+            "Required publication distribution and built-link contract: "
+            "HTTP routing or direct file browsing (default: http)"
+        ),
+    )
+    site_check.add_argument(
+        "--profile",
+        choices=SITE_PROFILE_CHOICES,
+        default="reference",
+        help="Documentation profile quality gates to apply (default: reference)",
+    )
+    site_check.add_argument(
+        "--site-name",
+        default=None,
+        help="Human-facing site name required by --profile user",
+    )
+    site_check.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        site_check,
+        public_identity_dest="public_repository_identity",
+    )
+
+
+def _add_projection_metadata_arguments(parser, *, public_identity_dest: str):
+    parser.add_argument(
+        "--knowledge-metadata",
+        choices=KNOWLEDGE_METADATA_CHOICES,
+        default=None,
+        help=("Opt in to validated native-knowledge front matter (currently: summary)"),
+    )
+    parser.add_argument(
+        "--knowledge-profile",
+        choices=KNOWLEDGE_PROFILE_CHOICES,
+        default="public-portable",
+        help="Knowledge redaction profile (default: public-portable)",
+    )
+    parser.add_argument(
+        "--knowledge-public-repository-identity",
+        dest=public_identity_dest,
+        default=None,
+        metavar="IDENTITY",
+        help=(
+            "Disclose an exact configured-public repository identity in the "
+            "public projection"
+        ),
+    )
+
+
+def _add_site_hub_arguments(parser):
+    parser.add_argument(
+        "--wiki-root",
+        default=None,
+        help=(
+            "Directory containing source wiki subdirectories for hub export/check "
+            "(for example sources/code_wikis)"
+        ),
+    )
+    parser.add_argument(
+        "--wiki",
+        action="append",
+        default=None,
+        help=("Explicit source wiki directory for hub export/check; may be repeated"),
+    )
+
+
+def _add_skills_command(subparsers):
+    skills_parser = subparsers.add_parser(
+        "skills",
+        help="List, export, and install bundled agent skills (SKILL.md workflows)",
+    )
+    skills_sub = skills_parser.add_subparsers(dest="skills_action", required=True)
+    skills_list = skills_sub.add_parser("list", help="List bundled agent skills")
+    skills_list.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    skills_export = skills_sub.add_parser(
+        "export", help="Export bundled agent skills to a directory"
+    )
+    skills_export.add_argument(
+        "--dest",
+        required=True,
+        help="Destination skills directory (e.g. ~/.claude/skills)",
+    )
+    _add_skills_selection_arguments(skills_export)
+    skills_install = skills_sub.add_parser(
+        "install", help="Install bundled agent skills into this project"
+    )
+    skills_install.add_argument(
+        "--dest",
+        default=None,
+        help=(
+            "Project-relative skills directory (default: the configured "
+            "agent's skills dir — .claude/skills for claude, "
+            ".llm-wiki/skills otherwise)"
+        ),
+    )
+    _add_skills_selection_arguments(skills_install)
+
+
+def _add_skills_selection_arguments(parser):
+    parser.add_argument(
+        "--skill",
+        action="append",
+        default=None,
+        metavar="NAME",
+        help=(
+            "Skill to request; may be repeated and bundled dependencies are "
+            "included automatically (default: all bundled skills)"
+        ),
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite existing skill files that differ from the bundled version",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+
+
+def _add_release_command(subparsers):
+    release_parser = subparsers.add_parser(
+        "release",
+        help="Stamp the [Unreleased] CHANGELOG section with the current version",
+    )
+    release_parser.add_argument(
+        "--changelog",
+        default="CHANGELOG.md",
+        help="Path to the changelog file (default: CHANGELOG.md)",
+    )
+    release_parser.add_argument(
+        "--stage",
+        action="store_true",
+        help="Stage CHANGELOG.md after stamping",
+    )
+
+
+def _add_upgrade_command(subparsers):
+    upgrade_parser = subparsers.add_parser(
+        "upgrade",
+        help="Refresh managed instructions and wiki structure; remove legacy Git hooks",
+    )
+    upgrade_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory path (default: docs/llm_wiki)",
+    )
+    upgrade_parser.add_argument("--src-dir", default=None, help="Source root for native upgrade (default: installed root or .)")
+    _add_helper_cache_argument(upgrade_parser)
+    upgrade_parser.add_argument(
+        "--agent",
+        choices=AGENT_CHOICES,
+        default=None,
+        help="Switch to a different agent (default: keep current)",
+    )
+    upgrade_parser.add_argument(
+        "--cleanup-source-agent",
+        choices=AGENT_CHOICES,
+        default=None,
+        help=(
+            "Explicitly authorize cleanup of one source agent's managed schema "
+            "block after the target agent is committed; when managed references "
+            "are enabled and the target verifies current, also remove the source's "
+            "exact current reference (opt-out, modified, and incomplete trees are "
+            "preserved)"
+        ),
+    )
+    legacy_force = upgrade_parser.add_argument(
+        "--force",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    setattr(legacy_force, "reference_notes", ["Compatibility flag; it does not override managed ownership checks."])
+    upgrade_hints = upgrade_parser.add_mutually_exclusive_group()
+    upgrade_hints.add_argument(
+        "--quality-hints",
+        dest="quality_hints",
+        action="store_true",
+        default=None,
+        help="Include agent quality guidelines in the constraint block",
+    )
+    upgrade_hints.add_argument(
+        "--no-quality-hints",
+        dest="quality_hints",
+        action="store_false",
+        help="Omit agent quality guidelines from the constraint block",
+    )
+    upgrade_skills = upgrade_parser.add_mutually_exclusive_group()
+    upgrade_skills.add_argument(
+        "--skills",
+        dest="skills",
+        action="store_true",
+        default=None,
+        help="Refresh the wiki-reference skill in the configured agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
+    )
+    upgrade_skills.add_argument(
+        "--no-skills",
+        dest="skills",
+        action="store_false",
+        help="Skip refreshing the wiki-reference skill in the configured agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
+    )
+    upgrade_issue_reporting = upgrade_parser.add_mutually_exclusive_group()
+    upgrade_issue_reporting.add_argument(
+        "--issue-reporting",
+        dest="issue_reporting",
+        action="store_true",
+        default=None,
+        help="Include local agent instructions for llm-wiki tool issues; does not submit reports",
+    )
+    upgrade_issue_reporting.add_argument(
+        "--no-issue-reporting",
+        dest="issue_reporting",
+        action="store_false",
+        help="Omit local agent instructions for reporting llm-wiki tool issues",
+    )
+    _add_source_selection_argument(upgrade_parser)
+
+
+def _add_sync_command(subparsers):
+    sync_parser = subparsers.add_parser(
+        "sync",
+        help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
+        epilog='Captured evidence failure: inspect query --request FILE (operation: explain), then extract --deep --read-only --paths SOURCE with the same bindings. '
+        'Raw output does not repair a stored manifest. Preview with the same sync invocation plus --dry-run; review all actions and require explicit authority for broad --force. '
+        'Never force automatically. Re-anchor semantic changes, then run strict lint and ci-check.',
+    )
+    _add_progress_arguments(sync_parser)
+    sync_parser.add_argument(
+        "--repair-evidence", nargs="+", action="extend", default=None, metavar="SOURCE",
+        help="Repair owned unchanged evidence with --no-plugins (POSIX paths relative to --src-dir); full analysis still runs",
+    )
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
+                            help="Explicit native storage format; otherwise preserve the adopted format")
+    sync_parser.add_argument(
+        "--rebuild-knowledge",
+        action="store_true",
+        help="Force the full knowledge builder independently of inventory caching; initialize reuse for an adopted wiki",
+    )
+    sync_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    sync_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    sync_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory (default: docs/llm_wiki)",
+    )
+    sync_parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable persistent inventory cache for this run",
+    )
+    sync_parser.add_argument(
+        "--rebuild-cache",
+        action="store_true",
+        help="Ignore existing inventory cache and rewrite it after extraction",
+    )
+    sync_parser.add_argument(
+        "--cache-stats",
+        action="store_true",
+        help="Include inventory cache diagnostics in sync output",
+    )
+    sync_parser.add_argument(
+        "--cache-dir",
+        default=None,
+        metavar="PATH",
+        help="Directory for llm-wiki-inventory-cache.json",
+    )
+    _add_helper_cache_argument(sync_parser)
+    _add_include_tests_argument(sync_parser)
+    _add_jobs_argument(sync_parser)
+    sync_parser.add_argument("--prune-storage", action="store_true",
+                             help="After successful sync, validate and prune unreferenced storage with verified recovery")
+    sync_parser.add_argument("--storage-recovery-dir", default=None,
+                             help="Cleanup recovery directory outside the wiki (requires --prune-storage)")
+    sync_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow sync to apply unusually broad source or surface diffs",
+    )
+    openapi_group = sync_parser.add_mutually_exclusive_group()
+    openapi_group.add_argument(
+        "--openapi-file",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Use a source-root-contained OpenAPI 3.0/3.1 JSON or YAML file as "
+            "the authoritative API contract"
+        ),
+    )
+    openapi_group.add_argument(
+        "--clear-openapi-file",
+        action="store_true",
+        help="Clear persisted OpenAPI authority and return to static contracts",
+    )
+    sync_parser.add_argument(
+        "--initialize-surfaces",
+        action="append",
+        type=_surface_values,
+        default=None,
+        metavar="SURFACE[,SURFACE...]",
+        help=(
+            "Initialize optional wiki surfaces; accepted values are flows, "
+            "dependencies, and api-contracts; may be repeated"
+        ),
+    )
+    sync_parser.add_argument(
+        "--flow-category",
+        action="append",
+        default=None,
+        metavar="CATEGORY",
+        help="Only initialize flow entry points in this category; may be repeated",
+    )
+    sync_parser.add_argument(
+        "--exclude-tests",
+        action="store_true",
+        help="Exclude test sources from explicitly initialized surfaces",
+    )
+    sync_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Preview source, optional-surface, and knowledge artifact actions "
+            "without modifying files"
+        ),
+    )
+    sync_parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        help="Disable all project-local plugins during sync",
+    )
+    sync_parser.add_argument(
+        "--no-preserve-semantic",
+        action="store_true",
+        help="Disable preservation of existing semantic wiki descriptions",
+    )
+    _add_source_selection_argument(sync_parser)
+
+
+def _add_migrate_command(subparsers):
+    migrate_parser = subparsers.add_parser(
+        "migrate",
+        help="Reconcile legacy wiki pages with current canonical naming",
+    )
+    migrate_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    migrate_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    migrate_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory (default: docs/llm_wiki)",
+    )
+    migrate_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview migration actions without modifying files",
+    )
+    migrate_parser.add_argument(
+        "--chunk-size",
+        type=_positive_int,
+        metavar="PAGES",
+        help="Apply at most this many pending page operations in one migration chunk",
+    )
+    migrate_parser.add_argument(
+        "--chunk",
+        type=_positive_int,
+        metavar="N",
+        help="Apply chunk N from the current --chunk-size plan (default: 1)",
+    )
+    migrate_parser.add_argument(
+        "--plan-chunks",
+        action="store_true",
+        help="Print the current chunk plan and exit without modifying files",
+    )
+    _add_source_selection_argument(migrate_parser)
+
+
+def _add_context_command(subparsers):
+    context_parser = subparsers.add_parser(
+        "context",
+        help="Return priority-ranked, token-budgeted codebase context for LLM agents",
+        description=(
+            "Build bounded source context. Packet output is read-only; structural "
+            "validation alone does not establish live currentness."
+        ),
+    )
+    context_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
+    context_parser.add_argument(
+        "--budget",
+        type=int,
+        action=_ExplicitContextOption,
+        help="Token budget for the context payload (required unless --request is used)",
+    )
+    context_parser.add_argument(
+        "--budget-mode", choices=["exact", "estimated"],
+        help=(
+            "Opt into v3 accounting of the complete rendered output; exact mode "
+            "requires Python 3.11+, --tokenizer FILE and the optional agent-wiki-cli[tokens] dependency"
+        ),
+    )
+    context_parser.add_argument(
+        "--tokenizer", metavar="FILE",
+        help="Local tokenizer.json for exact v3 counting (Python 3.11+); never downloaded automatically",
+    )
+    context_parser.add_argument("--base", help="Base Git revision (opts into v3 output)")
+    context_parser.add_argument("--head", help="Head Git revision; requires --base")
+    context_parser.add_argument("--staged", action="store_true", help="Use staged changes (v3)")
+    context_parser.add_argument("--changed-path", action="append", help="Changed source-relative path; repeatable (v3)")
+    context_parser.add_argument(
+        "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    context_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to read graph surface metadata from (default: docs/llm_wiki)",
+    )
+    context_parser.add_argument(
+        "--format",
+        choices=["json", "markdown", "packet"],
+        action=_ExplicitContextOption,
+        default="json",
+        help="Output format; packet emits canonical Qualified Context Packet JSON (default: json)",
+    )
+    context_parser.add_argument(
+        "--focus",
+        choices=["changed", "all"],
+        action=_ExplicitContextOption,
+        default="changed",
+        help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)",
+    )
+    context_parser.add_argument(
+        "--request",
+        metavar="FILE|-",
+        help=(
+            "Read semantic options from a protocol JSON file or stdin; "
+            "--format packet selects canonical packet delivery for v1/v2 requests"
+        ),
+    )
+    context_parser.add_argument(
+        "--output",
+        metavar="PATH",
+        help="Write generated context to a file instead of stdout",
+    )
+    context_parser.add_argument(
+        "--read-only",
+        action="store_true",
+        help="Guarantee source-adapter mode writes no llm-wiki files except explicit --output",
+    )
+    context_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    context_parser.add_argument(
+        "--prefer-fresh",
+        action="store_true",
+        help="Under budget pressure, prefer CURRENT context within an existing relevance tier",
+    )
+    context_parser.add_argument(
+        "--knowledge-mode",
+        choices=["off", "auto", "required"],
+        default=None,
+        help="Select explicit v2 native knowledge behavior: off, auto, or required",
+    )
+    _add_source_selection_argument(context_parser)
+
+
+def _add_docs_command(subparsers):
+    docs_parser = subparsers.add_parser(
+        "docs",
+        help="Prepare and supervise a standalone documentation workspace",
+    )
+    docs_sub = docs_parser.add_subparsers(dest="docs_action", required=True)
+    _add_publication_impact_command(docs_sub)
+    _add_publication_wiki_command(docs_sub)
+
+    prepare = docs_sub.add_parser(
+        "prepare",
+        help="Create or idempotently resume a deterministic documentation run",
+    )
+    prepare.add_argument(
+        "--workspace",
+        required=True,
+        help="Explicit external documentation workspace",
+    )
+    prepare.add_argument(
+        "--baseline",
+        choices=["bootstrap-source", "existing-wiki"],
+        required=True,
+        help="Build a wiki from source or adopt an existing llm-wiki snapshot",
+    )
+    prepare.add_argument(
+        "--src-dir",
+        default=None,
+        help="Read-only source directory; required by bootstrap-source",
+    )
+    prepare.add_argument(
+        "--input-wiki-dir",
+        default=None,
+        help="Read-only llm-wiki directory; required by existing-wiki",
+    )
+    prepare.add_argument(
+        "--wiki-freshness",
+        choices=["require-current", "refresh-snapshot", "allow-unverified"],
+        default="require-current",
+        help="Freshness policy for an adopted wiki (default: require-current)",
+    )
+    prepare.add_argument(
+        "--site-name",
+        required=True,
+        help="Human-facing documentation site name",
+    )
+    intake_source = prepare.add_mutually_exclusive_group()
+    intake_source.add_argument(
+        "--project-brief",
+        metavar="FILE",
+        help="UTF-8 project-purpose brief supplied by the supervisor",
+    )
+    intake_source.add_argument(
+        "--intake-file",
+        metavar="FILE|-",
+        help="Structured JSON intake object supplied by the supervisor",
+    )
+    prepare.add_argument(
+        "--audience",
+        action="append",
+        help="Audience name or comma-separated audience names; may be repeated",
+    )
+    prepare.add_argument(
+        "--audience-intent",
+        action="append",
+        metavar="AUDIENCE=INTENT",
+        help="Trusted audience job/intent; may be repeated",
+    )
+    prepare.add_argument(
+        "--live-service-url",
+        default=None,
+        help="Caller-owned HTTP(S) staging/demo endpoint to record",
+    )
+    prepare.add_argument(
+        "--live-service-access-mode",
+        choices=["unspecified", "anonymous", "non-secret"],
+        default="unspecified",
+        help="Non-secret access mode for the declared service",
+    )
+    prepare.add_argument(
+        "--observe-live-service",
+        action="store_true",
+        help="Authorize read-only observation; requires --capture-dir",
+    )
+    prepare.add_argument(
+        "--helper-cache-dir",
+        default=None,
+        metavar="PATH",
+        help="Explicit cache containing already-prepared extractor helpers",
+    )
+    prepare.add_argument(
+        "--capture-dir",
+        default=None,
+        metavar="PATH",
+        help="Explicit disposable root for authorized live-service captures",
+    )
+    prepare.add_argument(
+        "--trust-source-plugins",
+        action="store_true",
+        help="Explicitly opt in to executing source-repository extractor plugins",
+    )
+    prepare.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow source/input-wiki evidence roots outside the current directory",
+    )
+    prepare.add_argument(
+        "--semantic-budget",
+        type=_nonnegative_int,
+        default=30,
+        metavar="COUNT",
+        help="Maximum P1 semantic work items (default: 30)",
+    )
+    prepare.add_argument(
+        "--adjustment-loop-limit",
+        type=_positive_int,
+        default=3,
+        metavar="COUNT",
+        help="Maximum review adjustment loops (default: 3)",
+    )
+    prepare.add_argument(
+        "--site-format",
+        choices=["mkdocs", "plain", "docusaurus"],
+        default="mkdocs",
+        help="Persisted distribution format (default: mkdocs)",
+    )
+    prepare_link_mode = prepare.add_mutually_exclusive_group()
+    prepare_link_mode.add_argument(
+        "--link-mode",
+        choices=["http", "file"],
+        default="http",
+        help="Persisted built-link contract (default: http)",
+    )
+    prepare_link_mode.add_argument(
+        "--file-friendly",
+        action="store_true",
+        help="Persist direct-file link mode for local browsing",
+    )
+    prepare.add_argument(
+        "--knowledge-mode",
+        choices=KNOWLEDGE_MODE_CHOICES,
+        default="off",
+        help=(
+            "Persist native metadata policy: off, public-portable, or explicitly "
+            "authorized internal (default: off)"
+        ),
+    )
+    prepare.add_argument(
+        "--knowledge-public-repository-identity",
+        default=None,
+        metavar="IDENTITY",
+        help=("Corroborated configured-public identity for public-portable metadata"),
+    )
+    prepare.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Archive owned run artifacts and explicitly rebuild the workspace baseline",
+    )
+    _add_source_selection_argument(prepare)
+    prepare.add_argument(
+        "--output-format",
+        "--format",
+        dest="output_format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+
+    status = docs_sub.add_parser("status", help="Show run state and next actions")
+    status.add_argument("--workspace", required=True)
+    status.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+
+    packet = docs_sub.add_parser(
+        "packet",
+        help="Build a provider-neutral agent packet for one bounded stage",
+    )
+    packet.add_argument("--workspace", required=True)
+    packet.add_argument(
+        "--stage",
+        choices=["wiki-enrichment", "user-docs", "review"],
+        required=True,
+    )
+    packet.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format (default: markdown)",
+    )
+
+    record_result = docs_sub.add_parser(
+        "record-result",
+        help="Reconcile a versioned agent-result JSON object with workspace changes",
+    )
+    record_result.add_argument("--workspace", required=True)
+    record_result.add_argument(
+        "--actor",
+        help="Supervisor-supplied identity of the author or independent reviewer for mapped documentation",
+    )
+    record_result.add_argument(
+        "--result",
+        required=True,
+        metavar="FILE|-",
+        help="Agent-result JSON file, or - for stdin",
+    )
+    record_result.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+
+    verify = docs_sub.add_parser(
+        "verify",
+        help="Run deterministic integrity and readiness checks",
+    )
+    verify.add_argument("--workspace", required=True)
+    verify.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    verify.add_argument(
+        "--no-advance",
+        action="store_true",
+        help="Report verification without advancing an eligible review run",
+    )
+
+    export = docs_sub.add_parser(
+        "export",
+        help="Export/check local user documentation and write a deployment handoff",
+    )
+    export.add_argument("--workspace", required=True)
+    export.add_argument(
+        "--format",
+        choices=["mkdocs", "plain", "docusaurus"],
+        default=None,
+        help="Assert the distribution format selected during prepare",
+    )
+    export.add_argument(
+        "--file-friendly",
+        action="store_true",
+        help="Assert direct-file link mode was selected during prepare",
+    )
+    export.add_argument(
+        "--build",
+        action="store_true",
+        help="Authorize an installed site builder to run locally",
+    )
+    export.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    export.add_argument(
+        "--knowledge-mode",
+        choices=KNOWLEDGE_MODE_CHOICES,
+        default=None,
+        help="Assert the native metadata policy selected during prepare",
+    )
+    export.add_argument(
+        "--knowledge-public-repository-identity",
+        default=None,
+        metavar="IDENTITY",
+        help="Assert the public repository identity selected during prepare",
+    )
+    export.add_argument(
+        "--builder-command",
+        nargs=argparse.REMAINDER,
+        default=None,
+        metavar="ARG",
+        help=(
+            "Explicit builder argv passed directly without a shell; requires --build "
+            "and must be the final CLI option"
+        ),
+    )
+
+    calibration = docs_sub.add_parser(
+        "calibration",
+        help="Supervise an evidence-backed documentation calibration cohort",
+    )
+    calibration_sub = calibration.add_subparsers(
+        dest="calibration_action",
+        required=True,
+    )
+
+    calibration_prepare = calibration_sub.add_parser(
+        "prepare",
+        help="Freeze two independently prepared documentation controls",
+    )
+    calibration_prepare.add_argument("--root", required=True)
+    calibration_prepare.add_argument(
+        "--control-workspace",
+        action="append",
+        required=True,
+        metavar="PATH",
+        help="Prepared documentation control workspace; specify exactly twice",
+    )
+    calibration_prepare.add_argument(
+        "--execution-manifest",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned execution-manifest JSON file, or - for stdin",
+    )
+
+    calibration_admit = calibration_sub.add_parser(
+        "admit",
+        help="Authorize the frozen cohort after isolation evidence is verified",
+    )
+    calibration_admit.add_argument("--root", required=True)
+    calibration_admit.add_argument(
+        "--authority-grant",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned authority-grant JSON file, or - for stdin",
+    )
+    calibration_admit.add_argument(
+        "--broker-attestation",
+        default=None,
+        metavar="FILE|-",
+        help=(
+            "External-broker attestation JSON; qualification also requires a "
+            "separately established embedding-host authenticator"
+        ),
+    )
+
+    calibration_status = calibration_sub.add_parser(
+        "status",
+        help="Show the current cohort state as JSON",
+    )
+    calibration_status.add_argument("--root", required=True)
+
+    calibration_packet = calibration_sub.add_parser(
+        "packet",
+        help="Write one bounded provider-neutral role packet as JSON",
+    )
+    calibration_packet.add_argument("--root", required=True)
+    calibration_packet.add_argument(
+        "--role",
+        choices=["intake-a", "intake-b", "intake-c", "verifier"],
+        required=True,
+    )
+    calibration_packet.add_argument(
+        "--output",
+        required=True,
+        metavar="FILE",
+        help="Explicit packet JSON output path; packet content is never printed",
+    )
+
+    calibration_dispatch = calibration_sub.add_parser(
+        "dispatch",
+        help="Dispatch one role through the frozen broker",
+    )
+    calibration_dispatch.add_argument("--root", required=True)
+    calibration_dispatch.add_argument(
+        "--role",
+        choices=["intake-a", "intake-b", "intake-c", "verifier"],
+        required=True,
+    )
+
+    calibration_result = calibration_sub.add_parser(
+        "record-result",
+        help="Import a separately executed broker receipt and agent result",
+    )
+    calibration_result.add_argument("--root", required=True)
+    calibration_result.add_argument(
+        "--dispatch-receipt",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned dispatch-receipt JSON file, or - for stdin",
+    )
+    calibration_result.add_argument(
+        "--result",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned calibration agent-result JSON file, or - for stdin",
+    )
+
+    calibration_verify = calibration_sub.add_parser(
+        "verify",
+        help="Recompute cohort evidence and advance only when eligible",
+    )
+    calibration_verify.add_argument("--root", required=True)
+    calibration_verify.add_argument(
+        "--no-advance",
+        action="store_true",
+        help="Report verification without advancing an eligible cohort",
+    )
+
+
+def _add_reference_command(subparsers):
+    parser = subparsers.add_parser(
+        "reference", help="Export deterministic command and behavior reference data"
+    )
+    actions = parser.add_subparsers(dest="reference_action", required=True)
+    export = actions.add_parser(
+        "cli", help="Export the installed llm-wiki command contract"
+    )
+    behavior = actions.add_parser(
+        "behavior",
+        help="Export installed package, setup, storage, task and skill declarations",
+    )
+    behavior.add_argument("--input", help="Render a saved behavior facts contract")
+    render = actions.add_parser(
+        "render", help="Validate and render a saved CLI contract without running it"
+    )
+    render.add_argument("--input", required=True, help="Versioned CLI contract JSON")
+    for action in (export, render, behavior):
+        action.add_argument("--format", choices=("json", "markdown"), default="json")
+        action.add_argument("--output", help="Explicit reference artifact destination")
+
+
+def _add_publication_impact_arguments(parser, *, child=False):
+    parser.add_argument(
+        "--config", default=argparse.SUPPRESS if child else ".llm-wiki/publication.json"
+    )
+    parser.add_argument("--consumer-root", default=argparse.SUPPRESS if child else ".")
+    parser.add_argument(
+        "--target-dir",
+        default=argparse.SUPPRESS if child else None,
+        help="Consumer-relative local sibling wiki checkout or pinned copy",
+    )
+    parser.add_argument(
+        "--baseline",
+        default=argparse.SUPPRESS if child else None,
+        help="Explicit accepted publication basis JSON",
+    )
+
+
+def _add_publication_impact_command(docs_sub):
+    parser = docs_sub.add_parser(
+        "impact", help="Report architecture changes affecting sibling wiki topics"
+    )
+    _add_publication_impact_arguments(parser)
+    parser.add_argument(
+        "--reviews",
+        help="Accepted review ledger supplied under repository review policy",
+    )
+    parser.add_argument("--output", help="Write machine-readable impact JSON")
+    parser.add_argument("--format", choices=("json", "markdown"), default="json")
+    actions = parser.add_subparsers(dest="impact_action")
+    snapshot = actions.add_parser(
+        "snapshot", help="Capture a publication basis without advancing review state"
+    )
+    _add_publication_impact_arguments(snapshot, child=True)
+    snapshot.add_argument("--output", required=True)
+    snapshot.add_argument(
+        "--replace",
+        action="store_true",
+        help="Explicitly replace a checkpoint after review",
+    )
+    resolve = actions.add_parser(
+        "resolve", help="Prepare a still-current decision for repository review"
+    )
+    _add_publication_impact_arguments(resolve, child=True)
+    resolve.add_argument("--report", required=True)
+    resolve.add_argument("--finding", required=True)
+    resolve.add_argument(
+        "--decision", choices=("still-current", "retired"), required=True
+    )
+    resolve.add_argument("--reviewer", required=True)
+    resolve.add_argument("--reason", required=True)
+    resolve.add_argument("--reviews", default=argparse.SUPPRESS)
+    resolve.add_argument(
+        "--output", required=True, help="Proposed review ledger output"
+    )
+
+
+def _add_publication_wiki_arguments(parser):
+    parser.add_argument("--consumer-root", default=".")
+    parser.add_argument("--config", default=".llm-wiki/publication.json")
+
+
+def _add_publication_wiki_command(docs_sub):
+    parser = docs_sub.add_parser(
+        "wiki", help="Prepare and check a local GitHub wiki candidate"
+    )
+    actions = parser.add_subparsers(dest="publication_action", required=True)
+    export = actions.add_parser(
+        "export", help="Render explicitly owned content without publishing"
+    )
+    check = actions.add_parser(
+        "check", help="Recheck candidate bytes, inputs and review readiness"
+    )
+    review = actions.add_parser(
+        "review", help="Prepare an exact-candidate review proposal"
+    )
+    maintain = actions.add_parser(
+        "maintain",
+        help="Give a prepared documentation workspace the mapped topics that need edits",
+    )
+    patch = actions.add_parser(
+        "patch",
+        help="Export independently reviewed workspace edits as a repository patch",
+    )
+    for action in (export, check, review, maintain, patch):
+        _add_publication_wiki_arguments(action)
+        action.add_argument(
+            "--receipt",
+            required=True,
+            help="Candidate receipt JSON; output for export, input otherwise",
+        )
+    export.add_argument(
+        "--output-dir",
+        required=True,
+        help="New or empty candidate directory; accepts consumer-relative or absolute paths",
+    )
+    for action in (check, review, maintain, patch):
+        action.add_argument(
+            "--candidate-dir", required=True, help="Exact exported candidate directory"
+        )
+    for action in (maintain, patch):
+        action.add_argument(
+            "--workspace",
+            required=True,
+            help="Documentation workspace prepared with docs prepare",
+        )
+        action.add_argument(
+            "--topic",
+            action="append",
+            dest="topic_ids",
+            help="Scope the work to this mapped topic ID (repeatable)",
+        )
+    patch.add_argument(
+        "--format",
+        choices=("json", "patch"),
+        default="json",
+        help="Print the review proposal or its UTF-8 Git patch",
+    )
+    check.add_argument("--output", help="Optional separate rechecked receipt JSON")
+    review.add_argument("--reviewer", required=True)
+    review.add_argument("--reason", required=True)
+    review.add_argument(
+        "--target-dir",
+        help="Original pinned local wiki copy; required for local-snapshot review",
+    )
+    review.add_argument(
+        "--output", required=True, help="Proposed candidate approval JSON"
+    )
+    for action in (export, check, maintain, patch):
+        action.add_argument(
+            "--target-dir", help="Consumer-relative pinned local sibling wiki copy"
+        )
+        action.add_argument("--baseline", help="Accepted publication basis JSON")
+        action.add_argument("--reviews", help="Accepted topic review ledger JSON")
+        action.add_argument(
+            "--previous-receipt", help="Previously accepted candidate ownership receipt"
+        )
+        action.add_argument(
+            "--candidate-review", help="Accepted exact-candidate review JSON"
+        )
+    for action in (export, check):
+        action.add_argument(
+            "--source-revision", help="Explicit caller-declared source revision"
+        )
+        action.add_argument(
+            "--target-revision", help="Explicit caller-declared target-copy revision"
+        )
+        action.add_argument(
+            "--require-ready",
+            action="store_true",
+            help="Exit 1 until local checks and all exact reviews are ready",
+        )

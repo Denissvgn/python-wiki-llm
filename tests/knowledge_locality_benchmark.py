@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import time
 
-from llm_wiki_cli.services.knowledge_packs import build_storage, open_knowledge_store
+from llm_wiki_engine.knowledge_packs import build_storage, open_knowledge_store
 
 
 def variants(original):

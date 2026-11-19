@@ -11,12 +11,12 @@ Read-only source/manifest diff analysis shared by sync and lint.
 | Source | Symbols |
 |--------|---------|
 | `.bootstrap_runtime` | `_module_name_from_path`, `_page_name_for_entity`, `_page_name_for_module`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
-| `.knowledge_evidence` | `hash_file`, `semantic_hash_for_file` |
-| `.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
-| `.validation` | `is_portable_path_component`, `portable_path_key` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_file`, `semantic_hash_for_file` |
+| `llm_wiki_engine.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
+| `llm_wiki_engine.validation` | `is_portable_path_component`, `portable_path_key` |
 | `pathlib` | `Path` |
 | `typing` | `Mapping` |
 
@@ -25,64 +25,53 @@ Read-only source/manifest diff analysis shared by sync and lint.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n3["src/llm_wiki_cli/services/lint_service.py"]
-    n4["src/llm_wiki_cli/services/source_retirement.py"]
-    n5["src/llm_wiki_cli/services/sync_analysis.py"]
-    n6["src/llm_wiki_cli/services/sync_manifest.py"]
-    n7["src/llm_wiki_cli/services/sync_transitions.py"]
-    n8["src/llm_wiki_cli/services/validation.py"]
-    n0 --> n1
-    n0 --> n2
-    n0 --> n4
-    n0 --> n5
+    n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n1["src/llm_wiki_cli/services/lint_service.py"]
+    n2["src/llm_wiki_cli/services/sync_analysis.py"]
+    n3["src/llm_wiki_cli/services/sync_runtime.py"]
+    n4["src/llm_wiki_cli/services/sync_transitions.py"]
+    n5["src/llm_wiki_engine/knowledge_evidence.py"]
+    n6["src/llm_wiki_engine/sync_manifest.py"]
+    n7["src/llm_wiki_engine/validation.py"]
     n0 --> n6
     n0 --> n7
-    n0 --> n8
+    n1 --> n0
+    n1 --> n2
     n1 --> n6
-    n1 --> n8
-    n2 --> n8
-    n3 --> n1
+    n1 --> n7
+    n2 --> n0
+    n2 --> n5
+    n2 --> n6
+    n2 --> n7
+    n3 --> n0
+    n3 --> n2
     n3 --> n4
     n3 --> n5
     n3 --> n6
-    n3 --> n8
+    n3 --> n7
+    n4 --> n0
     n4 --> n2
-    n4 --> n5
     n4 --> n6
-    n4 --> n8
-    n5 --> n1
-    n5 --> n2
-    n5 --> n6
-    n5 --> n8
-    n6 --> n2
-    n6 --> n4
-    n6 --> n8
-    n7 --> n1
-    n7 --> n4
-    n7 --> n5
-    n7 --> n6
-    n7 --> n8
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/knowledge_evidence.md"
-    click n3 "../modules/lint_service.md"
-    click n4 "../modules/source_retirement.md"
-    click n5 "../modules/sync_analysis.md"
+    n4 --> n7
+    n5 --> n7
+    n6 --> n5
+    n6 --> n7
+    click n0 "../modules/bootstrap_runtime.md"
+    click n1 "../modules/lint_service.md"
+    click n2 "../modules/sync_analysis.md"
+    click n3 "../modules/sync_runtime.md"
+    click n4 "../modules/sync_transitions.md"
+    click n5 "../modules/knowledge_evidence.md"
     click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/sync_transitions.md"
-    click n8 "../modules/validation.md"
+    click n7 "../modules/validation.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
-| Inbound | [source_retirement](../modules/source_retirement.md) |
+| Inbound | [sync_runtime](../modules/sync_runtime.md) |
 | Inbound | [sync_transitions](../modules/sync_transitions.md) |
 | Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |

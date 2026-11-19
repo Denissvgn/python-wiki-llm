@@ -1,6 +1,6 @@
 # knowledge_governance Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_governance.py`
+**Path:** `src/llm_wiki_engine/knowledge_governance.py`
 
 ## Description
 
@@ -33,17 +33,9 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 
 | Source | Symbols |
 |--------|---------|
-| `.concept_identity` | `AliasType`, `ConceptAllocation`, `ConceptIdentityError`, `derive_concept_uid`, `identity_coordinate_key`, `natural_key_for`, `validate_alias_value`, `validate_bundle_id`, `validate_concept_kind`, `validate_concept_uid`, `validate_locator`, `validate_natural_key` |
-| `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `GOVERNANCE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_evidence` | `canonical_json_text`, `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
-| `.knowledge_graph` | `validate_typed_graph`, `GRAPH_INPUT_NAMES`, `GraphConcept`, `KnowledgeGraphInputs`, `materialize_typed_graph`, `validate_typed_graph`, `DEFAULT_EVIDENCE_LIMIT`, `relationship_edge_key` |
 | `.knowledge_model` | `ConceptKind`, `ConceptRecord`, `EvidenceState`, `KnowledgeIndex`, `Lifecycle` |
-| `.validation` | `require_exact_fields`, `require_list`, `require_mapping`, `require_no_control_characters`, `require_nonnegative_int`, `require_sha256` |
-| `.wiki_media` | `contains_uri_authority_userinfo` |
-| `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Iterator`, `Mapping`, `Sequence` |
@@ -54,6 +46,15 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 | `errno` | `errno` |
 | `fcntl` | `fcntl`, `fcntl` |
 | `json` | `json` |
+| `llm_wiki_engine.concept_identity` | `AliasType`, `ConceptAllocation`, `ConceptIdentityError`, `derive_concept_uid`, `identity_coordinate_key`, `natural_key_for`, `validate_alias_value`, `validate_bundle_id`, `validate_concept_kind`, `validate_concept_uid`, `validate_locator`, `validate_natural_key` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `GOVERNANCE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.knowledge_evidence` | `canonical_json_text`, `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_graph` | `validate_typed_graph`, `GRAPH_INPUT_NAMES`, `GraphConcept`, `KnowledgeGraphInputs`, `materialize_typed_graph`, `validate_typed_graph`, `DEFAULT_EVIDENCE_LIMIT`, `relationship_edge_key` |
+| `llm_wiki_engine.validation` | `require_exact_fields`, `require_list`, `require_mapping`, `require_no_control_characters`, `require_nonnegative_int`, `require_sha256` |
+| `llm_wiki_engine.wiki_media` | `contains_uri_authority_userinfo` |
+| `llm_wiki_engine.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `msvcrt` | `msvcrt`, `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -70,7 +71,7 @@ symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n1["src/llm_wiki_engine/knowledge_governance.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_governance.md"
@@ -82,30 +83,30 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (30) |
-| Outbound | `src` (11) |
+| Inbound | `src` (31) |
+| Outbound | `src` (12) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [GovernanceError](../entities/GovernanceError.md) | Class | 113 | `ValueError` | A field-specific governance validation or mutation failure. |
-| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 129 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
-| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 136 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
-| [GovernanceActor](../entities/GovernanceActor.md) | Class | 145 | — | Explicit event author; never inferred from Git metadata. |
-| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 156 | — | One authoritative stable concept allocation. |
-| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 173 | — | A historical locator or natural key owned by one UID. |
-| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 193 | — | One predecessor-linked lifecycle transition. |
-| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 222 | — | The explicit evidence basis to which a review was authored. |
-| [ReviewEvent](../entities/ReviewEvent.md) | Class | 240 | — | One section-scoped, digest-bound human review event. |
-| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 266 | — | Validated non-rebuildable governance authority. |
-| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 324 | — | — |
-| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 331 | — | — |
-| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 339 | — | Current generated concept coordinates used for reconciliation. |
-| [ReviewValidity](../entities/ReviewValidity.md) | Class | 348 | — | Computed review validity; this is never persisted in the ledger. |
-| [FaultInjector](../entities/FaultInjector.md) | Type alias | 360 | `Callable[[GovernanceWriteStage], None]` | — |
+| [GovernanceError](../entities/GovernanceError.md) | Class | 114 | `ValueError` | A field-specific governance validation or mutation failure. |
+| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 130 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
+| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 137 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
+| [GovernanceActor](../entities/GovernanceActor.md) | Class | 146 | — | Explicit event author; never inferred from Git metadata. |
+| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 157 | — | One authoritative stable concept allocation. |
+| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 174 | — | A historical locator or natural key owned by one UID. |
+| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 194 | — | One predecessor-linked lifecycle transition. |
+| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 223 | — | The explicit evidence basis to which a review was authored. |
+| [ReviewEvent](../entities/ReviewEvent.md) | Class | 241 | — | One section-scoped, digest-bound human review event. |
+| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 267 | — | Validated non-rebuildable governance authority. |
+| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 325 | — | — |
+| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 332 | — | — |
+| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 340 | — | Current generated concept coordinates used for reconciliation. |
+| [ReviewValidity](../entities/ReviewValidity.md) | Class | 349 | — | Computed review validity; this is never persisted in the ledger. |
+| [FaultInjector](../entities/FaultInjector.md) | Type alias | 361 | `Callable[[GovernanceWriteStage], None]` | — |
 
 ## Functions
 

@@ -19,7 +19,6 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `build_gitignore_matcher` |
 | `..services.imports` | `build_module_path_resolver` |
 | `..services.python_calls` | `PYTHON_LEXICAL_FUNCTIONS_SCHEMA` |
 | `..services.python_implementation` | `capture`, `envelope`, `producer` |
@@ -31,6 +30,7 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `collections` | `Counter` |
+| `llm_wiki_engine.gitignore` | `build_gitignore_matcher` |
 | `pathlib` | `Path` |
 | `symtable` | `symtable` |
 | `sys` | `sys` |
@@ -40,54 +40,52 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/config.py"]
-    n1["src/llm_wiki_cli/extractors/common.py"]
-    n2["src/llm_wiki_cli/extractors/fastapi_contracts.py"]
-    n3["src/llm_wiki_cli/extractors/python_bindings.py"]
-    n4["src/llm_wiki_cli/extractors/python_contracts.py"]
-    n5["src/llm_wiki_cli/extractors/python_extractor.py"]
-    n6["src/llm_wiki_cli/services/extraction_service.py"]
-    n7["src/llm_wiki_cli/services/imports.py"]
-    n8["src/llm_wiki_cli/services/module_coverage.py"]
-    n9["src/llm_wiki_cli/services/python_calls.py"]
-    n10["src/llm_wiki_cli/services/python_implementation.py"]
-    n11["src/llm_wiki_cli/services/python_observations.py"]
-    n1 --> n0
+    n0["src/llm_wiki_cli/extractors/common.py"]
+    n1["src/llm_wiki_cli/extractors/fastapi_contracts.py"]
+    n2["src/llm_wiki_cli/extractors/python_bindings.py"]
+    n3["src/llm_wiki_cli/extractors/python_contracts.py"]
+    n4["src/llm_wiki_cli/extractors/python_extractor.py"]
+    n5["src/llm_wiki_cli/services/extraction_service.py"]
+    n6["src/llm_wiki_cli/services/imports.py"]
+    n7["src/llm_wiki_cli/services/module_coverage.py"]
+    n8["src/llm_wiki_cli/services/python_calls.py"]
+    n9["src/llm_wiki_cli/services/python_implementation.py"]
+    n10["src/llm_wiki_cli/services/python_observations.py"]
+    n11["src/llm_wiki_engine/gitignore.py"]
+    n0 --> n11
+    n4 --> n0
+    n4 --> n1
+    n4 --> n2
+    n4 --> n3
+    n4 --> n6
+    n4 --> n8
+    n4 --> n9
+    n4 --> n10
+    n4 --> n11
     n5 --> n0
-    n5 --> n1
     n5 --> n2
     n5 --> n3
     n5 --> n4
-    n5 --> n7
+    n5 --> n6
+    n5 --> n8
     n5 --> n9
     n5 --> n10
-    n5 --> n11
     n6 --> n0
-    n6 --> n1
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n9
-    n6 --> n10
-    n6 --> n11
-    n7 --> n0
-    n7 --> n1
-    n8 --> n5
-    n9 --> n3
-    n9 --> n7
-    click n0 "../modules/config.md"
-    click n1 "../modules/common.md"
-    click n2 "../modules/fastapi_contracts.md"
-    click n3 "../modules/python_bindings.md"
-    click n4 "../modules/python_contracts.md"
-    click n5 "../modules/python_extractor.md"
-    click n6 "../modules/extraction_service.md"
-    click n7 "../modules/imports.md"
-    click n8 "../modules/module_coverage.md"
-    click n9 "../modules/python_calls.md"
-    click n10 "../modules/python_implementation.md"
-    click n11 "../modules/python_observations.md"
+    n7 --> n4
+    n8 --> n2
+    n8 --> n6
+    click n0 "../modules/common.md"
+    click n1 "../modules/fastapi_contracts.md"
+    click n2 "../modules/python_bindings.md"
+    click n3 "../modules/python_contracts.md"
+    click n4 "../modules/python_extractor.md"
+    click n5 "../modules/extraction_service.md"
+    click n6 "../modules/imports.md"
+    click n7 "../modules/module_coverage.md"
+    click n8 "../modules/python_calls.md"
+    click n9 "../modules/python_implementation.md"
+    click n10 "../modules/python_observations.md"
+    click n11 "../modules/gitignore.md"
 ```
 
 ### Internal neighbors
@@ -96,7 +94,6 @@ flowchart LR
 |---|---|
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Inbound | [module_coverage](../modules/module_coverage.md) |
-| Outbound | [config](../modules/config.md) |
 | Outbound | [common](../modules/common.md) |
 | Outbound | [fastapi_contracts](../modules/fastapi_contracts.md) |
 | Outbound | [python_bindings](../modules/python_bindings.md) |
@@ -105,15 +102,16 @@ flowchart LR
 | Outbound | [python_calls](../modules/python_calls.md) |
 | Outbound | [python_implementation](../modules/python_implementation.md) |
 | Outbound | [python_observations](../modules/python_observations.md) |
+| Outbound | [gitignore](../modules/gitignore.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 523 | `ast.NodeVisitor` | — |
-| [ComponentVisitor](../entities/ComponentVisitor.md) | 1131 | `ast.NodeVisitor` | — |
-| [_LexicalBody](../entities/LexicalBody.md) | 1515 | `ast.NodeVisitor` | Current-body writes/calls, without entering deferred definitions. |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1889 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [ComponentVisitor](../entities/ComponentVisitor.md) | 1178 | `ast.NodeVisitor` | — |
+| [_LexicalBody](../entities/LexicalBody.md) | 1562 | `ast.NodeVisitor` | Current-body writes/calls, without entering deferred definitions. |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1936 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -152,6 +150,7 @@ flowchart LR
 | `_is_self_module_alias` | `(statement) -> bool` | — | Detect ``sys.modules[__name__] = other`` — a module replacing itself. |
 | `module_alias_target` | `(tree: ast.Module) -> str` | — | Return the imported binding of a static self-module shim, else ``""``. |
 | `_static_import_bindings` | `(statement: ast.AST) -> dict[str, str] \| None` | — | Capture direct import spellings; no module loading or attribute lookup. |
+| `_static_deprecation_warning` | `(statement: ast.AST, bindings: dict[str, str]) -> bool` | — | Recognize ``warnings.warn("literal", DeprecationWarning, stacklevel=N)``. |
 | `_static_type_checking_block` | `(statement: ast.AST, bindings: dict[str, str]) -> bool` | — | Recognize import-only mirrors behind a directly bound typing guard. |
 | `_import_time_body` | `(statement, type_checking_names: set[str]) -> list` | — | Return the nested statements of *statement* that run at import time. |
 | `_collect_module_calls` | `(body, calls: list[dict], type_checking_names: set[str]) -> None` | — | — |

@@ -10,9 +10,9 @@ from llm_wiki_cli.services.maintenance_service import (
     adopt_maintenance_authority, get_maintenance_status_authority,
     acknowledge_maintenance_authority,
 )
-from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki, MaintenanceProtocolError
-from llm_wiki_cli.services.maintenance_shapes import MaintenanceError
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.maintenance_protocol import snapshot_wiki, MaintenanceProtocolError
+from llm_wiki_engine.maintenance_shapes import MaintenanceError
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.fixtures import POLICY_SOURCE
 
 
@@ -133,7 +133,7 @@ def test_python_and_read_only_mcp_status_agree_without_mutation(adopted):
 @pytest.mark.parametrize("changed", ["source", "prose"])
 def test_input_race_during_ack_leaves_previous_authority_pending(adopted, monkeypatch, changed):
     from llm_wiki_cli.services import maintenance_service
-    from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts, CommitStage
+    from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts, CommitStage
     status = _status()
     row = next(r for r in status["records"] if r["coordinate"]["qualified_owner"] == "Batch")
     manifest = (adopted / ".llm-wiki-manifest.json").read_bytes()
@@ -193,9 +193,9 @@ def test_successful_adoption_supplies_documented_committed_recovery(adopted):
 
 def test_agent_ack_never_reactivates_expired_human_governance(adopted):
     from tests.test_knowledge_cmd import _run
-    from llm_wiki_cli.services.knowledge_governance import load_governance, evaluate_review_event
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+    from llm_wiki_engine.knowledge_governance import load_governance, evaluate_review_event
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 
     _run(["init", "--wiki-dir", "wiki", "--bundle-id", "kb_separate_authorities"])
     knowledge = load_knowledge_state(adopted).knowledge

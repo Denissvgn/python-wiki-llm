@@ -19,40 +19,45 @@ from itertools import islice
 from pathlib import PurePosixPath
 from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
+    CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH as CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
+    CONTEXT_COVERAGE_LIMITATION_LIMIT as CONTEXT_COVERAGE_LIMITATION_LIMIT,
+)
 from .dependencies import (
     build_dependency_graph,
     dependency_metrics,
     detect_cycles,
     topological_order,
 )
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadReason,
     KnowledgeReadView,
     _validated_artifacts_for_view,
 )
-from .immutable import freeze
-from .knowledge_artifacts import (
+from llm_wiki_engine.canonical_json import compact_text
+from llm_wiki_engine.immutable import freeze
+from llm_wiki_engine.knowledge_artifacts import (
     ValidatedKnowledgeArtifacts,
     require_validated_artifacts,
 )
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     GRAPH_ORIGINS,
     GRAPH_RESOLUTIONS,
     KnowledgeGraphError,
     typed_graph_from_knowledge_extensions,
 )
-from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
-from .knowledge_model import knowledge_index_to_payload
-from .knowledge_observability import (
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_EXTENSION_KEY
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_observability import (
     freshness_analysis_diagnostic,
     knowledge_freshness_hint,
     knowledge_status_payload,
 )
 from .relationships import build_entity_relationship_summaries
-from .validation import (
+from llm_wiki_engine.validation import (
     normalize_legacy_portable_relative_path,
     require_nonempty_text,
 )
@@ -70,8 +75,6 @@ _SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
 _NOT_EVALUATED_REASON = "not-evaluated"
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 _MAX_NORMALIZED_CONTEXT_TARGET_LENGTH = 2048
-CONTEXT_COVERAGE_LIMITATION_LIMIT = 16
-CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH = 128
 RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT = 64 * 1024
 QUERY_RESULT_SERIALIZED_BYTE_LIMIT = 64 * 1024
 QUERY_RESULT_TEXT_BYTE_LIMIT = 4 * 1024
@@ -593,12 +596,7 @@ def _wire_value(value: object) -> object:
 
 
 def _canonical_json(value: object) -> str:
-    return json.dumps(
-        _jsonable(value),
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    )
+    return compact_text(_jsonable(value), allow_nan=True)
 
 
 def _raw_evidence_byte_bound(value: object) -> dict[str, int | bool]:
@@ -2409,7 +2407,7 @@ class DocumentationGraphQueryService:
 
             result["implementation"] = compact_implementation_summary(compact["implementation"])
         if "maintenance" in compact:
-            from .maintenance_status import compact_maintenance_summary
+            from llm_wiki_engine.maintenance_status import compact_maintenance_summary
             result["maintenance"] = compact_maintenance_summary(compact["maintenance"])
         freshness = result.get("freshness")
         if isinstance(freshness, dict) and freshness.get("state") is None:

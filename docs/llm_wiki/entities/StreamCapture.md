@@ -1,6 +1,6 @@
 # _StreamCapture
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:2535`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:2527`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

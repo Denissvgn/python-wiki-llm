@@ -9,8 +9,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
-from .io import first_unsafe_path_component
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+from llm_wiki_engine.io import first_unsafe_path_component
 from .publication_config import (
     PUBLICATION_CONFIG_PATH,
     PublicationConfigError,
@@ -19,18 +19,18 @@ from .publication_config import (
     publication_path,
     publication_source_root,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     locate_exact_repository_path,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     SyncManifest,
     SyncManifestError,
 )
-from .validation import require_repository_relative_path
+from llm_wiki_engine.validation import require_repository_relative_path
 from .wiki_lifecycle import WikiLifecycleState, classify_wiki_lifecycle
 
 

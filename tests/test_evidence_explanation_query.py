@@ -11,7 +11,7 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import query_cmd
 from llm_wiki_cli.services import evidence_explanation, extractor_helpers as helpers
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
-from llm_wiki_cli.services.normalization_diagnostics import DIAGNOSTIC_PREFIX
+from llm_wiki_engine.normalization_diagnostics import DIAGNOSTIC_PREFIX
 from tests.test_captured_evidence_diagnostics import _view
 from tests.test_knowledge_evidence import _inventory, _module_basis
 from tests.test_knowledge_freshness import MODULE_LOCATOR

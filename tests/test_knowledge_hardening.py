@@ -11,17 +11,17 @@ from typing import Any
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ConsumedInput,
     ConsumedInputKind,
     ProducerComponentInput,
     RepositoryEvidence,
 )
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.wiki_media import contains_uri_authority_userinfo
+from llm_wiki_engine.wiki_media import contains_uri_authority_userinfo
 from tests.knowledge_generation_benchmark import (
     KNOWLEDGE_BENCHMARK_SCALES,
     build_knowledge_benchmark_inputs,

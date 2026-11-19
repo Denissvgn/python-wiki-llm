@@ -2,21 +2,22 @@
 
 **Entry point:** `install_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [common](../modules/common.md), [config](../modules/config.md), [current_contracts](../modules/current_contracts.md), and 13 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [current_contracts](../modules/current_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), and 14 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [ci_installer](../modules/ci_installer.md)
-- [common](../modules/common.md)
-- [config](../modules/config.md)
 - [current_contracts](../modules/current_contracts.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [path_policy](../modules/path_policy.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -45,21 +46,21 @@ sequenceDiagram
     participant p11 as locate_exact_repository_path
     participant p12 as _validate_workflow_target
     participant p13 as _validated_project_path
-    participant p14 as is_pristine_wiki_target
-    participant p15 as SyncManifest.load
-    participant p16 as resolve_source_selection
-    participant p17 as validate_persisted_source_selection_identity
-    participant p18 as is_unmodified_managed_workflow
-    participant p19 as ensure_guarded_directory
-    participant p20 as atomic_write_guarded_bytes
-    participant p21 as require_repository_relative_path
-    participant p22 as _locate_exact_path
-    participant p23 as source_selection_identity_from_generation_inputs
-    participant p24 as source_selection_inputs_from_generation_inputs
-    participant p25 as _override_text
-    participant p26 as guard_windows_directory_chain
-    participant p27 as StorageReadSession.read
-    participant p28 as _atomic_write_guarded_bytes_windows
+    participant p14 as first_unsafe_path_component
+    participant p15 as is_pristine_wiki_target
+    participant p16 as SyncManifest.load
+    participant p17 as resolve_source_selection
+    participant p18 as validate_persisted_source_selection_identity
+    participant p19 as is_unmodified_managed_workflow
+    participant p20 as ensure_guarded_directory
+    participant p21 as atomic_write_guarded_bytes
+    participant p22 as require_repository_relative_path
+    participant p23 as _locate_exact_path
+    participant p24 as source_selection_identity_from_generation_inputs
+    participant p25 as source_selection_inputs_from_generation_inputs
+    participant p26 as _override_text
+    participant p27 as guard_windows_directory_chain
+    participant p28 as StorageReadSession.read
     participant p29 as isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)
     participant p30 as (…).resolve
     p0->>p1: normalize_action_ref
@@ -75,28 +76,28 @@ sequenceDiagram
     p4->>p11: locate_exact_repository_path
     p8->>p12: _validate_workflow_target
     p2->>p13: _validated_project_path
-    p5->>p14: is_pristine_wiki_target
-    p6->>p15: SyncManifest.load
-    p6->>p16: resolve_source_selection
-    p6->>p17: validate_persisted_source_selection_identity
-    p8->>p18: is_unmodified_managed_workflow
-    p8->>p19: ensure_guarded_directory
-    p8->>p20: atomic_write_guarded_bytes
-    p13->>p21: require_repository_relative_path
-    p11->>p22: _locate_exact_path
-    p17->>p23: source_selection_identity_from_generation_inputs
-    p17->>p24: source_selection_inputs_from_generation_inputs
-    p16->>p25: _override_text
-    p19->>p26: guard_windows_directory_chain
-    p15->>p27: StorageReadSession.read
-    p20->>p28: _atomic_write_guarded_bytes_windows
+    p4->>p14: first_unsafe_path_component
+    p5->>p15: is_pristine_wiki_target
+    p6->>p16: SyncManifest.load
+    p6->>p17: resolve_source_selection
+    p6->>p18: validate_persisted_source_selection_identity
+    p8->>p19: is_unmodified_managed_workflow
+    p8->>p20: ensure_guarded_directory
+    p8->>p21: atomic_write_guarded_bytes
+    p13->>p22: require_repository_relative_path
+    p11->>p23: _locate_exact_path
+    p18->>p24: source_selection_identity_from_generation_inputs
+    p18->>p25: source_selection_inputs_from_generation_inputs
+    p17->>p26: _override_text
+    p20->>p27: guard_windows_directory_chain
+    p16->>p28: StorageReadSession.read
     p1-->>p29: isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)(value, str)
     p3-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 1110 interactions; 1080 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1111 interactions; 1081 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 449 (448 omitted); unresolved 1 of 222 (221 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 447 (446 omitted); unresolved 1 of 224 (223 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -105,12 +106,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 8 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 13 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | unresolved | 5 |
-> Omission summary shows 8 of 256 groups; 248 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 11 | - | external | 7 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 13 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 11 | - | unresolved | 5 |
+> Omission summary shows 8 of 257 groups; 249 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 440; effect analysis evaluated: 220, partial: 20, unavailable: 200. Counts include steps omitted from the displayed trace.
+Source steps: 441; effect analysis evaluated: 221, partial: 20, unavailable: 200. Counts include steps omitted from the displayed trace.
 
-Collector observations for 240 source steps with known totals: observed: 1393, emitted: 1321, omitted: 72. Unavailable totals are excluded.
+Collector observations for 241 source steps with known totals: observed: 1390, emitted: 1318, omitted: 72. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -144,7 +145,7 @@ Collector observations for 240 source steps with known totals: observed: 1393, e
 | `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_validated_project_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -159,7 +160,7 @@ flowchart LR
     s9["9. InstallCiError"]
     s10["10. _validated_project_path"]
     s11["11. require_repository_relative_path"]
-    s12["12. isinstance (src/llm_wiki_cli/services…_repository_relative_path)"]
+    s12["12. isinstance (src/llm_wiki_engine/valid…_repository_relative_path)"]
     s1 -->|"normalize_action_ref(action_ref)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)(value, str)" .-> s3
     s2 -. "_ACTION_REF_RE.fullmatch(value)" .-> s4
@@ -170,7 +171,7 @@ flowchart LR
     s8 -->|"InstallCiError(...)"| s9
     s7 -->|"_validated_project_path(value, label=label)"| s10
     s10 -->|"require_repository_relative_path(…)"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/valid…_repository_relative_path)(value, str)" .-> s12
     click s1 "../modules/ci_installer.md"
     click s2 "../modules/ci_installer.md"
     click s5 "../modules/ci_installer.md"
@@ -196,7 +197,7 @@ flowchart LR
 | `InstallCiError` | - | - | - | - |
 | `_validated_project_path` | `value: object`, `label: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…_repository_relative_path)` | - | - | - | - |
 
 ### Call data
 
@@ -212,7 +213,7 @@ flowchart LR
 | _without_github_expression | InstallCiError | 105 | `InstallCiError(...)` |
 | _portable_project_path | _validated_project_path | 113 | `_validated_project_path(value, label=label)` |
 | _validated_project_path | require_repository_relative_path | 81 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
 

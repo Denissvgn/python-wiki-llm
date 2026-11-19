@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 6 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 4 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 4 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 6 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 4 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 3 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 15 | - | external | 9 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 15 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 92 groups; 84 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -117,11 +117,11 @@ Collector observations for 122 source steps with known totals: observed: 509, em
 | `_normalize_claim_record` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `_mapping` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -132,22 +132,22 @@ flowchart LR
     s2["2. _normalize_claim_record"]
     s3["3. _mapping"]
     s4["4. require_mapping"]
-    s5["5. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s5["5. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s6["6. _validation_error"]
-    s7["7. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s7["7. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s8["8. error"]
-    s9["9. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s9["9. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s10["10. _validation_error"]
     s11["11. key.encode"]
     s12["12. _validation_error"]
     s1 -->|"_normalize_claim_record(raw, 'claim_evidence')"| s2
     s2 -->|"_mapping(value, field_name)"| s3
     s3 -->|"require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s5
     s4 -->|"_validation_error(error, error_context)"| s6
-    s6 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s7
     s6 -. "error(context)" .-> s8
-    s4 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s9
+    s4 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)" .-> s9
     s4 -->|"_validation_error(..., error_context)"| s10
     s4 -. "key.encode('utf-8')" .-> s11
     s4 -->|"_validation_error(..., error_context)"| s12
@@ -175,11 +175,11 @@ flowchart LR
 | `_normalize_claim_record` | `value: object`, `field_name: str` | `_CLAIM_FIELDS`, `_CLAIM_REQUIRED`, `CLAIM_EVIDENCE_SCHEMA_VERSION`, `_RESOLUTIONS`, `CLAIM_EVIDENCE_SCHEMA_VERSION` | - | `{...}` |
 | `_mapping` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -191,11 +191,11 @@ flowchart LR
 | reconcile_claim_evidence_records | _normalize_claim_record | 400 | `_normalize_claim_record(raw, 'claim_evidence')` |
 | _normalize_claim_record | _mapping | 592 | `_mapping(value, field_name)` |
 | _mapping | require_mapping | 1423 | `require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 787 | `isinstance(key, str)` |
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 | require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |

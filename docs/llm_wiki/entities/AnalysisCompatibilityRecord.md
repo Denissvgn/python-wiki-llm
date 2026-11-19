@@ -1,6 +1,6 @@
 # AnalysisCompatibilityRecord
 
-**Location:** `src/llm_wiki_cli/api_types.py:685`
+**Location:** `src/llm_wiki_cli/api_types.py:686`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

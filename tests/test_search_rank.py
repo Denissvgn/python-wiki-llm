@@ -7,7 +7,7 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
-from llm_wiki_cli.services.search_rank import rank_pages
+from llm_wiki_engine.search_rank import rank_pages
 from tests.test_mcp import _write_wiki
 
 

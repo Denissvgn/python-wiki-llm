@@ -32,7 +32,7 @@ Python mode argument is invalid. MCP `get_context_packet` uses v2; a client
 that only understands v1 must be updated before upgrading its server.
 
 `context_knowledge_contract()` from
-`llm_wiki_cli.services.context_knowledge_contract` returns the current
+`llm_wiki_engine.context_knowledge_contract` returns the current
 `llm-wiki-context-knowledge-contract/v2` descriptor, including packet defaults
 for each interface. Plain context responses retain their separate compatibility
 contract. The frozen v1 descriptor remains available through

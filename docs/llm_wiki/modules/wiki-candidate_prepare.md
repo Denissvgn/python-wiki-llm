@@ -18,10 +18,10 @@ Prepare the selected helpers and check a consumer's existing native evidence.
 | `llm_wiki_cli.services.helper_cache` | `ensure_helper` |
 | `llm_wiki_cli.services.helper_preparation` | `selected_helper_languages` |
 | `llm_wiki_cli.services.helper_runtime` | `helper_operation` |
-| `llm_wiki_cli.services.knowledge_evidence` | `hash_json` |
-| `llm_wiki_cli.services.knowledge_loader` | `load_knowledge_state` |
 | `llm_wiki_cli.services.publication_config` | `load_publication_config`, `publication_path`, `publication_source_root` |
-| `llm_wiki_cli.services.source_retirement` | `retired_entity_mappings` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.knowledge_loader` | `load_knowledge_state` |
+| `llm_wiki_engine.source_retirement` | `retired_entity_mappings` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
@@ -36,10 +36,10 @@ flowchart LR
     n2["src/llm_wiki_cli/services/helper_cache.py"]
     n3["src/llm_wiki_cli/services/helper_preparation.py"]
     n4["src/llm_wiki_cli/services/helper_runtime.py"]
-    n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n6["src/llm_wiki_cli/services/knowledge_loader.py"]
-    n7["src/llm_wiki_cli/services/publication_config.py"]
-    n8["src/llm_wiki_cli/services/source_retirement.py"]
+    n5["src/llm_wiki_cli/services/publication_config.py"]
+    n6["src/llm_wiki_engine/knowledge_evidence.py"]
+    n7["src/llm_wiki_engine/knowledge_loader.py"]
+    n8["src/llm_wiki_engine/source_retirement.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
@@ -48,20 +48,20 @@ flowchart LR
     n0 --> n6
     n0 --> n7
     n0 --> n8
-    n1 --> n5
+    n1 --> n6
     n1 --> n8
     n2 --> n4
     n3 --> n2
     n3 --> n4
-    n8 --> n5
+    n8 --> n6
     click n0 "../modules/wiki-candidate_prepare.md"
     click n1 "../modules/documentation_native.md"
     click n2 "../modules/helper_cache.md"
     click n3 "../modules/helper_preparation.md"
     click n4 "../modules/helper_runtime.md"
-    click n5 "../modules/knowledge_evidence.md"
-    click n6 "../modules/knowledge_loader.md"
-    click n7 "../modules/publication_config.md"
+    click n5 "../modules/publication_config.md"
+    click n6 "../modules/knowledge_evidence.md"
+    click n7 "../modules/knowledge_loader.md"
     click n8 "../modules/source_retirement.md"
 ```
 
@@ -73,9 +73,9 @@ flowchart LR
 | Outbound | [helper_cache](../modules/helper_cache.md) |
 | Outbound | [helper_preparation](../modules/helper_preparation.md) |
 | Outbound | [helper_runtime](../modules/helper_runtime.md) |
+| Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [knowledge_loader](../modules/knowledge_loader.md) |
-| Outbound | [publication_config](../modules/publication_config.md) |
 | Outbound | [source_retirement](../modules/source_retirement.md) |
 
 ## Functions

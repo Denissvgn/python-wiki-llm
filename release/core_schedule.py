@@ -33,7 +33,8 @@ def _git(root: Path, *arguments: str, check: bool = True):
 def runtime_key(environment: dict) -> dict:
     shards.validate_environment(environment, environment["profile"]["lane"])
     return {k: environment[k] for k in ("profile", "python", "machine")} | {
-        "packages": {k: v for k, v in environment["packages"].items() if k != "agent-wiki-cli"}}
+        "packages": {k: v for k, v in environment["packages"].items()
+                     if k not in {"agent-wiki-cli", "llm-wiki-engine"}}}
 
 
 def _source_hashes(root: Path, source: str, names: set[str]) -> dict:

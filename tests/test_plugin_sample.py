@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import shutil
-import sys
 from pathlib import Path
 
 import pytest
@@ -31,18 +30,6 @@ SAMPLE_FILES = (
     "llm-wiki-plugin.json",
     "styles.py",
 )
-
-
-@pytest.fixture(autouse=True)
-def _isolated_sample_modules():
-    # Each temporary project models a fresh process. The loader correctly
-    # rejects modules already loaded from a different installed plugin root.
-    names = ("detectors", "styles")
-    previous = {name: sys.modules.pop(name) for name in names if name in sys.modules}
-    yield
-    for name in names:
-        sys.modules.pop(name, None)
-    sys.modules.update(previous)
 
 
 def _install_sample_plugin(root: Path) -> Path:

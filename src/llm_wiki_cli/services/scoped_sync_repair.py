@@ -8,14 +8,15 @@ import hashlib
 import json
 from typing import Any
 
-from . import analysis_capture, analysis_compatibility as ac
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
-from .knowledge_artifacts import KnowledgeCommitPlan, validate_knowledge_artifacts
-from .knowledge_model import knowledge_index_to_payload
-from .knowledge_storage import canonical_bytes
+from . import analysis_capture
+from llm_wiki_engine import analysis_compatibility as ac
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.knowledge_artifacts import KnowledgeCommitPlan, validate_knowledge_artifacts
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_storage import canonical_bytes
 from .knowledge_reuse import implementation_hash, wiki_input_hashes
 from .source_snapshot import SourceSnapshotError, source_snapshot_matches_current_files
-from .validation import require_repository_relative_path
+from llm_wiki_engine.validation import require_repository_relative_path
 
 
 class ScopedRepairError(ValueError):
@@ -57,9 +58,9 @@ def _multiset(values):
 
 
 def _markdown_hashes(root):
-    from .knowledge_storage import MAX_EXPANDED_BYTES
-    from .knowledge_storage_io import read_guarded
-    from .wiki_surface import collect_wiki_pages
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.wiki_surface import collect_wiki_pages
 
     return {page.relative_path: hashlib.sha256(read_guarded(page.path, MAX_EXPANDED_BYTES).content).hexdigest()
             for page in collect_wiki_pages(root)}

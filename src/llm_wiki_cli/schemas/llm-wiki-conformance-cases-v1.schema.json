@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-conformance-cases-v1.schema.json",
+  "title": "Shared conformance cases for one published format",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-conformance-cases/v1"
+    },
+    "format": {
+      "type": "string",
+      "pattern": "^llm-wiki-[a-z0-9-]+/v[1-9][0-9]*$"
+    },
+    "schema": {
+      "type": "string",
+      "pattern": "^llm-wiki-[a-z0-9-]+-v[1-9][0-9]*\\.schema\\.json$"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "schema_valid": {
+            "type": "boolean",
+            "description": "Whether the format's JSON Schema accepts the document. Omitted, it equals valid. A case with valid false and schema_valid true is rejected only by checks a JSON Schema cannot express."
+          },
+          "description": {
+            "type": "string"
+          },
+          "document": true
+        },
+        "required": [
+          "document",
+          "name",
+          "valid"
+        ],
+        "additionalProperties": false,
+        "not": {
+          "properties": {
+            "valid": {
+              "const": true
+            },
+            "schema_valid": {
+              "const": false
+            }
+          },
+          "required": [
+            "valid",
+            "schema_valid"
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "format",
+    "schema",
+    "cases"
+  ],
+  "additionalProperties": false,
+  "description": "Valid and invalid example documents for one published format. Any validator of the format must accept exactly the cases with valid true."
+}

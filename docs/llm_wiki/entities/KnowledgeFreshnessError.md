@@ -1,6 +1,6 @@
 # KnowledgeFreshnessError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:170`
+**Location:** `src/llm_wiki_engine/knowledge_freshness.py:170`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -24,12 +24,12 @@ Field-specific failure at the pure live-comparison boundary.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeFreshnessError (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n0["KnowledgeFreshnessError (src/llm_wiki_engine/knowledge_freshness.py)"]
     n1["ValueError"]
-    n2["_validate_live_evaluation (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n3["_validate_live_producer (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["_validate_source_path (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n5["evaluate_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n2["_validate_live_evaluation (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n3["_validate_live_producer (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n4["_validate_source_path (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n5["evaluate_knowledge_freshness (src/llm_wiki_engine/knowledge_freshness.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

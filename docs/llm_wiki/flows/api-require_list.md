@@ -12,13 +12,13 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_list
-    participant p1 as isinstance (src/llm_wiki_cli/services/validation.py:require_list)
+    participant p1 as isinstance (src/llm_wiki_engine/validation.py:require_list)
     participant p2 as _validation_error
-    participant p3 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p3 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p4 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services/validation.py:require_list)(value, list)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_list)(value, list)
     p0->>p2: _validation_error
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p3: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p2-->>p4: error(context)
 ```
 
@@ -42,13 +42,13 @@ Collector observations for 2 source steps with known totals: observed: 7, emitte
 ```mermaid
 flowchart LR
     s1["1. require_list"]
-    s2["2. isinstance (src/llm_wiki_cli/services/validation.py:require_list)"]
+    s2["2. isinstance (src/llm_wiki_engine/validation.py:require_list)"]
     s3["3. _validation_error"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s5["5. error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services/validation.py:require_list)(value, list)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_list)(value, list)" .-> s2
     s1 -->|"_validation_error(error, error_context)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s4
     s3 -. "error(context)" .-> s5
     click s1 "../modules/validation.md"
     click s3 "../modules/validation.md"
@@ -59,18 +59,18 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_list` | `value: object`, `error: _ValidationError`, `error_context: str` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services/validation.py:require_list)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_list)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 820 | `isinstance(value, list)` |
+| require_list | isinstance (src/llm_wiki_engine/validation.py:require_list) | 820 | `isinstance(value, list)` |
 | require_list | _validation_error | 821 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 
 ### Boundary effects

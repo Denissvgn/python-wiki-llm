@@ -1,6 +1,6 @@
 # ReviewFinding
 
-**Location:** `src/llm_wiki_cli/services/review_service.py:90`
+**Location:** `src/llm_wiki_cli/services/review_service.py:96`
 **Kind:** Class
 **Bases:** —
 **Module:** [review_service](../modules/review_service.md)

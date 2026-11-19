@@ -9,7 +9,7 @@ import pytest
 from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.config import read_config, write_config
 from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
 def _make_args(**kwargs):

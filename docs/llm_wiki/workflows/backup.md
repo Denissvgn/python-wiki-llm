@@ -1,14 +1,14 @@
 # backup
 
 **Entry point:** `knowledge_storage_lifecycle._backup`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `knowledge_storage.digest`
-2. `knowledge_storage.digest`
-3. `knowledge_storage.digest`
+1. `canonical_json.sha256_digest`
+2. `canonical_json.sha256_digest`
+3. `canonical_json.sha256_digest`
 4. `knowledge_storage.canonical_bytes`
 5. `knowledge_storage.KnowledgeStorageError`
 6. `knowledge_storage.KnowledgeStorageError`
@@ -22,6 +22,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)

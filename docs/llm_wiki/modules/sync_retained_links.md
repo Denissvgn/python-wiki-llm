@@ -1,6 +1,6 @@
 # sync_retained_links Module
 
-**Path:** `src/llm_wiki_cli/services/sync_retained_links.py`
+**Path:** `src/llm_wiki_engine/sync_retained_links.py`
 
 ## Description
 
@@ -26,30 +26,30 @@ Pure, ownership-scoped link repairs for retained source pages.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/markdown_sections.py"]
-    n1["src/llm_wiki_cli/services/section_ownership.py"]
-    n2["src/llm_wiki_cli/services/sync_retained_links.py"]
-    n3["src/llm_wiki_cli/services/sync_transitions.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
-    n5["src/llm_wiki_cli/services/wiki_media.py"]
-    n6["src/llm_wiki_cli/services/wiki_surface.py"]
-    n1 --> n0
-    n1 --> n4
-    n1 --> n6
-    n2 --> n0
+    n0["src/llm_wiki_cli/services/sync_transitions.py"]
+    n1["src/llm_wiki_engine/markdown_sections.py"]
+    n2["src/llm_wiki_engine/section_ownership.py"]
+    n3["src/llm_wiki_engine/sync_retained_links.py"]
+    n4["src/llm_wiki_engine/validation.py"]
+    n5["src/llm_wiki_engine/wiki_media.py"]
+    n6["src/llm_wiki_engine/wiki_surface.py"]
+    n0 --> n1
+    n0 --> n3
+    n0 --> n4
+    n0 --> n6
     n2 --> n1
     n2 --> n4
-    n2 --> n5
     n2 --> n6
-    n3 --> n0
+    n3 --> n1
     n3 --> n2
     n3 --> n4
+    n3 --> n5
     n3 --> n6
     n6 --> n4
-    click n0 "../modules/markdown_sections.md"
-    click n1 "../modules/section_ownership.md"
-    click n2 "../modules/sync_retained_links.md"
-    click n3 "../modules/sync_transitions.md"
+    click n0 "../modules/sync_transitions.md"
+    click n1 "../modules/markdown_sections.md"
+    click n2 "../modules/section_ownership.md"
+    click n3 "../modules/sync_retained_links.md"
     click n4 "../modules/validation.md"
     click n5 "../modules/wiki_media.md"
     click n6 "../modules/wiki_surface.md"

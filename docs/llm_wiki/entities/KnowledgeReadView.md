@@ -1,6 +1,6 @@
 # KnowledgeReadView
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:292`
+**Location:** `src/llm_wiki_engine/knowledge_consumption.py:295`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -51,10 +51,10 @@ Validated, immutable-by-contract state for one native read operation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeReadView (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n0["KnowledgeReadView (src/llm_wiki_engine/knowledge_consumption.py)"]
     n1["src/llm_wiki_cli/api.py"]
-    n2["_captured_query_service (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["_freshness_basis (src/llm_wiki_cli/services/context_packet.py)"]
+    n2["_captured_query_service (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n3["_freshness_basis (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n4["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n5["_build_explicit_knowledge_response (src/llm_wiki_cli/services/context_service.py)"]
     n6["_context_query_surface (src/llm_wiki_cli/services/context_service.py)"]
@@ -78,8 +78,8 @@ flowchart LR
     n12 --> n0
     click n0 "../modules/knowledge_consumption.md"
     click n1 "../modules/api.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_packet.md"
+    click n2 "../modules/context_packet_builder.md"
+    click n3 "../modules/context_packet_builder.md"
     click n4 "../modules/context_service.md"
     click n5 "../modules/context_service.md"
     click n6 "../modules/context_service.md"
@@ -102,8 +102,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
-| `_captured_query_service` | type_reference | [context_packet](../modules/context_packet.md) | — |
-| `_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_captured_query_service` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
+| `_freshness_basis` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
 | `_build_explicit_knowledge_response` | type_reference | [context_service](../modules/context_service.md) | — |
 | `_context_query_surface` | type_reference | [context_service](../modules/context_service.md) | — |

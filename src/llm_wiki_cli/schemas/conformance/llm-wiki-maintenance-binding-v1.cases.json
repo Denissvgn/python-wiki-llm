@@ -1,0 +1,97 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-maintenance-binding/v1",
+  "schema": "llm-wiki-maintenance-binding-v1.schema.json",
+  "cases": [
+    {
+      "name": "pending",
+      "valid": true,
+      "description": "Knowledge bound to a ledger with pending records.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714"
+      }
+    },
+    {
+      "name": "acknowledged",
+      "valid": true,
+      "description": "Knowledge bound to a reviewed ledger.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:c15a95f2d19942d3cbaaefdac762e29faf0f956e7a5c19ebddd6acba3c061657"
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "description": "The binding names this format.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-binding/v2",
+        "state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714"
+      }
+    },
+    {
+      "name": "unknown-field",
+      "valid": false,
+      "description": "The binding is closed.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714",
+        "generation": 1
+      }
+    },
+    {
+      "name": "missing-state-hash",
+      "valid": false,
+      "description": "The binding names the ledger state.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-binding/v1"
+      }
+    },
+    {
+      "name": "bad-state-hash",
+      "valid": false,
+      "description": "The state hash is a sha256 digest.",
+      "document": {
+        "adoption_id": "00000000-0000-4002-8000-000000001234",
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:abc"
+      }
+    },
+    {
+      "name": "identity-not-uuid",
+      "valid": false,
+      "description": "The adoption id is a UUIDv4.",
+      "document": {
+        "adoption_id": "wiki-1",
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714"
+      }
+    },
+    {
+      "name": "identity-uppercase",
+      "valid": false,
+      "description": "A UUID is written in canonical lowercase.",
+      "document": {
+        "adoption_id": "3F0C1B8E-6A2D-4C51-9E7F-2B8D4A6C0E19",
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714"
+      }
+    },
+    {
+      "name": "null-identity",
+      "valid": false,
+      "description": "Every binding names its adoption.",
+      "document": {
+        "adoption_id": null,
+        "schema_version": "llm-wiki-maintenance-binding/v1",
+        "state_hash": "sha256:958aedbf00eda6152a4cca38323c6741a64d762f1049fd679517f454126a3714"
+      }
+    }
+  ]
+}

@@ -12,9 +12,9 @@ import pytest
 
 import llm_wiki_cli.cli as cli
 from llm_wiki_cli.commands import obsidian_cmd, site_cmd
-from llm_wiki_cli.services import io as wiki_io
+from llm_wiki_engine import io as wiki_io
 from llm_wiki_cli.services import obsidian, site_export
-from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_cli.services.knowledge_projection import project_knowledge
 from tests.knowledge_fixtures import FIXTURE_REPOSITORY_IDENTITY
 from tests.test_knowledge_projection_e2e import (

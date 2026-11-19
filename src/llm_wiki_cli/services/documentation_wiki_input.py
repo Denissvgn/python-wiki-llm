@@ -20,7 +20,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterator, Mapping
 from urllib.parse import urlsplit
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     _WindowsDirectoryGuardUnavailableError,
     WindowsFileGuardError,
@@ -34,17 +34,17 @@ from .filesystem_guard import (
     windows_object_identity_from_values,
     _windows_path_handle_metadata,
 )
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     KnowledgeArtifactError,
     ValidatedKnowledgeArtifacts,
     validate_knowledge_artifacts,
     validate_surface_index_bytes,
 )
-from .knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
-from .knowledge_model import ComputedFreshness
-from .knowledge_observability import knowledge_freshness_hint
-from .source_selection import (
+from llm_wiki_engine.knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
+from llm_wiki_engine.knowledge_model import ComputedFreshness
+from llm_wiki_engine.knowledge_observability import knowledge_freshness_hint
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_GENERATION_INPUT_KEY,
     SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
     SourceSelectionError,
@@ -57,25 +57,25 @@ from .source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     LEGACY_MANIFEST_VERSION,
     MANIFEST_VERSION,
     ManifestArtifactHashes,
     SyncManifest,
     SyncManifestError,
 )
-from .wiki_media import (
+from llm_wiki_engine.wiki_media import (
     iter_markdown_link_targets,
     local_link_path,
     strip_fenced_code_blocks,
 )
-from .wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
-from .wiki_surface import is_safe_page_id, iter_page_kinds
-from .maintenance_protocol import ADOPTION_FILENAME
-from .validation import (
+from llm_wiki_engine.wiki_surface import is_safe_page_id, iter_page_kinds
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.validation import (
     is_portable_relative_path,
     path_is_within as shared_path_is_within,
     paths_overlap as shared_paths_overlap,
@@ -2240,7 +2240,7 @@ def _load_and_validate_metadata(
     )
     _validate_native_marker(marker, validated)
     if adoption is not None:
-        from .maintenance_projection import validate_maintenance_projection
+        from llm_wiki_engine.maintenance_projection import validate_maintenance_projection
         try:
             validate_maintenance_projection(validated.knowledge, state=sync_manifest.maintenance_state, marker=adoption,
                 raw_content_by_page={name: _read_verified_bytes(entry) for name, entry in canonical_markdown.items()})
@@ -2267,8 +2267,8 @@ def _validate_maintenance_input_authority(manifest: SyncManifest, entry: _InputF
         return None
     if state is None or entry is None:
         raise DocumentationWikiInputError("Maintenance marker and typed owner must be retained together.", category="maintenance_owner_incomplete", path=ADOPTION_FILENAME)
-    from .maintenance_state import validate_maintenance_adoption
-    from .knowledge_storage import canonical_bytes, digest
+    from llm_wiki_engine.maintenance_state import validate_maintenance_adoption
+    from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
     try:
         raw = _read_verified_bytes(entry)
         if len(raw) > 65_536:
@@ -2771,8 +2771,8 @@ def _unknown_entries(files: tuple[_InputFile, ...]) -> tuple[str, ...]:
 
 
 def _is_known_wiki_path(relative_path: str) -> bool:
-    from .knowledge_packs import PACK_NAME, INDEX_NAME, INDEX_PAGE_NAME
-    from .manifest_storage import OBJECT_NAME
+    from llm_wiki_engine.knowledge_packs import PACK_NAME, INDEX_NAME, INDEX_PAGE_NAME
+    from llm_wiki_engine.manifest_storage import OBJECT_NAME
     if OBJECT_NAME.fullmatch(relative_path):
         return True
     if PACK_NAME.fullmatch(relative_path) or INDEX_NAME.fullmatch(relative_path) or INDEX_PAGE_NAME.fullmatch(relative_path):

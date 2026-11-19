@@ -10,24 +10,27 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_packet
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     ContextPacketError,
     ContextPacketMalformedError,
     ContextPacketPathPolicyError,
+    validate_context_packet,
+)
+from llm_wiki_cli.services.context_packet_builder import (
     ContextPacketSourceMutationError,
     ContextPacketUnavailableError,
     build_qualified_context,
     reconcile_context_packet,
-    validate_context_packet,
 )
 from llm_wiki_cli.services.context_service import (
     KnowledgeRequiredUnavailableError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
-from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from tests.knowledge_fixtures import (
     GOLDEN_PRODUCER_VERSION,
     materialize_fixture_tree,
@@ -136,7 +139,7 @@ def test_v2_packet_is_deterministic_and_v1_golden_remains_valid(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(context_packet, "__version__", GOLDEN_PRODUCER_VERSION)
+    monkeypatch.setattr(context_packet_builder, "__version__", GOLDEN_PRODUCER_VERSION)
     first = _build_absent_packet(tmp_path, monkeypatch)
     second = build_qualified_context(
         ".",
@@ -187,7 +190,7 @@ def test_off_captures_actual_ready_basis_without_native_selection(
         raise AssertionError("off mode must not construct a knowledge query service")
 
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "DocumentationGraphQueryService",
         unexpected_selection,
     )
@@ -228,8 +231,8 @@ def test_api_explicit_mode_promotes_supported_protocols_but_rejects_unknown_shap
     del base["knowledge_mode"]
 
     for protocol in (
-        context_packet.context_service.PROTOCOL_VERSION,
-        context_packet.context_service.KNOWLEDGE_PROTOCOL_VERSION,
+        context_packet_builder.context_service.PROTOCOL_VERSION,
+        context_packet_builder.context_service.KNOWLEDGE_PROTOCOL_VERSION,
     ):
         packet = api.build_qualified_context(
             ".",
@@ -238,7 +241,7 @@ def test_api_explicit_mode_promotes_supported_protocols_but_rejects_unknown_shap
             knowledge_mode="auto",
         )
         assert packet.to_payload()["request"]["protocol"] == (
-            context_packet.context_service.KNOWLEDGE_PROTOCOL_VERSION
+            context_packet_builder.context_service.KNOWLEDGE_PROTOCOL_VERSION
         )
 
     for unsupported in ("future/v99", []):
@@ -373,7 +376,7 @@ def test_wiki_symlink_introduced_after_anchor_is_a_mutation(
     external = tmp_path / "late-external.md"
     external.write_bytes(b"# external\n")
     monkeypatch.chdir(root)
-    real_evaluate = context_packet.evaluate_surface_index
+    real_evaluate = context_packet_builder.evaluate_surface_index
 
     def mutate_after_surface(*args: Any, **kwargs: Any):
         result = real_evaluate(*args, **kwargs)
@@ -382,7 +385,7 @@ def test_wiki_symlink_introduced_after_anchor_is_a_mutation(
         return result
 
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "evaluate_surface_index",
         mutate_after_surface,
     )
@@ -398,9 +401,9 @@ def test_auto_ready_uses_one_captured_view_and_one_bounded_native_selection(
 ) -> None:
     _materialize_ready_project(tmp_path, monkeypatch)
     calls = {"knowledge": 0, "selection": 0}
-    real_knowledge = context_packet.context_service._build_context_knowledge_view
+    real_knowledge = context_packet_builder.context_service._build_context_knowledge_view
     real_selection = (
-        context_packet.DocumentationGraphQueryService.broad_context_selection
+        context_packet_builder.DocumentationGraphQueryService.broad_context_selection
     )
 
     def counted_knowledge(*args: Any, **kwargs: Any):
@@ -412,12 +415,12 @@ def test_auto_ready_uses_one_captured_view_and_one_bounded_native_selection(
         return real_selection(self, *args, **kwargs)
 
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_build_context_knowledge_view",
         counted_knowledge,
     )
     monkeypatch.setattr(
-        context_packet.DocumentationGraphQueryService,
+        context_packet_builder.DocumentationGraphQueryService,
         "broad_context_selection",
         counted_selection,
     )
@@ -435,10 +438,10 @@ def test_auto_ready_uses_one_captured_view_and_one_bounded_native_selection(
     assert knowledge["availability"] == "ready"
     selection = knowledge["selection"]
     limits = {
-        "concepts": context_packet.context_service.CONTEXT_KNOWLEDGE_CONCEPT_LIMIT,
-        "pages": context_packet.context_service.CONTEXT_KNOWLEDGE_PAGE_LIMIT,
+        "concepts": context_packet_builder.context_service.CONTEXT_KNOWLEDGE_CONCEPT_LIMIT,
+        "pages": context_packet_builder.context_service.CONTEXT_KNOWLEDGE_PAGE_LIMIT,
         "relationships": (
-            context_packet.context_service.CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT
+            context_packet_builder.context_service.CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT
         ),
     }
     for name, limit in limits.items():
@@ -469,7 +472,7 @@ def test_required_unavailable_uses_configured_paths_and_emits_no_packet(
     def unexpected_encoding(*_args: Any, **_kwargs: Any) -> bytes:
         raise AssertionError("required failure must not encode a packet")
 
-    monkeypatch.setattr(context_packet, "_encode_packet_payload", unexpected_encoding)
+    monkeypatch.setattr(context_packet_builder, "_encode_packet_payload", unexpected_encoding)
     with pytest.raises(KnowledgeRequiredUnavailableError) as caught:
         build_qualified_context(
             root.as_posix(),
@@ -518,12 +521,12 @@ def test_auto_source_selection_incompatibility_is_fallback_not_native_query(
         raise AssertionError("an incompatible projection must not be queried")
 
     monkeypatch.setattr(
-        context_packet.DocumentationGraphQueryService,
+        context_packet_builder.DocumentationGraphQueryService,
         "broad_context_selection",
         unexpected_selection,
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "_captured_query_service",
         lambda *_args, **_kwargs: pytest.fail(
             "a rejected projection must not enter a packet query service"
@@ -563,7 +566,7 @@ def test_required_source_selection_incompatibility_queries_nothing_and_emits_no_
     tree, _fixture = _materialize_ready_project(tmp_path, monkeypatch)
     profile = _write_mismatched_source_selection(tree)
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "_captured_query_service",
         lambda *_args, **_kwargs: pytest.fail(
             "a rejected projection must not enter a packet query service"
@@ -603,7 +606,7 @@ def test_off_tolerates_projection_selection_mismatch_without_querying_it(
     tree, _fixture = _materialize_ready_project(tmp_path, monkeypatch)
     profile = _write_mismatched_source_selection(tree)
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "_captured_query_service",
         lambda *_args, **_kwargs: pytest.fail("off must not construct a query service"),
     )
@@ -626,7 +629,7 @@ def test_direct_context_mismatch_never_indexes_or_ranks_rejected_projection(
 ) -> None:
     tree, _fixture = _materialize_ready_project(tmp_path, monkeypatch)
     profile = _write_mismatched_source_selection(tree)
-    real_service = context_packet.context_service.DocumentationGraphQueryService
+    real_service = context_packet_builder.context_service.DocumentationGraphQueryService
     service_calls = 0
 
     def guarded_service(*args: Any, **kwargs: Any):
@@ -637,12 +640,12 @@ def test_direct_context_mismatch_never_indexes_or_ranks_rejected_projection(
         return real_service(*args, **kwargs)
 
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "DocumentationGraphQueryService",
         guarded_service,
     )
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_context_freshness_rank_by_source",
         lambda *_args, **_kwargs: pytest.fail(
             "an incompatible knowledge basis must not produce freshness ranks"
@@ -773,7 +776,7 @@ def test_snapshot_only_reconciliation_never_promotes_currentness(
         snapshot_only=True,
     )
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_build_context_knowledge_view",
         lambda *_args, **_kwargs: snapshot_view,
     )
@@ -892,17 +895,17 @@ def test_v2_independent_result_caps_are_deterministic_and_disclosed(
 ) -> None:
     _materialize_ready_project(tmp_path, monkeypatch)
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "CONTEXT_KNOWLEDGE_CONCEPT_LIMIT",
         1,
     )
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "CONTEXT_KNOWLEDGE_PAGE_LIMIT",
         1,
     )
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT",
         1,
     )
@@ -953,7 +956,7 @@ def test_oversized_off_packet_fails_without_rewriting_disabled_semantics(
 ) -> None:
     _write_snapshot_project(tmp_path / "project")
     monkeypatch.chdir(tmp_path / "project")
-    real_success = context_packet.context_service._protocol_success_payload
+    real_success = context_packet_builder.context_service._protocol_success_payload
 
     def oversized_success(*args: Any, **kwargs: Any):
         response = real_success(*args, **kwargs)
@@ -961,7 +964,7 @@ def test_oversized_off_packet_fails_without_rewriting_disabled_semantics(
         return response
 
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_protocol_success_payload",
         oversized_success,
     )
@@ -976,7 +979,7 @@ def test_v2_selection_is_tail_reduced_before_the_packet_byte_limit(
 ) -> None:
     _materialize_ready_project(tmp_path, monkeypatch)
     real_selection = (
-        context_packet.DocumentationGraphQueryService.broad_context_selection
+        context_packet_builder.DocumentationGraphQueryService.broad_context_selection
     )
 
     def oversized_selection(self: Any, *args: Any, **kwargs: Any):
@@ -986,7 +989,7 @@ def test_v2_selection_is_tail_reduced_before_the_packet_byte_limit(
         return selected
 
     monkeypatch.setattr(
-        context_packet.DocumentationGraphQueryService,
+        context_packet_builder.DocumentationGraphQueryService,
         "broad_context_selection",
         oversized_selection,
     )
@@ -1010,7 +1013,7 @@ def test_v2_minimal_oversized_selection_falls_back_or_errors_before_encoding(
 ) -> None:
     _materialize_ready_project(tmp_path, monkeypatch)
     real_selection = (
-        context_packet.DocumentationGraphQueryService.broad_context_selection
+        context_packet_builder.DocumentationGraphQueryService.broad_context_selection
     )
 
     def minimally_oversized(self: Any, *args: Any, **kwargs: Any):
@@ -1020,7 +1023,7 @@ def test_v2_minimal_oversized_selection_falls_back_or_errors_before_encoding(
         return selected
 
     monkeypatch.setattr(
-        context_packet.DocumentationGraphQueryService,
+        context_packet_builder.DocumentationGraphQueryService,
         "broad_context_selection",
         minimally_oversized,
     )
@@ -1238,7 +1241,7 @@ def test_v2_packet_accepts_bounded_real_typed_external_relationships(
     assert typed_service.knowledge_view is not None
     _materialize_ready_project(tmp_path / "packet-project", monkeypatch)
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_build_context_knowledge_view",
         lambda *_args, **_kwargs: typed_service.knowledge_view,
     )

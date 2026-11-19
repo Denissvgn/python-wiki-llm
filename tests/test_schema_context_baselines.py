@@ -10,7 +10,8 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import context_packet, context_service
-from llm_wiki_cli.services.contracts import CONTEXT_PROTOCOL_VERSION
+from llm_wiki_cli.services import context_packet_builder
+from llm_wiki_engine.contracts import CONTEXT_PROTOCOL_VERSION
 from llm_wiki_cli.services.schema import (
     SCHEMA_FILENAMES,
     SchemaRenderProfile,
@@ -357,7 +358,7 @@ def test_packet_versions_and_fixture_hash_semantics_match_baseline() -> None:
         context_packet.CONTEXT_PACKET_PATH_POLICY_VERSION
     )
     assert record["reconciliation_policy"] == (
-        context_packet.CONTEXT_PACKET_RECONCILIATION_POLICY
+        context_packet_builder.CONTEXT_PACKET_RECONCILIATION_POLICY
     )
     assert record["context_protocol_version"] == CONTEXT_PROTOCOL_VERSION
     assert record["context_protocol_version"] == context_service.PROTOCOL_VERSION

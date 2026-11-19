@@ -13,22 +13,22 @@ from llm_wiki_cli.services import ci_report, doctor_service
 from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
 from llm_wiki_cli.services.documentation_native import evaluate_documentation_native_freshness
 from llm_wiki_cli.services.health_details import capture_health_details
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     require_validated_artifacts,
     validate_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_coverage import build_knowledge_coverage
-from llm_wiki_cli.services.knowledge_evidence import UNKNOWN_ENTITY_NOT_FOUND
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
+from llm_wiki_engine.knowledge_evidence import UNKNOWN_ENTITY_NOT_FOUND
+from llm_wiki_engine.knowledge_freshness import (
     KnowledgeFreshnessError,
     evaluate_knowledge_freshness,
     evaluate_validated_knowledge_freshness,
 )
 from llm_wiki_cli.services.knowledge_generation import build_knowledge_generation_plan
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness, KnowledgeLoadState
-from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
+from llm_wiki_engine.knowledge_model import ComputedFreshness, KnowledgeLoadState
+from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 from tests.knowledge_fixtures import FIXTURE_SOURCE_PATH, fixture_hash
 from tests.test_entity_retirement import _snapshot
 from tests.test_entity_retirement_evidence import _retirement_inputs
@@ -203,7 +203,7 @@ def test_retirement_converges_across_doctor_ci_and_revival(
     baseline = _json_command(monkeypatch, capsys, ["doctor", *common], 0)
     assert baseline["status"] == "healthy"
     page = wiki / "entities/Removed.md"
-    page.write_text(page.read_text() + "\n## Notes\n\nRetain authored history.\n", encoding="utf-8")
+    page.write_text(page.read_text(encoding="utf-8") + "\n## Notes\n\nRetain authored history.\n", encoding="utf-8")
     _sync_command(monkeypatch, capsys, common)
     source = project / "pkg" / ("shapes" + suffix)
     source.write_text(("# empty\n" if suffix == ".py" else "// empty\n") if empty else kept)
@@ -213,8 +213,8 @@ def test_retirement_converges_across_doctor_ci_and_revival(
     stable = _snapshot(wiki)
     _sync_command(monkeypatch, capsys, common)
     assert _snapshot(wiki) == stable
-    assert page.read_text().startswith(SOURCE_MEMBER_REMOVED_HEADER)
-    assert "Retain authored history." in page.read_text()
+    assert page.read_text(encoding="utf-8").startswith(SOURCE_MEMBER_REMOVED_HEADER)
+    assert "Retain authored history." in page.read_text(encoding="utf-8")
     for strict in (False, True):
         args = ["doctor", *common, *(["--strict"] if strict else [])]
         health = _json_command(monkeypatch, capsys, args, 0)
@@ -234,8 +234,8 @@ def test_retirement_converges_across_doctor_ci_and_revival(
     _sync_command(monkeypatch, capsys, common)
     revived = _json_command(monkeypatch, capsys, ["doctor", *common], 0)
     assert revived["status"] == "healthy"
-    assert SOURCE_MEMBER_REMOVED_HEADER not in page.read_text()
-    assert "Retain authored history." in page.read_text()
+    assert SOURCE_MEMBER_REMOVED_HEADER not in page.read_text(encoding="utf-8")
+    assert "Retain authored history." in page.read_text(encoding="utf-8")
     loaded = load_knowledge_state(wiki)
     assert loaded.validated_artifacts is not None
     assert loaded.validated_artifacts.retired_locators == frozenset()

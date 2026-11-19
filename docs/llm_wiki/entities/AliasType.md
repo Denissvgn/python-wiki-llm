@@ -1,6 +1,6 @@
 # AliasType
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:86`
+**Location:** `src/llm_wiki_engine/concept_identity.py:86`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -25,15 +25,15 @@ The two coordinate namespaces that may retain historical aliases.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["AliasType (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["AliasType (src/llm_wiki_engine/concept_identity.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/commands/migrate_cmd.py"]
-    n4["add_identity_alias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n5["identity_coordinate_key (src/llm_wiki_cli/services/concept_identity.py)"]
-    n6["validate_alias_type (src/llm_wiki_cli/services/concept_identity.py)"]
-    n7["validate_alias_value (src/llm_wiki_cli/services/concept_identity.py)"]
-    n8["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n3["src/llm_wiki_cli/services/migrate_runtime.py"]
+    n4["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n5["identity_coordinate_key (src/llm_wiki_engine/concept_identity.py)"]
+    n6["validate_alias_type (src/llm_wiki_engine/concept_identity.py)"]
+    n7["validate_alias_value (src/llm_wiki_engine/concept_identity.py)"]
+    n8["src/llm_wiki_engine/knowledge_governance.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -43,7 +43,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     click n0 "../modules/concept_identity.md"
-    click n3 "../modules/migrate_cmd.md"
+    click n3 "../modules/migrate_runtime.md"
     click n4 "../modules/concept_identity.md"
     click n5 "../modules/concept_identity.md"
     click n6 "../modules/concept_identity.md"
@@ -68,7 +68,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `migrate_runtime` | import | [migrate_runtime](../modules/migrate_runtime.md) | — |
 | `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `identity_coordinate_key` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
 | `validate_alias_type` | call | [concept_identity](../modules/concept_identity.md) | 1 |

@@ -1,0 +1,285 @@
+{
+  "schema_version": "llm-wiki-conformance-cases/v1",
+  "format": "llm-wiki-engine-event/v1",
+  "schema": "llm-wiki-engine-event-v1.schema.json",
+  "cases": [
+    {
+      "name": "started-with-roots",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.started",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "source_root": "src",
+          "wiki_root": "docs/llm_wiki"
+        }
+      }
+    },
+    {
+      "name": "started-without-roots",
+      "valid": true,
+      "description": "Use cases without paths report no roots.",
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.started",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {}
+      }
+    },
+    {
+      "name": "message-stdout",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdout",
+          "text": "Synced 3 pages."
+        }
+      }
+    },
+    {
+      "name": "message-empty-line",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stderr",
+          "text": ""
+        }
+      }
+    },
+    {
+      "name": "finished-with-result",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.finished",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "result": {
+            "status": "synced",
+            "pages": {
+              "created": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "failed-with-exit-code",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.failed",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "error": "SyncAborted",
+          "message": "Wiki is locked.",
+          "exit_code": 2
+        }
+      }
+    },
+    {
+      "name": "failed-without-exit-code",
+      "valid": true,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.failed",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "error": "ValueError",
+          "message": ""
+        }
+      }
+    },
+    {
+      "name": "missing-schema-version",
+      "valid": false,
+      "document": {
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdout",
+          "text": "x"
+        }
+      }
+    },
+    {
+      "name": "other-schema-version",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v2",
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdout",
+          "text": "x"
+        }
+      }
+    },
+    {
+      "name": "unknown-kind",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "progress",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {}
+      }
+    },
+    {
+      "name": "extra-field",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdout",
+          "text": "x"
+        },
+        "time": "2026-11-16T00:00:00Z"
+      }
+    },
+    {
+      "name": "empty-operation",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "message",
+        "operation": "",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdout",
+          "text": "x"
+        }
+      }
+    },
+    {
+      "name": "message-unknown-stream",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdlog",
+          "text": "x"
+        }
+      }
+    },
+    {
+      "name": "message-without-text",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "message",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "stream": "stdout"
+        }
+      }
+    },
+    {
+      "name": "started-extra-data",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.started",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "source_root": "src",
+          "branch": "main"
+        }
+      }
+    },
+    {
+      "name": "started-empty-root",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.started",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "wiki_root": ""
+        }
+      }
+    },
+    {
+      "name": "finished-result-not-object",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.finished",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "result": "synced"
+        }
+      }
+    },
+    {
+      "name": "failed-exit-code-text",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.failed",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "error": "SyncAborted",
+          "message": "x",
+          "exit_code": "2"
+        }
+      }
+    },
+    {
+      "name": "failed-exit-code-boolean",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.failed",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "error": "SyncAborted",
+          "message": "x",
+          "exit_code": true
+        }
+      }
+    },
+    {
+      "name": "failed-without-error",
+      "valid": false,
+      "document": {
+        "schema_version": "llm-wiki-engine-event/v1",
+        "kind": "operation.failed",
+        "operation": "sync",
+        "operation_id": "0f8a3c2e9b6d4e1fa7c5b3d2e1f0a9b8",
+        "data": {
+          "message": "x"
+        }
+      }
+    }
+  ]
+}

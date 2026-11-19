@@ -16,35 +16,35 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services import context_packet as context_packet_service
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import KnowledgeReadView
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_evidence import (
     build_module_observation_basis,
     sha256_bytes,
 )
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_freshness import (
     REASON_GENERATION_OPTIONS_CHANGED,
 )
-from llm_wiki_cli.services.knowledge_index import (
+from llm_wiki_engine.knowledge_index import (
     build_knowledge_index,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     ManifestEvidenceBaseline,
     ManifestPageSource,
     SyncManifest,
@@ -834,7 +834,7 @@ class TestContextSourceSelectionBoundary:
             )
         ).save(wiki)
         monkeypatch.setattr(
-            context_packet_service,
+            context_packet_builder,
             "_wiki_anchor",
             lambda *_args, **_kwargs: pytest.fail(
                 "wiki content must not be read before selection validation"
@@ -842,7 +842,7 @@ class TestContextSourceSelectionBoundary:
         )
 
         with pytest.raises(context_cmd.ProtocolRequestError, match="llm-wiki sync"):
-            context_packet_service.capture_context_read(
+            context_packet_builder.capture_context_read(
                 ".",
                 wiki.as_posix(),
                 source_selection=profile_b.as_posix(),
@@ -2531,7 +2531,7 @@ class TestProtocolRun:
         monkeypatch,
         capsys,
     ):
-        from llm_wiki_cli.services import context_packet
+        from llm_wiki_cli.services import context_packet_builder
 
         canonical = b'{"packet_id":"sha256:' + b"a" * 64 + b'"}\n'
         seen = {}
@@ -2553,7 +2553,7 @@ class TestProtocolRun:
             return Packet()
 
         monkeypatch.setattr(
-            context_packet,
+            context_packet_builder,
             "build_qualified_context",
             fake_builder,
         )

@@ -1,6 +1,6 @@
 # _IndexValidationProof
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:476`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:464`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_IndexValidationProof` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_IndexValidationProof` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -33,9 +33,9 @@ _Auto-generated from `_IndexValidationProof` in `src/llm_wiki_cli/services/knowl
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_IndexValidationProof (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n1["_validated_index_receipt (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["build_knowledge_index (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_IndexValidationProof (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["_validated_index_receipt (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["build_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_index.md"

@@ -27,7 +27,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Callable, Iterable, Mapping, Sequence
 
 from . import _restore_legacy_definition_modules
-from ..contracts import (
+from llm_wiki_engine.contracts import (
     CALIBRATION_CONTROLLER_MAX_PACKET_BYTES,
     P0_CALIBRATION_ACCESS_EVENT_SCHEMA_VERSION,
     P0_CALIBRATION_ADMISSION_SCHEMA_VERSION,
@@ -74,27 +74,27 @@ from ..documentation_worklist import (
     WORK_ITEM_PRIORITIES,
     WORK_ITEM_STATUSES,
 )
-from ..filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     WindowsFileGuardError,
     guard_windows_directory_chain,
     open_windows_readonly_file,
 )
-from ..protected_artifacts import (
+from llm_wiki_engine.protected_artifacts import (
     ProtectedArtifactError,
     ProtectedArtifactIntegrityError,
     ProtectedArtifactStore,
     canonical_json_bytes,
     validate_portable_relative_path,
 )
-from ..redaction import (
+from llm_wiki_engine.redaction import (
     COMMON_TOKEN_PATTERNS as _COMMON_TOKEN_PATTERNS,
     PRIVATE_KEY_BLOCK_RE as _PRIVATE_KEY_BLOCK_RE,
     SENSITIVE_ASSIGNMENT_RE as _SENSITIVE_ASSIGNMENT_RE,
     SENSITIVE_NATURAL_LANGUAGE_RE as _SENSITIVE_NATURAL_LANGUAGE_RE,
     URI_USERINFO_RE as _URI_USERINFO_RE,
 )
-from ..validation import (
+from llm_wiki_engine.validation import (
     format_field_differences,
     parse_utc_timestamp,
     paths_overlap as shared_paths_overlap,

@@ -1,7 +1,7 @@
 # build_sync_graph_observations
 
-**Entry point:** `sync_cmd._build_sync_graph_observations`
-**Modules involved:** [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [services_dependencies](../modules/services_dependencies.md), [sync_cmd](../modules/sync_cmd.md)
+**Entry point:** `sync_runtime._build_sync_graph_observations`
+**Modules involved:** [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [services_dependencies](../modules/services_dependencies.md), [sync_runtime](../modules/sync_runtime.md)
 
 ## Sequence
 
@@ -28,8 +28,8 @@
 - [extraction_service](../modules/extraction_service.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [services_dependencies](../modules/services_dependencies.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 
 ## Behavior
 
-This workflow starts at `sync_cmd._build_sync_graph_observations`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `sync_runtime._build_sync_graph_observations`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

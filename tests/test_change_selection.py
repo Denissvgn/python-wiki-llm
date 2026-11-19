@@ -103,7 +103,7 @@ def test_patch_deletion_rename_and_git_quoted_utf8():
 def test_existing_page_provenance_wins_over_narrow_inventory_names(
     tmp_path, monkeypatch, retained_index, fmt
 ):
-    from llm_wiki_cli.services.wiki_surface_index import (
+    from llm_wiki_engine.wiki_surface_index import (
         SURFACE_INDEX_FILENAME,
         WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     )
@@ -154,7 +154,9 @@ def test_existing_page_provenance_wins_over_narrow_inventory_names(
 
 def test_context_rejects_staged_selection_mutation(tmp_path, monkeypatch):
     from llm_wiki_cli.services import context_budget
-    from llm_wiki_cli.services.context_packet import ContextPacketSourceMutationError
+    from llm_wiki_cli.services.context_packet_builder import (
+        ContextPacketSourceMutationError,
+    )
 
     monkeypatch.chdir(tmp_path)
     git(tmp_path, "init", "-q")

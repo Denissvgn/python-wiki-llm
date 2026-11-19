@@ -9,9 +9,9 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from llm_wiki_cli.services import knowledge_governance as governance
-from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine import knowledge_governance as governance
+from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_engine.knowledge_governance import (
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
     GOVERNANCE_EXTENSION_KEY,
@@ -41,7 +41,7 @@ from llm_wiki_cli.services.knowledge_governance import (
     validate_governance_ledger,
     validate_governance_projection,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     EvidenceBasis,
     EvidenceState,
     Lifecycle,
@@ -51,11 +51,11 @@ from llm_wiki_cli.services.knowledge_model import (
     load_knowledge_schema,
     parse_knowledge_index,
 )
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.section_ownership import (
     observe_page_sections,
     section_ownership_extension,
 )
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_model import _minimum_payload
 

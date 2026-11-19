@@ -1,6 +1,6 @@
 # KnowledgeSlice
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:498`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:498`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)
@@ -28,10 +28,10 @@ A detached canonical view of selected committed records. Its scope and unverifie
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeSlice (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n1["PackedKnowledgeStoreReader.select (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n2["KnowledgeStoreReader.select (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n3["_capture_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n0["KnowledgeSlice (src/llm_wiki_engine/knowledge_storage.py)"]
+    n1["PackedKnowledgeStoreReader.select (src/llm_wiki_engine/knowledge_packs.py)"]
+    n2["KnowledgeStoreReader.select (src/llm_wiki_engine/knowledge_storage.py)"]
+    n3["_capture_slice (src/llm_wiki_engine/knowledge_storage_access.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

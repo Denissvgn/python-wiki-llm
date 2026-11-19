@@ -1,6 +1,6 @@
 # ProtectedArtifactIntegrityError
 
-**Location:** `src/llm_wiki_cli/services/protected_artifacts.py:79`
+**Location:** `src/llm_wiki_engine/protected_artifacts.py:80`
 **Kind:** Class
 **Bases:** `ProtectedArtifactError`
 **Module:** [protected_artifacts](../modules/protected_artifacts.md)
@@ -22,20 +22,20 @@ Raised when artifact filesystem or canonical-byte invariants fail.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProtectedArtifactIntegrityError (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n1["ProtectedArtifactError (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n0["ProtectedArtifactIntegrityError (src/llm_wiki_engine/protected_artifacts.py)"]
+    n1["ProtectedArtifactError (src/llm_wiki_engine/protected_artifacts.py)"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
-    n3["_assert_darwin_no_extended_acl_fd (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n4["_assert_darwin_no_extended_acl_path (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n5["_assert_directory_entries_portable (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n6["_assert_directory_fd_entries_portable (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n7["_assert_no_portable_collision_fd (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n8["_assert_path_entry_portable (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n9["_assert_path_target_regular (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n10["_assert_portable_entry_names (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n11["_assert_posix_owner_only (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n12["_assert_regular_directory (src/llm_wiki_cli/services/protected_artifacts.py)"]
-    n13["_assert_regular_directory_stat (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n3["_assert_darwin_no_extended_acl_fd (src/llm_wiki_engine/protected_artifacts.py)"]
+    n4["_assert_darwin_no_extended_acl_path (src/llm_wiki_engine/protected_artifacts.py)"]
+    n5["_assert_directory_entries_portable (src/llm_wiki_engine/protected_artifacts.py)"]
+    n6["_assert_directory_fd_entries_portable (src/llm_wiki_engine/protected_artifacts.py)"]
+    n7["_assert_no_portable_collision_fd (src/llm_wiki_engine/protected_artifacts.py)"]
+    n8["_assert_path_entry_portable (src/llm_wiki_engine/protected_artifacts.py)"]
+    n9["_assert_path_target_regular (src/llm_wiki_engine/protected_artifacts.py)"]
+    n10["_assert_portable_entry_names (src/llm_wiki_engine/protected_artifacts.py)"]
+    n11["_assert_posix_owner_only (src/llm_wiki_engine/protected_artifacts.py)"]
+    n12["_assert_regular_directory (src/llm_wiki_engine/protected_artifacts.py)"]
+    n13["_assert_regular_directory_stat (src/llm_wiki_engine/protected_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

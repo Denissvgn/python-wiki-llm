@@ -29,8 +29,9 @@ pip install agent-wiki-cli
 
 For MCP support, install `pip install "agent-wiki-cli[mcp]"`.
 [Installation options](docs/wiki-guide.md#installation) cover source checkouts
-and optional dependencies. To remove the package, run
-`pip uninstall agent-wiki-cli`.
+and optional dependencies. The CLI depends on `llm-wiki-engine`, the
+standard-library-only engine core, which pip installs with it. To remove both,
+run `pip uninstall agent-wiki-cli llm-wiki-engine`.
 
 ## Quick Start
 

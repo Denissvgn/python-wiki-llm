@@ -33,7 +33,7 @@ from llm_wiki_cli.services.extraction_service import (
     resolve_call_observations,
 )
 from llm_wiki_cli.services.imports import build_module_path_resolver, _suffix_candidates
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KnowledgeArtifactError,
     _validate_surface_flow_routes,
 )

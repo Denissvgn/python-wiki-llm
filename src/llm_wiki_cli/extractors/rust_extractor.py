@@ -17,6 +17,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from llm_wiki_engine.host import HostCapabilityError, current_host
 from .common import (
     discover_source_files,
     filter_bundled_inventory,
@@ -147,7 +148,7 @@ class RustExtractor:
     ) -> subprocess.CompletedProcess | None:
         timeout_seconds = extractor_timeout_seconds()
         try:
-            return subprocess.run(
+            return current_host().run(
                 cmd,
                 input="",
                 capture_output=True,
@@ -156,6 +157,10 @@ class RustExtractor:
                 timeout=timeout_seconds,
                 cwd=str(helper_binary.parent),
             )
+        except HostCapabilityError:
+            # A host that grants no subprocesses leaves the helper unavailable.
+            self.last_error = "the host does not grant subprocesses"
+            return None
         except subprocess.CalledProcessError as exc:
             self.last_error = "extraction failed"
             print(

@@ -1,6 +1,6 @@
 # progress Module
 
-**Path:** `src/llm_wiki_cli/services/progress.py`
+**Path:** `src/llm_wiki_engine/progress.py`
 
 ## Description
 
@@ -31,7 +31,7 @@ Bounded command-local phase events; services are silent without a caller sink.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/progress.py"]
+    n1["src/llm_wiki_engine/progress.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/progress.md"

@@ -11,8 +11,8 @@ from typing import cast
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_EXTENSION_KEY,
     ConceptGovernanceReference,
     GovernanceActor,
@@ -23,16 +23,16 @@ from llm_wiki_cli.services.knowledge_governance import (
     reconcile_concepts,
     save_governance,
 )
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadIssue,
     KnowledgeLoadResult,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
 )
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
 from llm_wiki_cli.services.knowledge_orchestration import (
@@ -41,13 +41,13 @@ from llm_wiki_cli.services.knowledge_orchestration import (
 )
 from llm_wiki_cli.services.lint_service import _LintProfiler
 from llm_wiki_cli.services.source_snapshot import SourceSnapshot
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_STATE_UNAVAILABLE,
     TOMBSTONE_UNKNOWN_PROVENANCE,
     ManifestTombstone,
     SyncManifest,
 )
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     INTERNAL_LINKS_CHECKER_ID,
     VERIFICATION_RECEIPT_FILENAME,
@@ -116,8 +116,8 @@ def _loaded_knowledge(tmp_path):
 
 
 def test_unknown_evidence_reports_captured_source_and_cause_without_relaxing_gate(tmp_path):
-    from llm_wiki_cli.services.knowledge_evidence import ConceptObservationBasis
-    from llm_wiki_cli.services.sync_manifest import ManifestEvidenceBaseline
+    from llm_wiki_engine.knowledge_evidence import ConceptObservationBasis
+    from llm_wiki_engine.sync_manifest import ManifestEvidenceBaseline
 
     loaded, knowledge = _loaded_knowledge(tmp_path)
     assert loaded.manifest_basis is not None

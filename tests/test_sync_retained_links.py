@@ -5,11 +5,11 @@ import pytest
 from llm_wiki_cli.commands import sync_cmd
 from llm_wiki_cli.services import sync_transition_execution as execution
 from llm_wiki_cli.services import sync_transitions
-from llm_wiki_cli.services.io import read_md
-from llm_wiki_cli.services.sync_manifest import SyncManifest
-from llm_wiki_cli.services.sync_retained_links import repair_retained_page_links
-from llm_wiki_cli.services.validation import portable_path_key
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.io import read_md
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_retained_links import repair_retained_page_links
+from llm_wiki_engine.validation import portable_path_key
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.test_sync_analysis import _inventory, _manifest
 from tests.test_sync_page_transitions import _bootstrap_project, _draft_source, _sync
 from tests.test_sync_transition_execution import _assert_originals

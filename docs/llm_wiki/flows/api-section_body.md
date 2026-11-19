@@ -19,20 +19,20 @@ sequenceDiagram
     participant p5 as trim_blank_lines
     participant p6 as re.findall
     participant p7 as heading.casefold
-    participant p8 as len (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
+    participant p8 as len (src/llm_wiki_engine/markd…ctions.py:trim_blank_lines)
     participant p9 as normalize_markdown
     participant p10 as enumerate
-    participant p11 as lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1)
+    participant p11 as lines[…].strip (src/llm_wiki_engine/markd…ons.py:trim_blank_lines, 1)
     participant p12 as _line_content
     participant p13 as _LEGACY_HEADING_RE.match
-    participant p14 as lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
+    participant p14 as lines[…].strip (src/llm_wiki_engine/markd…ctions.py:trim_blank_lines)
     participant p15 as line.strip
-    participant p16 as len (src/llm_wiki_cli/services…sections.py:section_bounds)
+    participant p16 as len (src/llm_wiki_engine/markd…sections.py:section_bounds)
     participant p17 as match.group
     participant p18 as match.group(…).strip().casefold
     participant p19 as match.group(…).strip
     participant p20 as range
-    participant p21 as lines[…].strip (src/llm_wiki_cli/services…sections.py:section_bounds)
+    participant p21 as lines[…].strip (src/llm_wiki_engine/markd…sections.py:section_bounds)
     participant p22 as next_match.group
     participant p23 as text.replace(…).replace
     participant p24 as line.endswith
@@ -44,25 +44,25 @@ sequenceDiagram
     p0->>p5: trim_blank_lines
     p1-->>p6: re.findall('[^\\n]*\\n|[^\\n]+$', normalize_markdown(...))
     p2-->>p7: heading.casefold
-    p5-->>p8: len (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)(lines)
+    p5-->>p8: len (src/llm_wiki_engine/markd…ctions.py:trim_blank_lines)(lines)
     p1->>p9: normalize_markdown
     p2-->>p10: enumerate(lines)
-    p5-->>p11: lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1)
+    p5-->>p11: lines[…].strip (src/llm_wiki_engine/markd…ons.py:trim_blank_lines, 1)
     p1->>p12: _line_content
     p2-->>p13: _LEGACY_HEADING_RE.match(line.strip(...))
-    p5-->>p14: lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
+    p5-->>p14: lines[…].strip (src/llm_wiki_engine/markd…ctions.py:trim_blank_lines)
     p2-->>p15: line.strip
-    p2-->>p16: len (src/llm_wiki_cli/services…sections.py:section_bounds)(match.group(...))
+    p2-->>p16: len (src/llm_wiki_engine/markd…sections.py:section_bounds)(match.group(...))
     p2-->>p17: match.group(1)
     p2-->>p18: match.group(…).strip().casefold
     p2-->>p19: match.group(…).strip
     p2-->>p17: match.group(2)
-    p2-->>p16: len (src/llm_wiki_cli/services…sections.py:section_bounds)(lines)
+    p2-->>p16: len (src/llm_wiki_engine/markd…sections.py:section_bounds)(lines)
     p2-->>p20: range(..., len(...))
-    p2-->>p16: len (src/llm_wiki_cli/services…sections.py:section_bounds)(lines)
+    p2-->>p16: len (src/llm_wiki_engine/markd…sections.py:section_bounds)(lines)
     p2-->>p13: _LEGACY_HEADING_RE.match(...)
-    p2-->>p21: lines[…].strip (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p2-->>p16: len (src/llm_wiki_cli/services…sections.py:section_bounds)(next_match.group(...))
+    p2-->>p21: lines[…].strip (src/llm_wiki_engine/markd…sections.py:section_bounds)
+    p2-->>p16: len (src/llm_wiki_engine/markd…sections.py:section_bounds)(next_match.group(...))
     p2-->>p22: next_match.group(1)
     p9-->>p23: text.replace(…).replace('\r', '\n')
     p12-->>p24: line.endswith('\n')

@@ -12,7 +12,7 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 from llm_wiki_cli.services.dependencies import analyze_dependencies, detect_cycles
 from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root, resolve_helper_cache_root
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 

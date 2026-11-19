@@ -22,10 +22,10 @@ from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_module_page_map,
 )
-from .filesystem_guard import fresh_no_follow_stat
+from llm_wiki_engine.filesystem_guard import fresh_no_follow_stat
 from .extraction_service import InventoryRequest, get_inventory, get_inventory_result
-from . import wiki_surface
-from .io import first_unsafe_path_component, read_md, write_md
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine.io import first_unsafe_path_component, read_md, write_md
 from .knowledge_projection import (
     KnowledgeProjection,
     KnowledgeProjectionError,
@@ -35,7 +35,7 @@ from .knowledge_projection import (
 )
 from .documentation_queries import DocumentationQueryError
 from .documentation_query_builder import validate_live_query_source_selection
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
 )
@@ -44,7 +44,7 @@ from .source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     path_is_within as shared_path_is_within,
     paths_overlap as shared_paths_overlap,
     require_existing_directory,

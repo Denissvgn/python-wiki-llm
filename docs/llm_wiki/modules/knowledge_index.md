@@ -1,6 +1,6 @@
 # knowledge_index Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_index.py`
+**Path:** `src/llm_wiki_engine/knowledge_index.py`
 
 ## Description
 
@@ -24,20 +24,14 @@ across invocations.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `concept_identity`, `contracts`, `implementation_evidence`, `immutable`, `knowledge_evidence`, `knowledge_governance`, `knowledge_graph`, `knowledge_links`, `knowledge_index`, `knowledge_model`, `knowledge_reuse`, `maintenance_projection`, `maintenance_shapes`, `maintenance_state`, `markdown_sections`, `python_implementation`, `section_ownership`, `source_retirement`, `validation`, `wiki_media`, `wiki_surface` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
-| `.immutable` | `freeze` |
+| `.` | `maintenance_state` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION`, `EvaluatedEnvelope`, `KnowledgeEnvelopeError`, `evaluated_envelope_to_payload`, `hash_markdown_snapshot` |
-| `.knowledge_evidence` | `ConceptObservationBasis`, `canonical_json_text`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
+| `.knowledge_kinds` | `current_kinds` |
 | `.knowledge_links` | `LinkObservation`, `LinkSyntax`, `is_valid_external_link_uri`, `is_valid_link_locator_target` |
 | `.knowledge_model` | `Actor`, `ActorKind`, `BundleRecord`, `ConceptFacets`, `ConceptKind`, `ConceptRecord`, `DocumentRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `Lifecycle`, `ObservationScope`, `Origin`, `RelationshipEvidence`, `RelationshipKind`, `RelationshipLocation`, `RelationshipRecord`, `RelationshipTarget`, `Resolution`, `SemanticFacet`, `StructuralFacet`, `TargetClass`, `Verification`, `concept_kind_for_page_kind`, `parse_knowledge_index`, `_knowledge_index_to_payload_unchecked` |
-| `.progress` | `observed_phase`, `record_counts` |
+| `.knowledge_validators` | `current_validators` |
 | `.sync_manifest` | `ManifestEvidenceBaseline`, `ManifestPageSource`, `ManifestTombstone` |
-| `.validation` | `contains_control_character`, `require_exact_fields`, `require_repository_relative_path` |
-| `.wiki_media` | `MarkdownLinkTarget`, `contains_uri_authority_userinfo`, `is_assets_path`, `iter_markdown_link_targets`, `iter_mermaid_click_targets`, `local_link_path`, `mask_fenced_code_blocks`, `media_type_for_path`, `normalize_markdown_link_target` |
-| `.wiki_surface` | `PageKind`, `SurfaceRole`, `WikiSurfaceError`, `WikiSurfacePage`, `iter_page_kinds`, `canonical_path`, `mcp_uri` |
-| `.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
@@ -47,6 +41,14 @@ across invocations.
 | `functools` | `partial` |
 | `inspect` | `inspect` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.knowledge_evidence` | `ConceptObservationBasis`, `canonical_json_text`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
+| `llm_wiki_engine.validation` | `contains_control_character`, `require_exact_fields`, `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_media` | `MarkdownLinkTarget`, `contains_uri_authority_userinfo`, `is_assets_path`, `iter_markdown_link_targets`, `iter_mermaid_click_targets`, `local_link_path`, `mask_fenced_code_blocks`, `media_type_for_path`, `normalize_markdown_link_target` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `SurfaceRole`, `WikiSurfaceError`, `WikiSurfacePage`, `iter_page_kinds`, `canonical_path`, `mcp_uri` |
+| `llm_wiki_engine.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
 | `re` | `re` |
@@ -59,7 +61,7 @@ across invocations.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_index.py"]
+    n1["src/llm_wiki_engine/knowledge_index.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_index.md"
@@ -71,10 +73,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (4) |
-| Outbound | `src` (25) |
+| Inbound | `src` (5) |
+| Outbound | `src` (16) |
 
-> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -88,8 +90,8 @@ flowchart LR
 | [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 212 | — | — |
 | [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 219 | `ValueError` | — |
 | [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 335 | — | — |
-| [_IndexValidationProof](../entities/IndexValidationProof.md) | 476 | — | — |
-| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 497 | — | — |
+| [_IndexValidationProof](../entities/IndexValidationProof.md) | 464 | — | — |
+| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 485 | — | — |
 
 ## Functions
 

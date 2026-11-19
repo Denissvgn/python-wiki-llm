@@ -2,7 +2,7 @@
 
 **Entry point:** `render_cli_reference` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md)
 
 ## Call sequence
 
@@ -18,14 +18,14 @@ sequenceDiagram
     participant p4 as _validate_schema
     participant p5 as _validate_command
     participant p6 as hash_json
-    participant p7 as canonical_json_bytes
+    participant p7 as compact_bytes
     participant p8 as _prose
     participant p9 as _code
     participant p10 as CLIReferenceError
     participant p11 as _schema
-    participant p12 as sha256_bytes
+    participant p12 as sha256_digest
     participant p13 as _matches_type
-    participant p14 as canonical_json_text
+    participant p14 as compact_text
     participant p15 as isinstance (src/llm_wiki_cli/api.py:render_cli_reference)
     participant p16 as lines.extend
     participant p17 as ValueError
@@ -48,14 +48,14 @@ sequenceDiagram
     p2->>p4: _validate_schema
     p2->>p5: _validate_command
     p2->>p6: hash_json
-    p6->>p7: canonical_json_bytes
+    p6->>p7: compact_bytes
     p1->>p8: _prose
     p1->>p9: _code
     p2->>p10: CLIReferenceError
     p2->>p11: _schema
-    p6->>p12: sha256_bytes
+    p6->>p12: sha256_digest
     p4->>p13: _matches_type
-    p7->>p14: canonical_json_text
+    p7->>p14: compact_text
     p0-->>p15: isinstance (src/llm_wiki_cli/api.py:render_cli_reference)(contract, Mapping)
     p1-->>p16: lines.extend([...])
     p0-->>p17: ValueError('CLI contract must be a mapping')
@@ -103,7 +103,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 49; effect analysis evaluated: 22, partial: 0, unavailable: 27. Counts include steps omitted from the displayed trace.
 
-Collector observations for 22 source steps with known totals: observed: 102, emitted: 102, omitted: 0. Unavailable totals are excluded.
+Collector observations for 22 source steps with known totals: observed: 104, emitted: 104, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -181,9 +181,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_cli_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_cli_reference) | 3573 | `isinstance(contract, Mapping)` |
-| render_cli_reference (src/llm_wiki_cli/api.py) | ValueError | 3574 | `ValueError('CLI contract must be a mapping')` |
-| render_cli_reference (src/llm_wiki_cli/api.py) | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | 3575 | `render(dict(...))` |
+| render_cli_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_cli_reference) | 3725 | `isinstance(contract, Mapping)` |
+| render_cli_reference (src/llm_wiki_cli/api.py) | ValueError | 3726 | `ValueError('CLI contract must be a mapping')` |
+| render_cli_reference (src/llm_wiki_cli/api.py) | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | 3727 | `render(dict(...))` |
 | render_cli_reference (src/llm_wiki_cli/services/cli_reference.py) | validate_cli_contract | 539 | `validate_cli_contract(contract)` |
 | validate_cli_contract | _json_tree | 456 | `_json_tree(contract)` |
 | _json_tree | CLIReferenceError | 291 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
@@ -203,8 +203,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `render_cli_reference` | `isinstance` | 3573 |
-| external_call | `render_cli_reference` | `ValueError` | 3574 |
+| external_call | `render_cli_reference` | `isinstance` | 3725 |
+| external_call | `render_cli_reference` | `ValueError` | 3726 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |
 | external_call | `_json_tree` | `math.isfinite` | 294 |

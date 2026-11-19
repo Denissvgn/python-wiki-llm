@@ -9,12 +9,9 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import (
-    context_packet,
-    context_service,
-    documentation_query_builder,
-    knowledge_consumption,
-)
+from llm_wiki_cli.services import context_packet, context_service, documentation_query_builder
+from llm_wiki_engine import knowledge_consumption
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services import mcp_server
 
 
@@ -985,7 +982,7 @@ def _counted_stage(counters, name, callback):
 
 
 def _materialize_ready_packet_project(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+    from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
     from tests.knowledge_fixtures import (
         materialize_fixture_tree,
         one_module_two_entities_fixture,
@@ -1078,14 +1075,14 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
     _materialize_ready_packet_project(tmp_path, monkeypatch)
     counters = {}
     real_context_snapshot = context_service.build_source_snapshot
-    real_packet_snapshot = context_packet.build_source_snapshot
+    real_packet_snapshot = context_packet_builder.build_source_snapshot
     real_packet_input_integrity = (
-        context_packet.source_snapshot_inputs_match_current_files
+        context_packet_builder.source_snapshot_inputs_match_current_files
     )
-    real_packet_integrity = context_packet.source_snapshot_matches_current_files
+    real_packet_integrity = context_packet_builder.source_snapshot_matches_current_files
     real_inventory = context_service.get_inventory
     real_context_surface = context_service.evaluate_surface_index
-    real_packet_surface = context_packet.evaluate_surface_index
+    real_packet_surface = context_packet_builder.evaluate_surface_index
     real_knowledge = context_service._build_context_knowledge_view
     real_freshness = knowledge_consumption.evaluate_knowledge_freshness
     real_service = context_service.DocumentationGraphQueryService
@@ -1116,17 +1113,17 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         wrap("source_snapshot", real_context_snapshot),
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "build_source_snapshot",
         wrap("source_snapshot", real_packet_snapshot),
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "source_snapshot_inputs_match_current_files",
         wrap("source_input_integrity_check", real_packet_input_integrity),
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "source_snapshot_matches_current_files",
         wrap("source_structural_verification", real_packet_integrity),
     )
@@ -1137,7 +1134,7 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         wrap("surface_evaluation", real_context_surface),
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "evaluate_surface_index",
         wrap("surface_evaluation", real_packet_surface),
     )
@@ -1157,7 +1154,7 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         wrap("graph_construction", real_service),
     )
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "DocumentationGraphQueryService",
         wrap("graph_construction", real_service),
     )
@@ -1240,8 +1237,8 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 def scale_knowledge_view(tmp_path_factory):
     from dataclasses import replace
 
-    from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
     from tests.test_knowledge_loader import _committed_state
     from tests.test_knowledge_freshness import _live_evaluation
     from tests.test_knowledge_performance import _stress_knowledge
@@ -1289,12 +1286,12 @@ def test_real_scale_selection_and_packet_validation_stay_bounded(
     stress_source.parent.mkdir(parents=True, exist_ok=True)
     stress_source.write_text("STRESS = True\n", encoding="utf-8")
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_build_context_knowledge_view",
         lambda *_args, **_kwargs: scale_knowledge_view,
     )
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_context_query_surface",
         lambda *_args, **_kwargs: _scale_surface(scale_knowledge_view),
     )

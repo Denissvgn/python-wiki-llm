@@ -11,8 +11,8 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.knowledge_loader import KnowledgeStateLoadError, load_knowledge_state
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME, MaintenanceProtocolError, snapshot_wiki
+from llm_wiki_engine.knowledge_loader import KnowledgeStateLoadError, load_knowledge_state
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME, MaintenanceProtocolError, snapshot_wiki
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority, recover_maintenance_authority
 from llm_wiki_cli.services.mcp_server import McpWikiService, McpWikiError
 
@@ -84,7 +84,7 @@ def public_refusals():
     assert cli_details == api_error.details
     assert_diagnostic(body["error"]["code"], cli_details)
     cause = api_error.__cause__
-    from llm_wiki_cli.services.context_packet import ContextPacketAuthorityError
+    from llm_wiki_cli.services.context_packet_builder import ContextPacketAuthorityError
     assert isinstance(cause, ContextPacketAuthorityError)
     assert isinstance(cause.__cause__, (KnowledgeStateLoadError, MaintenanceProtocolError))
     assert cause.issues[0].code == "maintenance-owner-missing"
@@ -143,7 +143,7 @@ def test_distinct_authority_causes_remain_bounded_and_do_not_repair(tmp_path, mo
     elif damage == "corrupt-marker":
         (wiki / ADOPTION_FILENAME).write_bytes(b"private-leak invalid marker")
     elif damage == "marker-mismatch":
-        from llm_wiki_cli.services.knowledge_storage import canonical_bytes
+        from llm_wiki_engine.knowledge_storage import canonical_bytes
         value = json.loads((wiki / ADOPTION_FILENAME).read_bytes())
         value["adoption_id"] = "00000000-0000-4000-8000-000000000000"
         (wiki / ADOPTION_FILENAME).write_bytes(canonical_bytes(value))

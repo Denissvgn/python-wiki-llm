@@ -1,7 +1,7 @@
 # capture_discovery
 
 **Entry point:** `search_discovery_capture.capture_discovery`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_status](../modules/maintenance_status.md), [search_discovery_capture](../modules/search_discovery_capture.md), [search_source](../modules/search_source.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_status](../modules/maintenance_status.md), [search_discovery_capture](../modules/search_discovery_capture.md), [search_source](../modules/search_source.md)
 
 > Read one adopted owner and one selected native concepts/sections slice.
 
@@ -17,7 +17,7 @@
 7. `knowledge_storage.KnowledgeStorageError`
 8. `maintenance_status.build_maintenance_status`
 9. `knowledge_storage.KnowledgeStorageError`
-10. `knowledge_storage.digest`
+10. `canonical_json.sha256_digest`
 11. `knowledge_storage.KnowledgeStorageError`
 12. `knowledge_artifacts._decode_json_object`
 13. `knowledge_model.parse_knowledge_index`
@@ -27,10 +27,11 @@
 17. `knowledge_storage_access.capture_knowledge_slice`
 18. `knowledge_storage.KnowledgeStorageError`
 19. `knowledge_storage.KnowledgeStorageError`
-20. `knowledge_storage.digest`
+20. `canonical_json.sha256_digest`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_storage](../modules/knowledge_storage.md)

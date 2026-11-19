@@ -1,6 +1,6 @@
 # WorkflowProfile
 
-**Location:** `src/llm_wiki_cli/services/workflow_profile.py:116`
+**Location:** `src/llm_wiki_engine/workflow_profile.py:115`
 **Kind:** Class
 **Bases:** —
 **Module:** [workflow_profile](../modules/workflow_profile.md)
@@ -31,7 +31,7 @@ An immutable canonical profile with detached settings and a content identity. Ac
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WorkflowProfile (src/llm_wiki_cli/services/workflow_profile.py)"]
+    n0["WorkflowProfile (src/llm_wiki_engine/workflow_profile.py)"]
     n1["apply_task_delta (src/llm_wiki_cli/api.py)"]
     n2["build_compact_task_context (src/llm_wiki_cli/api.py)"]
     n3["build_task_context (src/llm_wiki_cli/api.py)"]

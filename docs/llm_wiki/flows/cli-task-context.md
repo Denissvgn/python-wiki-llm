@@ -2,15 +2,17 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 45 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), and 49 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [change_selection](../modules/change_selection.md)
-- [config](../modules/config.md)
 - [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
+- [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [context_session](../modules/context_session.md)
 - [data_flow](../modules/data_flow.md)
@@ -18,6 +20,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -31,6 +34,7 @@
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_implementation](../modules/python_implementation.md)
 - [request_json](../modules/request_json.md)
@@ -86,12 +90,12 @@ sequenceDiagram
     participant p20 as normalize_profile
     participant p21 as build_task_read
     participant p22 as _absolute_path
-    participant p23 as guard_windows_directory_chain
-    participant p24 as write_bytes_atomic
-    participant p25 as open_windows_readonly_file
-    participant p26 as _assert_windows_file_binding
-    participant p27 as _atomic_write_guarded_bytes_windows
-    participant p28 as _atomic_write_private_bytes_posix
+    participant p23 as first_unsafe_path_component
+    participant p24 as guard_windows_directory_chain
+    participant p25 as write_bytes_atomic
+    participant p26 as open_windows_readonly_file
+    participant p27 as _assert_windows_file_binding
+    participant p28 as _atomic_write_guarded_bytes_windows
     participant p29 as getattr (src/llm_wiki_cli/commands/task_cmd.py:run)
     participant p30 as result.to_payload
     p0->>p1: _compact_outputs
@@ -116,19 +120,19 @@ sequenceDiagram
     p11->>p20: normalize_profile
     p13->>p21: build_task_read
     p18->>p22: _absolute_path
-    p18->>p23: guard_windows_directory_chain
-    p14->>p24: write_bytes_atomic
-    p18->>p25: open_windows_readonly_file
-    p18->>p26: _assert_windows_file_binding
-    p17->>p27: _atomic_write_guarded_bytes_windows
-    p17->>p28: _atomic_write_private_bytes_posix
+    p15->>p23: first_unsafe_path_component
+    p18->>p24: guard_windows_directory_chain
+    p14->>p25: write_bytes_atomic
+    p18->>p26: open_windows_readonly_file
+    p18->>p27: _assert_windows_file_binding
+    p17->>p28: _atomic_write_guarded_bytes_windows
     p0-->>p29: getattr (src/llm_wiki_cli/commands/task_cmd.py:run)(args, 'view', 'canonical')
     p0-->>p30: result.to_payload
 ```
 
-> Call sequence diagram shows 30 of 1454 interactions; 1424 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1458 interactions; 1428 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 604 (603 omitted); unresolved 1 of 355 (354 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 602 (601 omitted); unresolved 1 of 358 (357 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,12 +141,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | - | external | 13 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | - | unresolved | 2 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 5 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | [src/llm_wiki_cli/commands/task_cmd.py](../modules/task_cmd.md) | internal | 5 |
-| `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | - | unresolved | 12 |
-> Omission summary shows 8 of 305 groups; 297 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 317 groups; 309 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -155,9 +159,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 496; effect analysis evaluated: 295, partial: 41, unavailable: 160. Counts include steps omitted from the displayed trace.
+Source steps: 499; effect analysis evaluated: 298, partial: 41, unavailable: 160. Counts include steps omitted from the displayed trace.
 
-Collector observations for 336 source steps with known totals: observed: 2370, emitted: 2218, omitted: 152. Unavailable totals are excluded.
+Collector observations for 339 source steps with known totals: observed: 2377, emitted: 2225, omitted: 152. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -274,7 +278,7 @@ flowchart LR
 | output | `print` | `run` | 163 |
 | mutation | `paths.append` | `_compact_outputs` | 52 |
 | mutation | `result.append` | `_compact_outputs` | 71 |
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 

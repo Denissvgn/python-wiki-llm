@@ -14,7 +14,7 @@ from typing import cast
 import pytest
 
 from llm_wiki_cli.services import documentation_wiki_input as wiki_input_module
-from llm_wiki_cli.services import filesystem_guard as filesystem_guard_module
+from llm_wiki_engine import filesystem_guard as filesystem_guard_module
 from llm_wiki_cli.services import source_snapshot as source_snapshot_module
 from llm_wiki_cli.services.documentation_wiki_input import (
     DocumentationWikiInputError,
@@ -22,25 +22,25 @@ from llm_wiki_cli.services.documentation_wiki_input import (
     adopt_documentation_wiki_snapshot,
     fingerprint_documentation_wiki_input,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_freshness import (
     REASON_GENERATION_OPTIONS_CHANGED,
 )
-from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness
-from llm_wiki_cli.services.knowledge_observability import knowledge_freshness_hint
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+from llm_wiki_engine.knowledge_model import ComputedFreshness
+from llm_wiki_engine.knowledge_observability import knowledge_freshness_hint
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_SCHEMA_VERSION,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
 

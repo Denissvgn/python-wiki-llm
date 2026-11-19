@@ -25,23 +25,26 @@ flowchart LR
     n0["BootstrapRequestError (src/llm_wiki_cli/services/bootstrap_service.py)"]
     n1["BootstrapContractError (src/llm_wiki_cli/services/bootstrap_service.py)"]
     n2["src/llm_wiki_cli/api.py"]
-    n3["_bootstrap_run_options_from_request (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n4["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n5["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n6["_preflight_public_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n3["src/llm_wiki_cli/engine/__init__.py"]
+    n4["_bootstrap_run_options_from_request (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n5["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n6["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n7["_preflight_public_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/bootstrap_service.md"
     click n1 "../modules/bootstrap_service.md"
     click n2 "../modules/api.md"
-    click n3 "../modules/bootstrap_runtime.md"
+    click n3 "../modules/engine___init__.md"
     click n4 "../modules/bootstrap_runtime.md"
     click n5 "../modules/bootstrap_runtime.md"
     click n6 "../modules/bootstrap_runtime.md"
+    click n7 "../modules/bootstrap_runtime.md"
 ```
 
 ### Summary
@@ -61,6 +64,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
+| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
 | `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
 | `_execute_bootstrap_options_locked` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_execute_documentation_workspace_refresh` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |

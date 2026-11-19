@@ -1,6 +1,6 @@
 # knowledge_artifacts Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_artifacts.py`
+**Path:** `src/llm_wiki_engine/knowledge_artifacts.py`
 
 ## Description
 
@@ -23,41 +23,42 @@ silently accept a different retirement claim.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `canonical_json`, `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
-| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
-| `.immutable` | `freeze` |
-| `.implementation_evidence` | `validate_concept_implementation`, `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
-| `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
-| `.io` | `write_bytes_atomic` |
+| `.` | `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
+| `.infrastructure_state` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
 | `.knowledge_envelope` | `EvaluatedEnvelope`, `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
-| `.knowledge_graph` | `KnowledgeGraphError`, `_validate_typed_graph_concept_bindings` |
 | `.knowledge_index` | `_validated_index_data`, `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validator_identity`, `_require_validation_receipt`, `_require_validation_receipt`, `_ValidatedIndexReceipt`, `_validation_callable_identity`, `_validation_module_identity`, `_validation_policy_value`, `_validator_identity`, `_has_validation_operation`, `_validated_index_receipt`, `_has_validation_operation`, `_validated_index_receipt` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `packed_format`, `parse_packed_root` |
-| `.knowledge_reuse` | `validate_reuse_artifact_parity` |
+| `.knowledge_reuse_format` | `validate_reuse_artifact_parity` |
 | `.knowledge_storage` | `STORE_SCHEMA`, `MAX_EXPANDED_BYTES`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `logical_digest`, `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `StorageReadSession`, `StorageReadSession`, `read_guarded`, `read_guarded`, `read_guarded`, `_absolute_path` |
 | `.maintenance_projection` | `validate_maintenance_projection`, `BINDING_KEY`, `RECORD_KEY` |
 | `.maintenance_protocol` | `ADOPTION_FILENAME`, `load_adoption_marker`, `storage_writer_lock`, `guard_maintenance_owner`, `load_adoption_marker`, `storage_writer_lock` |
 | `.maintenance_state` | `validate_maintenance_adoption` |
 | `.manifest_storage` | `build_manifest_store`, `current_manifest_format` |
-| `.progress` | `observed_phase` |
-| `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
 | `.source_retirement` | `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `source_retirement_projection` |
 | `.storage_spool` | `SpooledArtifactWrite`, `spool_write` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine` | `canonical_json` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
+| `llm_wiki_engine.immutable` | `freeze` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.io` | `write_bytes_atomic` |
+| `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes`, `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
+| `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `_validate_typed_graph_concept_bindings` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -68,7 +69,7 @@ silently accept a different retirement claim.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_artifacts.py"]
+    n1["src/llm_wiki_engine/knowledge_artifacts.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_artifacts.md"
@@ -83,20 +84,20 @@ flowchart LR
 | Inbound | `src` (33) |
 | Outbound | `src` (30) |
 
-> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 88 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
-| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 98 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
-| [CommitStage](../entities/CommitStage.md) | Enum | 106 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
-| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 117 | — | One exact-byte action in a knowledge artifact commit. |
-| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 130 | — | Validated canonical projections and their exact-byte commitments. |
-| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 151 | — | — |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 216 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 243 | — | Outcome of a real or dry-run commit. |
+| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 90 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
+| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 100 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
+| [CommitStage](../entities/CommitStage.md) | Enum | 108 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
+| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 119 | — | One exact-byte action in a knowledge artifact commit. |
+| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 132 | — | Validated canonical projections and their exact-byte commitments. |
+| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 153 | — | — |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 218 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 245 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 

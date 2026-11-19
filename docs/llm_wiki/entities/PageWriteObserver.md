@@ -1,6 +1,6 @@
 # PageWriteObserver
 
-**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:25`
+**Location:** `src/llm_wiki_engine/wiki_write_basis.py:23`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [wiki_write_basis](../modules/wiki_write_basis.md)
@@ -27,7 +27,7 @@ checks or authorizes replacement of an occupied page.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageWriteObserver (src/llm_wiki_cli/services/wiki_write_basis.py)"]
+    n0["PageWriteObserver (src/llm_wiki_engine/wiki_write_basis.py)"]
     n1["Protocol"]
     n0 --> n1
     click n0 "../modules/wiki_write_basis.md"

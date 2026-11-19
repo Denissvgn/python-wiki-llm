@@ -1,6 +1,6 @@
 # MaintenanceCore
 
-**Location:** `src/llm_wiki_cli/services/maintenance_state.py:112`
+**Location:** `src/llm_wiki_engine/maintenance_state.py:114`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_state](../modules/maintenance_state.md)
@@ -36,8 +36,8 @@ Pure transitions with the installed implementation contract as authority.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MaintenanceCore (src/llm_wiki_cli/services/maintenance_state.py)"]
-    n1["maintenance_core (src/llm_wiki_cli/services/maintenance_state.py)"]
+    n0["MaintenanceCore (src/llm_wiki_engine/maintenance_state.py)"]
+    n1["maintenance_core (src/llm_wiki_engine/maintenance_state.py)"]
     n1 --> n0
     click n0 "../modules/maintenance_state.md"
     click n1 "../modules/maintenance_state.md"

@@ -1,6 +1,6 @@
 # immutable Module
 
-**Path:** `src/llm_wiki_cli/services/immutable.py`
+**Path:** `src/llm_wiki_engine/immutable.py`
 
 ## Description
 
@@ -22,7 +22,7 @@ Detached immutable model graphs that retain ordinary JSON container shapes.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/immutable.py"]
+    n1["src/llm_wiki_engine/immutable.py"]
     n0 --> n1
     click n1 "../modules/immutable.md"
 ```

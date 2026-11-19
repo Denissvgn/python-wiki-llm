@@ -1,6 +1,6 @@
 # RelationshipTarget
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:416`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:418`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `RelationshipTarget` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `RelationshipTarget` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -39,11 +39,11 @@ _Auto-generated from `RelationshipTarget` in `src/llm_wiki_cli/services/knowledg
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["RelationshipTarget (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_derived_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_link_relationship (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_parse_relationship_target (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n4["_relationship_target_to_payload (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["RelationshipTarget (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_derived_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_link_relationship (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_parse_relationship_target (src/llm_wiki_engine/knowledge_model.py)"]
+    n4["_relationship_target_to_payload (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

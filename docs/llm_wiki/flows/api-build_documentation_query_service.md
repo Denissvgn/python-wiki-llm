@@ -2,21 +2,24 @@
 
 **Entry point:** `build_documentation_query_service` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 23 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 27 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -26,6 +29,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [path_policy](../modules/path_policy.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
@@ -58,18 +62,18 @@ sequenceDiagram
     participant p14 as _source_anchor
     participant p15 as _wiki_anchor
     participant p16 as source_path_diagnostics
-    participant p17 as _live_source_selection_identity
-    participant p18 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
-    participant p19 as attach_implementation_read_view
-    participant p20 as analysis_identity
-    participant p21 as read_guarded
-    participant p22 as attach_maintenance_view_from_inputs
-    participant p23 as _assert_source_unchanged
-    participant p24 as _assert_wiki_unchanged
-    participant p25 as _portable_supplied_path
-    participant p26 as SyncManifest.load
-    participant p27 as _domain_hash
-    participant p28 as confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
+    participant p17 as first_unsafe_path_component
+    participant p18 as _live_source_selection_identity
+    participant p19 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
+    participant p20 as attach_implementation_read_view
+    participant p21 as analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
+    participant p22 as read_guarded
+    participant p23 as attach_maintenance_view_from_inputs
+    participant p24 as _assert_source_unchanged
+    participant p25 as _assert_wiki_unchanged
+    participant p26 as _portable_supplied_path
+    participant p27 as SyncManifest.load
+    participant p28 as _domain_hash
     participant p29 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
     participant p30 as src_root.is_dir
     p0->>p1: normalize_documentation_query_limit
@@ -88,25 +92,25 @@ sequenceDiagram
     p4->>p14: _source_anchor
     p4->>p15: _wiki_anchor
     p4->>p16: source_path_diagnostics
-    p4->>p17: _live_source_selection_identity
-    p4->>p18: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
-    p4->>p19: attach_implementation_read_view
-    p4->>p20: analysis_identity
-    p4->>p21: read_guarded
-    p4->>p22: attach_maintenance_view_from_inputs
-    p4->>p23: _assert_source_unchanged
-    p4->>p24: _assert_wiki_unchanged
-    p9->>p25: _portable_supplied_path
-    p12->>p26: SyncManifest.load
-    p14->>p27: _domain_hash
-    p18->>p28: confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
+    p2->>p17: first_unsafe_path_component
+    p4->>p18: _live_source_selection_identity
+    p4->>p19: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
+    p4->>p20: attach_implementation_read_view
+    p4->>p21: analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
+    p4->>p22: read_guarded
+    p4->>p23: attach_maintenance_view_from_inputs
+    p4->>p24: _assert_source_unchanged
+    p4->>p25: _assert_wiki_unchanged
+    p9->>p26: _portable_supplied_path
+    p12->>p27: SyncManifest.load
+    p14->>p28: _domain_hash
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)
     p0-->>p30: src_root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 1882 interactions; 1852 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1805 interactions; 1775 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 689 (688 omitted); unresolved 1 of 477 (476 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 653 (652 omitted); unresolved 1 of 452 (451 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -116,11 +120,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:build_documentation_query_service` | 1 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 7 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 6 | - | external | 3 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 6 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
-| `src/llm_wiki_cli/config.py:validate_path` | 12 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 12 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 12 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | unresolved | 5 |
-> Omission summary shows 8 of 451 groups; 443 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 12 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 12 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 16 | - | unresolved | 1 |
+> Omission summary shows 8 of 453 groups; 445 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -133,9 +137,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 717; effect analysis evaluated: 428, partial: 26, unavailable: 263. Counts include steps omitted from the displayed trace.
+Source steps: 701; effect analysis evaluated: 421, partial: 21, unavailable: 259. Counts include steps omitted from the displayed trace.
 
-Collector observations for 454 source steps with known totals: observed: 2605, emitted: 2478, omitted: 127. Unavailable totals are excluded.
+Collector observations for 442 source steps with known totals: observed: 2385, emitted: 2281, omitted: 104. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -186,8 +190,8 @@ flowchart LR
     click s5 "../modules/api.md"
     click s6 "../modules/documentation_query_builder.md"
     click s9 "../modules/documentation_queries.md"
-    click s11 "../modules/config.md"
-    click s12 "../modules/config.md"
+    click s11 "../modules/path_policy.md"
+    click s12 "../modules/path_policy.md"
 ```
 
 ### Step data
@@ -211,17 +215,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 2033 | `isinstance(value, bool)` |
-| build_documentation_query_service | InvalidRequestError | 2034 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 2039 | `isinstance(helper_cache_dir, (...))` |
-| build_documentation_query_service | InvalidRequestError | 2042 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
-| build_documentation_query_service | normalize_documentation_query_limit | 2047 | `normalize_documentation_query_limit(limit)` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 2185 | `isinstance(value, bool)` |
+| build_documentation_query_service | InvalidRequestError | 2186 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 2191 | `isinstance(helper_cache_dir, (...))` |
+| build_documentation_query_service | InvalidRequestError | 2194 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
+| build_documentation_query_service | normalize_documentation_query_limit | 2199 | `normalize_documentation_query_limit(limit)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 57 | `isinstance(value, bool)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 57 | `isinstance(value, int)` |
 | normalize_documentation_query_limit | DocumentationQueryError | 58 | `DocumentationQueryError('limit must be a positive integer.')` |
 | normalize_documentation_query_limit | min (src/llm_wiki_cli/services…documentation_query_limit) | 59 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
-| build_documentation_query_service | validate_source_root | 2048 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 161 | `validate_path(path, label)` |
+| build_documentation_query_service | validate_source_root | 2200 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| validate_source_root | validate_path | 125 | `validate_path(path, label)` |
 
 ### Boundary effects
 
@@ -231,8 +235,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_documentation_query_service` | `isinstance` | 2033 |
-| external_call | `build_documentation_query_service` | `isinstance` | 2039 |
+| external_call | `build_documentation_query_service` | `isinstance` | 2185 |
+| external_call | `build_documentation_query_service` | `isinstance` | 2191 |
 | external_call | `normalize_documentation_query_limit` | `isinstance` | 57 |
 | external_call | `normalize_documentation_query_limit` | `min` | 59 |
 | step_limit | `build_documentation_query_service` | `first 12 steps` | 0 |

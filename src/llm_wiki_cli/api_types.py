@@ -79,6 +79,7 @@ class _SearchMetadata(TypedDict, total=False):
 
 
 class SearchResult(_SearchMetadata):
+    schema_version: str
     query: str
     mode: Literal["ranked", "ranked-v1", "ranked-v2", "substring"]
     total: int

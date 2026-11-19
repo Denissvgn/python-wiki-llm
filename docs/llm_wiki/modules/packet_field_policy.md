@@ -1,6 +1,6 @@
 # packet_field_policy Module
 
-**Path:** `src/llm_wiki_cli/services/packet_field_policy.py`
+**Path:** `src/llm_wiki_engine/packet_field_policy.py`
 
 ## Description
 
@@ -26,7 +26,7 @@ the existing structural-path/URI rules for their nested string fields.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/context_packet.py"]
-    n1["src/llm_wiki_cli/services/packet_field_policy.py"]
+    n1["src/llm_wiki_engine/packet_field_policy.py"]
     n0 --> n1
     click n0 "../modules/context_packet.md"
     click n1 "../modules/packet_field_policy.md"

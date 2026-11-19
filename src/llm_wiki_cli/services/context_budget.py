@@ -5,22 +5,26 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import sys
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
-from ..config import DEFAULT_WIKI_DIR
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR
 from . import context_packet as packets, context_service as context
-from .contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
-from .io import write_text_output, write_utf8_stdout
+from . import context_packet_builder as packet_builder
+from llm_wiki_engine.contracts import CONTEXT_BUDGET_PROTOCOL_VERSION
+from llm_wiki_engine.io import write_text_output, write_utf8_stdout
 from .token_counting import EstimatedCounter, LocalTokenizerCounter, TokenCounter
 from .change_selection import (
     affected_page_map,
     changes_from_args,
     select_changes,
-    validate_changes,
 )
+from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
+    validate_budget_request as validate_request,
+    validate_changes as validate_changes,
+)
+from llm_wiki_engine.host import emit
 
 
 @dataclass(frozen=True)
@@ -71,53 +75,6 @@ def refusal_diagnostics(payload, request, counter, accounting, *, policy):
              "new_request_binding_required": True,
              "description": "Explicitly authorize a larger complete-output budget, then independently fit and recount it with the pinned counter. The failed request remains unsatisfied."},
         ],
-    }
-
-
-def validate_request(data: Mapping[str, Any]) -> dict[str, Any]:
-    if not isinstance(data, Mapping) or any(not isinstance(key, str) for key in data):
-        raise context.ProtocolRequestError("Request must be an object with string keys", "request")
-    if data.get("protocol", CONTEXT_BUDGET_PROTOCOL_VERSION) != CONTEXT_BUDGET_PROTOCOL_VERSION:
-        raise context.ProtocolRequestError("Unsupported context budget protocol", "protocol")
-    allowed = context._V2_REQUEST_KEYS | {"budget_mode", "counter_id", "changes"}
-    unknown = set(data) - allowed
-    if unknown:
-        raise context.ProtocolRequestError(
-            f"Unknown request field: {sorted(unknown)[0]}", sorted(unknown)[0]
-        )
-    legacy = dict(data)
-    legacy["protocol"] = context.KNOWLEDGE_PROTOCOL_VERSION
-    legacy["knowledge_mode"] = data.get("knowledge_mode", "off")
-    legacy["format"] = (
-        "json" if data.get("format") == "packet" else data.get("format", "json")
-    )
-    legacy.pop("budget_mode", None)
-    legacy.pop("counter_id", None)
-    legacy.pop("changes", None)
-    normalized = context._validate_protocol_request(legacy)
-    mode = data.get("budget_mode", "exact")
-    if not isinstance(mode, str) or mode not in {"exact", "estimated"}:
-        raise context.ProtocolRequestError(
-            "budget_mode must be exact or estimated", "budget_mode"
-        )
-    identity = data.get("counter_id")
-    if identity is not None and (not isinstance(identity, str) or not identity):
-        raise context.ProtocolRequestError(
-            "counter_id must be a nonempty string", "counter_id"
-        )
-    changes = None
-    if "changes" in data:
-        try:
-            changes = validate_changes(data["changes"])
-        except ValueError as exc:
-            raise context.ProtocolRequestError(str(exc), "changes") from exc
-    return {
-        **normalized,
-        **({"changes": changes} if changes is not None else {}),
-        "protocol": CONTEXT_BUDGET_PROTOCOL_VERSION,
-        "format": data.get("format", "json"),
-        "budget_mode": mode,
-        "counter_id": identity,
     }
 
 
@@ -395,7 +352,7 @@ def build_budgeted_context(
         raise ValueError("An estimated counter cannot satisfy exact mode")
     if request.get("counter_id") not in (None, counter.identity):
         raise ValueError("Requested counter_id does not match the trusted counter")
-    captured = packets.capture_context_read(
+    captured = packet_builder.capture_context_read(
         src_dir,
         wiki_dir,
         allow_external_src=allow_external_src,
@@ -429,16 +386,16 @@ def build_budgeted_context(
         budget_tokens=2**63 - 1,
     )
     freshness_ranks: dict[str, int] = {}
-    payload, warnings = packets.build_context_from_captured_read(captured, legacy,
+    payload, warnings = packet_builder.build_context_from_captured_read(captured, legacy,
                                                                freshness_ranking_out=freshness_ranks)
 
     def packet_renderer(legacy, response):
         # Fitting starts with an unbounded internal candidate. Apply wire limits
         # only to the selected output, rather than rejecting before reduction.
-        contract = packets._packet_contract_for_request(legacy)
+        contract = packet_builder._packet_contract_for_request(legacy)
         body = {
             "schema_version": contract.schema_version,
-            **packets._packet_body(captured, legacy, response, contract),
+            **packet_builder._packet_body(captured, legacy, response, contract),
         }
         return {**body, "packet_id": packets._packet_id(body)}
 
@@ -456,12 +413,12 @@ def build_budgeted_context(
     )
     if result.ok:
         validate_budgeted_context(result.rendered, request, counter=counter)
-    packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
-    packets._assert_wiki_unchanged(
+    packet_builder._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
+    packet_builder._assert_wiki_unchanged(
         captured.wiki_root, captured.wiki_anchor, reject_all_symlinks=True,
         expected_integrity=captured.wiki_integrity,
     )
-    packets._assert_selection_unchanged(captured)
+    packet_builder._assert_selection_unchanged(captured)
     return result
 
 
@@ -486,7 +443,7 @@ def validate_budgeted_context(
         raw = rendered[len(prefix):].split("\n```\n\n", 1)[0]
     else:
         raw = rendered
-    from .request_json import _pairs, _constant
+    from llm_wiki_engine.request_json import _pairs, _constant
 
     try:
         payload = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
@@ -593,11 +550,11 @@ def run(args, request=None):
                 allow_external_src=args.allow_external_src,
                 source_selection=args.source_selection,
             )
-    except packets.ContextPacketAuthorityError as exc:
+    except packet_builder.ContextPacketAuthorityError as exc:
         context._emit_packet_error(exc, protocol=CONTEXT_BUDGET_PROTOCOL_VERSION)
         raise
     if not result.ok:
-        print(
+        emit(
             json.dumps(
                 {
                     "protocol": CONTEXT_BUDGET_PROTOCOL_VERSION,
@@ -607,7 +564,7 @@ def run(args, request=None):
                     "diagnostics": result.diagnostics,
                 }
             ),
-            file=sys.stderr,
+            stream="stderr",
         )
         raise SystemExit(3)
     if getattr(args, "output", None):

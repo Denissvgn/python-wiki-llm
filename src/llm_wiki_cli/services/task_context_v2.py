@@ -14,29 +14,30 @@ import re
 from types import SimpleNamespace
 from typing import Any
 
-from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet as packets, context_service as context
+from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
 from .context_budget import _accounted_render
 from .dependencies import analyze_dependencies
-from .contracts import GOVERNANCE_EXTENSION_KEY
+from llm_wiki_engine.contracts import GOVERNANCE_EXTENSION_KEY
 from .documentation_query_builder import assemble_documentation_query_service
 from .extraction_service import InventoryResult
-from .knowledge_envelope import ConsumedInput, hash_source_snapshot
-from .knowledge_graph import KnowledgeGraphError, _normalise_edge
-from .knowledge_storage import KnowledgeStorageError, _concept_aliases, digest
-from .knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
-from .knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
-from .markdown_sections import parse_markdown_document
-from .section_ownership import observe_page_sections
-from .source_selection import validate_persisted_source_selection_identity
+from llm_wiki_engine.knowledge_envelope import ConsumedInput, hash_source_snapshot
+from llm_wiki_engine.knowledge_graph import KnowledgeGraphError, _normalise_edge
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, _concept_aliases, digest
+from llm_wiki_engine.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
+from llm_wiki_engine.markdown_sections import parse_markdown_document
+from llm_wiki_engine.section_ownership import observe_page_sections
+from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 from .task_contract import TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
 from .task_context import (
     TaskRead, _LIVE_FACETS, _NATIVE_FACETS, _cancel, _counter, _result_body, plan_source_read,
 )
 from .task_evidence import declaration_records, observe_requirement
-from .workflow_profile import WorkflowRequestError, canonical_json, content_id
+from llm_wiki_engine.workflow_profile import WorkflowRequestError, canonical_json, content_id
 
 SOURCE_RECEIPT_SCHEMA = "llm-wiki-task-source/v1"
 STORAGE_RECEIPT_SCHEMA = "llm-wiki-task-storage/v1"
@@ -59,16 +60,16 @@ def _source_capture(root, paths, scope, settings, source_selection, helper_cache
     snapshot = build_source_snapshot(root, only_files=None if scope == "full-inventory" else sorted(paths),
         source_selection=source_selection, max_files=settings["max_files"], max_bytes=settings["max_source_bytes"],
         respect_ignores=True, coherent=True)
-    packets._guard_windows_inputs(root, snapshot.captured_content_hashes)
+    packet_builder._guard_windows_inputs(root, snapshot.captured_content_hashes)
     collected = context.get_inventory(str(root), deep=True, return_result=True, include_plugins=False,
         source_selection=source_selection, source_snapshot=snapshot,
         capture_implementation_observations=settings["knowledge_mode"] != "off",
         **({"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}))
     if not isinstance(collected, InventoryResult) or collected.failed or not isinstance(collected.source_snapshot, SourceSnapshot):
-        raise packets.ContextPacketUnavailableError("selected source extraction is unavailable", field="src_dir")
+        raise packet_builder.ContextPacketUnavailableError("selected source extraction is unavailable", field="src_dir")
     snapshot = collected.source_snapshot
-    anchor = packets._source_anchor(snapshot)
-    packets._assert_source_inputs_unchanged(snapshot, anchor)
+    anchor = packet_builder._source_anchor(snapshot)
+    packet_builder._assert_source_inputs_unchanged(snapshot, anchor)
     inventory = collected.inventory
     edges = context.resolve_call_edges(inventory)
     entrypoints = context.get_entry_points(inventory,
@@ -126,13 +127,13 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
     collections = _native_collections(request) if request is not None else None
     if ((request is not None and "storage_options" in request)
             or (native is not None and native.slice.to_payload().get("storage_format") == "packed-v4")):
-        from .knowledge_storage import COLLECTIONS
+        from llm_wiki_engine.knowledge_storage import COLLECTIONS
         result.update(schema_version=PROJECTED_RECEIPT_SCHEMA, layout="expanded-v1", storage_format=None,
                       collections=collections or sorted(COLLECTIONS[:5]),
                       validation_scope="selected-committed-collections" if collections is not None else "selected-committed-records")
     if native is None:
         if request is not None and request.get("storage_options", {}).get("receipt") == "compact-v1":
-            from .storage_receipts import compact_storage_receipt
+            from llm_wiki_engine.storage_receipts import compact_storage_receipt
             return compact_storage_receipt(result)
         return result
     selected = native.slice.to_payload()
@@ -155,7 +156,7 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
         read_operations=native.session.reads + recheck["operations"],
         expanded_bytes=selected["work"]["expanded_bytes"])
     if request is not None and request.get("storage_options", {}).get("receipt") == "compact-v1":
-        from .storage_receipts import compact_storage_receipt
+        from llm_wiki_engine.storage_receipts import compact_storage_receipt
         return compact_storage_receipt(result)
     return result
 
@@ -202,7 +203,7 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit, impl
         if comparison is not None:
             qualified["implementation"] = comparison.to_payload()
     if native.maintenance_validation is not None:
-        from .maintenance_status import LIMITATIONS, validate_maintenance_summary
+        from llm_wiki_engine.maintenance_status import LIMITATIONS, validate_maintenance_summary
         record_projection = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {})
         bounds = record_projection.get("bounds", {})
         total = bounds.get("observations_total", 0)
@@ -290,10 +291,10 @@ class ScopedTaskState:
         if self.snapshot is not None:
             if self.source_anchor is None:
                 raise WorkflowRequestError("source", "source anchor is missing")
-            packets._assert_source_unchanged(self.snapshot, self.source_anchor, metrics=source_metrics)
+            packet_builder._assert_source_unchanged(self.snapshot, self.source_anchor, metrics=source_metrics)
         if self.change_request is not None:
             if select_changes(self.source_root, self.change_request) != self.changes:
-                raise packets.ContextPacketSourceMutationError("changes")
+                raise packet_builder.ContextPacketSourceMutationError("changes")
         session = StorageReadSession(self.wiki_root, max_bytes=settings["max_wiki_bytes"])
         if self.native_absent and (self.wiki_root / ".llm-wiki-knowledge.json").exists():
             raise KnowledgeStorageError("root", "native state appeared during the request", code="storage-mutation")
@@ -315,7 +316,7 @@ class ScopedTaskState:
                 wiki_metrics.update(files=session.reads, bytes=session.bytes_read)
 
 
-@packets._guarded_capture
+@packet_builder._guarded_capture
 def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     profile=None, policy=None, counter=None, allow_external_src=False, source_selection=None,
     helper_cache_dir=None, cancelled=None, _defer_validation=False, _wiki_byte_budget=None):
@@ -323,7 +324,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     settings = effective.settings
     wiki_budget = settings["max_wiki_bytes"] if _wiki_byte_budget is None else min(settings["max_wiki_bytes"], _wiki_byte_budget)
     if wiki_budget <= 0:
-        raise packets.ContextPacketUnavailableError("scoped validation byte budget exhausted", field="max_wiki_bytes")
+        raise packet_builder.ContextPacketUnavailableError("scoped validation byte budget exhausted", field="max_wiki_bytes")
     counter = _counter(settings, counter)
     if cancelled is not None and not callable(cancelled):
         raise WorkflowRequestError("cancelled", "must be a trusted callback")
@@ -361,10 +362,10 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
             compatible = False
             native = None
     if settings["knowledge_mode"] == "required" and native is None:
-        raise packets.ContextPacketUnavailableError("required scoped native inputs are unavailable: " + str(native_reason), field="knowledge_mode")
+        raise packet_builder.ContextPacketUnavailableError("required scoped native inputs are unavailable: " + str(native_reason), field="knowledge_mode")
     storage = _storage_receipt(native, status=native_status, reason=native_reason, request=normalized)
     if storage["read_bytes"] > wiki_budget:
-        raise packets.ContextPacketUnavailableError("scoped wiki validation exceeds its byte budget", field="max_wiki_bytes")
+        raise packet_builder.ContextPacketUnavailableError("scoped wiki validation exceeds its byte budget", field="max_wiki_bytes")
     source_capture = _source_receipt(snapshot)
     source_id = None if source_capture is None else content_id(SOURCE_RECEIPT_SCHEMA, source_capture)
     wiki_id = storage["root_hash"] or content_id("llm-wiki-unread-storage/v1", {"status": native_status})
@@ -373,7 +374,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
         from .implementation_evidence import compare_knowledge_implementation
         from .python_implementation import analysis_identity
 
-        missing = packets.confirmed_missing_source_paths(snapshot, paths) if snapshot is not None else frozenset()
+        missing = packet_builder.confirmed_missing_source_paths(snapshot, paths) if snapshot is not None else frozenset()
         implementation_report = compare_knowledge_implementation(
             list(native.reader.consumed_concepts.values()),
             collected.implementation_observations if collected is not None else None,
@@ -463,9 +464,9 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     if snapshot is not None:
         if source_anchor is None:
             raise WorkflowRequestError("source", "source anchor is missing")
-        packets._assert_source_unchanged(snapshot, source_anchor)
+        packet_builder._assert_source_unchanged(snapshot, source_anchor)
     if changes is not None and select_changes(source_root, normalized["changes"]) != changes:
-        raise packets.ContextPacketSourceMutationError("changes")
+        raise packet_builder.ContextPacketSourceMutationError("changes")
     if native is not None and not _defer_validation:
         actual = native.finish()
         if actual["bytes_read"] != storage["read_bytes"] or actual["read_operations"] != storage["read_operations"]:
@@ -476,7 +477,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
         changes, normalized["changes"], native_status == "unavailable", dict(work),
         {} if native is None else dict(native.session.range_observations), "storage_options" in normalized)
     if state.native_absent and (wiki_root / ".llm-wiki-knowledge.json").exists():
-        raise packets.ContextPacketSourceMutationError("wiki")
+        raise packet_builder.ContextPacketSourceMutationError("wiki")
     return TaskRead(normalized, effective, None, wiki_root, wiki_id, result,
                     scoped_state=state, source_root=source_root)
 
@@ -484,14 +485,14 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
 def validate_scoped_bindings(payload, normalized, profile):
     """Validate portable scope and consumed-input bindings, without claiming authenticity."""
     from .task_context import _result_fields
-    from .validation import is_portable_relative_path
+    from llm_wiki_engine.validation import is_portable_relative_path
     settings = profile.settings
     if payload["packet"] is not None:
         raise ValueError("scoped task context cannot carry a legacy full-validity packet")
     storage = payload["storage"]
     compact = normalized.get("storage_options", {}).get("receipt") == "compact-v1"
     if compact:
-        from .storage_receipts import expand_storage_receipt
+        from llm_wiki_engine.storage_receipts import expand_storage_receipt
         storage = expand_storage_receipt(storage)
     projected = isinstance(storage, dict) and storage.get("schema_version") == PROJECTED_RECEIPT_SCHEMA
     packed = isinstance(storage, dict) and (storage.get("schema_version") == PACKED_RECEIPT_SCHEMA
@@ -506,7 +507,7 @@ def validate_scoped_bindings(payload, normalized, profile):
     if projected != ("storage_options" in normalized or storage.get("storage_format") == "packed-v4"):
         raise ValueError("storage receipt version differs from the request")
     if projected:
-        from .knowledge_storage import COLLECTIONS
+        from llm_wiki_engine.knowledge_storage import COLLECTIONS
         if (storage["layout"] != "expanded-v1" or storage["collections"] != (selected_collections or sorted(COLLECTIONS[:5]))
                 or storage["storage_format"] not in {None, "sharded-v2", "packed-v3", "packed-v4"}
                 or (storage["storage_format"] is None) != (storage["status"] != "scoped")):
@@ -531,7 +532,7 @@ def validate_scoped_bindings(payload, normalized, profile):
         names.add(item["path"])
     ranges = storage.get("ranges", [])
     if packed:
-        from .knowledge_packs import PACK_NAME, INDEX_PAGE_NAME, INDEX_PAGE_BYTES, MAX_INDEX_BYTES, MAX_PACK_BYTES
+        from llm_wiki_engine.knowledge_packs import PACK_NAME, INDEX_PAGE_NAME, INDEX_PAGE_BYTES, MAX_INDEX_BYTES, MAX_PACK_BYTES
         if (storage["archive_validation_scope"] != "selected-members" or storage["status"] != "scoped"
                 or not isinstance(ranges, list) or len(ranges) > 100_000):
             raise ValueError("invalid packed storage scope")
@@ -603,7 +604,7 @@ def validate_scoped_bindings(payload, normalized, profile):
             if _native_key(fact["selector"]) not in _concept_aliases(concept):
                 raise ValueError("native observation does not match its exact selector")
             if "maintenance" in concept:
-                from .maintenance_status import validate_maintenance_summary
+                from llm_wiki_engine.maintenance_status import validate_maintenance_summary
                 summary = validate_maintenance_summary(concept["maintenance"])
                 bound = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {}).get("bounds", {})
                 if (summary["analysis_scope"] != "selected-header" or summary["availability"] != "partial" or summary["live_evaluation_performed"] or summary["pending"] or summary["acknowledged"] or summary["total"] != bound.get("observations_total") or summary["unavailable"] != summary["total"]):

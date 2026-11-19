@@ -32,7 +32,7 @@ from .entrypoints import (
 from .extraction_jobs import ExtractionJobRequest
 from .inventory_cache import InventoryCacheOptions
 from .infrastructure_inventory import get_yaml_infrastructure_inventory
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
     KnowledgeArtifactError,
@@ -40,19 +40,19 @@ from .knowledge_artifacts import (
     validate_knowledge_artifacts,
     validate_surface_index_bytes,
 )
-from .knowledge_consumption import KnowledgeReadView
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_envelope import (
     ConsumedInput,
     ConsumedInputKind,
     hash_source_snapshot,
 )
-from .knowledge_freshness import (
+from llm_wiki_engine.knowledge_freshness import (
     KnowledgeFreshnessReport,
     evaluate_knowledge_freshness,
     structural_freshness_modeled,
 )
-from .knowledge_evidence import is_valid_sha256
-from .knowledge_model import ComputedFreshness, KnowledgeIndex, ObservationScope
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256
+from llm_wiki_engine.knowledge_model import ComputedFreshness, KnowledgeIndex, ObservationScope
 from .knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeKnowledgeInputs,
@@ -62,28 +62,28 @@ from .knowledge_orchestration import (
     finalize_runtime_knowledge,
     runtime_generation_options,
 )
-from .paths import is_test_source_path
+from llm_wiki_engine.paths import is_test_source_path
 from .source_snapshot import (
     SourceSnapshot,
     SourceSnapshotError,
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     source_selection_identity_from_generation_inputs,
     source_selection_inputs_from_generation_inputs,
     validate_persisted_source_selection_identity,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     LEGACY_MANIFEST_VERSION,
     MANIFEST_FILENAME,
     MANIFEST_VERSION,
     SyncManifest,
 )
-from .validation import is_portable_relative_path
-from .wiki_surface_index import (
+from llm_wiki_engine.validation import is_portable_relative_path
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
     SurfaceIndexEvaluation,
@@ -311,7 +311,7 @@ def refresh_documentation_native_projection(
     source_selection: str | Path | None = None,
     fault_injector: Callable[[CommitStage], None] | None = None,
 ) -> DocumentationNativeRefresh:
-    from .maintenance_protocol import load_adoption_marker, maintenance_write_operation
+    from llm_wiki_engine.maintenance_protocol import load_adoption_marker, maintenance_write_operation
     operation = maintenance_write_operation(wiki_root) if load_adoption_marker(wiki_root) is not None else nullcontext()
     with operation:
         return _refresh_documentation_native_projection(
@@ -338,7 +338,7 @@ def _refresh_documentation_native_projection(
         raise DocumentationNativeError(
             f"Cannot load the native refresh manifest: {exc}"
         ) from exc
-    from .maintenance_protocol import guard_maintenance_owner
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
     try:
         guard_maintenance_owner(wiki, manifest)
     except (TypeError, ValueError, OSError) as exc:
@@ -366,7 +366,7 @@ def _refresh_documentation_native_projection(
         source_snapshot=source_snapshot,
     )
     page_maps = _page_maps(runtime.inventory)
-    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
     write_basis = ACTIVE_WRITE_BASIS.get()
     if write_basis is not None:
         write_basis.source_snapshot = runtime.source_snapshot
@@ -469,7 +469,7 @@ def _refresh_documentation_native_projection(
 
 
 def _retained_empty_paths(manifest):
-    from .source_retirement import retained_empty_module_paths
+    from llm_wiki_engine.source_retirement import retained_empty_module_paths
     return retained_empty_module_paths(manifest)
 
 
@@ -1085,7 +1085,7 @@ def _native_artifact_hashes(
     allow_missing: bool = False,
 ) -> dict[str, str]:
     hashes: dict[str, str] = {}
-    from .maintenance_protocol import ADOPTION_FILENAME
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
     for name in (
         SURFACE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,

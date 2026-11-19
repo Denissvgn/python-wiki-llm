@@ -13,9 +13,9 @@ Verify consumer inputs and retain the exact public wiki candidate checked by CI.
 | `checkout` | `accepted_inputs`, `verified_checkout`, `verified_target` |
 | `difflib` | `difflib` |
 | `json` | `json` |
-| `llm_wiki_cli.services.knowledge_evidence` | `sha256_bytes` |
 | `llm_wiki_cli.services.publication_candidate` | `_read_tree`, `validate_publication_receipt` |
 | `llm_wiki_cli.services.publication_impact` | `read_publication_document` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
@@ -28,28 +28,28 @@ Verify consumer inputs and retain the exact public wiki candidate checked by CI.
 ```mermaid
 flowchart LR
     n0["integrations/wiki-candidate/run.py"]
-    n1["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n2["src/llm_wiki_cli/services/publication_candidate.py"]
-    n3["src/llm_wiki_cli/services/publication_impact.py"]
+    n1["src/llm_wiki_cli/services/publication_candidate.py"]
+    n2["src/llm_wiki_cli/services/publication_impact.py"]
+    n3["src/llm_wiki_engine/knowledge_evidence.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
-    n2 --> n1
+    n1 --> n2
+    n1 --> n3
     n2 --> n3
-    n3 --> n1
     click n0 "../modules/run.md"
-    click n1 "../modules/knowledge_evidence.md"
-    click n2 "../modules/publication_candidate.md"
-    click n3 "../modules/publication_impact.md"
+    click n1 "../modules/publication_candidate.md"
+    click n2 "../modules/publication_impact.md"
+    click n3 "../modules/knowledge_evidence.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [publication_candidate](../modules/publication_candidate.md) |
 | Outbound | [publication_impact](../modules/publication_impact.md) |
+| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 
 ### External packages
 

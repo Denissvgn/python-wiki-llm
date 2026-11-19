@@ -191,7 +191,7 @@ def test_cleanup_cannot_start_before_recorded_public_verification(resources):
 def test_interrupted_cleanup_reconciles_only_its_recorded_removals(
     resources, monkeypatch
 ):
-    from llm_wiki_cli.services import filesystem_guard
+    from llm_wiki_engine import filesystem_guard
 
     controller, paths, *_ = resources
     plan = r.preview(controller.store, scanner=inactive)
@@ -218,7 +218,7 @@ def test_interrupted_cleanup_reconciles_only_its_recorded_removals(
 
 
 def test_unstarted_missing_destination_is_not_claimed_as_success(resources):
-    from llm_wiki_cli.services.filesystem_guard import remove_guarded_tree
+    from llm_wiki_engine.filesystem_guard import remove_guarded_tree
 
     controller, paths, *_ = resources
     plan = r.preview(controller.store, scanner=inactive)
@@ -246,7 +246,7 @@ def test_retention_changes_leave_sealed_catalog_unchanged_and_invalidate_old_pla
 
 
 def test_resealed_plan_cannot_invent_ownership_of_an_unregistered_tree(resources):
-    from llm_wiki_cli.services.filesystem_guard import guarded_tree_manifest
+    from llm_wiki_engine.filesystem_guard import guarded_tree_manifest
 
     controller, paths, scratch, _ = resources
     plan = r.preview(controller.store, scanner=inactive)
@@ -316,7 +316,7 @@ def test_host_filesystem_alias_is_resolved_before_mount_overlap(resources):
 
 @pytest.mark.parametrize("limit_kind", ["resources", "entries"])
 def test_bounded_cleanup_defers_the_remaining_owned_trees_until_a_fresh_preview(resources, monkeypatch, limit_kind):
-    from llm_wiki_cli.services.filesystem_guard import guarded_tree_manifest
+    from llm_wiki_engine.filesystem_guard import guarded_tree_manifest
 
     controller, paths, *_ = resources
     kwargs = {"max_resources": 1} if limit_kind == "resources" else {}

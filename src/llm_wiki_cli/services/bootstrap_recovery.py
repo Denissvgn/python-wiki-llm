@@ -9,16 +9,16 @@ import re
 import tempfile
 from uuid import uuid4
 
-from .filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes,
     ensure_guarded_directory,
     remove_guarded_tree,
     unlink_guarded_bytes,
 )
-from .knowledge_governance import _governance_lock_root
-from .knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
-from .knowledge_storage_io import _absolute_path, read_guarded
-from .maintenance_protocol import (
+from llm_wiki_engine.knowledge_governance import _governance_lock_root
+from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
+from llm_wiki_engine.knowledge_storage_io import _absolute_path, read_guarded
+from llm_wiki_engine.maintenance_protocol import (
     MaintenanceProtocolError,
     WikiWriteBasis,
     governance_writer_lock,
@@ -27,9 +27,9 @@ from .maintenance_protocol import (
     save_recovery_snapshot,
     snapshot_wiki,
 )
-from .request_json import _pairs, _constant
-from .validation import is_portable_relative_path
-from .wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
+from llm_wiki_engine.request_json import _pairs, _constant
+from llm_wiki_engine.validation import is_portable_relative_path
+from llm_wiki_engine.wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
 
 SCHEMA = "llm-wiki-bootstrap-recovery/v1"
 MAX_RECORD_BYTES = 8 * 1024 * 1024

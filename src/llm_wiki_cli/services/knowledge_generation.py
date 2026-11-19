@@ -10,7 +10,7 @@ filesystem reads are the target-state comparisons performed by
 
 from __future__ import annotations
 
-from .progress import observed_phase, record_counts
+from llm_wiki_engine.progress import observed_phase, record_counts
 
 import json
 from collections.abc import Mapping, Sequence
@@ -22,14 +22,14 @@ from typing import Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from .sync_transitions import PageTransitionPlan
 
-from .knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KnowledgeArtifactError,
     KnowledgeCommitPlan,
     build_knowledge_commit_plan,
     ValidatedKnowledgeArtifacts,
     validate_surface_index_bytes,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     EvaluatedEnvelope,
     ConsumedInput,
     EnvelopeInputs,
@@ -39,31 +39,31 @@ from .knowledge_envelope import (
     build_evaluated_envelope,
     build_repository_record,
 )
-from .knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     ConceptObservationBasis,
     build_entity_observation_basis,
     build_module_observation_basis,
     is_valid_sha256,
 )
-from .knowledge_index import (
+from llm_wiki_engine.knowledge_index import (
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
     build_knowledge_index,
     _assemble_knowledge_index,
     _knowledge_validation_operation,
 )
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     DEFAULT_EVIDENCE_LIMIT,
     GraphConcept,
     KnowledgeGraphError,
     KnowledgeGraphInputs,
     materialize_typed_graph,
 )
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GovernanceLedger,
     apply_governance_projection,
 )
-from .knowledge_links import (
+from llm_wiki_engine.knowledge_links import (
     KnowledgeLinkError,
     collect_link_observations,
 )
@@ -71,19 +71,19 @@ from .infrastructure_sync import (
     InfrastructureSyncError,
     infrastructure_evidence_by_page,
 )
-from .knowledge_model import KnowledgeModelError, ProducerRecord, concept_kind_for_page_kind
-from .contracts import (
+from llm_wiki_engine.knowledge_model import KnowledgeModelError, ProducerRecord, concept_kind_for_page_kind
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from .section_ownership import observe_page_sections, section_ownership_extension
-from .source_retirement import (
+from llm_wiki_engine.section_ownership import observe_page_sections, section_ownership_extension
+from llm_wiki_engine.source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
     source_retirement_projection,
 )
-from .sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     MANIFEST_REPAIR_UNAVAILABLE,
     PRODUCER_BASIS_INCOMPATIBLE,
@@ -93,7 +93,7 @@ from .sync_manifest import (
     SyncManifest,
     SyncManifestError,
 )
-from .wiki_surface import PageKind, WikiSurfacePage
+from llm_wiki_engine.wiki_surface import PageKind, WikiSurfacePage
 
 
 class KnowledgeGenerationError(ValueError):
@@ -474,8 +474,8 @@ def _build_knowledge_generation_plan(
             inputs.governance,
         )
     if manifest.maintenance_state is not None:
-        from .maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
-        from .maintenance_projection import project_maintenance_knowledge
+        from llm_wiki_engine.maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
+        from llm_wiki_engine.maintenance_projection import project_maintenance_knowledge
         from .implementation_evidence import analysis_hash_from_producer
 
         if inputs.maintenance_adoption is None:
@@ -492,7 +492,7 @@ def _build_knowledge_generation_plan(
             known_absent_pages=inputs.maintenance_known_absent_pages,
             raw_content_by_page=inputs.maintenance_raw_content_by_page,
         )
-        from .maintenance_evidence import maintenance_transfers_from_page_plan
+        from llm_wiki_engine.maintenance_evidence import maintenance_transfers_from_page_plan
 
         transfers = maintenance_transfers_from_page_plan(
             manifest.maintenance_state, capture, inputs.maintenance_page_transitions,
@@ -558,15 +558,15 @@ def _application_knowledge_extensions(
             )
 
     from .sync_analysis_cache import EXTENSION
-    from .knowledge_artifacts import require_validated_artifacts
+    from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
     prior = inputs.prior_artifacts
     reused_graph = None
     if inputs.reuse_typed_graph and prior is not None:
         require_validated_artifacts(prior)
         commitment = extensions.get(EXTENSION)
         from dataclasses import asdict
-        from .knowledge_envelope import INVENTORY_HASH_EXTENSION, hash_inventory
-        from .knowledge_evidence import hash_json
+        from llm_wiki_engine.knowledge_envelope import INVENTORY_HASH_EXTENSION, hash_inventory
+        from llm_wiki_engine.knowledge_evidence import hash_json
         coordinates = _graph_concepts(inputs.pages, module_page_map=module_page_map, occurrence_page_map=occurrence_page_map)
         if (isinstance(commitment, Mapping) and commitment == prior.knowledge.extensions.get(EXTENSION)
                 and commitment.get("graph_concepts_hash") == hash_json([asdict(v) for v in coordinates])

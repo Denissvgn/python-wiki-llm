@@ -1,9 +1,9 @@
 # ReferenceCleanupOutcome
 
-**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:112`
+**Location:** `src/llm_wiki_cli/services/upgrade_runtime.py:114`
 **Kind:** Class
 **Bases:** —
-**Module:** [upgrade_cmd](../modules/upgrade_cmd.md)
+**Module:** [upgrade_runtime](../modules/upgrade_runtime.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
@@ -28,22 +28,22 @@ Whether source-reference cleanup completed and schema must roll back.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ReferenceCleanupOutcome (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n1["_migrate_reference_skill (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
+    n0["ReferenceCleanupOutcome (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n1["_migrate_reference_skill (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n1 --> n0
-    click n0 "../modules/upgrade_cmd.md"
-    click n1 "../modules/upgrade_cmd.md"
+    click n0 "../modules/upgrade_runtime.md"
+    click n1 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [upgrade_cmd](../modules/upgrade_cmd.md) | 0 | `authority_changed`, `complete`, `restore_schema` |
+| [upgrade_runtime](../modules/upgrade_runtime.md) | 0 | `authority_changed`, `complete`, `restore_schema` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 11 |
-| `_migrate_reference_skill` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_migrate_reference_skill` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 11 |
+| `_migrate_reference_skill` | type_reference | [upgrade_runtime](../modules/upgrade_runtime.md) | — |

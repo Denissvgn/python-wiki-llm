@@ -17,10 +17,10 @@ limits; it never performs helper setup or changes the committed knowledge store.
 | Source | Symbols |
 |--------|---------|
 | `..` | `api` |
-| `..services.io` | `write_text_output`, `write_utf8_stdout` |
-| `..services.request_json` | `load_request` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.io` | `write_text_output`, `write_utf8_stdout` |
+| `llm_wiki_engine.request_json` | `load_request` |
 | `sys` | `sys` |
 
 ## Local dependency map
@@ -31,8 +31,8 @@ flowchart LR
     n0["src/llm_wiki_cli/api.py"]
     n1["src/llm_wiki_cli/cli.py"]
     n2["src/llm_wiki_cli/commands/query_cmd.py"]
-    n3["src/llm_wiki_cli/services/io.py"]
-    n4["src/llm_wiki_cli/services/request_json.py"]
+    n3["src/llm_wiki_engine/io.py"]
+    n4["src/llm_wiki_engine/request_json.py"]
     n1 --> n2
     n2 --> n0
     n2 --> n3

@@ -1,6 +1,6 @@
 # protected_artifacts Module
 
-**Path:** `src/llm_wiki_cli/services/protected_artifacts.py`
+**Path:** `src/llm_wiki_engine/protected_artifacts.py`
 
 ## Description
 
@@ -23,13 +23,14 @@ not authenticity.
 | Source | Symbols |
 |--------|---------|
 | `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsDurabilityError`, `WindowsFileGuardError`, `WindowsSecurityGuardError`, `create_private_windows_directory`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `move_windows_path_write_through`, `open_windows_guarded_lock_file`, `open_windows_private_write_file`, `open_windows_readonly_file`, `replace_windows_file_write_through`, `verify_windows_restrictive_dacl`, `windows_current_user_sid` |
-| `.validation` | `portable_path_key`, `require_portable_path_component`, `require_portable_relative_path` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `ctypes` | `ctypes` |
 | `errno` | `errno` |
 | `fcntl` | `fcntl`, `fcntl` |
 | `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `compact_line_bytes` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_path_component`, `require_portable_relative_path` |
 | `msvcrt` | `msvcrt`, `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
@@ -45,23 +46,26 @@ not authenticity.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/calibration/controller.py"]
-    n1["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n2["src/llm_wiki_cli/services/protected_artifacts.py"]
-    n3["src/llm_wiki_cli/services/sync_transition_execution.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
-    n0 --> n1
-    n0 --> n2
+    n1["src/llm_wiki_cli/services/sync_transition_execution.py"]
+    n2["src/llm_wiki_engine/canonical_json.py"]
+    n3["src/llm_wiki_engine/filesystem_guard.py"]
+    n4["src/llm_wiki_engine/protected_artifacts.py"]
+    n5["src/llm_wiki_engine/validation.py"]
+    n0 --> n3
     n0 --> n4
-    n2 --> n1
-    n2 --> n4
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
+    n0 --> n5
+    n1 --> n3
+    n1 --> n4
+    n1 --> n5
+    n4 --> n2
+    n4 --> n3
+    n4 --> n5
     click n0 "../modules/controller.md"
-    click n1 "../modules/filesystem_guard.md"
-    click n2 "../modules/protected_artifacts.md"
-    click n3 "../modules/sync_transition_execution.md"
-    click n4 "../modules/validation.md"
+    click n1 "../modules/sync_transition_execution.md"
+    click n2 "../modules/canonical_json.md"
+    click n3 "../modules/filesystem_guard.md"
+    click n4 "../modules/protected_artifacts.md"
+    click n5 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -70,6 +74,7 @@ flowchart LR
 |---|---|
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
+| Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [validation](../modules/validation.md) |
 
@@ -77,12 +82,12 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ProtectedArtifactError](../entities/ProtectedArtifactError.md) | 75 | `RuntimeError` | Base error for protected artifact storage. |
-| [ProtectedArtifactIntegrityError](../entities/ProtectedArtifactIntegrityError.md) | 79 | `ProtectedArtifactError` | Raised when artifact filesystem or canonical-byte invariants fail. |
-| [ProtectedArtifactLimitError](../entities/ProtectedArtifactLimitError.md) | 83 | `ProtectedArtifactError` | Raised when an artifact or protected root exceeds its byte limit. |
-| [ProtectedArtifactLockError](../entities/ProtectedArtifactLockError.md) | 87 | `ProtectedArtifactError` | Raised when the controller root lock cannot be acquired. |
-| [ProtectedArtifactDurabilityError](../entities/ProtectedArtifactDurabilityError.md) | 91 | `ProtectedArtifactError` | Raised when committed filesystem metadata cannot be made durable. |
-| [ProtectedArtifactStore](../entities/ProtectedArtifactStore.md) | 149 | — | A reusable same-user application-level artifact store rooted at one directory. |
+| [ProtectedArtifactError](../entities/ProtectedArtifactError.md) | 76 | `RuntimeError` | Base error for protected artifact storage. |
+| [ProtectedArtifactIntegrityError](../entities/ProtectedArtifactIntegrityError.md) | 80 | `ProtectedArtifactError` | Raised when artifact filesystem or canonical-byte invariants fail. |
+| [ProtectedArtifactLimitError](../entities/ProtectedArtifactLimitError.md) | 84 | `ProtectedArtifactError` | Raised when an artifact or protected root exceeds its byte limit. |
+| [ProtectedArtifactLockError](../entities/ProtectedArtifactLockError.md) | 88 | `ProtectedArtifactError` | Raised when the controller root lock cannot be acquired. |
+| [ProtectedArtifactDurabilityError](../entities/ProtectedArtifactDurabilityError.md) | 92 | `ProtectedArtifactError` | Raised when committed filesystem metadata cannot be made durable. |
+| [ProtectedArtifactStore](../entities/ProtectedArtifactStore.md) | 143 | — | A reusable same-user application-level artifact store rooted at one directory. |
 
 ## Functions
 

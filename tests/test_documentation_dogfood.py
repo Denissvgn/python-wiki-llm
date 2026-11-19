@@ -27,8 +27,8 @@ from llm_wiki_cli.services.extractor_helpers import (
     resolve_helper_cache_root,
 )
 from llm_wiki_cli.services.inventory_cache import ENV_CACHE_DIR
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 _MERMAID_NODE_DECLARATION_RE = re.compile(

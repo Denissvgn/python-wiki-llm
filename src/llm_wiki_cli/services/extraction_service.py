@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .analysis_capture import capture_operation
 
-from .progress import observed_phase, current_progress, with_progress, record_counts
+from llm_wiki_engine.progress import observed_phase, current_progress, with_progress, record_counts
 
 import hashlib
 import importlib
@@ -18,20 +18,16 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Any, Callable, Iterable
 
-from ..config import (
-    EXTRACTOR_REGISTRY,
-    PathValidationError,
-    validate_source_paths,
-    validate_source_root,
-)
+from .extractor_registry import EXTRACTOR_REGISTRY
+from llm_wiki_engine.path_policy import PathValidationError, validate_source_paths, validate_source_root
 from ..extractors.common import (
-    LANGUAGE_EXTENSIONS,
+    LANGUAGE_EXTENSIONS,  # noqa: F401 - re-exported through commands.extract_cmd
     filter_bundled_source_inventory,
-    inventory_language_for_path,
     normalize_include_tests,
 )
+from .domain_pack import current_pack, pack_extractor, uses_default_pack
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.haskell_extractor import HaskellExtractionRequest
 
@@ -43,7 +39,7 @@ from .api_contracts import (
     attach_routes_to_entry_points,
     build_api_contracts,
 )
-from .contracts import (
+from llm_wiki_engine.contracts import (
     EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,
     EXTRACT_SCHEMA_VERSION,
 )
@@ -84,7 +80,7 @@ from .inventory_cache import (
     make_cache_entry,
     extraction_bundle_hash,
 )
-from .io import write_text_output
+from llm_wiki_engine.io import write_text_output
 from .packages import discover_packages, package_for_path, stamp_inventory_packages
 from .plugins import (
     get_extractor_registry,
@@ -95,7 +91,7 @@ from .plugins import (
     runtime_project_plugins_enabled,
 )
 from .resource_diagnostics import format_resource_failure
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     path_is_selected,
@@ -111,6 +107,7 @@ from .source_snapshot import (
     unsupported_source_summary,
 )
 from .yaml_syntax import load_yaml_documents
+from llm_wiki_engine.host import HostCapabilityError, current_host, emit
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -119,7 +116,13 @@ def _instantiate_extractor(entry_point: str):
     """Instantiate an extractor without using the shared instance cache."""
     module_path, class_name = entry_point.rsplit(":", 1)
     if entry_point not in EXTRACTOR_REGISTRY.values():
-        return load_entry_point(entry_point)()
+        if entry_point not in current_pack().extractors.values():
+            return load_entry_point(entry_point)()
+        # The host built the pack; its extractors are importable host code.
+        target: Any = importlib.import_module(module_path)
+        for attribute in class_name.split("."):
+            target = getattr(target, attribute)
+        return target()
     module = importlib.import_module(module_path)
     return getattr(module, class_name)()
 
@@ -262,10 +265,12 @@ def _extractor_failure_message(result: InventoryResult) -> str:
 
 def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
     """Print extractor failures in a consistent form."""
-    stream = file or sys.stderr
     for status in result.failed:
         detail = f": {status.message}" if status.message else ""
-        print(f"Error: {status.language} extraction failed{detail}", file=stream)
+        if file is None:
+            emit(f"Error: {status.language} extraction failed{detail}", stream="stderr")
+        else:
+            file.write(f"Error: {status.language} extraction failed{detail}\n")
 
 
 @dataclass(frozen=True)
@@ -842,9 +847,9 @@ def _prepare_inventory_build_context(
         plugin_lock_path = None
         plugin_lock_hash = None
         parallel_safe_plugin_entry_points = set()
+    registry.update(current_pack().extractors)
     source_file_by_path = _source_files_by_path(source_snapshot)
-    from .helper_preparation import prepare_operation_helpers
-    prepare_operation_helpers(
+    current_pack().helper_toolchain.prepare(
         source_snapshot, registry, only_files=request.only_files,
         cache_dir=request.helper_cache_dir,
     )
@@ -864,7 +869,7 @@ def _prepare_inventory_build_context(
     implementation_cache_hashes = {}
     extraction_cache_hashes = {}
     if request.implementation_cache_artifacts is not None:
-        from .knowledge_artifacts import require_validated_artifacts
+        from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
         artifacts = require_validated_artifacts(request.implementation_cache_artifacts)
         commitment = artifacts.knowledge.extensions.get("llm-wiki/sync-analysis-v2")
         if isinstance(commitment, Mapping) and commitment.get("schema_version") == "llm-wiki-sync-analysis/v2":
@@ -1090,7 +1095,11 @@ def _plan_language_extraction(
     status_by_language: dict[str, ExtractorStatus],
     cached_by_language: dict[str, dict],
 ) -> _ExtractionPlan | None:
-    extensions = LANGUAGE_EXTENSIONS.get(language)
+    extensions = current_pack().classifier.source_kinds().get(language)
+    if extensions is None and entry_point == EXTRACTOR_REGISTRY.get(language):
+        # A built-in extractor only reads files the active pack classifies.
+        status_by_language[language] = ExtractorStatus(language, "skipped", 0)
+        return None
     if extensions is not None:
         source_files = context.source_snapshot.language_paths(language)
         if context.request.only_files is not None:
@@ -1158,6 +1167,7 @@ def _plan_language_extraction(
 def _can_use_inventory_cache(context: _InventoryBuildContext, is_builtin: bool) -> bool:
     return (
         is_builtin
+        and uses_default_pack()
         and context.cache is not None
         and context.cache.enabled
         and context.cache_key is not None
@@ -1212,7 +1222,7 @@ def _valid_cached_implementation(context, path, entry, source_hash):
     if not context.request.capture_implementation_observations:
         return True
     from .python_implementation import producer, comparison_id
-    from .knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
     row = entry.get("python_implementation")
     committed_hash = context.implementation_cache_hashes.get(path)
     bundle_hash = context.extraction_cache_hashes.get(path)
@@ -1285,6 +1295,9 @@ def _build_extraction_kwargs(
     }
     if is_builtin:
         kwargs = _build_builtin_extraction_kwargs(context, language, fresh_source_files)
+    elif pack_extractor(language, context.registry.get(language, "")):
+        # A pack extractor reads exactly the files the pack classified.
+        kwargs["only_files"] = list(fresh_source_files)
     if language == "python":
         kwargs["include_empty"] = context.request.include_empty
         if is_builtin:
@@ -1591,11 +1604,7 @@ def ensure_complete_inventory(result: InventoryResult) -> bool:
 
 
 def infer_language_from_path(filepath: str) -> str | None:
-    suffix = Path(filepath).suffix
-    for language, extensions in LANGUAGE_EXTENSIONS.items():
-        if suffix in extensions:
-            return inventory_language_for_path(language, filepath)
-    return None
+    return current_pack().classifier.inventory_language(filepath)
 
 
 def languages_with_source(
@@ -1647,7 +1656,7 @@ def _git_changed_files(
     Returns None if git is unavailable or there are no commits.
     """
     try:
-        repository = subprocess.run(
+        repository = current_host().run(
             ["git", "rev-parse", "--show-toplevel"],
             input="",
             capture_output=True,
@@ -1671,7 +1680,7 @@ def _git_changed_files(
             if source_prefix_path.as_posix() == "."
             else source_prefix_path.as_posix()
         )
-        result = subprocess.run(
+        result = current_host().run(
             ["git", "diff", "--name-status", "-z", "HEAD~1..HEAD"],
             input="",
             capture_output=True,
@@ -1702,6 +1711,7 @@ def _git_changed_files(
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
         FileNotFoundError,
+        HostCapabilityError,
     ):
         return None
 
@@ -1810,7 +1820,7 @@ def filter_source_diff(
     source_prefix: str | None = None
     if source_snapshot is not None:
         try:
-            repository = subprocess.run(
+            repository = current_host().run(
                 ["git", "rev-parse", "--show-toplevel"],
                 input="",
                 capture_output=True,
@@ -2602,15 +2612,15 @@ def run(args):
     source_selection = getattr(args, "source_selection", None)
 
     if changed and paths:
-        print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
+        emit("Error: --changed and --paths are mutually exclusive.", stream="stderr")
         sys.exit(2)
 
     if changed:
-        print("Extracting changed file(s)...", file=sys.stderr)
+        emit("Extracting changed file(s)...", stream="stderr")
     elif paths:
-        print(f"Extracting {len(paths)} specified path(s)...", file=sys.stderr)
+        emit(f"Extracting {len(paths)} specified path(s)...", stream="stderr")
     else:
-        print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
+        emit(f"Extracting inventory from {src_dir}...", stream="stderr")
 
     try:
         result = build_extract_payload(
@@ -2636,51 +2646,51 @@ def run(args):
     except ValueError as exc:
         message = str(exc)
         if message.startswith("No files found for package"):
-            print(message, file=sys.stderr)
+            emit(message, stream="stderr")
             sys.exit(1)
-        print(f"Error: {message}", file=sys.stderr)
+        emit(f"Error: {message}", stream="stderr")
         sys.exit(2)
 
     if changed:
         if result.no_changed_files:
-            print("No files changed in the last commit.", file=sys.stderr)
+            emit("No files changed in the last commit.", stream="stderr")
             if not output_path:
                 return
         elif result.changed_file_count is None:
-            print(
+            emit(
                 "Warning: Could not get changed files from git. Falling back to full scan.",
-                file=sys.stderr,
+                stream="stderr",
             )
         else:
-            print(
+            emit(
                 f"Extracting {result.changed_file_count} changed file(s)...",
-                file=sys.stderr,
+                stream="stderr",
             )
 
     rendered = json.dumps(result.payload, indent=2)
     if output_path:
         write_text_output(output_path, rendered + "\n")
-        print(f"Extract output written to: {output_path}", file=sys.stderr)
+        emit(f"Extract output written to: {output_path}", stream="stderr")
     else:
-        print(rendered)
+        emit(rendered)
 
     for warning in result.payload.get("warnings", []):
-        print(f"Warning: {warning}", file=sys.stderr)
+        emit(f"Warning: {warning}", stream="stderr")
 
     unsupported_message = format_unsupported_source_summary(
         result.payload.get("unsupported_sources", {})
     )
     if unsupported_message:
-        print(unsupported_message, file=sys.stderr)
+        emit(unsupported_message, stream="stderr")
 
-    print(
+    emit(
         f"Extracted {result.inventory_count} files with tracked inventory.",
-        file=sys.stderr,
+        stream="stderr",
     )
     if result.docker_count:
-        print(f"Docker inventory: {result.docker_count} file(s).", file=sys.stderr)
+        emit(f"Docker inventory: {result.docker_count} file(s).", stream="stderr")
     else:
-        print("No Docker/Compose files found.", file=sys.stderr)
+        emit("No Docker/Compose files found.", stream="stderr")
 
 
 # ── Call-graph extraction for workflow detection ──────────────────────

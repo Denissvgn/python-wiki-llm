@@ -10,17 +10,17 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `is_agent_worktree_path` |
 | `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.packages` | `discover_packages`, `stamp_inventory_packages` |
 | `.python_imports` | `PythonModuleIndex`, `is_python_source` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `path_is_under`, `path_is_under_scope` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.path_policy` | `is_agent_worktree_path` |
+| `llm_wiki_engine.validation` | `path_is_under`, `path_is_under_scope` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `posixpath` | `posixpath` |

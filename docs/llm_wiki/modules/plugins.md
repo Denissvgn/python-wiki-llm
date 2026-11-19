@@ -10,19 +10,29 @@ Plugins are installed from local directories only.  Each plugin must provide a
 ``llm-wiki-plugin.json`` manifest and is copied into ``.llm-wiki/plugins`` so
 runtime behavior is reproducible from project-local state.
 
+Each installed plugin is imported as its own package, named by
+:func:`plugin_package_name`, whose search path is only the plugin directory.
+An entry point ``module:attribute`` resolves inside that package, so modules
+of different plugins never collide with each other or with host modules, and
+nothing is added to ``sys.path``. A plugin reaches its own sibling modules
+with relative imports (``from . import helpers``); bare imports such as
+``import helpers`` resolve against the host interpreter, not the plugin.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
 | `..config` | `EXTRACTOR_REGISTRY` |
-| `.validation` | `path_is_within`, `require_existing_file`, `resolve_portable_workspace_path` |
 | `__future__` | `annotations` |
 | `datetime` | `datetime`, `timezone` |
 | `hashlib` | `hashlib` |
 | `importlib` | `importlib` |
+| `importlib.machinery` | `importlib.machinery` |
 | `importlib.util` | `importlib.util` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `path_is_within`, `require_existing_file`, `resolve_portable_workspace_path` |
+| `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shutil` | `shutil` |
@@ -57,8 +67,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PluginError](../entities/PluginError.md) | 56 | `ValueError` | Raised when a plugin manifest, install, or lookup is invalid. |
-| [_SafeFormat](../entities/SafeFormat.md) | 741 | `dict` | — |
+| [PluginError](../entities/PluginError.md) | 66 | `ValueError` | Raised when a plugin manifest, install, or lookup is invalid. |
+| [_SafeFormat](../entities/SafeFormat.md) | 770 | `dict` | — |
 
 ## Functions
 
@@ -91,8 +101,8 @@ flowchart LR
 | `remove_plugin` | `(plugin_id: str, *, root: str \| Path = '.') -> dict[str, Any]` | — | — |
 | `list_plugins` | `(root: str \| Path = '.') -> list[dict[str, Any]]` | — | — |
 | `iter_components` | `(component_type: str \| None = None, *, root: str \| Path = '.') -> list[dict[str, Any]]` | — | — |
-| `_activate_plugin_path` | `(path: Path) -> None` | — | — |
-| `activate_plugin_paths` | `(root: str \| Path = '.') -> None` | — | — |
+| `plugin_package_name` | `(plugin_dir: str \| Path) -> str` | — | The import name of the package holding one installed plugin's modules. |
+| `_plugin_package` | `(plugin_dir: Path) -> str` | — | Register the package whose only search location is ``plugin_dir``. |
 | `runtime_plugin_fallback_root` | `(source_root: str \| Path, *, source_selection_configured: bool, source_plugins_only: bool = False) -> Path \| None` | — | Return the ambient plugin fallback only for legacy compatible reads. |
 | `runtime_project_plugins_enabled` | `(source_root: str \| Path, *, source_selection_configured: bool, source_plugins_only: bool = False, include_plugins: bool = True) -> bool` | — | Return whether project plugin code is authorized for this source read. |
 | `_entry_point_components` | `(entry_point: str, *, root: str \| Path = '.') -> list[dict[str, Any]]` | — | — |

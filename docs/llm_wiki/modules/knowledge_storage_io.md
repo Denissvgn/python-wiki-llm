@@ -1,6 +1,6 @@
 # knowledge_storage_io Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_storage_io.py`
+**Path:** `src/llm_wiki_engine/knowledge_storage_io.py`
 
 ## Description
 
@@ -10,13 +10,13 @@ Reads complete files and exact ranges through bounded request-owned handles and 
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata`, `_open_windows_directory_guard`, `_close_windows_handle` |
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_storage` | `KnowledgeStorageError`, `MAX_EXPANDED_BYTES` |
-| `.validation` | `is_portable_relative_path` |
 | `__future__` | `annotations` |
 | `contextlib` | `ExitStack`, `contextmanager` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata`, `_open_windows_directory_guard`, `_close_windows_handle` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
@@ -29,7 +29,7 @@ Reads complete files and exact ranges through bounded request-owned handles and 
 flowchart LR
     n0["integrations"]
     n1["src"]
-    n2["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n2["src/llm_wiki_engine/knowledge_storage_io.py"]
     n0 --> n2
     n1 --> n2
     n2 --> n1

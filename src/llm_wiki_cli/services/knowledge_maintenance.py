@@ -13,11 +13,14 @@ import tarfile
 from typing import Any
 
 import llm_wiki_cli
-from ..config import EXTRACTOR_REGISTRY, validate_path, validate_source_root
+from llm_wiki_engine.host import current_host
+from .extractor_registry import EXTRACTOR_REGISTRY
+from llm_wiki_engine.path_policy import validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
-from . import extractor_helpers, analysis_compatibility as ac
+from . import extractor_helpers
+from llm_wiki_engine import analysis_compatibility as ac
 from .analysis_capture import capture_analysis, attach
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
 from .health_policy import (
     PREFLIGHT_SCHEMA,
     MaintenanceError,
@@ -27,26 +30,26 @@ from .health_policy import (
     verify_policy,
     _binding,
 )
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ProducerComponentInput,
     build_producer_record,
     hash_source_snapshot,
 )
-from .knowledge_evidence import hash_json
-from .knowledge_model import _parse_bundle, parse_knowledge_index
+from llm_wiki_engine.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_model import _parse_bundle, parse_knowledge_index
 from .knowledge_orchestration import (
     _producer_evidence,
     _infrastructure_extractor_component,
     runtime_generation_options,
     runtime_generation_options_hash,
 )
-from .knowledge_packs import parse_packed_root
-from .knowledge_storage import parse_store_root
-from .knowledge_storage_io import StorageReadSession, read_guarded
-from .source_selection import validate_persisted_source_selection_identity
+from llm_wiki_engine.knowledge_packs import parse_packed_root
+from llm_wiki_engine.knowledge_storage import parse_store_root
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, read_guarded
+from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import build_source_snapshot
-from .sync_manifest import SyncManifest
-from .wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 MAX_EVIDENCE_BYTES = 64 * 1024 * 1024
 
@@ -65,7 +68,7 @@ def project_version(root: Path) -> str:
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
+    return current_host().run(
         ["git", "-C", str(root), *args],
         stdin=subprocess.DEVNULL,
         capture_output=True,
@@ -114,6 +117,29 @@ def _installed(candidate: Path, version: str, allow_editable: bool) -> dict[str,
                 raise MaintenanceError("invalid registered analysis resource")
             expected_files[name] = digest((source / name).read_bytes())
             actual_files[name] = digest((actual / name).read_bytes())
+    import llm_wiki_engine
+
+    engine_distribution = importlib.metadata.distribution("llm-wiki-engine")
+    engine_actual = Path(llm_wiki_engine.__file__).resolve().parent
+    engine_installed = Path(
+        str(engine_distribution.locate_file("llm_wiki_engine"))
+    ).resolve()
+    engine_source = (candidate / "src/llm_wiki_engine").resolve()
+    if engine_distribution.version != llm_wiki_engine.__version__:
+        raise MaintenanceError("installed engine distribution/imported version differs")
+    if engine_actual != engine_installed and not (
+        allow_editable and engine_actual == engine_source
+    ):
+        raise MaintenanceError(
+            "imported engine is outside the declared installed/candidate root"
+        )
+    if engine_actual == engine_source and not allow_editable:
+        raise MaintenanceError("release preflight requires a noneditable installation")
+    for root, files in ((engine_source, expected_files), (engine_actual, actual_files)):
+        files.update(
+            ("llm_wiki_engine/" + p.relative_to(root).as_posix(), digest(p.read_bytes()))
+            for p in root.rglob("*.py")
+        )
     if not expected_files or actual_files != expected_files:
         raise MaintenanceError(
             "installed implementation differs from the intended candidate"

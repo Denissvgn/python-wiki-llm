@@ -15,11 +15,11 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services.extraction_service import InventoryResult
 from llm_wiki_cli.services.infrastructure_sync import InfrastructureSyncPlan
-from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+from llm_wiki_engine.knowledge_evidence import normalize_module_observation
 from llm_wiki_cli.services import knowledge_orchestration
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.sync_analysis import SyncDiff, compute_sync_diff
-from llm_wiki_cli.services.sync_manifest import SourceSelectionPruneResult, SyncManifest
+from llm_wiki_engine.sync_manifest import SourceSelectionPruneResult, SyncManifest
 
 
 def _infrastructure(**changes):

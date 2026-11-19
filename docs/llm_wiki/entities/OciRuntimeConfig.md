@@ -1,6 +1,6 @@
 # OciRuntimeConfig
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:306`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:307`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from llm_wiki_cli.services.redaction import redact_credentials
+from llm_wiki_engine.redaction import redact_credentials
 
 
 @pytest.mark.parametrize(

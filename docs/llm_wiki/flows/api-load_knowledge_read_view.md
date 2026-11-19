@@ -2,15 +2,17 @@
 
 **Entry point:** `load_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [immutable](../modules/immutable.md), and 32 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 34 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
+- [canonical_json](../modules/canonical_json.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -20,12 +22,14 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
@@ -34,7 +38,6 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
-- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_retirement](../modules/source_retirement.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -70,15 +73,15 @@ sequenceDiagram
     participant p18 as build_maintenance_status
     participant p19 as evaluate_knowledge_freshness
     participant p20 as marker_from_validated_state
-    participant p21 as compare_knowledge_implementation
-    participant p22 as guard_incomplete_bootstrap
-    participant p23 as validate_surface_index_bytes
-    participant p24 as load_adoption_marker
-    participant p25 as _issue_from_artifact_error
-    participant p26 as load_verification_receipt
-    participant p27 as SyncManifest.load
-    participant p28 as _current_markdown
-    participant p29 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
+    participant p21 as attributes
+    participant p22 as validate_surface_index_bytes
+    participant p23 as _issue_from_artifact_error
+    participant p24 as load_verification_receipt
+    participant p25 as load_adoption_marker
+    participant p26 as SyncManifest.load
+    participant p27 as _current_markdown
+    participant p28 as _validated_artifacts_for_view
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view)
     participant p30 as _UNSUPPORTED_REASON_BY_ISSUE.get
     p0->>p1: load_knowledge_state
     p0->>p2: build_knowledge_read_view
@@ -100,35 +103,35 @@ sequenceDiagram
     p13->>p18: build_maintenance_status
     p9->>p19: evaluate_knowledge_freshness
     p13->>p20: marker_from_validated_state
-    p14->>p21: compare_knowledge_implementation
-    p11->>p22: guard_incomplete_bootstrap
-    p15->>p23: validate_surface_index_bytes
-    p11->>p24: load_adoption_marker
-    p15->>p25: _issue_from_artifact_error
-    p8->>p26: load_verification_receipt
-    p11->>p27: SyncManifest.load
-    p15->>p28: _current_markdown
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
+    p11->>p21: attributes
+    p15->>p22: validate_surface_index_bytes
+    p15->>p23: _issue_from_artifact_error
+    p8->>p24: load_verification_receipt
+    p11->>p25: load_adoption_marker
+    p11->>p26: SyncManifest.load
+    p15->>p27: _current_markdown
+    p8->>p28: _validated_artifacts_for_view
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view)(include_machine_verification, bool)
     p4-->>p30: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
 ```
 
-> Call sequence diagram shows 30 of 1642 interactions; 1612 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1658 interactions; 1628 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 541 (540 omitted); unresolved 1 of 310 (309 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 554 (553 omitted); unresolved 1 of 299 (298 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_consumption.py:load_knowledge_read_view` | 1 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_loader.py:load_knowledge_state` | 4 | - | external | 10 |
-| `src/llm_wiki_cli/services/knowledge_loader.py:load_knowledge_state` | 4 | [src/llm_wiki_cli/services/knowledge_loader.py](../modules/knowledge_loader.md) | internal | 7 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 369 groups; 361 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/knowledge_consumption.py:load_knowledge_read_view` | 1 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_loader.py:load_knowledge_state` | 4 | - | external | 10 |
+| `src/llm_wiki_engine/knowledge_loader.py:load_knowledge_state` | 4 | [src/llm_wiki_engine/knowledge_loader.py](../modules/knowledge_loader.md) | internal | 7 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 13 | - | external | 4 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 16 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 16 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 16 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+> Omission summary shows 8 of 378 groups; 370 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -141,9 +144,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 792; effect analysis evaluated: 421, partial: 39, unavailable: 332. Counts include steps omitted from the displayed trace.
+Source steps: 806; effect analysis evaluated: 422, partial: 40, unavailable: 344. Counts include steps omitted from the displayed trace.
 
-Collector observations for 460 source steps with known totals: observed: 2950, emitted: 2700, omitted: 250. Unavailable totals are excluded.
+Collector observations for 462 source steps with known totals: observed: 2897, emitted: 2666, omitted: 231. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -152,42 +155,42 @@ Collector observations for 460 source steps with known totals: observed: 2950, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `load_knowledge_read_view` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
-| `isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/knowl…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `load_knowledge_state` | `available` | `partial` | `available` | `18` | `17` | `1` |
-| `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeMismatchPolicy` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 
 ```mermaid
 flowchart LR
     s1["1. load_knowledge_read_view"]
-    s2["2. isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)"]
-    s3["3. TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view)"]
+    s3["3. TypeError (src/llm_wiki_engine/knowl…:load_knowledge_read_view)"]
     s4["4. load_knowledge_state"]
-    s5["5. isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
+    s5["5. isinstance (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)"]
     s6["6. KnowledgeMismatchPolicy"]
-    s7["7. ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
-    s8["8. ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
-    s9["9. callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
-    s10["10. TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
-    s11["11. Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
+    s7["7. ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)"]
+    s8["8. ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)"]
+    s9["9. callable (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)"]
+    s10["10. TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)"]
+    s11["11. Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)"]
     s12["12. guard_maintenance_owner"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)" .-> s2
-    s1 -. "TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)('include_machine_verification must be a boolean')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view)(include_machine_verification, bool)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_engine/knowl…:load_knowledge_read_view)('include_machine_verification must be a boolean')" .-> s3
     s1 -->|"load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)"| s4
-    s4 -. "isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)" .-> s5
     s4 -->|"KnowledgeMismatchPolicy(policy)"| s6
-    s4 -. "ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)(#34;policy must be 'reject', 'rebuild', or 'degraded'#34;)" .-> s7
-    s4 -. "ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild policy requires rebuild_callback')" .-> s8
-    s4 -. "callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)(rebuild_callback)" .-> s9
-    s4 -. "TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild_callback must be callable')" .-> s10
-    s4 -. "Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)(wiki_dir)" .-> s11
+    s4 -. "ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)(#34;policy must be 'reject', 'rebuild', or 'degraded'#34;)" .-> s7
+    s4 -. "ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)('rebuild policy requires rebuild_callback')" .-> s8
+    s4 -. "callable (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)(rebuild_callback)" .-> s9
+    s4 -. "TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)('rebuild_callback must be callable')" .-> s10
+    s4 -. "Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)(wiki_dir)" .-> s11
     s4 -->|"guard_maintenance_owner(root)"| s12
     click s1 "../modules/knowledge_consumption.md"
     click s4 "../modules/knowledge_loader.md"
@@ -200,32 +203,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `load_knowledge_read_view` | `wiki_dir: str \| Path`, `live_evaluation: LiveKnowledgeEvaluation \| None`, `snapshot_only: bool`, `mode: KnowledgeReadMode \| str \| None`, `markdown_pages: Mapping[str, str \| bytes] \| None`, `include_machine_verification: bool` | `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `KnowledgeLoadState` | - | `view`, `attach_machine_verification_read_view(...)` |
-| `isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/knowl…:load_knowledge_read_view)` | - | - | - | - |
 | `load_knowledge_state` | `wiki_dir: str \| Path`, `policy: KnowledgeMismatchPolicy \| str`, `rebuild_callback: RebuildCallback \| None`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `KnowledgeMismatchPolicy`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState`, `KnowledgeLoadState`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy` | - | `KnowledgeLoadResult(...)`, `result`, `replace(...)`, `replace(...)`, `KnowledgeLoadResult(...)` |
-| `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | - | - | - | - |
 | `KnowledgeMismatchPolicy` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
-| `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | - | - | - | - |
+| `callable (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state)` | - | - | - | - |
 | `guard_maintenance_owner` | `wiki_dir: str \| Path`, `manifest` | - | - | `None`, `None`, `marker` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 731 | `isinstance(include_machine_verification, bool)` |
-| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 732 | `TypeError('include_machine_verification must be a boolean')` |
-| load_knowledge_read_view | load_knowledge_state | 734 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
-| load_knowledge_state | isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
+| load_knowledge_read_view | isinstance (src/llm_wiki_engine/knowl…:load_knowledge_read_view) | 734 | `isinstance(include_machine_verification, bool)` |
+| load_knowledge_read_view | TypeError (src/llm_wiki_engine/knowl…:load_knowledge_read_view) | 735 | `TypeError('include_machine_verification must be a boolean')` |
+| load_knowledge_read_view | load_knowledge_state | 737 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
+| load_knowledge_state | isinstance (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
 | load_knowledge_state | KnowledgeMismatchPolicy | 113 | `KnowledgeMismatchPolicy(policy)` |
-| load_knowledge_state | ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
-| load_knowledge_state | ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 118 | `ValueError('rebuild policy requires rebuild_callback')` |
-| load_knowledge_state | callable (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 119 | `callable(rebuild_callback)` |
-| load_knowledge_state | TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 120 | `TypeError('rebuild_callback must be callable')` |
-| load_knowledge_state | Path (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 122 | `Path(wiki_dir)` |
+| load_knowledge_state | ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
+| load_knowledge_state | ValueError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 118 | `ValueError('rebuild policy requires rebuild_callback')` |
+| load_knowledge_state | callable (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 119 | `callable(rebuild_callback)` |
+| load_knowledge_state | TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 120 | `TypeError('rebuild_callback must be callable')` |
+| load_knowledge_state | Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 122 | `Path(wiki_dir)` |
 | load_knowledge_state | guard_maintenance_owner | 126 | `guard_maintenance_owner(root)` |
 
 ### Boundary effects
@@ -236,8 +239,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_knowledge_read_view` | `isinstance` | 731 |
-| external_call | `load_knowledge_read_view` | `TypeError` | 732 |
+| external_call | `load_knowledge_read_view` | `isinstance` | 734 |
+| external_call | `load_knowledge_read_view` | `TypeError` | 735 |
 | external_call | `load_knowledge_state` | `isinstance` | 112 |
 | external_call | `load_knowledge_state` | `ValueError` | 116 |
 | external_call | `load_knowledge_state` | `ValueError` | 118 |

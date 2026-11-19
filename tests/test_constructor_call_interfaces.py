@@ -27,9 +27,9 @@ from llm_wiki_cli.services.extraction_service import (
 )
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.mcp_server import McpWikiService
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.entrypoints import build_flow
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     GraphConcept,
     KnowledgeGraphInputs,
     materialize_typed_graph,
@@ -405,17 +405,18 @@ def test_import_alias_selection_and_cached_restart_cannot_borrow_excluded_author
 def test_producer_incompatibility_does_not_upgrade_snapshot_or_borrow_old_call_edges(
     owned_project, monkeypatch, capsys
 ):
-    from llm_wiki_cli.services import analysis_capture, context_packet
+    from llm_wiki_cli.services import analysis_capture
+    from llm_wiki_cli.services import context_packet_builder
 
     root = owned_project("library")
     target = "llm-wiki://modules/client"
     before = _tree(root / "src"), _tree(root / "wiki")
     captured = analysis_capture.implementation_hash
 
-    def changed_producer(root, paths):
+    def changed_producer(root, paths, engine_paths=()):
         return (
             "sha256:"
-            + sha256(("changed-provider:" + captured(root, paths)).encode()).hexdigest()
+            + sha256(("changed-provider:" + captured(root, paths, engine_paths)).encode()).hexdigest()
         )
 
     monkeypatch.setattr(analysis_capture, "implementation_hash", changed_producer)
@@ -435,7 +436,7 @@ def test_producer_incompatibility_does_not_upgrade_snapshot_or_borrow_old_call_e
             ("client.py", "assigned_values"),
         }, name
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "capture_context_read",
         lambda *args, **kwargs: pytest.fail(
             "snapshot read captured application source"

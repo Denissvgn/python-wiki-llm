@@ -20,7 +20,7 @@ from llm_wiki_cli.commands.lint_cmd import (
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import ci_report, plugins
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     CI_CHECK_SCHEMA_VERSION,
     DOCTOR_SCHEMA_VERSION,
     PROTOCOL_VERSIONS,
@@ -457,7 +457,7 @@ def test_ci_check_no_plugins_never_imports_target_plugin_code(
     assert exc_info.value.code == 1
     assert seen["include_plugins"] is False
     assert not marker.exists()
-    assert "hostile_ci_plugin" not in sys.modules
+    assert not any(name.rpartition(".")[2] == "hostile_ci_plugin" for name in sys.modules)
     capsys.readouterr()
 
 

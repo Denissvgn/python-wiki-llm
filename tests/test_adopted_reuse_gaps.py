@@ -10,10 +10,10 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import maintenance_evidence
-from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
-from llm_wiki_cli.services.maintenance_state import maintenance_core
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine import maintenance_evidence
+from llm_wiki_engine.maintenance_protocol import snapshot_wiki
+from llm_wiki_engine.maintenance_state import maintenance_core
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_adopted_knowledge_reuse import _sync, _trap_builders
 
 

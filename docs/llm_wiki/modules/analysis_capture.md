@@ -30,11 +30,9 @@ stored provenance.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility`, `extractor_helpers` |
+| `.` | `extractor_helpers` |
 | `.helper_cache` | `cache_roots`, `validate_handle`, `lookup_helper` |
 | `.helper_runtime` | `current_helper_operation`, `pinned_helper` |
-| `.immutable` | `FrozenDict`, `freeze` |
-| `.knowledge_envelope` | `hash_component_configuration` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `contextvars` | `ContextVar` |
@@ -44,6 +42,9 @@ stored provenance.
 | `hashlib` | `hashlib` |
 | `importlib.metadata` | `version` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility`, `llm_wiki_engine` |
+| `llm_wiki_engine.immutable` | `FrozenDict`, `freeze` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_component_configuration` |
 | `pathlib` | `Path` |
 | `platform` | `platform` |
 | `re` | `re` |
@@ -67,10 +68,16 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (11) |
+| Inbound | `src` (12) |
 | Outbound | `src` (6) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 1 |
+
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -84,12 +91,14 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `_issued` | `(values, diagnostics = None)` | — | — |
 | `analysis_diagnostics` | `(captured)` | — | Return informational owner-captured diagnostics, never producer identity. |
+| `engine_package_root` | `(root: Path) -> Path` | — | Locate the engine package that serves the provider at ``root``. |
+| `engine_input` | `(root: Path, name: str) -> Path` | — | Resolve a registered ``llm_wiki_engine/...`` analysis input. |
 | `_input_rows` | `(root, rules)` | — | — |
 | `_status` | `(rows, *, limit = 20, reason = None)` | — | — |
 | `analysis_input_status` | `(*, package_root = None, limit = 20)` | — | Read installed provider classification; never inventory target source or execute it. |
 | `validate_analysis_diagnostics` | `(value)` | — | Validate bounded informational task diagnostics without reading installed files. |
 | `capture_operation` | `(function)` | — | — |
 | `registry` | `(root: Path \| None = None) -> dict` | — | — |
-| `implementation_hash` | `(root: Path, paths: list[str]) -> str` | — | — |
+| `implementation_hash` | `(root: Path, paths: list[str], engine_paths = ()) -> str` | — | Digest registered inputs; engine names keep their package prefix. |
 | `capture_analysis` | `(registry_entries: Mapping[str, str], *, helper_cache_dir = None, source_root: str \| Path = '.', languages = None, package_root: Path \| None = None) -> dict` | — | Capture immutable JSON inputs once; unavailable providers stay unknown. |
 | `attach` | `(component, captured: Mapping \| None)` | — | — |

@@ -14,17 +14,13 @@ import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
-from llm_wiki_cli.services import (
-    knowledge_artifacts,
-    knowledge_generation,
-    knowledge_orchestration,
-    knowledge_reuse,
-)
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_cli.services import knowledge_generation, knowledge_orchestration, knowledge_reuse
+from llm_wiki_engine import knowledge_artifacts
+from llm_wiki_engine.knowledge_loader import (
     load_knowledge_state,
     KnowledgeStateLoadError,
 )
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 
 ARTIFACTS = (
     ".llm-wiki-surface.json",
@@ -51,7 +47,7 @@ def test_unchanged_result_reports_knowledge_format_independently_of_manifest_obj
     tmp_path, monkeypatch, knowledge_format, manifest_format,
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+    from llm_wiki_engine.maintenance_protocol import snapshot_wiki
 
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
@@ -369,7 +365,7 @@ def test_reuse_manifest_state_must_validate_its_schema(synced):
 
 
 def test_governed_generation_keeps_using_full_builder(synced):
-    from llm_wiki_cli.services.knowledge_governance import (
+    from llm_wiki_engine.knowledge_governance import (
         GovernanceLedger,
         save_governance,
     )

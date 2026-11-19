@@ -76,12 +76,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| without_line_metadata | isinstance | 917 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 919 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 920 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 920 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 923 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
+| without_line_metadata | isinstance | 892 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 894 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 895 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 895 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 898 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 899 | `without_line_metadata(item)` |
 
 ### Boundary effects
 
@@ -91,10 +91,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 917 |
-| external_call | `without_line_metadata` | `sorted` | 920 |
-| unresolved_call | `without_line_metadata` | `value.items` | 920 |
-| external_call | `without_line_metadata` | `isinstance` | 923 |
+| external_call | `without_line_metadata` | `isinstance` | 892 |
+| external_call | `without_line_metadata` | `sorted` | 895 |
+| unresolved_call | `without_line_metadata` | `value.items` | 895 |
+| external_call | `without_line_metadata` | `isinstance` | 898 |
 
 ## Behavior
 

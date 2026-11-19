@@ -13,10 +13,10 @@ Selects source contracts and qualified query observations from an existing captu
 | `.` | `context_packet` |
 | `.documentation_query_builder` | `build_documentation_query_service_from_view` |
 | `.implementation_evidence` | `select_implementation_comparison` |
-| `.markdown_sections` | `parse_markdown_document` |
-| `.workflow_profile` | `content_id` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
+| `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
+| `llm_wiki_engine.workflow_profile` | `content_id` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -27,38 +27,36 @@ flowchart LR
     n0["src/llm_wiki_cli/services/context_packet.py"]
     n1["src/llm_wiki_cli/services/documentation_query_builder.py"]
     n2["src/llm_wiki_cli/services/implementation_evidence.py"]
-    n3["src/llm_wiki_cli/services/markdown_sections.py"]
-    n4["src/llm_wiki_cli/services/task_context.py"]
-    n5["src/llm_wiki_cli/services/task_context_v2.py"]
-    n6["src/llm_wiki_cli/services/task_evidence.py"]
-    n7["src/llm_wiki_cli/services/workflow_profile.py"]
-    n0 --> n1
+    n3["src/llm_wiki_cli/services/task_context.py"]
+    n4["src/llm_wiki_cli/services/task_context_v2.py"]
+    n5["src/llm_wiki_cli/services/task_evidence.py"]
+    n6["src/llm_wiki_engine/markdown_sections.py"]
+    n7["src/llm_wiki_engine/workflow_profile.py"]
     n0 --> n2
-    n1 --> n0
+    n3 --> n0
+    n3 --> n1
+    n3 --> n4
+    n3 --> n5
+    n3 --> n7
     n4 --> n0
     n4 --> n1
+    n4 --> n2
+    n4 --> n3
     n4 --> n5
     n4 --> n6
     n4 --> n7
     n5 --> n0
     n5 --> n1
     n5 --> n2
-    n5 --> n3
-    n5 --> n4
     n5 --> n6
     n5 --> n7
-    n6 --> n0
-    n6 --> n1
-    n6 --> n2
-    n6 --> n3
-    n6 --> n7
     click n0 "../modules/context_packet.md"
     click n1 "../modules/documentation_query_builder.md"
     click n2 "../modules/implementation_evidence.md"
-    click n3 "../modules/markdown_sections.md"
-    click n4 "../modules/task_context.md"
-    click n5 "../modules/task_context_v2.md"
-    click n6 "../modules/task_evidence.md"
+    click n3 "../modules/task_context.md"
+    click n4 "../modules/task_context_v2.md"
+    click n5 "../modules/task_evidence.md"
+    click n6 "../modules/markdown_sections.md"
     click n7 "../modules/workflow_profile.md"
 ```
 

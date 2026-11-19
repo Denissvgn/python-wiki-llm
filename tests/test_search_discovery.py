@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services import search_discovery as discovery
-from llm_wiki_cli.services.search_discovery import DiscoveryError, enrich_search
+from llm_wiki_engine import search_discovery as discovery
+from llm_wiki_engine.search_discovery import DiscoveryError, enrich_search
 
 
 def _page(name="owner", kind="modules", content=None):

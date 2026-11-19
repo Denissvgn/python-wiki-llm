@@ -2,18 +2,19 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 33 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), and 35 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -23,15 +24,16 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
@@ -61,7 +63,7 @@ sequenceDiagram
     participant p8 as build_knowledge_read_view
     participant p9 as attach_machine_verification_read_view
     participant p10 as _assert_wiki_integrity
-    participant p11 as canonical_json_bytes
+    participant p11 as compact_bytes
     participant p12 as _read_mode
     participant p13 as _validate_load_result
     participant p14 as load_machine_verification_read_view
@@ -78,8 +80,8 @@ sequenceDiagram
     participant p25 as build_maintenance_status
     participant p26 as evaluate_knowledge_freshness
     participant p27 as marker_from_validated_state
-    participant p28 as compare_knowledge_implementation
-    participant p29 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    participant p28 as attributes
+    participant p29 as str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)
     participant p30 as current.exists
     p0->>p1: _wiki_anchor
     p0->>p2: load_knowledge_read_view
@@ -91,7 +93,7 @@ sequenceDiagram
     p2->>p8: build_knowledge_read_view
     p2->>p9: attach_machine_verification_read_view
     p1->>p10: _assert_wiki_integrity
-    p7->>p11: canonical_json_bytes
+    p7->>p11: compact_bytes
     p8->>p12: _read_mode
     p8->>p13: _validate_load_result
     p9->>p14: load_machine_verification_read_view
@@ -108,28 +110,28 @@ sequenceDiagram
     p19->>p25: build_maintenance_status
     p15->>p26: evaluate_knowledge_freshness
     p19->>p27: marker_from_validated_state
-    p20->>p28: compare_knowledge_implementation
-    p1-->>p29: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)
+    p17->>p28: attributes
+    p1-->>p29: str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)(current)
     p1-->>p30: current.exists
 ```
 
-> Call sequence diagram shows 30 of 1183 interactions; 1153 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1085 interactions; 1055 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 419 (418 omitted); unresolved 1 of 230 (229 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 380 (379 omitted); unresolved 1 of 200 (199 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/context_packet.py:_wiki_anchor` | 2 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:_wiki_anchor` | 2 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
 | `src/llm_wiki_cli/services/source_snapshot.py:directory_identity` | 4 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:_wiki_anchor` | 2 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-> Omission summary shows 8 of 272 groups; 264 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/context_packet_builder.py:_wiki_anchor` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 9 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 12 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+> Omission summary shows 8 of 263 groups; 255 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -142,9 +144,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 535; effect analysis evaluated: 303, partial: 34, unavailable: 198. Counts include steps omitted from the displayed trace.
+Source steps: 506; effect analysis evaluated: 290, partial: 27, unavailable: 189. Counts include steps omitted from the displayed trace.
 
-Collector observations for 337 source steps with known totals: observed: 2361, emitted: 2130, omitted: 231. Unavailable totals are excluded.
+Collector observations for 317 source steps with known totals: observed: 2103, emitted: 1904, omitted: 199. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -154,48 +156,48 @@ Collector observations for 337 source steps with known totals: observed: 2361, e
 |---|---|---|---|---:|---:|---:|
 | `build_snapshot_documentation_query_service` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_wiki_anchor` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
-| `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `directory_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `path.stat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_domain_hash` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `canonical_json_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `sha256_digest` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `compact_bytes` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR
     s1["1. build_snapshot_documentation_query_service"]
     s2["2. _wiki_anchor"]
-    s3["3. str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)"]
+    s3["3. str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)"]
     s4["4. directory_identity"]
     s5["5. path.stat"]
     s6["6. current.exists"]
     s7["7. root.exists"]
     s8["8. _domain_hash"]
-    s9["9. sha256_bytes"]
-    s10["10. hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)"]
-    s11["11. hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)"]
-    s12["12. canonical_json_bytes"]
+    s9["9. sha256_digest"]
+    s10["10. hashlib.sha256(…).hexdigest"]
+    s11["11. hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)"]
+    s12["12. compact_bytes"]
     s1 -->|"_wiki_anchor(wiki_root)"| s2
-    s2 -. "str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)" .-> s3
+    s2 -. "str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)(current)" .-> s3
     s2 -->|"directory_identity(current)"| s4
     s4 -. "path.stat(follow_symlinks=False)" .-> s5
     s2 -. "current.exists(data not statically known)" .-> s6
     s2 -. "root.exists(data not statically known)" .-> s7
     s2 -->|"_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})"| s8
-    s8 -->|"sha256_bytes(canonical_json_bytes(...))"| s9
-    s9 -. "hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)(data not statically known)" .-> s10
-    s9 -. "hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)(value)" .-> s11
-    s8 -->|"canonical_json_bytes({...})"| s12
+    s8 -->|"sha256_digest(canonical_json_bytes(...))"| s9
+    s9 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s10
+    s9 -. "hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)(data)" .-> s11
+    s8 -->|"compact_bytes({...})"| s12
     click s1 "../modules/documentation_query_builder.md"
-    click s2 "../modules/context_packet.md"
+    click s2 "../modules/context_packet_builder.md"
     click s4 "../modules/source_snapshot.md"
     click s8 "../modules/context_packet.md"
-    click s9 "../modules/knowledge_evidence.md"
-    click s12 "../modules/knowledge_evidence.md"
+    click s9 "../modules/canonical_json.md"
+    click s12 "../modules/canonical_json.md"
 ```
 
 ### Step data
@@ -204,32 +206,32 @@ flowchart LR
 |---|---|---|---|---|
 | `build_snapshot_documentation_query_service` | `wiki_root: Path`, `limit: int` | - | - | `service` |
 | `_wiki_anchor` | `root: Path`, `reject_all_symlinks: bool`, `max_bytes: int \| None`, `metrics: dict[str, int] \| None`, `integrity_out: dict[str, tuple[int, ...]] \| None`, `guard_windows: bool` | `_WIKI_ANCHOR_DOMAIN`, `GOVERNANCE_LOCK_FILENAME`, `_WIKI_ANCHOR_DOMAIN` | - | `_domain_hash(...)`, `_domain_hash(...)` |
-| `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | - | - | - | - |
+| `str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)` | - | - | - | - |
 | `directory_identity` | `path: Path` | - | - | `(...)`, `(...)` |
 | `path.stat` | - | - | - | - |
 | `current.exists` | - | - | - | - |
 | `root.exists` | - | - | - | - |
 | `_domain_hash` | `domain: str`, `value: Mapping[str, Any]` | - | - | `sha256_bytes(...)` |
-| `sha256_bytes` | `value: bytes` | - | - | `...` |
-| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | - | - | - | - |
-| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | - | - | - | - |
-| `canonical_json_bytes` | `value: Any` | - | - | `...` |
+| `sha256_digest` | `data: bytes` | - | - | `...` |
+| `hashlib.sha256(…).hexdigest` | - | - | - | - |
+| `hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest)` | - | - | - | - |
+| `compact_bytes` | `value: Any`, `allow_nan: bool` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_snapshot_documentation_query_service | _wiki_anchor | 441 | `_wiki_anchor(wiki_root)` |
-| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5125 | `str(current)` |
-| _wiki_anchor | directory_identity | 5125 | `directory_identity(current)` |
-| directory_identity | path.stat | 699 | `path.stat(follow_symlinks=False)` |
-| _wiki_anchor | current.exists | 5126 | `current.exists(data not statically known)` |
-| _wiki_anchor | root.exists | 5129 | `root.exists(data not statically known)` |
-| _wiki_anchor | _domain_hash | 5130 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
-| _domain_hash | sha256_bytes | 5281 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 221 | `hashlib.sha256(value)` |
-| _domain_hash | canonical_json_bytes | 5282 | `canonical_json_bytes({...})` |
+| _wiki_anchor | str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor) | 2160 | `str(current)` |
+| _wiki_anchor | directory_identity | 2160 | `directory_identity(current)` |
+| directory_identity | path.stat | 688 | `path.stat(follow_symlinks=False)` |
+| _wiki_anchor | current.exists | 2161 | `current.exists(data not statically known)` |
+| _wiki_anchor | root.exists | 2164 | `root.exists(data not statically known)` |
+| _wiki_anchor | _domain_hash | 2165 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
+| _domain_hash | sha256_digest | 3048 | `sha256_bytes(canonical_json_bytes(...))` |
+| sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
+| sha256_digest | hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest) | 56 | `hashlib.sha256(data)` |
+| _domain_hash | compact_bytes | 3049 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
@@ -239,11 +241,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `directory_identity` | `path.stat` | 699 |
-| unresolved_call | `_wiki_anchor` | `current.exists` | 5126 |
-| unresolved_call | `_wiki_anchor` | `root.exists` | 5129 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 221 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 221 |
+| unresolved_call | `directory_identity` | `path.stat` | 688 |
+| unresolved_call | `_wiki_anchor` | `current.exists` | 2161 |
+| unresolved_call | `_wiki_anchor` | `root.exists` | 2164 |
+| unresolved_call | `sha256_digest` | `hashlib.sha256(data).hexdigest` | 56 |
+| external_call | `sha256_digest` | `hashlib.sha256` | 56 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |
 | truncated_flow | `build_snapshot_documentation_query_service` | `depth limit` | 0 |
 

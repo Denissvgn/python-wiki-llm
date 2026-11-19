@@ -42,19 +42,25 @@ SKIP_DISCOVERY_SCHEMA = "agent-wiki-release-skip-discovery/v1"
 JUNIT_PROJECTION_SCHEMA = "agent-wiki-release-junit-projection/v1"
 OWNER_LANE_SCHEMA = "agent-wiki-release-owner-lanes/v2"
 DECISION_SCHEMA = "agent-wiki-release-decision/v1"
-QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v4"
-PREVIOUS_QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
+QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v5"
+# Earlier bundles qualified the CLI alone; they stay verifiable as such.
+PREVIOUS_QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v4"
+UNSHARDED_QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
+CLI_ONLY_QUALIFICATION_SCHEMAS = frozenset(
+    {PREVIOUS_QUALIFICATION_SCHEMA, UNSHARDED_QUALIFICATION_SCHEMA}
+)
 VERIFICATION_SCHEMA = "agent-wiki-release-verification/v1"
 WORKFLOW_VERIFICATION_SCHEMA = "agent-wiki-release-workflow-verification/v1"
 ATTESTATION_SELECTION_SCHEMA = "agent-wiki-release-attestation-selection/v1"
 PROMOTION_SCHEMA = "agent-wiki-release-promotion/v1"
-SMOKE_SCHEMA = "agent-wiki-artifact-smoke/v1"
-SMOKE_COMPARISON_SCHEMA = "agent-wiki-artifact-smoke-comparison/v1"
+SMOKE_SCHEMA = "agent-wiki-artifact-smoke/v2"
+CLI_ONLY_SMOKE_SCHEMA = "agent-wiki-artifact-smoke/v1"
+SMOKE_COMPARISON_SCHEMA = "agent-wiki-artifact-smoke-comparison/v2"
+CLI_ONLY_SMOKE_COMPARISON_SCHEMA = "agent-wiki-artifact-smoke-comparison/v1"
 QUALIFICATION_WORKFLOW_PATH = ".github/workflows/release-qualification.yml"
 SLSA_PROVENANCE_PREDICATE = "https://slsa.dev/provenance/v1"
 SPDX_SBOM_PREDICATE = "https://spdx.dev/Document/v2.3"
 GITHUB_ACTIONS_OIDC_ISSUER = "https://token.actions.githubusercontent.com"
-ATTESTATION_RECEIPT_COUNT = 2
 MAX_ATTESTATION_RECEIPTS_BYTES = 16 * 1024 * 1024
 REQUIRED_GATES = tuple(f"RD-{number:02d}" for number in range(14))
 QUALIFIED_GATES = REQUIRED_GATES[:-1]
@@ -64,9 +70,21 @@ VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+){2}(?:[a-zA-Z0-9.+-]*)$")
 EVIDENCE_LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 JUNIT_SELECTOR_RE = re.compile(r"^[A-Za-z0-9_./*?-]+$")
 DIST_RE = re.compile(
-    r"^agent_wiki_cli-(?P<version>[^/]+?)(?:-py3-none-any\.whl|\.tar\.gz)$"
+    r"^(?P<package>agent_wiki_cli|llm_wiki_engine)-(?P<version>[^/]+?)"
+    r"(?:-py3-none-any\.whl|\.tar\.gz)$"
 )
+# Every release ships the CLI and the engine it pins, in this order.
+ARTIFACT_KINDS = ("wheel", "sdist", "engine-wheel", "engine-sdist")
+CLI_ONLY_ARTIFACT_KINDS = ("wheel", "sdist")
+ARTIFACT_PACKAGE = {
+    "wheel": "agent_wiki_cli",
+    "sdist": "agent_wiki_cli",
+    "engine-wheel": "llm_wiki_engine",
+    "engine-sdist": "llm_wiki_engine",
+}
 PACKAGE_NAME = "agent-wiki-cli"
+ENGINE_PACKAGE_NAME = "llm-wiki-engine"
+ENGINE_PROJECT = "src/pyproject.toml"
 
 
 class QualificationError(RuntimeError):
@@ -208,7 +226,41 @@ def _project_version(root: Path) -> str:
         raise QualificationError(
             "project.version must be a three-component release version"
         )
+    _require_lockstep_engine(root, payload, result)
     return result
+
+
+def _require_lockstep_engine(root: Path, payload: Mapping[str, Any], version: str) -> None:
+    """The engine shares the CLI version, and the CLI pins exactly that engine."""
+    engine_project = root / ENGINE_PROJECT
+    try:
+        dependencies = payload["project"].get("dependencies", [])
+    except AttributeError as exc:
+        raise QualificationError("pyproject.toml project metadata is invalid") from exc
+    if not isinstance(dependencies, list):
+        raise QualificationError("pyproject.toml project.dependencies must be a list")
+    pins = [item for item in dependencies if isinstance(item, str)
+            and re.match(r"llm[-_.]wiki[-_.]engine\b", item, flags=re.IGNORECASE)]
+    if not pins and not engine_project.exists():
+        return  # A candidate from before the engine distribution.
+    if not engine_project.is_file():
+        raise QualificationError(f"{ENGINE_PROJECT} is missing")
+    with engine_project.open("rb") as stream:
+        engine = tomllib.load(stream)
+    try:
+        name, engine_version = engine["project"]["name"], engine["project"]["version"]
+    except (KeyError, TypeError) as exc:
+        raise QualificationError(f"{ENGINE_PROJECT} project metadata is incomplete") from exc
+    if name != ENGINE_PACKAGE_NAME:
+        raise QualificationError(f"{ENGINE_PROJECT} must build {ENGINE_PACKAGE_NAME}")
+    if engine_version != version:
+        raise QualificationError(
+            f"{ENGINE_PACKAGE_NAME} version {engine_version} differs from {version}"
+        )
+    if pins != [f"{ENGINE_PACKAGE_NAME}=={version}"]:
+        raise QualificationError(
+            f"{PACKAGE_NAME} must pin exactly {ENGINE_PACKAGE_NAME}=={version}"
+        )
 
 
 def _github_output(values: Mapping[str, object]) -> None:
@@ -220,8 +272,15 @@ def _github_output(values: Mapping[str, object]) -> None:
             stream.write(f"{key}={value}\n")
 
 
-def _check_registry_unused(version: str) -> None:
-    url = f"https://pypi.org/pypi/{PACKAGE_NAME}/{version}/json"
+def _check_registry_unused(
+    version: str, packages: Sequence[str] = (PACKAGE_NAME, ENGINE_PACKAGE_NAME)
+) -> None:
+    for package in packages:
+        _check_package_version_unused(package, version)
+
+
+def _check_package_version_unused(package: str, version: str) -> None:
+    url = f"https://pypi.org/pypi/{package}/{version}/json"
     request = urllib.request.Request(
         url,
         headers={"Accept": "application/json", "User-Agent": "agent-wiki-release"},
@@ -230,7 +289,7 @@ def _check_registry_unused(version: str) -> None:
         with urllib.request.urlopen(request, timeout=20) as response:
             if response.status == 200:
                 raise RegistryVersionExists(
-                    f"{PACKAGE_NAME} {version} already exists on PyPI"
+                    f"{package} {version} already exists on PyPI"
                 )
             raise QualificationError(
                 f"unexpected PyPI status while checking {version}: {response.status}"
@@ -1204,6 +1263,8 @@ def compare_smoke(args: argparse.Namespace) -> int:
         "version": wheel["version"],
         "wheel_sha256": wheel["artifact"]["sha256"],
         "sdist_sha256": sdist["artifact"]["sha256"],
+        "engine_wheel_sha256": wheel["engine_artifact"]["sha256"],
+        "engine_sdist_sha256": sdist["engine_artifact"]["sha256"],
         "result_sha256": _smoke_result_sha256(wheel["result"]),
         "equal": True,
     }
@@ -1213,6 +1274,8 @@ def compare_smoke(args: argparse.Namespace) -> int:
             "version": wheel["version"],
             "wheel-sha256": wheel["artifact"]["sha256"],
             "sdist-sha256": sdist["artifact"]["sha256"],
+            "engine-wheel-sha256": payload["engine_wheel_sha256"],
+            "engine-sdist-sha256": payload["engine_sdist_sha256"],
             "result-sha256": payload["result_sha256"],
         }
     )
@@ -1263,13 +1326,13 @@ def validate_policy_identity(value: object) -> Mapping[str, Any]:
     return identity
 
 
-def _validate_smoke(value: object, name: str) -> Mapping[str, Any]:
-    smoke = _require_object(
-        value,
-        name=name,
-        keys=("schema_version", "artifact", "version", "result"),
-    )
-    if smoke["schema_version"] != SMOKE_SCHEMA:
+def _validate_smoke(value: object, name: str, *, engine: bool = True) -> Mapping[str, Any]:
+    """Validate one smoke result; current results also bind the engine artifact."""
+    keys = ("schema_version", "artifact", "version", "result")
+    if engine:
+        keys += ("engine_artifact",)
+    smoke = _require_object(value, name=name, keys=keys)
+    if smoke["schema_version"] != (SMOKE_SCHEMA if engine else CLI_ONLY_SMOKE_SCHEMA):
         raise QualificationError(f"{name} schema_version is unsupported")
     artifact = _require_object(
         smoke["artifact"],
@@ -1280,6 +1343,18 @@ def _validate_smoke(value: object, name: str) -> Mapping[str, Any]:
     _require_sha256(artifact["sha256"], f"{name}.artifact.sha256")
     if artifact["kind"] not in {"wheel", "sdist"}:
         raise QualificationError(f"{name}.artifact.kind is unsupported")
+    if engine:
+        installed = _require_object(
+            smoke["engine_artifact"],
+            name=f"{name}.engine_artifact",
+            keys=("filename", "sha256", "kind"),
+        )
+        _require_string(installed["filename"], f"{name}.engine_artifact.filename")
+        _require_sha256(installed["sha256"], f"{name}.engine_artifact.sha256")
+        if installed["kind"] != "engine-" + artifact["kind"]:
+            raise QualificationError(
+                f"{name} must install the engine {artifact['kind']} beside the CLI"
+            )
     _require_string(smoke["version"], f"{name}.version")
     if not isinstance(smoke["result"], Mapping):
         raise QualificationError(f"{name}.result must be an object")
@@ -1298,21 +1373,20 @@ def _smoke_result_sha256(result: object) -> str:
     )
 
 
-def _validate_smoke_comparison(value: object) -> Mapping[str, Any]:
+def _validate_smoke_comparison(value: object, *, engine: bool = True) -> Mapping[str, Any]:
+    keys = ("schema_version", "version", "wheel_sha256", "sdist_sha256")
+    if engine:
+        keys += ("engine_wheel_sha256", "engine_sdist_sha256")
     comparison = _require_object(
         value,
         name="smoke comparison",
-        keys=(
-            "schema_version",
-            "version",
-            "wheel_sha256",
-            "sdist_sha256",
-            "result_sha256",
-            "equal",
-        ),
+        keys=(*keys, "result_sha256", "equal"),
     )
-    if comparison["schema_version"] != SMOKE_COMPARISON_SCHEMA:
+    expected = SMOKE_COMPARISON_SCHEMA if engine else CLI_ONLY_SMOKE_COMPARISON_SCHEMA
+    if comparison["schema_version"] != expected:
         raise QualificationError("smoke comparison schema_version is unsupported")
+    for field in ("engine_wheel_sha256", "engine_sdist_sha256") if engine else ():
+        _require_sha256(comparison[field], f"smoke comparison.{field}")
     _require_string(comparison["version"], "smoke comparison.version")
     _require_sha256(
         comparison["wheel_sha256"],
@@ -1339,11 +1413,24 @@ def _verify_smoke_consistency(
     wheel: Mapping[str, Any],
     sdist: Mapping[str, Any],
     version: str,
+    engine_wheel: Mapping[str, Any] | None = None,
+    engine_sdist: Mapping[str, Any] | None = None,
 ) -> None:
     if wheel_smoke["artifact"] != wheel:
         raise QualificationError("wheel smoke does not bind the qualified wheel")
     if sdist_smoke["artifact"] != sdist:
         raise QualificationError("sdist smoke does not bind the qualified sdist")
+    if (engine_wheel is None) != (engine_sdist is None):
+        raise QualificationError("engine wheel and sdist must be qualified together")
+    if engine_wheel is not None and engine_sdist is not None:
+        if wheel_smoke["engine_artifact"] != engine_wheel:
+            raise QualificationError("wheel smoke does not bind the qualified engine wheel")
+        if sdist_smoke["engine_artifact"] != engine_sdist:
+            raise QualificationError("sdist smoke does not bind the qualified engine sdist")
+        if comparison["engine_wheel_sha256"] != engine_wheel["sha256"]:
+            raise QualificationError("smoke comparison engine wheel digest mismatch")
+        if comparison["engine_sdist_sha256"] != engine_sdist["sha256"]:
+            raise QualificationError("smoke comparison engine sdist digest mismatch")
     if wheel_smoke["version"] != version:
         raise QualificationError("wheel smoke version does not match qualification")
     if sdist_smoke["version"] != version:
@@ -1370,6 +1457,58 @@ def _dist_files(dist: Path) -> tuple[Path, Path]:
     return wheels[0], sdists[0]
 
 
+def _require_artifact_names(files: Mapping[str, Path]) -> str:
+    """Each file names its kind's package, and all four share one version."""
+    versions = set()
+    for kind, path in files.items():
+        match = DIST_RE.fullmatch(path.name)
+        suffix = "-py3-none-any.whl" if kind.endswith("wheel") else ".tar.gz"
+        if (
+            not match
+            or match.group("package") != ARTIFACT_PACKAGE[kind]
+            or not path.name.endswith(suffix)
+        ):
+            raise QualificationError(f"{kind} artifact has an unexpected name: {path.name}")
+        versions.add(match.group("version"))
+    if len(versions) != 1:
+        raise QualificationError(f"release artifacts name different versions: {sorted(versions)}")
+    return versions.pop()
+
+
+def _build_files(dist: Path) -> dict[str, Path]:
+    """One build output: the CLI pair in ``dist`` and the engine pair in ``dist/engine``."""
+    wheel, sdist = _dist_files(dist)
+    engine_wheel, engine_sdist = _dist_files(dist / "engine")
+    files: dict[str, Path] = dict(zip(ARTIFACT_KINDS, (wheel, sdist, engine_wheel, engine_sdist)))
+    _require_artifact_names(files)
+    return files
+
+
+def _release_files(dist: Path) -> dict[str, Path]:
+    """The four selected release files, side by side in one directory."""
+    entries = sorted(dist.iterdir()) if dist.is_dir() else []
+    if len(entries) != len(ARTIFACT_KINDS) or not all(
+        path.is_file() and not path.is_symlink() for path in entries
+    ):
+        raise QualificationError(
+            "release dist must hold exactly the CLI and engine wheel and sdist"
+        )
+    files: dict[str, Path] = {}
+    for path in entries:
+        match = DIST_RE.fullmatch(path.name)
+        if not match:
+            raise QualificationError(f"unexpected release file: {path.name}")
+        engine = match.group("package") == ARTIFACT_PACKAGE["engine-wheel"]
+        kind = ("engine-" if engine else "") + ("wheel" if path.name.endswith(".whl") else "sdist")
+        if kind in files:
+            raise QualificationError(f"release dist holds more than one {kind}")
+        files[kind] = path
+    if set(files) != set(ARTIFACT_KINDS):
+        raise QualificationError("release dist must hold the CLI and engine wheel and sdist")
+    _require_artifact_names(files)
+    return {kind: files[kind] for kind in ARTIFACT_KINDS}
+
+
 def _artifact_entry(path: Path, kind: str) -> dict[str, str]:
     return {"filename": path.name, "sha256": sha256_file(path), "kind": kind}
 
@@ -1388,9 +1527,8 @@ def _expected_sbom(
     version: str,
     artifacts: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    namespace_seed = (
-        f"{repository}:{source['sha']}:{artifacts[0]['sha256']}:"
-        f"{artifacts[1]['sha256']}"
+    namespace_seed = f"{repository}:{source['sha']}:" + ":".join(
+        artifact["sha256"] for artifact in artifacts
     )
     namespace = uuid.uuid5(uuid.NAMESPACE_URL, namespace_seed)
     created = datetime.fromtimestamp(
@@ -2135,28 +2273,26 @@ def build_bundle(args: argparse.Namespace) -> int:
 
     destination = args.output.resolve()
     dist_destination = destination / "dist"
-    dist_destination.mkdir(parents=True, exist_ok=False)
-    wheel_source, sdist_source = _dist_files(args.dist.resolve())
-    wheel = dist_destination / wheel_source.name
-    sdist = dist_destination / sdist_source.name
-    wheel.write_bytes(wheel_source.read_bytes())
-    sdist.write_bytes(sdist_source.read_bytes())
-    artifacts = [_artifact_entry(wheel, "wheel"), _artifact_entry(sdist, "sdist")]
+    sources = _release_files(args.dist.resolve())
     version = _require_string(identity["version"], "identity.version")
-    for artifact in artifacts:
-        match = DIST_RE.fullmatch(artifact["filename"])
-        if not match or match.group("version") != version:
-            raise QualificationError(
-                f"artifact filename does not identify version {version}: "
-                f"{artifact['filename']}"
-            )
+    if _require_artifact_names(sources) != version:
+        raise QualificationError(f"release artifacts do not identify version {version}")
+    dist_destination.mkdir(parents=True, exist_ok=False)
+    artifacts = []
+    for kind, source_path in sources.items():
+        copied = dist_destination / source_path.name
+        copied.write_bytes(source_path.read_bytes())
+        artifacts.append(_artifact_entry(copied, kind))
+    by_kind = {artifact["kind"]: artifact for artifact in artifacts}
     _verify_smoke_consistency(
         wheel_smoke,
         sdist_smoke,
         comparison,
-        wheel=artifacts[0],
-        sdist=artifacts[1],
+        wheel=by_kind["wheel"],
+        sdist=by_kind["sdist"],
         version=version,
+        engine_wheel=by_kind["engine-wheel"],
+        engine_sdist=by_kind["engine-sdist"],
     )
     gates = _copy_gate_evidence(args.evidence, destination=destination)
     context = {"run_attempt": args.workflow_run_attempt,
@@ -2223,13 +2359,25 @@ def build_bundle(args: argparse.Namespace) -> int:
     _github_output(
         {
             "version": version,
-            "wheel-filename": artifacts[0]["filename"],
-            "wheel-sha256": artifacts[0]["sha256"],
-            "sdist-filename": artifacts[1]["filename"],
-            "sdist-sha256": artifacts[1]["sha256"],
+            **{
+                f"{kind}-{field}": by_kind[kind][key]
+                for kind in ARTIFACT_KINDS
+                for field, key in (("filename", "filename"), ("sha256", "sha256"))
+            },
         }
     )
     return 0
+
+
+def _manifest_artifact_kinds(manifest: Mapping[str, Any]) -> tuple[str, ...]:
+    """Bundles from before the engine distribution qualified the CLI alone."""
+    if manifest["schema_version"] in CLI_ONLY_QUALIFICATION_SCHEMAS:
+        return CLI_ONLY_ARTIFACT_KINDS
+    return ARTIFACT_KINDS
+
+
+def _manifest_has_engine(manifest: Mapping[str, Any]) -> bool:
+    return _manifest_artifact_kinds(manifest) == ARTIFACT_KINDS
 
 
 def _validate_manifest(value: object) -> Mapping[str, Any]:
@@ -2249,7 +2397,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
             "gates",
         ),
     )
-    if manifest["schema_version"] not in {QUALIFICATION_SCHEMA, PREVIOUS_QUALIFICATION_SCHEMA}:
+    if manifest["schema_version"] not in {QUALIFICATION_SCHEMA, *CLI_ONLY_QUALIFICATION_SCHEMAS}:
         raise QualificationError("qualification schema_version is unsupported")
     _require_string(manifest["repository"], "manifest.repository")
     if (
@@ -2259,7 +2407,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
     ):
         raise QualificationError("manifest.workflow_run_id must be positive")
     context_keys = ("run_attempt", "harness_sha256", "suite_layout")
-    if manifest["schema_version"] == QUALIFICATION_SCHEMA:
+    if manifest["schema_version"] != UNSHARDED_QUALIFICATION_SCHEMA:
         context_keys += ("core_layout",)
     context = _require_object(manifest["qualification_context"], name="qualification context",
         keys=context_keys)
@@ -2290,8 +2438,11 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
     if manifest["tag"] != f"v{version}":
         raise QualificationError("manifest tag/version mismatch")
     artifacts = manifest["artifacts"]
-    if not isinstance(artifacts, list) or len(artifacts) != 2:
-        raise QualificationError("manifest must declare exactly two artifacts")
+    expected_kinds = list(_manifest_artifact_kinds(manifest))
+    if not isinstance(artifacts, list) or len(artifacts) != len(expected_kinds):
+        raise QualificationError(
+            f"manifest must declare exactly {len(expected_kinds)} artifacts"
+        )
     ordered_kinds: list[str] = []
     for index, value in enumerate(artifacts):
         artifact = _require_object(
@@ -2304,16 +2455,20 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
             f"manifest.artifacts[{index}].filename",
         )
         _require_sha256(artifact["sha256"], f"manifest.artifacts[{index}].sha256")
-        if artifact["kind"] not in {"wheel", "sdist"}:
+        if artifact["kind"] not in expected_kinds:
             raise QualificationError("manifest artifact kind is unsupported")
         match = DIST_RE.fullmatch(filename)
-        if not match or match.group("version") != version:
+        if (
+            not match
+            or match.group("version") != version
+            or match.group("package") != ARTIFACT_PACKAGE[artifact["kind"]]
+        ):
             raise QualificationError(
                 f"manifest artifact filename does not identify {version}: {filename}"
             )
         expected_suffix = (
             "-py3-none-any.whl"
-            if artifact["kind"] == "wheel"
+            if artifact["kind"].endswith("wheel")
             else ".tar.gz"
         )
         if not filename.endswith(expected_suffix):
@@ -2321,9 +2476,9 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
                 f"manifest {artifact['kind']} filename has the wrong format: {filename}"
             )
         ordered_kinds.append(artifact["kind"])
-    if ordered_kinds != ["wheel", "sdist"]:
+    if ordered_kinds != expected_kinds:
         raise QualificationError(
-            "manifest artifacts must be ordered as one wheel then one sdist"
+            "manifest artifacts must be ordered as " + ", ".join(expected_kinds)
         )
     support = _require_object(
         manifest["supporting_files"],
@@ -2417,7 +2572,9 @@ def _require_mapping_fields(
     return value
 
 
-def _load_attestation_receipts(path: Path, *, label: str) -> list[list[object]]:
+def _load_attestation_receipts(
+    path: Path, *, label: str, expected_count: int
+) -> list[list[object]]:
     if path.stat().st_size > MAX_ATTESTATION_RECEIPTS_BYTES:
         raise QualificationError(
             f"{label} attestation receipts exceed "
@@ -2430,12 +2587,9 @@ def _load_attestation_receipts(path: Path, *, label: str) -> list[list[object]]:
             f"{label} attestation receipts are not readable UTF-8: {exc}"
         ) from exc
     lines = text.splitlines()
-    if (
-        len(lines) != ATTESTATION_RECEIPT_COUNT
-        or any(not line.strip() for line in lines)
-    ):
+    if len(lines) != expected_count or any(not line.strip() for line in lines):
         raise QualificationError(
-            f"{label} must contain exactly {ATTESTATION_RECEIPT_COUNT} "
+            f"{label} must contain exactly {expected_count} "
             "non-empty JSONL receipts"
         )
 
@@ -2468,7 +2622,9 @@ def _validate_attestation_receipts(
     manifest: Mapping[str, Any],
     workflow_receipt: Mapping[str, Any],
 ) -> None:
-    receipts = _load_attestation_receipts(path, label=label)
+    receipts = _load_attestation_receipts(
+        path, label=label, expected_count=len(manifest["artifacts"])
+    )
     _validate_selected_attestations(
         receipts,
         label=label,
@@ -2690,7 +2846,7 @@ def _validate_attestation_results(
 
     if covered_subjects != expected_pairs:
         raise QualificationError(
-            f"{label} receipts do not cover exactly both qualified artifacts; "
+            f"{label} receipts do not cover exactly every qualified artifact; "
             f"missing={sorted(expected_pairs - covered_subjects)}, "
             f"extra={sorted(covered_subjects - expected_pairs)}"
         )
@@ -2741,7 +2897,9 @@ def select_attestations(args: argparse.Namespace) -> int:
         ("SPDX SBOM", args.sbom_attestation,
          "sbom-attestations.jsonl", SPDX_SBOM_PREDICATE),
     ):
-        receipts = _load_attestation_receipts(path, label=label)
+        receipts = _load_attestation_receipts(
+            path, label=label, expected_count=len(manifest["artifacts"])
+        )
         invocations = _validate_attestation_results(
             receipts, label=label, predicate_type=predicate,
             manifest=manifest, workflow_receipt=workflow_receipt,
@@ -2844,10 +3002,22 @@ def verify_bundle(args: argparse.Namespace) -> int:
 
     artifacts = list(manifest["artifacts"])
     by_kind = {item["kind"]: item for item in artifacts}
-    if by_kind["wheel"]["sha256"] != args.wheel_sha256:
-        raise QualificationError("supplied wheel digest does not match qualification")
-    if by_kind["sdist"]["sha256"] != args.sdist_sha256:
-        raise QualificationError("supplied sdist digest does not match qualification")
+    engine = _manifest_has_engine(manifest)
+    supplied = {
+        "wheel": args.wheel_sha256,
+        "sdist": args.sdist_sha256,
+        "engine-wheel": getattr(args, "engine_wheel_sha256", None),
+        "engine-sdist": getattr(args, "engine_sdist_sha256", None),
+    }
+    for kind, digest in supplied.items():
+        if kind not in by_kind:
+            if digest:
+                raise QualificationError(f"bundle has no qualified {kind} to match")
+            continue
+        if by_kind[kind]["sha256"] != digest:
+            raise QualificationError(
+                f"supplied {kind} digest does not match qualification"
+            )
     for artifact in artifacts:
         path = root / "dist" / artifact["filename"]
         if sha256_file(path) != artifact["sha256"]:
@@ -2906,9 +3076,15 @@ def verify_bundle(args: argparse.Namespace) -> int:
     _validate_qualifying_knowledge_bundle(root)
     _validate_analysis_conformance(root)
 
-    wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
-    sdist_smoke = _validate_smoke(load_json(root / "smoke-sdist.json"), "sdist")
-    comparison = _validate_smoke_comparison(load_json(root / "smoke-comparison.json"))
+    wheel_smoke = _validate_smoke(
+        load_json(root / "smoke-wheel.json"), "wheel", engine=engine
+    )
+    sdist_smoke = _validate_smoke(
+        load_json(root / "smoke-sdist.json"), "sdist", engine=engine
+    )
+    comparison = _validate_smoke_comparison(
+        load_json(root / "smoke-comparison.json"), engine=engine
+    )
     _verify_smoke_consistency(
         wheel_smoke,
         sdist_smoke,
@@ -2916,6 +3092,8 @@ def verify_bundle(args: argparse.Namespace) -> int:
         wheel=by_kind["wheel"],
         sdist=by_kind["sdist"],
         version=manifest["version"],
+        engine_wheel=by_kind.get("engine-wheel"),
+        engine_sdist=by_kind.get("engine-sdist"),
     )
 
     provenance = load_json(root / "provenance.intoto.json")
@@ -2954,7 +3132,10 @@ def verify_bundle(args: argparse.Namespace) -> int:
                 f"{tag} does not resolve to qualified SHA {args.candidate_sha}"
             )
     if args.check_registry:
-        _check_registry_unused(manifest["version"])
+        _check_registry_unused(
+            manifest["version"],
+            (PACKAGE_NAME, ENGINE_PACKAGE_NAME) if engine else (PACKAGE_NAME,),
+        )
     receipt_output = getattr(args, "output", None)
     if receipt_output is not None:
         write_json(
@@ -2981,8 +3162,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
         {
             "version": manifest["version"],
             "tag": manifest["tag"],
-            "wheel-filename": by_kind["wheel"]["filename"],
-            "sdist-filename": by_kind["sdist"]["filename"],
+            **{f"{kind}-filename": item["filename"] for kind, item in by_kind.items()},
         }
     )
     print(
@@ -3121,10 +3301,10 @@ def finalize_promotion(args: argparse.Namespace) -> int:
 
 
 def compare_builds(args: argparse.Namespace) -> int:
-    first_wheel, first_sdist = _dist_files(args.first.resolve())
-    second_wheel, second_sdist = _dist_files(args.second.resolve())
-    pairs = ((first_wheel, second_wheel), (first_sdist, second_sdist))
-    for first, second in pairs:
+    first_files = _build_files(args.first.resolve())
+    second_files = _build_files(args.second.resolve())
+    for kind in ARTIFACT_KINDS:
+        first, second = first_files[kind], second_files[kind]
         if first.name != second.name:
             raise QualificationError(
                 f"independent build filenames differ: {first.name}, {second.name}"
@@ -3137,13 +3317,12 @@ def compare_builds(args: argparse.Namespace) -> int:
     output.mkdir(parents=True, exist_ok=False)
     dist = output / "dist"
     dist.mkdir()
-    for path in (first_wheel, first_sdist):
+    for path in first_files.values():
         (dist / path.name).write_bytes(path.read_bytes())
     result = {
-        "schema_version": "agent-wiki-reproducible-build/v1",
+        "schema_version": "agent-wiki-reproducible-build/v2",
         "artifacts": [
-            _artifact_entry(dist / first_wheel.name, "wheel"),
-            _artifact_entry(dist / first_sdist.name, "sdist"),
+            _artifact_entry(dist / path.name, kind) for kind, path in first_files.items()
         ],
         "reproducible": True,
     }
@@ -3528,6 +3707,8 @@ def _parser() -> argparse.ArgumentParser:
     verify.add_argument("--candidate-sha", required=True)
     verify.add_argument("--wheel-sha256", required=True)
     verify.add_argument("--sdist-sha256", required=True)
+    verify.add_argument("--engine-wheel-sha256")
+    verify.add_argument("--engine-sdist-sha256")
     verify.add_argument("--repository-root", type=Path, default=Path("."))
     verify.add_argument("--verify-repository", action="store_true")
     verify.add_argument("--require-tag", action="store_true")

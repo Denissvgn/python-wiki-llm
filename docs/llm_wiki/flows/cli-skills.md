@@ -2,7 +2,18 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [skills_cmd](../modules/skills_cmd.md)
-**Modules touched:** [config](../modules/config.md), [io](../modules/io.md), [skills](../modules/skills.md), [skills_cmd](../modules/skills_cmd.md), [validation](../modules/validation.md), [wiki_write_basis](../modules/wiki_write_basis.md)
+**Modules touched:** [config](../modules/config.md), [host](../modules/host.md), [io](../modules/io.md), [path_policy](../modules/path_policy.md), and 4 more
+
+**Complete modules touched:**
+
+- [config](../modules/config.md)
+- [host](../modules/host.md)
+- [io](../modules/io.md)
+- [path_policy](../modules/path_policy.md)
+- [skills](../modules/skills.md)
+- [skills_cmd](../modules/skills_cmd.md)
+- [validation](../modules/validation.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
 
@@ -39,7 +50,7 @@ sequenceDiagram
     participant p25 as render_report_json
     participant p26 as get_agent_config_path
     participant p27 as render_report_text
-    participant p28 as _parse_skill_frontmatter
+    participant p28 as current_host
     participant p29 as getattr
     participant p30 as root.is_dir
     p0->>p1: list_bundled_skills
@@ -69,14 +80,14 @@ sequenceDiagram
     p3->>p25: render_report_json
     p4->>p26: get_agent_config_path
     p3->>p27: render_report_text
-    p1->>p28: _parse_skill_frontmatter
+    p5->>p28: current_host
     p0-->>p29: getattr(args, 'skills_action', None)
     p1-->>p30: root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 310 interactions; 280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 313 interactions; 283 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 102 (101 omitted); unresolved 1 of 114 (113 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 100 (99 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -85,12 +96,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/skills_cmd.py:run` | 1 | - | external | 17 |
 | `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | external | 1 |
 | `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/skills.py](../modules/skills.md) | internal | 3 |
 | `src/llm_wiki_cli/services/skills.py:_parse_skill_frontmatter` | 10 | - | unresolved | 10 |
-| `src/llm_wiki_cli/services/io.py:read_md` | 21 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:decode_markdown_bytes` | 22 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/io.py:read_md` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/skills.py](../modules/skills.md) | internal | 2 |
-> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/io.py:read_md` | 21 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_engine/io.py:decode_markdown_bytes` | 22 | - | unresolved | 4 |
+| `src/llm_wiki_engine/io.py:read_md` | 21 | - | unresolved | 1 |
+> Omission summary shows 8 of 73 groups; 65 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -103,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 95; effect analysis evaluated: 77, partial: 1, unavailable: 17. Counts include steps omitted from the displayed trace.
+Source steps: 97; effect analysis evaluated: 79, partial: 1, unavailable: 17. Counts include steps omitted from the displayed trace.
 
-Collector observations for 78 source steps with known totals: observed: 462, emitted: 461, omitted: 1. Unavailable totals are excluded.
+Collector observations for 80 source steps with known totals: observed: 466, emitted: 465, omitted: 1. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

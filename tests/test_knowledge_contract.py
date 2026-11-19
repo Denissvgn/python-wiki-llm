@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     REPOSITORY_IDENTITY_SOURCE_EXTENSION,
     ComputedFreshness,
     KnowledgeLoadState,
@@ -25,14 +25,14 @@ from llm_wiki_cli.services.knowledge_model import (
     parse_knowledge_index,
     repository_identities_match,
 )
-from llm_wiki_cli.services.wiki_media import iter_markdown_link_targets
-from llm_wiki_cli.services.wiki_surface import (
+from llm_wiki_engine.wiki_media import iter_markdown_link_targets
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     SurfaceRole,
     canonical_path,
     iter_page_kinds,
 )
-from llm_wiki_cli.services.wiki_surface_index import build_surface_index
+from llm_wiki_engine.wiki_surface_index import build_surface_index
 from tests import regenerate_knowledge_goldens
 from tests.knowledge_fixtures import (
     FIXTURE_CONSUMERS,
@@ -550,6 +550,7 @@ def test_hostile_metadata_remains_inert_and_cannot_select_execution_or_access(
     monkeypatch,
 ):
     from llm_wiki_cli.services import plugins
+    from llm_wiki_engine import integrations
 
     schema = load_knowledge_schema()
     attempted_effects: list[str] = []
@@ -559,7 +560,17 @@ def test_hostile_metadata_remains_inert_and_cannot_select_execution_or_access(
         raise AssertionError("knowledge metadata attempted an external effect")
 
     monkeypatch.setattr(plugins, "load_entry_point", forbidden_effect)
-    monkeypatch.setattr(plugins.importlib, "import_module", forbidden_effect)
+    real_import_module = plugins.importlib.import_module
+    host_providers = set(integrations.provided().values())
+
+    def import_module(name, *args, **kwargs):
+        # The engine imports only the providers its host named, never a
+        # module that knowledge metadata selects.
+        if name in host_providers:
+            return real_import_module(name, *args, **kwargs)
+        forbidden_effect(name, *args, **kwargs)
+
+    monkeypatch.setattr(plugins.importlib, "import_module", import_module)
     monkeypatch.setattr(subprocess, "Popen", forbidden_effect)
     monkeypatch.setattr(subprocess, "run", forbidden_effect)
     monkeypatch.setattr(socket, "create_connection", forbidden_effect)

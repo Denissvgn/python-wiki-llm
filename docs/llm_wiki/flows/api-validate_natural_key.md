@@ -29,15 +29,15 @@ sequenceDiagram
     participant p15 as quote
     participant p16 as _URI_SCHEME_RE.match
     participant p17 as decoded.split
-    participant p18 as path_part.split (src/llm_wiki_cli/services…ty.py:validate_natural_key)
-    participant p19 as any (src/llm_wiki_cli/services…ty.py:validate_natural_key)
+    participant p18 as path_part.split (src/llm_wiki_engine/conce…ty.py:validate_natural_key)
+    participant p19 as any (src/llm_wiki_engine/conce…ty.py:validate_natural_key)
     participant p20 as path_part.endswith
     participant p21 as isinstance
     participant p22 as urlsplit
     participant p23 as value.split
     participant p24 as value.startswith
-    participant p25 as unicodedata.normalize (src/llm_wiki_cli/services…y:_safe_decoded_coordinate)
-    participant p26 as path_part.split (src/llm_wiki_cli/services…ntains_coordinate_userinfo)
+    participant p25 as unicodedata.normalize (src/llm_wiki_engine/conce…y:_safe_decoded_coordinate)
+    participant p26 as path_part.split (src/llm_wiki_engine/conce…ntains_coordinate_userinfo)
     participant p27 as _WINDOWS_ABSOLUTE_RE.match
     participant p28 as len
     participant p29 as first_segment.rsplit
@@ -59,15 +59,15 @@ sequenceDiagram
     p0-->>p15: quote(decoded, safe=_NATURAL_KEY_QUOTE_SAFE)
     p0-->>p16: _URI_SCHEME_RE.match(decoded)
     p0-->>p17: decoded.split(' ', 1)
-    p0-->>p18: path_part.split (src/llm_wiki_cli/services…ty.py:validate_natural_key)('/')
-    p0-->>p19: any (src/llm_wiki_cli/services…ty.py:validate_natural_key)(...)
+    p0-->>p18: path_part.split (src/llm_wiki_engine/conce…ty.py:validate_natural_key)('/')
+    p0-->>p19: any (src/llm_wiki_engine/conce…ty.py:validate_natural_key)(...)
     p0-->>p20: path_part.endswith('/')
     p1-->>p21: isinstance(value, str)
     p4-->>p22: urlsplit(value)
     p5-->>p23: value.split(' ', 1)
     p6-->>p24: value.startswith((...))
-    p2-->>p25: unicodedata.normalize (src/llm_wiki_cli/services…y:_safe_decoded_coordinate)('NFC', value)
-    p5-->>p26: path_part.split (src/llm_wiki_cli/services…ntains_coordinate_userinfo)('/', 1)
+    p2-->>p25: unicodedata.normalize (src/llm_wiki_engine/conce…y:_safe_decoded_coordinate)('NFC', value)
+    p5-->>p26: path_part.split (src/llm_wiki_engine/conce…ntains_coordinate_userinfo)('/', 1)
     p6-->>p27: _WINDOWS_ABSOLUTE_RE.match(value)
     p1-->>p28: len(value)
     p5-->>p29: first_segment.rsplit('@', 1)
@@ -81,14 +81,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | - | external | 4 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_natural_key` | 1 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 9 |
-| `src/llm_wiki_cli/services/concept_identity.py:_safe_decoded_coordinate` | 30 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_safe_decoded_coordinate` | 30 | - | external | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_safe_decoded_coordinate` | 30 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_coordinate_userinfo` | 44 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 2 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 2 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 2 | - | external | 4 |
+| `src/llm_wiki_engine/concept_identity.py:validate_natural_key` | 1 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 9 |
+| `src/llm_wiki_engine/concept_identity.py:_safe_decoded_coordinate` | 30 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_safe_decoded_coordinate` | 30 | - | external | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_safe_decoded_coordinate` | 30 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_coordinate_userinfo` | 44 | - | external | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -115,10 +115,10 @@ Collector observations for 6 source steps with known totals: observed: 19, emitt
 | `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
@@ -130,10 +130,10 @@ flowchart LR
     s5["5. len"]
     s6["6. ConceptIdentityError"]
     s7["7. value.strip"]
-    s8["8. any (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
-    s9["9. character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
+    s8["8. any (src/llm_wiki_engine/conce…_identity.py:_machine_text)"]
+    s9["9. character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)"]
     s10["10. ConceptIdentityError"]
-    s11["11. unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
+    s11["11. unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
     s1 -->|"_machine_text(value, 'natural_key', maximum=_MAX_NATURAL_KEY_LENGTH)"| s2
     s2 -. "isinstance(value, str)" .-> s3
@@ -141,10 +141,10 @@ flowchart LR
     s2 -. "len(value)" .-> s5
     s2 -->|"ConceptIdentityError(field, ...)"| s6
     s2 -. "value.strip(data not statically known)" .-> s7
-    s2 -. "any (src/llm_wiki_cli/services…_identity.py:_machine_text)(...)" .-> s8
-    s2 -. "character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)(data not statically known)" .-> s9
+    s2 -. "any (src/llm_wiki_engine/conce…_identity.py:_machine_text)(...)" .-> s8
+    s2 -. "character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)(data not statically known)" .-> s9
     s2 -->|"ConceptIdentityError(field, 'must not contain whitespace')"| s10
-    s2 -. "unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)('NFC', value)" .-> s11
+    s2 -. "unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)('NFC', value)" .-> s11
     s2 -->|"ConceptIdentityError(field, 'must use Unicode NFC normalization')"| s12
     click s1 "../modules/concept_identity.md"
     click s2 "../modules/concept_identity.md"
@@ -165,10 +165,10 @@ flowchart LR
 | `len` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
-| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
+| `any (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | - | - | - | - |
+| `character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
+| `unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 
 ### Call data
@@ -181,10 +181,10 @@ flowchart LR
 | _machine_text | len | 944 | `len(value)` |
 | _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
 | _machine_text | value.strip | 946 | `value.strip(data not statically known)` |
-| _machine_text | any (src/llm_wiki_cli/services…_identity.py:_machine_text) | 946 | `any(...)` |
-| _machine_text | character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text) | 946 | `character.isspace(data not statically known)` |
+| _machine_text | any (src/llm_wiki_engine/conce…_identity.py:_machine_text) | 946 | `any(...)` |
+| _machine_text | character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text) | 946 | `character.isspace(data not statically known)` |
 | _machine_text | ConceptIdentityError | 947 | `ConceptIdentityError(field, 'must not contain whitespace')` |
-| _machine_text | unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text) | 948 | `unicodedata.normalize('NFC', value)` |
+| _machine_text | unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text) | 948 | `unicodedata.normalize('NFC', value)` |
 | _machine_text | ConceptIdentityError | 949 | `ConceptIdentityError(field, 'must use Unicode NFC normalization')` |
 
 ### Boundary effects

@@ -12,8 +12,8 @@ import platform
 import re
 import sys
 
-from . import analysis_compatibility as ac
-from .immutable import FrozenDict, freeze
+from llm_wiki_engine import analysis_compatibility as ac
+from llm_wiki_engine.immutable import FrozenDict, freeze
 from copy import deepcopy
 
 _ISSUER = object()
@@ -48,6 +48,31 @@ def analysis_diagnostics(captured):
     return deepcopy(captured._diagnostics) if isinstance(captured, _CapturedAnalysis) else None
 
 
+ENGINE_PACKAGE = "llm_wiki_engine"
+
+
+def engine_package_root(root: Path) -> Path:
+    """Locate the engine package that serves the provider at ``root``.
+
+    Both distributions normally install side by side, and the source checkout
+    keeps both packages under ``src``. Otherwise the imported engine counts.
+    """
+    sibling = root.parent / ENGINE_PACKAGE
+    if sibling.is_dir():
+        return sibling
+    import llm_wiki_engine
+    return Path(llm_wiki_engine.__file__).resolve().parent
+
+
+def engine_input(root: Path, name: str) -> Path:
+    """Resolve a registered ``llm_wiki_engine/...`` analysis input."""
+    path = Path(name) if isinstance(name, str) else None
+    if (path is None or path.is_absolute() or ".." in path.parts or "\\" in name
+            or path.parts[:1] != (ENGINE_PACKAGE,) or len(path.parts) < 2):
+        raise ValueError("unsafe engine analysis input: " + str(name))
+    return engine_package_root(root).joinpath(*path.parts[1:])
+
+
 def _input_rows(root, rules):
     excluded = {"__pycache__", "node_modules", "target"}
     python = {v.relative_to(root).as_posix() for v in root.rglob("*.py")
@@ -59,6 +84,12 @@ def _input_rows(root, rules):
             for p in sorted(python - set(rules["classified_python_files"]))]
     rows += [{"kind": "unclassified-helper", "path": p}
              for p in sorted(helpers - set(rules.get("classified_helper_files", [])))]
+    engine = engine_package_root(root)
+    if "engine_classified_python_files" in rules:
+        engine_python = {ENGINE_PACKAGE + "/" + v.relative_to(engine).as_posix()
+                         for v in engine.rglob("*.py") if not set(v.parts) & excluded}
+        rows += [{"kind": "unclassified-python", "path": p}
+                 for p in sorted(engine_python - set(rules["engine_classified_python_files"]))]
     return rows
 
 
@@ -106,6 +137,13 @@ def analysis_input_status(*, package_root=None, limit=20):
             if path.is_absolute() or ".." in path.parts or "\\" in name:
                 return _status([], limit=limit, reason="unsafe-registry-input")
             target = root / path
+            if target.is_symlink() or not target.is_file():
+                rows.append({"kind": "missing-or-unsafe-producer-input", "path": name})
+        for name in sorted(rules.get("engine_shared", [])):
+            try:
+                target = engine_input(root, name)
+            except ValueError:
+                return _status([], limit=limit, reason="unsafe-registry-input")
             if target.is_symlink() or not target.is_file():
                 rows.append({"kind": "missing-or-unsafe-producer-input", "path": name})
         return _status(rows, limit=limit, reason="analysis-inputs-unavailable" if rows and not any(r["kind"].startswith("unclassified") for r in rows) else None)
@@ -173,10 +211,13 @@ def registry(root: Path | None = None) -> dict:
     return value
 
 
-def implementation_hash(root: Path, paths: list[str]) -> str:
+def implementation_hash(root: Path, paths: list[str], engine_paths=()) -> str:
+    """Digest registered inputs; engine names keep their package prefix."""
+    files = {name: root / name for name in set(paths)}
+    files.update((name, engine_input(root, name)) for name in set(engine_paths))
     hashes = {}
-    for name in sorted(set(paths)):
-        path = root / name
+    for name in sorted(files):
+        path = files[name]
         if path.is_symlink() or not path.is_file():
             raise ValueError("missing or redirected analysis input: " + name)
         raw = path.read_bytes()
@@ -229,7 +270,12 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
         p for language in selected
         for p in rules["providers"].get("typescript" if language == "javascript" else language, [])
     }
-    present = all((root / p).is_file() and not (root / p).is_symlink() for p in required)
+    try:
+        engine_required = [engine_input(root, p) for p in rules.get("engine_shared", [])]
+    except ValueError:
+        return _issued({}, _status([], reason="unsafe-registry-input"))
+    present = all(path.is_file() and not path.is_symlink()
+                  for path in [*(root / p for p in required), *engine_required])
     if present and cache is not None and cache_key in cache:
         return cache[cache_key]
     profile = [sys.platform, sys.version_info.major, sys.version_info.minor, platform.machine().casefold()]
@@ -243,7 +289,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
     result = {}
     diagnostics = None
     try:
-        common = implementation_hash(root, rules["shared"])
+        common = implementation_hash(root, rules["shared"], rules.get("engine_shared", ()))
     except (OSError, ValueError):
         return _issued(result, analysis_input_status(package_root=root))
     result["agent-wiki-cli"] = {"implementation": common, "runtime": ac.digest(python_identity), "provenance": provenance}
@@ -327,7 +373,7 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
 
 def attach(component, captured: Mapping | None):
     from dataclasses import replace
-    from .knowledge_envelope import hash_component_configuration
+    from llm_wiki_engine.knowledge_envelope import hash_component_configuration
     if ac.EXTENSION in component.extensions:
         raise ValueError("analysis compatibility is owned by the producer")
     if captured is None:

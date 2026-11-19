@@ -1,6 +1,6 @@
 # EvaluatedEnvelope
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:267`
+**Location:** `src/llm_wiki_engine/knowledge_envelope.py:268`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -32,17 +32,17 @@ Version-tagged evaluated basis committed through manifest v5.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["EvaluatedEnvelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n1["_validate_artifact_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n2["build_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n3["evaluated_envelope_to_payload (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n4["hash_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n5["serialize_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n6["_application_knowledge_extensions (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n7["src/llm_wiki_cli/services/knowledge_index.py"]
-    n8["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n9["_capture_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n10["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n0["EvaluatedEnvelope (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n1["_application_knowledge_extensions (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n2["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n3["_validate_artifact_parity (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n4["build_evaluated_envelope (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n5["evaluated_envelope_to_payload (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n6["hash_evaluated_envelope (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n7["serialize_evaluated_envelope (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n8["src/llm_wiki_engine/knowledge_index.py"]
+    n9["_capture_slice (src/llm_wiki_engine/knowledge_storage_access.py)"]
+    n10["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -54,14 +54,14 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     click n0 "../modules/knowledge_envelope.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_envelope.md"
-    click n3 "../modules/knowledge_envelope.md"
+    click n1 "../modules/knowledge_generation.md"
+    click n2 "../modules/knowledge_orchestration.md"
+    click n3 "../modules/knowledge_artifacts.md"
     click n4 "../modules/knowledge_envelope.md"
     click n5 "../modules/knowledge_envelope.md"
-    click n6 "../modules/knowledge_generation.md"
-    click n7 "../modules/knowledge_index.md"
-    click n8 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_envelope.md"
+    click n7 "../modules/knowledge_envelope.md"
+    click n8 "../modules/knowledge_index.md"
     click n9 "../modules/knowledge_storage_access.md"
     click n10 "../modules/knowledge_stream_audit.md"
 ```
@@ -76,14 +76,14 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_application_knowledge_extensions` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_stabilize_revision_only_noop` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
 | `_validate_artifact_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `evaluated_envelope_to_payload` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `hash_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `serialize_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
-| `_application_knowledge_extensions` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
-| `_stabilize_revision_only_noop` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
 | `_capture_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
 | `audit_knowledge_stream` | call | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) | 1 |

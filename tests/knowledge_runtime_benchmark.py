@@ -20,7 +20,7 @@ from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services import knowledge_orchestration
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.lint_service import build_report
-from llm_wiki_cli.services.progress import Progress
+from llm_wiki_engine.progress import Progress
 
 ARTIFACTS = (
     ".llm-wiki-surface.json",

@@ -6,13 +6,13 @@ from copy import deepcopy
 
 import pytest
 
-from llm_wiki_cli.services.maintenance_evidence import (
+from llm_wiki_engine.maintenance_evidence import (
     MaintenanceCapture, _unavailable, owner_key, reconcile_pending_maintenance,
 )
-from llm_wiki_cli.services.maintenance_projection import (
+from llm_wiki_engine.maintenance_projection import (
     project_maintenance_knowledge, validate_maintenance_projection, validate_maintenance_prose,
 )
-from llm_wiki_cli.services.maintenance_state import MaintenanceError, canonical_hash, maintenance_core
+from llm_wiki_engine.maintenance_state import MaintenanceError, canonical_hash, maintenance_core
 from llm_wiki_cli.services.python_implementation import comparison_id
 from tests.test_maintenance_reconciliation import (
     MARKDOWN, acknowledged, adopted, capture, marker, project as project,

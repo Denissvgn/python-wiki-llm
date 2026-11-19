@@ -27,17 +27,20 @@ flowchart LR
     n2["BootstrapContractError (src/llm_wiki_cli/services/bootstrap_service.py)"]
     n3["BootstrapExtractionError (src/llm_wiki_cli/services/bootstrap_service.py)"]
     n4["src/llm_wiki_cli/api.py"]
-    n5["src/llm_wiki_cli/services/publication_snapshot.py"]
+    n5["src/llm_wiki_cli/engine/__init__.py"]
+    n6["src/llm_wiki_cli/services/publication_snapshot.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/bootstrap_service.md"
     click n2 "../modules/bootstrap_service.md"
     click n3 "../modules/bootstrap_service.md"
     click n4 "../modules/api.md"
-    click n5 "../modules/publication_snapshot.md"
+    click n5 "../modules/engine___init__.md"
+    click n6 "../modules/publication_snapshot.md"
 ```
 
 ### Summary
@@ -59,4 +62,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
+| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
 | `publication_snapshot` | import | [publication_snapshot](../modules/publication_snapshot.md) | — |

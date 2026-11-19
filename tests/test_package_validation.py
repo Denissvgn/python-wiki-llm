@@ -136,7 +136,8 @@ def test_locked_validation_explicitly_uses_its_backend_without_caching_candidate
         lambda command, **kwargs: commands.append((command, kwargs)),
     )
     package_check._verify_install(
-        tmp_path / "candidate.tar.gz", tmp_path, build_isolation=False
+        tmp_path / "candidate.tar.gz", tmp_path / "engine.tar.gz", tmp_path,
+        build_isolation=False,
     )
     install = commands[0][0]
     assert (
@@ -144,6 +145,8 @@ def test_locked_validation_explicitly_uses_its_backend_without_caching_candidate
         and "--no-cache-dir" in install
         and "--no-deps" in install
     )
+    # The pinned engine installs into the same target as the CLI artifact.
+    assert install[-2:] == [str(tmp_path / "engine.tar.gz"), str(tmp_path / "candidate.tar.gz")]
     assert commands[1][1]["env"]["PYTHONPATH"].startswith(str(tmp_path))
 
 
@@ -156,7 +159,7 @@ def test_default_artifact_validation_keeps_build_isolation_for_existing_callers(
         "run",
         lambda command, **kwargs: commands.append(command),
     )
-    package_check._verify_install(tmp_path / "candidate.tar.gz", tmp_path)
+    package_check._verify_install(tmp_path / "candidate.tar.gz", tmp_path / "engine.tar.gz", tmp_path)
     assert "--no-build-isolation" not in commands[0] and "--no-cache-dir" in commands[0]
 
 
@@ -180,5 +183,5 @@ def test_installed_probe_and_cli_child_use_utf8_under_a_legacy_parent(tmp_path, 
         return result
 
     monkeypatch.setattr(package_check.subprocess, "run", run)
-    package_check._verify_install(tmp_path / "candidate.whl", tmp_path)
+    package_check._verify_install(tmp_path / "candidate.whl", tmp_path / "engine.whl", tmp_path)
     assert outputs == ["\u2705\n"]

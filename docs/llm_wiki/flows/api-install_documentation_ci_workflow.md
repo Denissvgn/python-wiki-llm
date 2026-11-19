@@ -2,22 +2,26 @@
 
 **Entry point:** `install_documentation_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 13 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 17 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [ci_installer](../modules/ci_installer.md)
-- [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [path_policy](../modules/path_policy.md)
 - [publication_config](../modules/publication_config.md)
+- [publication_targets](../modules/publication_targets.md)
+- [reference_providers](../modules/reference_providers.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -50,16 +54,16 @@ sequenceDiagram
     participant p16 as _validate_workflow_target
     participant p17 as _validated_project_path
     participant p18 as _relative_path
-    participant p19 as SyncManifest.load
-    participant p20 as resolve_source_selection
-    participant p21 as validate_persisted_source_selection_identity
-    participant p22 as is_unmodified_managed_workflow
-    participant p23 as read_publication_json
-    participant p24 as ensure_guarded_directory
-    participant p25 as atomic_write_guarded_bytes
-    participant p26 as validate_publication_config
-    participant p27 as require_repository_relative_path
-    participant p28 as _locate_exact_path
+    participant p19 as first_unsafe_path_component
+    participant p20 as SyncManifest.load
+    participant p21 as resolve_source_selection
+    participant p22 as validate_persisted_source_selection_identity
+    participant p23 as is_unmodified_managed_workflow
+    participant p24 as read_publication_json
+    participant p25 as ensure_guarded_directory
+    participant p26 as atomic_write_guarded_bytes
+    participant p27 as validate_publication_config
+    participant p28 as require_repository_relative_path
     participant p29 as any (src/llm_wiki_cli/services…documentation_ci_workflow)
     participant p30 as authored.extend
     p0->>p1: _project_root
@@ -80,23 +84,23 @@ sequenceDiagram
     p10->>p16: _validate_workflow_target
     p3->>p17: _validated_project_path
     p5->>p18: _relative_path
-    p7->>p19: SyncManifest.load
-    p7->>p20: resolve_source_selection
-    p7->>p21: validate_persisted_source_selection_identity
-    p10->>p22: is_unmodified_managed_workflow
-    p5->>p23: read_publication_json
-    p10->>p24: ensure_guarded_directory
-    p10->>p25: atomic_write_guarded_bytes
-    p5->>p26: validate_publication_config
-    p17->>p27: require_repository_relative_path
-    p14->>p28: _locate_exact_path
+    p4->>p19: first_unsafe_path_component
+    p7->>p20: SyncManifest.load
+    p7->>p21: resolve_source_selection
+    p7->>p22: validate_persisted_source_selection_identity
+    p10->>p23: is_unmodified_managed_workflow
+    p5->>p24: read_publication_json
+    p10->>p25: ensure_guarded_directory
+    p10->>p26: atomic_write_guarded_bytes
+    p5->>p27: validate_publication_config
+    p17->>p28: require_repository_relative_path
     p0-->>p29: any (src/llm_wiki_cli/services…documentation_ci_workflow)(...)
     p0-->>p30: authored.extend(...)
 ```
 
-> Call sequence diagram shows 30 of 1473 interactions; 1443 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1479 interactions; 1449 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 530 (529 omitted); unresolved 1 of 315 (314 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 533 (532 omitted); unresolved 1 of 317 (316 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -110,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 12 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 12 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 18 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-> Omission summary shows 8 of 326 groups; 318 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 337 groups; 329 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 629; effect analysis evaluated: 329, partial: 21, unavailable: 279. Counts include steps omitted from the displayed trace.
+Source steps: 630; effect analysis evaluated: 329, partial: 21, unavailable: 280. Counts include steps omitted from the displayed trace.
 
-Collector observations for 350 source steps with known totals: observed: 1980, emitted: 1913, omitted: 67. Unavailable totals are excluded.
+Collector observations for 350 source steps with known totals: observed: 1953, emitted: 1886, omitted: 67. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -139,7 +143,7 @@ Collector observations for 350 source steps with known totals: observed: 1980, e
 | `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_project_root` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…nstaller.py:_project_root)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -154,7 +158,7 @@ flowchart LR
     s4["4. InstallCiError"]
     s5["5. _project_root"]
     s6["6. (…).resolve"]
-    s7["7. Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root)"]
+    s7["7. Path.cwd"]
     s8["8. Path (src/llm_wiki_cli/services…nstaller.py:_project_root)"]
     s9["9. InstallCiError"]
     s10["10. root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root)"]
@@ -165,7 +169,7 @@ flowchart LR
     s1 -->|"InstallCiError('require_ready, force and dry_run must be booleans')"| s4
     s1 -->|"_project_root(project_root)"| s5
     s5 -. "(…).resolve(data not statically known)" .-> s6
-    s5 -. "Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root)(data not statically known)" .-> s7
+    s5 -. "Path.cwd(data not statically known)" .-> s7
     s5 -. "Path (src/llm_wiki_cli/services…nstaller.py:_project_root)(project_root)" .-> s8
     s5 -->|"InstallCiError('project root cannot be resolved')"| s9
     s5 -. "root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root)(data not statically known)" .-> s10
@@ -202,7 +206,7 @@ flowchart LR
 | `InstallCiError` | - | - | - | - |
 | `_project_root` | `project_root: str \| Path \| None` | - | - | `root` |
 | `(…).resolve` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root)` | - | - | - | - |
+| `Path.cwd` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…nstaller.py:_project_root)` | - | - | - | - |
 | `InstallCiError` | - | - | - | - |
 | `root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root)` | - | - | - | - |
@@ -218,7 +222,7 @@ flowchart LR
 | install_documentation_ci_workflow | InstallCiError | 367 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
 | install_documentation_ci_workflow | _project_root | 368 | `_project_root(project_root)` |
 | _project_root | (…).resolve | 509 | `(Path.cwd() if project_root is None else Path(project_root)).resolve(data not statically known)` |
-| _project_root | Path.cwd (src/llm_wiki_cli/services…nstaller.py:_project_root) | 509 | `Path.cwd(data not statically known)` |
+| _project_root | Path.cwd | 509 | `Path.cwd(data not statically known)` |
 | _project_root | Path (src/llm_wiki_cli/services…nstaller.py:_project_root) | 509 | `Path(project_root)` |
 | _project_root | InstallCiError | 511 | `InstallCiError('project root cannot be resolved')` |
 | _project_root | root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root) | 512 | `root.is_dir(data not statically known)` |

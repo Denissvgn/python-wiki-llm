@@ -9,7 +9,7 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import behavior_reference
-from llm_wiki_cli.services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 
 
 def invoke(monkeypatch, *options):

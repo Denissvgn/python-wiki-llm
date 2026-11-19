@@ -1,13 +1,13 @@
 # _InvalidSurfaceJson
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:219`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:219`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_index](../modules/knowledge_index.md)
 
 ## Description
 
-_Auto-generated from `_InvalidSurfaceJson` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_InvalidSurfaceJson` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -22,10 +22,10 @@ _Auto-generated from `_InvalidSurfaceJson` in `src/llm_wiki_cli/services/knowled
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_InvalidSurfaceJson (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_InvalidSurfaceJson (src/llm_wiki_engine/knowledge_index.py)"]
     n1["ValueError"]
-    n2["_reject_json_constant (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_unique_json_object (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n2["_reject_json_constant (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_unique_json_object (src/llm_wiki_engine/knowledge_index.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

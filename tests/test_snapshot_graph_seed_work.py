@@ -4,13 +4,13 @@ from collections import Counter
 
 import pytest
 
-from llm_wiki_cli.services.contracts import TYPED_GRAPH_EXTENSION_KEY
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import (
+from llm_wiki_engine.contracts import TYPED_GRAPH_EXTENSION_KEY
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import (
     KnowledgeStorageError,
     KnowledgeStoreReader,
 )
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
 from tests.test_snapshot_query_validation import STORAGE_FORMATS, _history_snapshot
 
 

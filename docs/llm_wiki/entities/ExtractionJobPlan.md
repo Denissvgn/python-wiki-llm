@@ -1,6 +1,6 @@
 # ExtractionJobPlan
 
-**Location:** `src/llm_wiki_cli/services/extraction_jobs.py:52`
+**Location:** `src/llm_wiki_cli/services/extraction_jobs.py:53`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_jobs](../modules/extraction_jobs.md)
@@ -35,17 +35,17 @@ A deterministic description of the extraction work about to run.
 ```mermaid
 flowchart LR
     n0["ExtractionJobPlan (src/llm_wiki_cli/services/extraction_jobs.py)"]
-    n1["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n2["build_qualified_context (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
-    n4["reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)"]
-    n5["_build_context (src/llm_wiki_cli/services/context_service.py)"]
-    n6["_build_context_impl (src/llm_wiki_cli/services/context_service.py)"]
-    n7["get_inventory (src/llm_wiki_cli/services/context_service.py)"]
-    n8["format_extraction_job_plan (src/llm_wiki_cli/services/extraction_jobs.py)"]
-    n9["print_extraction_job_plan (src/llm_wiki_cli/services/extraction_jobs.py)"]
-    n10["_build_extraction_job_plan (src/llm_wiki_cli/services/extraction_service.py)"]
-    n11["_completed_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n1["build_qualified_context (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n2["capture_context_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n3["reconcile_context_packet (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n4["_build_context (src/llm_wiki_cli/services/context_service.py)"]
+    n5["_build_context_impl (src/llm_wiki_cli/services/context_service.py)"]
+    n6["get_inventory (src/llm_wiki_cli/services/context_service.py)"]
+    n7["format_extraction_job_plan (src/llm_wiki_cli/services/extraction_jobs.py)"]
+    n8["print_extraction_job_plan (src/llm_wiki_cli/services/extraction_jobs.py)"]
+    n9["_build_extraction_job_plan (src/llm_wiki_cli/services/extraction_service.py)"]
+    n10["_completed_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n11["InventoryResult.job_plan (src/llm_wiki_cli/services/extraction_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -58,15 +58,15 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     click n0 "../modules/extraction_jobs.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/context_packet.md"
+    click n1 "../modules/context_packet_builder.md"
+    click n2 "../modules/context_packet_builder.md"
+    click n3 "../modules/context_packet_builder.md"
+    click n4 "../modules/context_service.md"
     click n5 "../modules/context_service.md"
     click n6 "../modules/context_service.md"
-    click n7 "../modules/context_service.md"
+    click n7 "../modules/extraction_jobs.md"
     click n8 "../modules/extraction_jobs.md"
-    click n9 "../modules/extraction_jobs.md"
+    click n9 "../modules/extraction_service.md"
     click n10 "../modules/extraction_service.md"
     click n11 "../modules/extraction_service.md"
 ```
@@ -81,10 +81,9 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
-| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) | — |
-| `capture_context_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
-| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `build_qualified_context` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
+| `capture_context_read` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
+| `reconcile_context_packet` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `_build_context` | type_reference | [context_service](../modules/context_service.md) | — |
 | `_build_context_impl` | type_reference | [context_service](../modules/context_service.md) | — |
 | `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
@@ -93,5 +92,6 @@ flowchart LR
 | `_build_extraction_job_plan` | call | [extraction_service](../modules/extraction_service.md) | 1 |
 | `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `InventoryResult.job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 
 > References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

@@ -20,9 +20,9 @@ from llm_wiki_cli.services.extractor_helpers import (
     resolve_helper_cache_root,
     typescript_dependencies_ready,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_index import knowledge_index_to_payload
-from llm_wiki_cli.services.knowledge_evidence import is_valid_sha256
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_index import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_evidence import is_valid_sha256
 
 
 def _bootstrap(**options):

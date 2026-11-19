@@ -1,6 +1,6 @@
 # _LocalEgressCanary
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1304`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1305`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

@@ -16,13 +16,14 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import knowledge_consumption, mcp_server, source_snapshot
+from llm_wiki_cli.services import mcp_server, source_snapshot
+from llm_wiki_engine import knowledge_consumption
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import parse_knowledge_index
 from tests.knowledge_fixtures import fixture_hash
 from tests.test_documentation_queries import _service
 from tests.test_knowledge_freshness import _live_evaluation
@@ -171,7 +172,7 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
     real_inventory = api.extract_cmd.get_inventory_result
     real_extract_payload = api.extract_cmd.build_extract_payload
     real_walk = source_snapshot.os.walk
-    real_recheck = api.context_packet_service._assert_source_unchanged
+    real_recheck = api.context_packet_builder._assert_source_unchanged
 
     def counted_recheck(snapshot, anchor):
         calls["source_recheck"] += 1
@@ -231,7 +232,7 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
         return built_service
 
     monkeypatch.setattr(source_snapshot.os, "walk", counted_walk)
-    monkeypatch.setattr(api.context_packet_service, "_assert_source_unchanged", counted_recheck)
+    monkeypatch.setattr(api.context_packet_builder, "_assert_source_unchanged", counted_recheck)
     monkeypatch.setattr(api.extract_cmd, "build_source_snapshot", counted_snapshot)
     monkeypatch.setattr(api.extract_cmd, "get_inventory_result", counted_inventory)
     monkeypatch.setattr(

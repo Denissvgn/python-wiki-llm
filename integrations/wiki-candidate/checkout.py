@@ -9,8 +9,8 @@ from pathlib import Path
 import re
 import subprocess
 
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-from llm_wiki_cli.services.knowledge_storage_io import read_guarded
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 from llm_wiki_cli.services.publication_candidate import MAX_FILE_BYTES, _read_tree
 from llm_wiki_cli.services.publication_config import (
     DELIVERY_CHECKPOINT_PATH,

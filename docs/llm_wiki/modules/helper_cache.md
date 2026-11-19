@@ -16,8 +16,6 @@ never a mutable language-wide current pointer.
 |--------|---------|
 | `.` | `extractor_helpers` |
 | `.helper_runtime` | `PreparedHelperHandle`, `current_helper_operation`, `PreparedHelperHandle`, `current_helper_operation` |
-| `.io` | `first_unsafe_path_component`, `write_json_atomic` |
-| `.knowledge_storage_io` | `read_guarded` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `contextlib` | `contextmanager` |
@@ -26,6 +24,9 @@ never a mutable language-wide current pointer.
 | `fcntl` | `fcntl` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component`, `write_json_atomic` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `msvcrt` | `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -46,88 +47,33 @@ never a mutable language-wide current pointer.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["integrations/wiki-candidate/prepare.py"]
-    n1["src/llm_wiki_cli/api.py"]
-    n2["src/llm_wiki_cli/services/analysis_capture.py"]
-    n3["src/llm_wiki_cli/services/capability_diagnostics.py"]
-    n4["src/llm_wiki_cli/services/context_packet.py"]
-    n5["src/llm_wiki_cli/services/context_service.py"]
-    n6["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n7["src/llm_wiki_cli/services/helper_cache.py"]
-    n8["src/llm_wiki_cli/services/helper_preparation.py"]
-    n9["src/llm_wiki_cli/services/helper_runtime.py"]
-    n10["src/llm_wiki_cli/services/io.py"]
-    n11["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n0 --> n7
-    n0 --> n8
-    n0 --> n9
+    n0["integrations"]
+    n1["src"]
+    n2["src/llm_wiki_cli/services/helper_cache.py"]
+    n0 --> n2
     n1 --> n2
-    n1 --> n4
-    n1 --> n5
-    n1 --> n7
-    n1 --> n9
-    n2 --> n6
-    n2 --> n7
-    n2 --> n9
-    n3 --> n6
-    n3 --> n7
-    n4 --> n5
-    n4 --> n6
-    n4 --> n7
-    n4 --> n10
-    n4 --> n11
-    n5 --> n4
-    n5 --> n7
-    n5 --> n10
-    n6 --> n7
-    n6 --> n9
-    n6 --> n10
-    n7 --> n6
-    n7 --> n9
-    n7 --> n10
-    n7 --> n11
-    n8 --> n6
-    n8 --> n7
-    n8 --> n9
-    n9 --> n6
-    n11 --> n10
-    click n0 "../modules/wiki-candidate_prepare.md"
-    click n1 "../modules/api.md"
-    click n2 "../modules/analysis_capture.md"
-    click n3 "../modules/capability_diagnostics.md"
-    click n4 "../modules/context_packet.md"
-    click n5 "../modules/context_service.md"
-    click n6 "../modules/extractor_helpers.md"
-    click n7 "../modules/helper_cache.md"
-    click n8 "../modules/helper_preparation.md"
-    click n9 "../modules/helper_runtime.md"
-    click n10 "../modules/io.md"
-    click n11 "../modules/knowledge_storage_io.md"
+    n2 --> n1
+    click n2 "../modules/helper_cache.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [wiki-candidate_prepare](../modules/wiki-candidate_prepare.md) |
-| Inbound | [api](../modules/api.md) |
-| Inbound | [analysis_capture](../modules/analysis_capture.md) |
-| Inbound | [capability_diagnostics](../modules/capability_diagnostics.md) |
-| Inbound | [context_packet](../modules/context_packet.md) |
-| Inbound | [context_service](../modules/context_service.md) |
-| Inbound | [extractor_helpers](../modules/extractor_helpers.md) |
-| Inbound | [helper_preparation](../modules/helper_preparation.md) |
-| Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
-| Outbound | [helper_runtime](../modules/helper_runtime.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
+| Inbound | `integrations` (1) |
+| Inbound | `src` (7) |
+| Outbound | `src` (5) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HelperPreparationError](../entities/HelperPreparationError.md) | 47 | `RuntimeError` | The selected bundled helper could not be prepared once. |
-| [_Profile](../entities/Profile.md) | 410 | — | — |
+| [HelperPreparationError](../entities/HelperPreparationError.md) | 48 | `RuntimeError` | The selected bundled helper could not be prepared once. |
+| [_Profile](../entities/Profile.md) | 411 | — | — |
 
 ## Functions
 

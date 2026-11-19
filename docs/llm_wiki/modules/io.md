@@ -1,6 +1,6 @@
 # io Module
 
-**Path:** `src/llm_wiki_cli/services/io.py`
+**Path:** `src/llm_wiki_engine/io.py`
 
 ## Description
 
@@ -18,10 +18,11 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_evidence` | `formatted_json_bytes` |
 | `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Set` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
@@ -35,7 +36,7 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/io.py"]
+    n1["src/llm_wiki_engine/io.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/io.md"
@@ -47,10 +48,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (51) |
-| Outbound | `src` (2) |
+| Inbound | `src` (52) |
+| Outbound | `src` (3) |
 
-> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

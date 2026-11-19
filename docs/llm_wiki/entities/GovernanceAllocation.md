@@ -1,6 +1,6 @@
 # GovernanceAllocation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:156`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:157`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -31,15 +31,15 @@ One authoritative stable concept allocation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GovernanceAllocation (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n1["_existing_uid (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n2["_put_alias (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n4["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n5["_validate_review_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n6["move_concept (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n7["parse_governance_ledger (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n8["reconcile_concepts (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["GovernanceAllocation (src/llm_wiki_engine/knowledge_governance.py)"]
+    n1["_existing_uid (src/llm_wiki_engine/knowledge_governance.py)"]
+    n2["_put_alias (src/llm_wiki_engine/knowledge_governance.py)"]
+    n3["_validate_lifecycle_event_fields (src/llm_wiki_engine/knowledge_governance.py)"]
+    n4["_validate_lifecycle_histories (src/llm_wiki_engine/knowledge_governance.py)"]
+    n5["_validate_review_event_fields (src/llm_wiki_engine/knowledge_governance.py)"]
+    n6["move_concept (src/llm_wiki_engine/knowledge_governance.py)"]
+    n7["parse_governance_ledger (src/llm_wiki_engine/knowledge_governance.py)"]
+    n8["reconcile_concepts (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

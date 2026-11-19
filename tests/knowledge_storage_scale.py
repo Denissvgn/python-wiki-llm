@@ -14,12 +14,12 @@ except ImportError:  # Native Windows reports allocation peaks without getrusage
 import time
 import tracemalloc
 
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts, build_knowledge_commit_plan, validated_artifact_bytes
-from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStoreReader, build_knowledge_store, digest
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts, build_knowledge_commit_plan, validated_artifact_bytes
+from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import KnowledgeStoreReader, build_knowledge_store, digest
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from tests.test_knowledge_loader import _committed_state
 
 

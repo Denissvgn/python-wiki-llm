@@ -1,6 +1,6 @@
 # filesystem_guard Module
 
-**Path:** `src/llm_wiki_cli/services/filesystem_guard.py`
+**Path:** `src/llm_wiki_engine/filesystem_guard.py`
 
 ## Description
 
@@ -37,7 +37,7 @@ guard fails closed instead of falling back to an attribute-only handle.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n1["src/llm_wiki_engine/filesystem_guard.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/filesystem_guard.md"
@@ -49,10 +49,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (40) |
+| Inbound | `src` (41) |
 | Outbound | `src` (1) |
 
-> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

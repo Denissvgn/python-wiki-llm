@@ -11,10 +11,10 @@ from llm_wiki_cli import api
 from llm_wiki_cli.services import documentation_run as lifecycle
 from llm_wiki_cli.services.documentation_policy import hash_bytes
 from llm_wiki_cli.services.documentation_run import contracts, integrity, refresh
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.maintenance_protocol import guard_maintenance_owner
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_documentation_native_lifecycle import (
     _agent_result,
     _prepare_legacy_wiki_only_run,

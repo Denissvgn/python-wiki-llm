@@ -18,27 +18,30 @@ from llm_wiki_cli.services import (
     plugins,
     source_snapshot as source_snapshot_module,
 )
+from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_ASSURANCE_LEVEL,
-    CONTEXT_PACKET_RECONCILIATION_POLICY,
     CONTEXT_PACKET_SCHEMA_VERSION,
     ContextPacketMalformedError,
     ContextPacketPathPolicyError,
+    validate_context_packet,
+)
+from llm_wiki_cli.services.context_packet_builder import (
+    CONTEXT_PACKET_RECONCILIATION_POLICY,
     ContextPacketSourceMutationError,
     build_context_from_captured_read,
     build_qualified_context,
     capture_context_read,
     compare_context_packet_basis,
     reconcile_context_packet,
-    validate_context_packet,
 )
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import (
     GOLDEN_PRODUCER_VERSION,
     materialize_fixture_tree,
@@ -195,7 +198,7 @@ def test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    monkeypatch.setattr(context_packet, "__version__", GOLDEN_PRODUCER_VERSION)
+    monkeypatch.setattr(context_packet_builder, "__version__", GOLDEN_PRODUCER_VERSION)
     first = _build_snapshot_packet(tmp_path, monkeypatch)
     second = build_qualified_context(".", "docs/llm_wiki", _request())
 
@@ -257,7 +260,7 @@ def test_runtime_producer_version_is_bound_to_packet_identity(
     assert current.to_payload()["basis"]["generator"]["version"] == __version__
     identities = {current.to_payload()["packet_id"]}
     for version in (f"{__version__}-candidate", f"{__version__}-next"):
-        monkeypatch.setattr(context_packet, "__version__", version)
+        monkeypatch.setattr(context_packet_builder, "__version__", version)
         packet = build_qualified_context(".", "docs/llm_wiki", request)
         assert packet.to_payload()["basis"]["generator"]["version"] == version
         assert packet.to_payload()["packet_id"] not in identities
@@ -315,7 +318,7 @@ def test_packet_binds_snapshot_request_response_generator_and_limitations(
 
 
 def test_explicit_empty_request_is_rejected_instead_of_defaulted() -> None:
-    with pytest.raises(context_packet.context_service.ProtocolRequestError) as caught:
+    with pytest.raises(context_packet_builder.context_service.ProtocolRequestError) as caught:
         build_qualified_context(".", "docs/llm_wiki", {})
 
     assert caught.value.field == "budget_tokens"
@@ -542,9 +545,9 @@ def test_builder_uses_one_inventory_surface_and_knowledge_view(
     _write_snapshot_project(root)
     monkeypatch.chdir(root)
     calls = {"inventory": 0, "surface": 0, "knowledge": 0}
-    real_inventory = context_packet.context_service.get_inventory
-    real_surface = context_packet.evaluate_surface_index
-    real_knowledge = context_packet.context_service._build_context_knowledge_view
+    real_inventory = context_packet_builder.context_service.get_inventory
+    real_surface = context_packet_builder.evaluate_surface_index
+    real_knowledge = context_packet_builder.context_service._build_context_knowledge_view
 
     def counted_inventory(*args, **kwargs):
         calls["inventory"] += 1
@@ -559,13 +562,13 @@ def test_builder_uses_one_inventory_surface_and_knowledge_view(
         return real_knowledge(*args, **kwargs)
 
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "get_inventory",
         counted_inventory,
     )
-    monkeypatch.setattr(context_packet, "evaluate_surface_index", counted_surface)
+    monkeypatch.setattr(context_packet_builder, "evaluate_surface_index", counted_surface)
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_build_context_knowledge_view",
         counted_knowledge,
     )
@@ -686,7 +689,7 @@ def test_context_read_revalidates_selection_after_wiki_anchor_gap(
         )
     ).save(wiki)
     monkeypatch.chdir(root)
-    real_wiki_anchor = context_packet._wiki_anchor
+    real_wiki_anchor = context_packet_builder._wiki_anchor
     mutated = False
 
     def mutate_at_first_anchor(path: Path) -> str:
@@ -704,10 +707,10 @@ def test_context_read_revalidates_selection_after_wiki_anchor_gap(
             ).save(wiki)
         return real_wiki_anchor(path)
 
-    monkeypatch.setattr(context_packet, "_wiki_anchor", mutate_at_first_anchor)
+    monkeypatch.setattr(context_packet_builder, "_wiki_anchor", mutate_at_first_anchor)
 
     with pytest.raises(
-        context_packet.context_service.ProtocolRequestError,
+        context_packet_builder.context_service.ProtocolRequestError,
         match="source-selection boundary",
     ):
         capture_context_read(
@@ -729,10 +732,10 @@ def test_captured_context_builder_performs_no_second_read(
     def unexpected(*_args, **_kwargs):
         raise AssertionError("captured response attempted another semantic read")
 
-    monkeypatch.setattr(context_packet.context_service, "get_inventory", unexpected)
-    monkeypatch.setattr(context_packet, "evaluate_surface_index", unexpected)
+    monkeypatch.setattr(context_packet_builder.context_service, "get_inventory", unexpected)
+    monkeypatch.setattr(context_packet_builder, "evaluate_surface_index", unexpected)
     monkeypatch.setattr(
-        context_packet.context_service,
+        context_packet_builder.context_service,
         "_build_context_knowledge_view",
         unexpected,
     )
@@ -752,7 +755,7 @@ def test_mutation_before_final_encoding_aborts_without_returning_a_packet(
     root = tmp_path / "project"
     _write_snapshot_project(root)
     monkeypatch.chdir(root)
-    real_build = context_packet.build_context_from_captured_read
+    real_build = context_packet_builder.build_context_from_captured_read
 
     def mutate_after_response(captured, request):
         result = real_build(captured, request)
@@ -765,7 +768,7 @@ def test_mutation_before_final_encoding_aborts_without_returning_a_packet(
         return result
 
     monkeypatch.setattr(
-        context_packet,
+        context_packet_builder,
         "build_context_from_captured_read",
         mutate_after_response,
     )
@@ -799,7 +802,7 @@ def test_source_recheck_rejects_gitignore_broadening_before_secret_hash(
         encoding="utf-8",
     )
     snapshot = build_source_snapshot(root)
-    expected_anchor = context_packet._source_anchor(snapshot)
+    expected_anchor = context_packet_builder._source_anchor(snapshot)
     ignore.write_text("", encoding="utf-8")
     real_hash = source_snapshot_module._sha256_file
 
@@ -811,7 +814,7 @@ def test_source_recheck_rejects_gitignore_broadening_before_secret_hash(
     monkeypatch.setattr(source_snapshot_module, "_sha256_file", guarded_hash)
 
     with pytest.raises(ContextPacketSourceMutationError, match="source"):
-        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+        context_packet_builder._assert_source_unchanged(snapshot, expected_anchor)
 
 
 def test_source_recheck_rejects_redirected_gitignore_before_external_read(
@@ -824,7 +827,7 @@ def test_source_recheck_rejects_redirected_gitignore_before_external_read(
     ignore = root / ".gitignore"
     ignore.write_bytes(b"ignored.py\n")
     snapshot = build_source_snapshot(root)
-    expected_anchor = context_packet._source_anchor(snapshot)
+    expected_anchor = context_packet_builder._source_anchor(snapshot)
     external = tmp_path / "external-secret"
     external.write_bytes(b"never read this\n")
     ignore.unlink()
@@ -839,7 +842,7 @@ def test_source_recheck_rejects_redirected_gitignore_before_external_read(
     monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
 
     with pytest.raises(ContextPacketSourceMutationError, match="source"):
-        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+        context_packet_builder._assert_source_unchanged(snapshot, expected_anchor)
 
 
 def test_source_recheck_rejects_new_default_selection_before_content_read(
@@ -850,7 +853,7 @@ def test_source_recheck_rejects_new_default_selection_before_content_read(
     root.mkdir()
     (root / "app.py").write_bytes(b"VALUE = 1\n")
     snapshot = build_source_snapshot(root)
-    expected_anchor = context_packet._source_anchor(snapshot)
+    expected_anchor = context_packet_builder._source_anchor(snapshot)
     policy = root / ".llm-wiki" / "source-selection.json"
     policy.parent.mkdir()
     policy.write_bytes(b"new policy bytes must not be read\n")
@@ -864,7 +867,7 @@ def test_source_recheck_rejects_new_default_selection_before_content_read(
     monkeypatch.setattr(Path, "open", guarded_open)
 
     with pytest.raises(ContextPacketSourceMutationError, match="source"):
-        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+        context_packet_builder._assert_source_unchanged(snapshot, expected_anchor)
 
 
 def test_source_recheck_rejects_new_gitignore_before_content_read(
@@ -876,7 +879,7 @@ def test_source_recheck_rejects_new_gitignore_before_content_read(
     nested.mkdir(parents=True)
     (nested / "app.py").write_bytes(b"VALUE = 1\n")
     snapshot = build_source_snapshot(root)
-    expected_anchor = context_packet._source_anchor(snapshot)
+    expected_anchor = context_packet_builder._source_anchor(snapshot)
     ignore = nested / ".gitignore"
     ignore.write_bytes(b"new control bytes must not be read\n")
     real_read_bytes = Path.read_bytes
@@ -889,7 +892,7 @@ def test_source_recheck_rejects_new_gitignore_before_content_read(
     monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
 
     with pytest.raises(ContextPacketSourceMutationError, match="source"):
-        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+        context_packet_builder._assert_source_unchanged(snapshot, expected_anchor)
 
 
 def test_malformed_packet_fails_before_any_live_read(
@@ -898,7 +901,7 @@ def test_malformed_packet_fails_before_any_live_read(
     def unexpected(*_args, **_kwargs):
         raise AssertionError("live read ran before structural validation")
 
-    monkeypatch.setattr(context_packet, "build_qualified_context", unexpected)
+    monkeypatch.setattr(context_packet_builder, "build_qualified_context", unexpected)
 
     with pytest.raises(ContextPacketMalformedError):
         reconcile_context_packet(b'{"not":"a packet"}\n')
@@ -913,13 +916,13 @@ def test_reconciliation_result_requires_complete_coherent_official_facets():
             "state": "current",
             "reason": "live-facet-matches-packet",
         }
-        for name in context_packet._RECONCILIATION_FACETS
+        for name in context_packet_builder._RECONCILIATION_FACETS
     }
 
     with pytest.raises(TypeError, match="returned by reconcile_context_packet"):
-        context_packet.ContextPacketReconciliation()
+        context_packet_builder.ContextPacketReconciliation()
     with pytest.raises(ValueError, match="complete.*policy"):
-        context_packet.ContextPacketReconciliation._from_official_read(
+        context_packet_builder.ContextPacketReconciliation._from_official_read(
             packet_id=packet_id,
             policy="caller-policy",
             state="current",
@@ -927,7 +930,7 @@ def test_reconciliation_result_requires_complete_coherent_official_facets():
             facets=facets,
         )
     with pytest.raises(ValueError, match=r"facets\.availability is required"):
-        context_packet.ContextPacketReconciliation._from_official_read(
+        context_packet_builder.ContextPacketReconciliation._from_official_read(
             packet_id=packet_id,
             policy=CONTEXT_PACKET_RECONCILIATION_POLICY,
             state="current",
@@ -939,7 +942,7 @@ def test_reconciliation_result_requires_complete_coherent_official_facets():
             },
         )
     with pytest.raises(ValueError, match="aggregate state"):
-        context_packet.ContextPacketReconciliation._from_official_read(
+        context_packet_builder.ContextPacketReconciliation._from_official_read(
             packet_id=packet_id,
             policy=CONTEXT_PACKET_RECONCILIATION_POLICY,
             state="stale",

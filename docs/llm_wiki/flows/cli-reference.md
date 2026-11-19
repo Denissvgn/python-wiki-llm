@@ -2,18 +2,20 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [reference_cmd](../modules/reference_cmd.md)
-**Modules touched:** [behavior_reference](../modules/behavior_reference.md), [change_selection](../modules/change_selection.md), [cli](../modules/cli.md), [cli_reference](../modules/cli_reference.md), and 15 more
+**Modules touched:** [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), [cli_reference](../modules/cli_reference.md), and 17 more
 
 **Complete modules touched:**
 
 - [behavior_reference](../modules/behavior_reference.md)
-- [change_selection](../modules/change_selection.md)
-- [cli](../modules/cli.md)
+- [canonical_json](../modules/canonical_json.md)
+- [cli_declarations](../modules/cli_declarations.md)
 - [cli_reference](../modules/cli_reference.md)
+- [context_request_format](../modules/context_request_format.md)
 - [current_contracts](../modules/current_contracts.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_runtime](../modules/helper_runtime.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -96,9 +98,9 @@ sequenceDiagram
     p0-->>p30: content.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 862 interactions; 832 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 863 interactions; 833 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 408 (407 omitted); unresolved 1 of 171 (170 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 406 (405 omitted); unresolved 1 of 172 (171 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -112,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | external | 24 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | unresolved | 14 |
-> Omission summary shows 8 of 172 groups; 164 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 175 groups; 167 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -125,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 284; effect analysis evaluated: 189, partial: 16, unavailable: 79. Counts include steps omitted from the displayed trace.
+Source steps: 286; effect analysis evaluated: 191, partial: 16, unavailable: 79. Counts include steps omitted from the displayed trace.
 
-Collector observations for 205 source steps with known totals: observed: 1138, emitted: 1104, omitted: 34. Unavailable totals are excluded.
+Collector observations for 207 source steps with known totals: observed: 1144, emitted: 1110, omitted: 34. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -212,8 +214,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _reference | 71 | `_reference(args)` |
-| _reference | get_behavior_facts | 48 | `get_behavior_facts(data not statically known)` |
+| run | _reference | 49 | `_reference(args)` |
+| _reference | get_behavior_facts | 26 | `get_behavior_facts(data not statically known)` |
 | get_behavior_facts | get_cli_contract | 89 | `cli_reference.get_cli_contract(data not statically known)` |
 | get_cli_contract | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
@@ -228,8 +230,8 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 88 |
-| output | `print` | `run` | 108 |
+| output | `print` | `run` | 66 |
+| output | `print` | `run` | 86 |
 
 ### Static analysis gaps
 

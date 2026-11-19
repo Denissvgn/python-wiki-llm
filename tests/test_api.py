@@ -28,15 +28,15 @@ from llm_wiki_cli.api import (
     list_wiki_pages,
     pages_for_symbol,
 )
-from llm_wiki_cli.services import contracts as service_contracts
+from llm_wiki_engine import contracts as service_contracts
 from llm_wiki_cli.services import mcp_server, plugins
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_governance import (
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
     GovernanceActor,
@@ -50,23 +50,23 @@ from llm_wiki_cli.services.knowledge_governance import (
     save_governance,
     set_lifecycle,
 )
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadResult,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     KnowledgeLoadState,
     parse_knowledge_index,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import SourceSnapshot, build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
-from llm_wiki_cli.services.verification_contracts import (
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     build_artifact_verification_context,
     verify_and_write_receipt,
@@ -1241,7 +1241,7 @@ def test_qualified_context_api_build_validate_and_reconcile_are_typed(
         current=True,
     )
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         "build_qualified_context",
         fake_build,
     )
@@ -1251,12 +1251,12 @@ def test_qualified_context_api_build_validate_and_reconcile_are_typed(
         lambda _raw: validation,
     )
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         "compare_context_packet_basis",
         lambda _raw, _basis: comparison,
     )
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         "reconcile_context_packet",
         lambda *_args, **_kwargs: reconciliation,
     )

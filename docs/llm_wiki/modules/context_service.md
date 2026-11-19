@@ -35,47 +35,50 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
-| `..config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.change_selection` | `changes_from_args`, `changes_from_args` |
-| `.context_budget` | `validate_request`, `run`, `run` |
-| `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
-| `.context_packet` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
-| `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
+| `.context_budget` | `run`, `run` |
+| `.context_packet` | `ContextPacketError` |
+| `.context_packet_builder` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `build_qualified_context` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
+| `.domain_pack` | `CodeContextSource`, `context_entry`, `context_related_sources` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `_git_changed_files`, `_partition_snapshot_git_changes`, `analyze_data_flow`, `build_data_flow_context`, `build_flow`, `get_entry_points`, `get_docker_inventory`, `get_inventory_result`, `read_console_scripts`, `resolve_call_edges` |
 | `.helper_cache` | `HelperPreparationError` |
 | `.implementation_evidence` | `compact_implementation_summary` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `.io` | `write_text_output`, `write_utf8_stdout` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
-| `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `build_knowledge_read_view` |
-| `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
-| `.knowledge_loader` | `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
-| `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState` |
-| `.knowledge_observability` | `knowledge_freshness_hint` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
-| `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
-| `.maintenance_protocol` | `ADOPTION_FILENAME` |
-| `.maintenance_status` | `compact_maintenance_summary` |
 | `.plugins` | `runtime_project_plugins_enabled` |
-| `.progress` | `Progress` |
-| `.source_retirement` | `retained_empty_module_paths_from_wiki` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.sync_manifest` | `SyncManifest` |
-| `.validation` | `nonnegative_int_or_none` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Callable`, `Mapping`, `Sequence` |
+| `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `fnmatch` | `fnmatch` |
 | `json` | `json` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.context_request_format` | `_CONCEPT_FILTER_KEYS`, `_CONTEXT_QUERY_LIMIT`, `_EVIDENCE_FILTER_VALUES`, `_FILTER_KEYS`, `_FOCUS_VALUES`, `_FORMATS`, `_FRESHNESS_FILTER_VALUES`, `_KNOWLEDGE_REFINEMENT_KEYS`, `_normalise_protocol_filters`, `_normalise_protocol_focus`, `_PROTOCOL_REQUEST_KEYS`, `_QUALIFIED_RELATIONSHIP_KIND_RE`, `_RELATIONSHIP_DIRECTIONS`, `_RELATIONSHIP_REFINEMENT_KEYS`, `_V1_REQUEST_KEYS`, `_V2_REQUEST_KEYS`, `_validate_enum_filter`, `_validate_protocol_request`, `_validate_protocol_request_impl`, `_validate_relationship_kind_filter`, `_validate_surface_filter`, `CONTEXT_KNOWLEDGE_CONCEPT_LIMIT`, `CONTEXT_KNOWLEDGE_PAGE_LIMIT`, `CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT`, `KNOWLEDGE_PROTOCOL_VERSION`, `PROTOCOL_VERSION`, `ProtocolRequestError` |
+| `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
+| `llm_wiki_engine.host` | `current_host`, `emit` |
+| `llm_wiki_engine.io` | `write_text_output`, `write_utf8_stdout` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `build_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState` |
+| `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_hint` |
+| `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `llm_wiki_engine.maintenance_protocol` | `ADOPTION_FILENAME` |
+| `llm_wiki_engine.maintenance_status` | `compact_maintenance_summary` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
+| `llm_wiki_engine.progress` | `Progress` |
+| `llm_wiki_engine.source_retirement` | `retained_empty_module_paths_from_wiki` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
+| `llm_wiki_engine.validation` | `nonnegative_int_or_none` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `shlex` | `shlex` |
@@ -101,17 +104,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (34) |
+| Outbound | `src` (37) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 43 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ProtocolRequestError](../entities/ProtocolRequestError.md) | 188 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
-| [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 203 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1879 | — | Operation-scoped query state captured from one knowledge read. |
+| [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 155 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1501 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
@@ -124,16 +126,12 @@ flowchart LR
 | `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False, retain_empty_paths: tuple[str, ...] = ()) -> dict \| InventoryResult` | — | Build command inventory, optionally returning extraction metadata. |
 | `_selected_git_changed_files` | `(src_dir: str, source_snapshot: SourceSnapshot \| None) -> list[str] \| None` | — | — |
 | `_estimate_tokens` | `(text: str) -> int` | — | Approximate token count using the ~4 chars/token heuristic. |
-| `_build_import_graph` | `(inventory: dict) -> dict[str, set[str]]` | — | Build a bidirectional import adjacency map from a deep inventory. |
-| `_filepath_to_module` | `(filepath: str) -> str \| None` | — | Convert ``"src/llm_wiki_cli/config.py"`` → ``"llm_wiki_cli.config"``. |
-| `_classify_files` | `(all_files: list[str], changed: list[str] \| None, import_graph: dict[str, set[str]], focus: str, include_neighbors: bool = True) -> dict[str, str]` | — | Assign a priority tier to every file in the inventory. |
-| `_deep_entry` | `(file_data: dict) -> dict` | — | Full detail: classes with methods, params, docstrings, imports. |
-| `_slim_entry` | `(file_data: dict) -> dict` | — | Slim detail: class names/bases/line, function names/lines. |
-| `_summary_entry` | `(file_data: dict) -> dict` | — | Names only: lists of class names and function names. |
+| `_build_import_graph` | `(inventory: dict) -> Mapping[str, Iterable[str]]` | — | Related sources from the current pack's context source. |
+| `_classify_files` | `(all_files: list[str], changed: list[str] \| None, import_graph: Mapping[str, Iterable[str]], focus: str, include_neighbors: bool = True) -> dict[str, str]` | — | Assign a priority tier to every file in the inventory. |
 | `_build_context_payload` | `(inventory: dict, classification: dict[str, str], budget: int, *, freshness_rank_by_source: Mapping[str, int] \| None = None) -> dict` | — | Build a token-budgeted context payload. |
 | `_build_context_payload_with_freshness_preference` | `(inventory: dict, classification: dict[str, str], budget: int, *, freshness_rank_by_source: Mapping[str, int]) -> tuple[dict[str, Any], bool]` | — | Apply the freshness tie-break only when budget pressure is observed. |
 | `_bounds_metadata` | `(*, total: int, returned: int) -> dict[str, int \| bool]` | — | Return exact response-layer collection bounds. |
-| `_build_entry` | `(file_data: dict, priority: str, detail: str) -> dict` | — | Serialize one file at a specific detail level. |
+| `_build_entry` | `(file_data: dict, priority: str, detail: str) -> dict` | — | Serialize one file at a specific detail level with the pack's context source. |
 | `_entry_tokens` | `(filepath: str, entry: dict) -> int` | — | — |
 | `_render_markdown` | `(payload: dict) -> str` | — | Render the context payload as agent-friendly markdown. |
 | `_implementation_markdown` | `(value: Mapping[str, Any]) -> list[str]` | — | — |
@@ -142,13 +140,6 @@ flowchart LR
 | `_graph_query` | `(result: object) -> str` | — | — |
 | `_graph_status` | `(result: object, collection_key: str) -> str` | — | — |
 | `_read_protocol_request` | `(source: str, *, packet_defaults: bool = False) -> dict` | — | Read and validate a Wiki-as-Context protocol request. |
-| `_validate_protocol_request` | `(data: object) -> dict` | — | Return a normalised protocol request or raise ``ProtocolRequestError``. |
-| `_validate_protocol_request_impl` | `(data: object) -> dict` | — | — |
-| `_normalise_protocol_focus` | `(raw_focus: object) -> list[str]` | — | — |
-| `_normalise_protocol_filters` | `(raw_filters: object) -> dict` | — | — |
-| `_validate_surface_filter` | `(value: str) -> None` | — | — |
-| `_validate_enum_filter` | `(key: str, value: str, known: set[str]) -> None` | — | — |
-| `_validate_relationship_kind_filter` | `(value: str) -> None` | — | — |
 | `_protocol_error_payload` | `(error: ProtocolRequestError) -> dict` | — | — |
 | `_emit_protocol_error` | `(error: ProtocolRequestError) -> None` | — | — |
 | `_apply_protocol_filters` | `(inventory: dict, filters: dict) -> dict` | — | Filter inventory before prioritisation and budgeting. |

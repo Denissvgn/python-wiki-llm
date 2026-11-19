@@ -94,7 +94,7 @@
       "anchor": "why-did-sync-say-the-wiki-is-up-to-date",
       "edit_at": "wiki",
       "depends_on": [
-        {"architecture_page": "flows/cli-sync.md"},
+        {"architecture_page": "flows/api-sync_wiki.md"},
         {"source_file": "docs/native-knowledge.md"},
         {"source_file": "docs/maintenance.md"}
       ]
@@ -106,7 +106,7 @@
       "anchor": "manual-sync",
       "edit_at": "wiki",
       "depends_on": [
-        {"architecture_page": "flows/cli-sync.md"},
+        {"architecture_page": "flows/api-sync_wiki.md"},
         {"reference": "llm-wiki", "command": ["sync"]},
         {"reference": "provider-policy", "fact": "storage"},
         {"source_file": "docs/cli-reference.md"}
@@ -119,7 +119,7 @@
       "anchor": "sync",
       "edit_at": "wiki",
       "depends_on": [
-        {"architecture_page": "flows/cli-sync.md"},
+        {"architecture_page": "flows/api-sync_wiki.md"},
         {"reference": "provider-policy", "fact": "storage"},
         {"source_file": "docs/knowledge-storage.md"}
       ]
@@ -204,9 +204,6 @@
       "edit_at": "wiki",
       "depends_on": [
         {
-          "architecture_page": "flows/cli-upgrade.md"
-        },
-        {
           "architecture_page": "workflows/upgrade_current_knowledge.md"
         },
         {
@@ -228,9 +225,6 @@
       "anchor": "upgrade-framework-artifacts",
       "edit_at": "wiki",
       "depends_on": [
-        {
-          "architecture_page": "flows/cli-upgrade.md"
-        },
         {
           "architecture_page": "workflows/upgrade_current_knowledge.md"
         },
@@ -293,7 +287,7 @@
         {"architecture_page": "flows/cli-lint.md"},
         {"architecture_page": "flows/cli-maintenance.md"},
         {"architecture_page": "flows/cli-metrics.md"},
-        {"architecture_page": "flows/cli-migrate.md"},
+        {"architecture_page": "flows/api-migrate_wiki.md"},
         {"architecture_page": "flows/cli-obsidian.md"},
         {"architecture_page": "flows/cli-plugins.md"},
         {"architecture_page": "flows/cli-prepare-extractors.md"},

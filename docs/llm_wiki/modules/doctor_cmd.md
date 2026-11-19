@@ -51,14 +51,12 @@ flowchart LR
     n0 --> n6
     n1 --> n2
     n1 --> n3
-    n1 --> n7
     n2 --> n0
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
     n2 --> n7
-    n5 --> n3
     n5 --> n6
     n6 --> n3
     n6 --> n7

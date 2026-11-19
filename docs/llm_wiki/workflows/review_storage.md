@@ -1,7 +1,7 @@
 # review_storage
 
 **Entry point:** `knowledge_storage_diagnostics.review_storage`
-**Modules involved:** [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_io](../modules/knowledge_storage_io.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_io](../modules/knowledge_storage_io.md)
 
 > Page logical snapshots or recover an exact row under the same output bounds.
 
@@ -19,18 +19,19 @@ they are consistency checks, not authorization or live-source freshness proof.
 5. `knowledge_storage_io._absolute_path`
 6. `knowledge_storage.canonical_bytes`
 7. `knowledge_storage.canonical_bytes`
-8. `knowledge_storage.digest`
+8. `canonical_json.sha256_digest`
 9. `knowledge_storage.canonical_bytes`
 10. `knowledge_storage.KnowledgeStorageError`
 11. `knowledge_storage.KnowledgeStorageError`
 12. `knowledge_storage.canonical_bytes`
-13. `knowledge_storage.digest`
+13. `canonical_json.sha256_digest`
 14. `knowledge_storage.canonical_bytes`
 15. `knowledge_storage.canonical_bytes`
 16. `knowledge_storage.KnowledgeStorageError`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)

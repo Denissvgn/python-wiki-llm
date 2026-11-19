@@ -1,6 +1,6 @@
 # IdentityUpdate
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:233`
+**Location:** `src/llm_wiki_engine/concept_identity.py:233`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -29,9 +29,9 @@ A replacement allocation and the complete canonical alias collection.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["IdentityUpdate (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["add_identity_alias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["move_allocation (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["IdentityUpdate (src/llm_wiki_engine/concept_identity.py)"]
+    n1["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n2["move_allocation (src/llm_wiki_engine/concept_identity.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/concept_identity.md"

@@ -18,11 +18,10 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import (
-    contracts, knowledge_artifacts, knowledge_generation, knowledge_index, knowledge_model, knowledge_orchestration,
-)
-from llm_wiki_cli.services.knowledge_loader import KnowledgeStateLoadError, load_knowledge_state
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_cli.services import knowledge_generation, knowledge_orchestration
+from llm_wiki_engine import contracts, knowledge_artifacts, knowledge_index, knowledge_model
+from llm_wiki_engine.knowledge_loader import KnowledgeStateLoadError, load_knowledge_state
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan
 from tests.test_knowledge_generation import _planner_inputs

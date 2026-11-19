@@ -1,6 +1,6 @@
 # KnowledgeReadReason
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:63`
+**Location:** `src/llm_wiki_engine/knowledge_consumption.py:66`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -31,13 +31,13 @@ Stable cross-consumer reasons for knowledge availability.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeReadReason (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n0["KnowledgeReadReason (src/llm_wiki_engine/knowledge_consumption.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/documentation_queries.py"]
-    n4["_unsupported_reason (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n5["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n6["src/llm_wiki_cli/services/metrics.py"]
+    n4["src/llm_wiki_cli/services/metrics.py"]
+    n5["_unsupported_reason (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n6["src/llm_wiki_engine/knowledge_observability.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -46,9 +46,9 @@ flowchart LR
     n6 --> n0
     click n0 "../modules/knowledge_consumption.md"
     click n3 "../modules/documentation_queries.md"
-    click n4 "../modules/knowledge_consumption.md"
-    click n5 "../modules/knowledge_observability.md"
-    click n6 "../modules/metrics.md"
+    click n4 "../modules/metrics.md"
+    click n5 "../modules/knowledge_consumption.md"
+    click n6 "../modules/knowledge_observability.md"
 ```
 
 ### Summary
@@ -69,6 +69,6 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) | — |
+| `metrics` | import | [metrics](../modules/metrics.md) | — |
 | `_unsupported_reason` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
-| `metrics` | import | [metrics](../modules/metrics.md) | — |

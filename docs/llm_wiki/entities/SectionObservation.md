@@ -1,6 +1,6 @@
 # SectionObservation
 
-**Location:** `src/llm_wiki_cli/services/section_ownership.py:70`
+**Location:** `src/llm_wiki_engine/section_ownership.py:70`
 **Kind:** Class
 **Bases:** —
 **Module:** [section_ownership](../modules/section_ownership.md)
@@ -40,11 +40,11 @@ One ordered section plus its exact and ownership-scoped commitments.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SectionObservation (src/llm_wiki_cli/services/section_ownership.py)"]
-    n1["_preamble_observation (src/llm_wiki_cli/services/section_ownership.py)"]
-    n2["observe_page_sections (src/llm_wiki_cli/services/section_ownership.py)"]
-    n3["section_ownership_extension (src/llm_wiki_cli/services/section_ownership.py)"]
-    n4["serialize_section_ownership (src/llm_wiki_cli/services/section_ownership.py)"]
+    n0["SectionObservation (src/llm_wiki_engine/section_ownership.py)"]
+    n1["_preamble_observation (src/llm_wiki_engine/section_ownership.py)"]
+    n2["observe_page_sections (src/llm_wiki_engine/section_ownership.py)"]
+    n3["section_ownership_extension (src/llm_wiki_engine/section_ownership.py)"]
+    n4["serialize_section_ownership (src/llm_wiki_engine/section_ownership.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

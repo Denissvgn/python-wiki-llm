@@ -19,9 +19,9 @@ from typing import Any
 import yaml  # pyright: ignore[reportMissingModuleSource]
 
 from .imports import build_module_path_resolver
-from .paths import is_test_source_path
+from llm_wiki_engine.paths import is_test_source_path
 from .python_imports import module_binding_imports
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     path_is_link_or_reparse,
     path_is_selected,

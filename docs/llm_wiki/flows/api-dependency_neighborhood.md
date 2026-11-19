@@ -2,21 +2,24 @@
 
 **Entry point:** `dependency_neighborhood` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 20 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 24 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
+- [context_packet_builder](../modules/context_packet_builder.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
+- [gitignore](../modules/gitignore.md)
+- [host](../modules/host.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -24,6 +27,7 @@
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
+- [path_policy](../modules/path_policy.md)
 - [python_implementation](../modules/python_implementation.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
@@ -63,10 +67,10 @@ sequenceDiagram
     participant p22 as _source_anchor
     participant p23 as _wiki_anchor
     participant p24 as source_path_diagnostics
-    participant p25 as require_portable_path_component
-    participant p26 as _live_source_selection_identity
-    participant p27 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
-    participant p28 as attach_implementation_read_view
+    participant p25 as first_unsafe_path_component
+    participant p26 as require_portable_path_component
+    participant p27 as _live_source_selection_identity
+    participant p28 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     participant p29 as cast
     participant p30 as _query_service(…).dependency_neighborhood
     p0->>p1: _normalize_query_input
@@ -93,17 +97,17 @@ sequenceDiagram
     p14->>p22: _source_anchor
     p14->>p23: _wiki_anchor
     p14->>p24: source_path_diagnostics
-    p10->>p25: require_portable_path_component
-    p14->>p26: _live_source_selection_identity
-    p14->>p27: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
-    p14->>p28: attach_implementation_read_view
+    p12->>p25: first_unsafe_path_component
+    p10->>p26: require_portable_path_component
+    p14->>p27: _live_source_selection_identity
+    p14->>p28: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
     p0-->>p29: cast(DependencyNeighborhoodResult, _run_query(...))
     p0-->>p30: _query_service(…).dependency_neighborhood(query)
 ```
 
-> Call sequence diagram shows 30 of 965 interactions; 935 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 932 interactions; 902 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 389 (388 omitted); unresolved 1 of 218 (217 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 370 (369 omitted); unresolved 1 of 209 (208 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,11 +117,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 7 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 9 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 16 | - | external | 6 |
-> Omission summary shows 8 of 210 groups; 202 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 9 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:_default_path_error` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 9 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 16 | - | external | 6 |
+> Omission summary shows 8 of 220 groups; 212 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -130,9 +134,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 359; effect analysis evaluated: 227, partial: 19, unavailable: 113. Counts include steps omitted from the displayed trace.
+Source steps: 354; effect analysis evaluated: 231, partial: 14, unavailable: 109. Counts include steps omitted from the displayed trace.
 
-Collector observations for 246 source steps with known totals: observed: 1526, emitted: 1420, omitted: 106. Unavailable totals are excluded.
+Collector observations for 245 source steps with known totals: observed: 1403, emitted: 1320, omitted: 83. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -149,7 +153,7 @@ Collector observations for 246 source steps with known totals: observed: 1526, e
 | `_portable_supplied_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `require_portable_relative_path` | `available` | `partial` | `available` | `21` | `11` | `10` |
-| `isinstance (src/llm_wiki_cli/services…re_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…re_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_default_path_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
@@ -164,7 +168,7 @@ flowchart LR
     s7["7. _portable_supplied_path"]
     s8["8. DocumentationQueryError"]
     s9["9. require_portable_relative_path"]
-    s10["10. isinstance (src/llm_wiki_cli/services…re_portable_relative_path)"]
+    s10["10. isinstance (src/llm_wiki_engine/valid…re_portable_relative_path)"]
     s11["11. _default_path_error"]
     s12["12. SharedValidationError"]
     s1 -->|"_normalize_query_input(...)"| s2
@@ -175,7 +179,7 @@ flowchart LR
     s6 -->|"_portable_supplied_path(value)"| s7
     s7 -->|"DocumentationQueryError('paths must contain normalized portable relative source paths.')"| s8
     s7 -->|"require_portable_relative_path(…)"| s9
-    s9 -. "isinstance (src/llm_wiki_cli/services…re_portable_relative_path)(value, (...))" .-> s10
+    s9 -. "isinstance (src/llm_wiki_engine/valid…re_portable_relative_path)(value, (...))" .-> s10
     s9 -->|"_default_path_error(value)"| s11
     s11 -->|"SharedValidationError(...)"| s12
     click s1 "../modules/api.md"
@@ -202,7 +206,7 @@ flowchart LR
 | `_portable_supplied_path` | `value: object` | - | - | `require_portable_relative_path(...)` |
 | `DocumentationQueryError` | - | - | - | - |
 | `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…re_portable_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…re_portable_relative_path)` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `SharedValidationError` | - | - | - | - |
 
@@ -210,15 +214,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| dependency_neighborhood | _normalize_query_input | 2403 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2122 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2124 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2125 | `str(exc)` |
-| dependency_neighborhood | normalize_supplied_paths | 2403 | `normalize_supplied_paths((...))` |
+| dependency_neighborhood | _normalize_query_input | 2555 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2274 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
+| dependency_neighborhood | normalize_supplied_paths | 2555 | `normalize_supplied_paths((...))` |
 | normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 221 | `isinstance(value, (...))` |
+| require_portable_relative_path | isinstance (src/llm_wiki_engine/valid…re_portable_relative_path) | 221 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |
 
@@ -230,7 +234,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2122 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2274 |
 | external_call | `require_portable_relative_path` | `isinstance` | 221 |
 | step_limit | `dependency_neighborhood` | `first 12 steps` | 0 |
 | truncated_flow | `dependency_neighborhood` | `depth limit` | 0 |

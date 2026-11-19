@@ -1,6 +1,6 @@
 # KnowledgeReadCounts
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:270`
+**Location:** `src/llm_wiki_engine/knowledge_consumption.py:273`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -36,8 +36,8 @@ mode rather than a fabricated set of zero freshness claims.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeReadCounts (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n1["_knowledge_counts (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n0["KnowledgeReadCounts (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n1["_knowledge_counts (src/llm_wiki_engine/knowledge_consumption.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_consumption.md"
     click n1 "../modules/knowledge_consumption.md"

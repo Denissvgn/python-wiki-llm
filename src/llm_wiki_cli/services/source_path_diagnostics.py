@@ -5,9 +5,10 @@ from __future__ import annotations
 import stat
 from pathlib import Path
 
-from ..config import EXCLUDED_DIRS, GitIgnoreMatcher, PathValidationError, is_agent_worktree_path
+from llm_wiki_engine.gitignore import GitIgnoreMatcher
+from llm_wiki_engine.path_policy import EXCLUDED_DIRS, PathValidationError, is_agent_worktree_path
 from ..extractors.common import is_bundled_helper_implementation_path, is_generated_javascript_bundle_path
-from .source_selection import path_is_selected
+from llm_wiki_engine.source_selection import path_is_selected
 from .source_snapshot import SourceSnapshot, _language_selection_for_path, _is_rescuable_typescript_src_lib_file
 
 

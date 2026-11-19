@@ -8,13 +8,13 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .canonical_json import canonical_chunks
-from .filesystem_guard import (
+from llm_wiki_engine.canonical_json import canonical_chunks
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_guarded_bytes, ensure_guarded_directory, fresh_no_follow_stat,
     remove_guarded_tree, unlink_guarded_bytes,
 )
-from .io import first_unsafe_path_component, write_bytes_atomic
-from .knowledge_storage_io import read_guarded
+from llm_wiki_engine.io import first_unsafe_path_component, write_bytes_atomic
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 
 SCHEMA = "llm-wiki-sync-analysis-storage/v2"
 LEGACY_SCHEMA = "llm-wiki-sync-analysis-storage/v1"
@@ -281,7 +281,7 @@ def _journal_superseded(path, references, owned=None):
 
 def save(path: Path, payload, *, root_limit: int, total_limit: int, writer=write_bytes_atomic):
     """Publish all immutable shards before atomically replacing their catalog."""
-    from .knowledge_governance import governance_lock
+    from llm_wiki_engine.knowledge_governance import governance_lock
 
     with governance_lock(path.parent, _lock_filename=_LOCK_FILENAME):
         try:

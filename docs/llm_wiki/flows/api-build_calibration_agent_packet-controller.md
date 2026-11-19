@@ -2,11 +2,12 @@
 
 **Entry point:** `build_calibration_agent_packet` (`api`)
 **Source:** [controller](../modules/controller.md)
-**Modules touched:** [calibration_contracts](../modules/calibration_contracts.md), [controller](../modules/controller.md), [documentation_policy](../modules/documentation_policy.md), and 4 more
+**Modules touched:** [calibration_contracts](../modules/calibration_contracts.md), [canonical_json](../modules/canonical_json.md), [controller](../modules/controller.md), and 5 more
 
 **Complete modules touched:**
 
 - [calibration_contracts](../modules/calibration_contracts.md)
+- [canonical_json](../modules/canonical_json.md)
 - [controller](../modules/controller.md)
 - [documentation_policy](../modules/documentation_policy.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -84,22 +85,22 @@ sequenceDiagram
     p0-->>p30: store.lock
 ```
 
-> Call sequence diagram shows 30 of 1437 interactions; 1407 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1436 interactions; 1406 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 314 (313 omitted); unresolved 1 of 501 (500 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 313 (312 omitted); unresolved 1 of 500 (499 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_choice` | 3 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_trimmed_text` | 4 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 5 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 7 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:contains_control_character` | 13 | - | unresolved | 1 |
 > Omission summary shows 8 of 229 groups; 221 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 623; effect analysis evaluated: 368, partial: 13, unavailable: 242. Counts include steps omitted from the displayed trace.
+Source steps: 624; effect analysis evaluated: 369, partial: 13, unavailable: 242. Counts include steps omitted from the displayed trace.
 
-Collector observations for 381 source steps with known totals: observed: 1690, emitted: 1646, omitted: 44. Unavailable totals are excluded.
+Collector observations for 382 source steps with known totals: observed: 1692, emitted: 1648, omitted: 44. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -128,9 +129,9 @@ Collector observations for 381 source steps with known totals: observed: 1690, e
 | `require_choice` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `require_trimmed_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `require_nonempty_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -143,9 +144,9 @@ flowchart LR
     s3["3. require_choice"]
     s4["4. require_trimmed_text"]
     s5["5. require_nonempty_text"]
-    s6["6. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
+    s6["6. isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)"]
     s7["7. _validation_error"]
-    s8["8. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s8["8. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s9["9. error"]
     s10["10. value.strip"]
     s11["11. _validation_error"]
@@ -154,9 +155,9 @@ flowchart LR
     s2 -->|"require_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)"| s3
     s3 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s4
     s4 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
-    s5 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)(value, str)" .-> s6
     s5 -->|"_validation_error(error, error_context)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s8
     s7 -. "error(context)" .-> s9
     s5 -. "value.strip(data not statically known)" .-> s10
     s5 -->|"_validation_error(error, error_context)"| s11
@@ -180,9 +181,9 @@ flowchart LR
 | `require_choice` | `value: object`, `choices: Iterable[str]`, `text_error: Exception`, `choice_error: Callable[[frozenset[str]], Exception]`, `reject_control_characters: bool` | - | - | `parsed` |
 | `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -196,9 +197,9 @@ flowchart LR
 | _require_choice | require_choice | 6741 | `require_shared_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)` |
 | require_choice | require_trimmed_text | 1093 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
 | require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | isinstance (src/llm_wiki_engine/valid….py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
 | require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |

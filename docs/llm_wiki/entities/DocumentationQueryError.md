@@ -1,6 +1,6 @@
 # DocumentationQueryError
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:135`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:138`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -27,7 +27,7 @@ flowchart LR
     n0["DocumentationQueryError (src/llm_wiki_cli/services/documentation_queries.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/api.py"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
+    n3["src/llm_wiki_cli/services/context_packet_builder.py"]
     n4["src/llm_wiki_cli/services/context_service.py"]
     n5["src/llm_wiki_cli/services/documentation_claim_evidence.py"]
     n6["_attach_query_result_byte_bound (src/llm_wiki_cli/services/documentation_queries.py)"]
@@ -53,7 +53,7 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/documentation_queries.md"
     click n2 "../modules/api.md"
-    click n3 "../modules/context_packet.md"
+    click n3 "../modules/context_packet_builder.md"
     click n4 "../modules/context_service.md"
     click n5 "../modules/documentation_claim_evidence.md"
     click n6 "../modules/documentation_queries.md"
@@ -83,7 +83,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `documentation_claim_evidence` | import | [documentation_claim_evidence](../modules/documentation_claim_evidence.md) | — |
 | `_attach_query_result_byte_bound` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |

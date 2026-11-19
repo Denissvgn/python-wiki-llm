@@ -1,6 +1,6 @@
 # SyncManifestError
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:62`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:65`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -24,20 +24,20 @@ Field-specific validation failure for decoded manifest state.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SyncManifestError (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n0["SyncManifestError (src/llm_wiki_engine/sync_manifest.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/commands/team_cmd.py"]
     n3["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n4["src/llm_wiki_cli/services/ci_installer.py"]
     n5["src/llm_wiki_cli/services/documentation_query_builder.py"]
     n6["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n7["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n8["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n9["src/llm_wiki_cli/services/knowledge_loader.py"]
-    n10["src/llm_wiki_cli/services/lint_service.py"]
-    n11["src/llm_wiki_cli/services/source_retirement.py"]
-    n12["_basis_from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n13["_captured_source_hashes (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n7["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n8["src/llm_wiki_cli/services/lint_service.py"]
+    n9["src/llm_wiki_cli/services/team.py"]
+    n10["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n11["src/llm_wiki_engine/knowledge_loader.py"]
+    n12["src/llm_wiki_engine/source_retirement.py"]
+    n13["_basis_from_payload (src/llm_wiki_engine/sync_manifest.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -57,12 +57,12 @@ flowchart LR
     click n4 "../modules/ci_installer.md"
     click n5 "../modules/documentation_query_builder.md"
     click n6 "../modules/documentation_wiki_input.md"
-    click n7 "../modules/knowledge_artifacts.md"
-    click n8 "../modules/knowledge_generation.md"
-    click n9 "../modules/knowledge_loader.md"
-    click n10 "../modules/lint_service.md"
-    click n11 "../modules/source_retirement.md"
-    click n12 "../modules/sync_manifest.md"
+    click n7 "../modules/knowledge_generation.md"
+    click n8 "../modules/lint_service.md"
+    click n9 "../modules/team.md"
+    click n10 "../modules/knowledge_artifacts.md"
+    click n11 "../modules/knowledge_loader.md"
+    click n12 "../modules/source_retirement.md"
     click n13 "../modules/sync_manifest.md"
 ```
 
@@ -87,12 +87,12 @@ flowchart LR
 | `ci_installer` | import | [ci_installer](../modules/ci_installer.md) | — |
 | `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
-| `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `team` | import | [team](../modules/team.md) | — |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `source_retirement` | import | [source_retirement](../modules/source_retirement.md) | — |
 | `_basis_from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
-| `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) | 5 |
 
 > References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.

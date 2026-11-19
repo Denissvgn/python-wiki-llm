@@ -1,6 +1,6 @@
 # RuntimeDestination
 
-**Location:** `src/llm_wiki_cli/services/runtime_output.py:37`
+**Location:** `src/llm_wiki_engine/runtime_output.py:38`
 **Kind:** Class
 **Bases:** —
 **Module:** [runtime_output](../modules/runtime_output.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `RuntimeDestination` in `src/llm_wiki_cli/services/runtime_output.py`._
+_Auto-generated from `RuntimeDestination` in `src/llm_wiki_engine/runtime_output.py`._
 
 ## Attributes
 
@@ -31,11 +31,11 @@ _Auto-generated from `RuntimeDestination` in `src/llm_wiki_cli/services/runtime_
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["RuntimeDestination (src/llm_wiki_cli/services/runtime_output.py)"]
+    n0["RuntimeDestination (src/llm_wiki_engine/runtime_output.py)"]
     n1["_persist_report (src/llm_wiki_cli/commands/ci_check_cmd.py)"]
     n2["_report_destination (src/llm_wiki_cli/commands/ci_check_cmd.py)"]
     n3["prepare_cache_options (src/llm_wiki_cli/services/inventory_cache.py)"]
-    n4["prepare_destination (src/llm_wiki_cli/services/runtime_output.py)"]
+    n4["prepare_destination (src/llm_wiki_engine/runtime_output.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

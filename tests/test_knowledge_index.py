@@ -16,8 +16,8 @@ import pytest
 
 from llm_wiki_cli import __version__
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
-from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_engine.knowledge_envelope import (
     ConsumedInput,
     ConsumedInputKind,
     EnvelopeInputs,
@@ -25,13 +25,13 @@ from llm_wiki_cli.services.knowledge_envelope import (
     ProducerComponentInput,
     build_evaluated_envelope,
 )
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     build_entity_observation_basis,
     build_module_observation_basis,
     formatted_json_bytes,
     sha256_bytes,
 )
-from llm_wiki_cli.services.knowledge_index import (
+from llm_wiki_engine.knowledge_index import (
     LINK_SYNTAX_EXTENSION,
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
@@ -40,8 +40,8 @@ from llm_wiki_cli.services.knowledge_index import (
     serialize_knowledge_index,
     validate_knowledge_index,
 )
-from llm_wiki_cli.services.knowledge_links import collect_link_observations
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_links import collect_link_observations
+from llm_wiki_engine.knowledge_model import (
     EvidenceState,
     KnowledgeModelError,
     RelationshipKind,
@@ -49,7 +49,7 @@ from llm_wiki_cli.services.knowledge_model import (
     TargetClass,
     parse_knowledge_index,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     knowledge_index_to_payload as model_to_payload,
 )
 from llm_wiki_cli.services.knowledge_orchestration import (
@@ -57,20 +57,20 @@ from llm_wiki_cli.services.knowledge_orchestration import (
     prepare_runtime_generation_options,
     runtime_generation_options,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     TOMBSTONE_SOURCE_MISSING,
     TOMBSTONE_UNKNOWN_PROVENANCE,
     ManifestEvidenceBaseline,
     ManifestPageSource,
     ManifestTombstone,
 )
-from llm_wiki_cli.services.wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     SurfaceRole,
     WikiSurfacePage,
     mcp_uri,
 )
-from llm_wiki_cli.services.wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
 from tests.knowledge_fixtures import (

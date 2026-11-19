@@ -10,12 +10,13 @@ import pytest
 
 from llm_wiki_cli.commands import ci_check_cmd
 from llm_wiki_cli.services import ci_report, doctor_service, lint_service
-from llm_wiki_cli.services import health_summary, knowledge_verification
-from llm_wiki_cli.services import verification_contracts as vc
+from llm_wiki_cli.services import health_summary
+from llm_wiki_engine import knowledge_verification
+from llm_wiki_engine import verification_contracts as vc
 from llm_wiki_cli.services.health_details import capture_health_details
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_observability import KnowledgePhaseDurations
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_observability import KnowledgePhaseDurations
 from tests.knowledge_fixtures import fixture_hash
 from tests.test_ci_check import _render_summary
 from tests.test_health_details import _ci, _doctor, _report
@@ -231,7 +232,8 @@ def test_only_matching_release_policy_receipts_admit_the_required_gate(tmp_path,
 
 
 def test_rendering_is_read_only_and_never_runs_assurance_operations(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import extraction_service, knowledge_governance
+    from llm_wiki_cli.services import extraction_service
+    from llm_wiki_engine import knowledge_governance
 
     report = _report(tmp_path)
     ci, doctor = _ci(report), _doctor(report)

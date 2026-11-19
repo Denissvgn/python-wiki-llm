@@ -2,11 +2,14 @@
 
 **Entry point:** `__main__` (`process`)
 **Source:** [publish](../modules/publish.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 11 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 16 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
+- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -17,7 +20,9 @@
 - [publication_contracts](../modules/publication_contracts.md)
 - [publication_delivery](../modules/publication_delivery.md)
 - [publication_impact](../modules/publication_impact.md)
+- [publication_targets](../modules/publication_targets.md)
 - [publish](../modules/publish.md)
+- [reference_providers](../modules/reference_providers.md)
 - [source_selection](../modules/source_selection.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -60,7 +65,7 @@ sequenceDiagram
     participant p16 as _reference_providers
     participant p17 as _provider
     participant p18 as artifact_files
-    participant p19 as publication_repository
+    participant p19 as target_repository
     participant p20 as _array
     participant p21 as _dependency
     participant p22 as publication_ref_name
@@ -90,7 +95,7 @@ sequenceDiagram
     p2->>p16: _reference_providers
     p4->>p17: _provider
     p4->>p18: artifact_files
-    p2->>p19: publication_repository
+    p2->>p19: target_repository
     p2->>p20: _array
     p2->>p21: _dependency
     p2->>p22: publication_ref_name
@@ -104,9 +109,9 @@ sequenceDiagram
     p0-->>p30: path.write_text (integrations/wiki-candida…ivery/publish.py:__main__)(..., encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 976 interactions; 946 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1002 interactions; 972 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 375 (374 omitted); unresolved 1 of 266 (265 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 384 (383 omitted); unresolved 1 of 276 (275 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -119,8 +124,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/wiki-candidate/delivery/publish.py:run` | 2 | - | unresolved | 26 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 25 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 25 | - | external | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 28 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 1 |
-> Omission summary shows 8 of 180 groups; 172 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 28 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 1 |
+> Omission summary shows 8 of 198 groups; 190 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -133,9 +138,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 336; effect analysis evaluated: 225, partial: 10, unavailable: 101. Counts include steps omitted from the displayed trace.
+Source steps: 343; effect analysis evaluated: 230, partial: 10, unavailable: 103. Counts include steps omitted from the displayed trace.
 
-Collector observations for 235 source steps with known totals: observed: 1217, emitted: 1164, omitted: 53. Unavailable totals are excluded.
+Collector observations for 240 source steps with known totals: observed: 1216, emitted: 1163, omitted: 53. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

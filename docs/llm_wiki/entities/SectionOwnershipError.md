@@ -1,6 +1,6 @@
 # SectionOwnershipError
 
-**Location:** `src/llm_wiki_cli/services/section_ownership.py:60`
+**Location:** `src/llm_wiki_engine/section_ownership.py:60`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [section_ownership](../modules/section_ownership.md)
@@ -24,19 +24,19 @@ Field-specific failure for the persisted section ownership contract.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SectionOwnershipError (src/llm_wiki_cli/services/section_ownership.py)"]
+    n0["SectionOwnershipError (src/llm_wiki_engine/section_ownership.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n3["src/llm_wiki_cli/services/knowledge_model.py"]
-    n4["_normalise_section_record (src/llm_wiki_cli/services/section_ownership.py)"]
-    n5["_section_array (src/llm_wiki_cli/services/section_ownership.py)"]
-    n6["_section_fields (src/llm_wiki_cli/services/section_ownership.py)"]
-    n7["_section_hash (src/llm_wiki_cli/services/section_ownership.py)"]
-    n8["_section_int (src/llm_wiki_cli/services/section_ownership.py)"]
-    n9["_section_object (src/llm_wiki_cli/services/section_ownership.py)"]
-    n10["_section_string (src/llm_wiki_cli/services/section_ownership.py)"]
-    n11["_section_string_array (src/llm_wiki_cli/services/section_ownership.py)"]
-    n12["validate_section_ownership (src/llm_wiki_cli/services/section_ownership.py)"]
+    n2["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n3["src/llm_wiki_engine/knowledge_model.py"]
+    n4["_normalise_section_record (src/llm_wiki_engine/section_ownership.py)"]
+    n5["_section_array (src/llm_wiki_engine/section_ownership.py)"]
+    n6["_section_fields (src/llm_wiki_engine/section_ownership.py)"]
+    n7["_section_hash (src/llm_wiki_engine/section_ownership.py)"]
+    n8["_section_int (src/llm_wiki_engine/section_ownership.py)"]
+    n9["_section_object (src/llm_wiki_engine/section_ownership.py)"]
+    n10["_section_string (src/llm_wiki_engine/section_ownership.py)"]
+    n11["_section_string_array (src/llm_wiki_engine/section_ownership.py)"]
+    n12["validate_section_ownership (src/llm_wiki_engine/section_ownership.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

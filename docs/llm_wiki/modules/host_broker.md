@@ -17,12 +17,12 @@ authenticator, and the stock CLI remains fail-closed outside that context.
 | Source | Symbols |
 |--------|---------|
 | `.` | `_restore_legacy_definition_modules` |
-| `..validation` | `require_bounded_text`, `require_sha256` |
 | `__future__` | `annotations` |
 | `contextlib` | `contextmanager` |
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `asdict`, `dataclass` |
 | `functools` | `wraps` |
+| `llm_wiki_engine.validation` | `require_bounded_text`, `require_sha256` |
 | `typing` | `Any`, `Iterator`, `Literal`, `Mapping`, `Protocol`, `runtime_checkable` |
 | `warnings` | `warnings` |
 
@@ -35,7 +35,7 @@ flowchart LR
     n1["src/llm_wiki_cli/services/calibration/__init__.py"]
     n2["src/llm_wiki_cli/services/calibration/controller.py"]
     n3["src/llm_wiki_cli/services/calibration/host_broker.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
+    n4["src/llm_wiki_engine/validation.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4

@@ -1,6 +1,6 @@
 # _StorageStagingAuthority
 
-**Location:** `src/llm_wiki_cli/services/maintenance_protocol.py:178`
+**Location:** `src/llm_wiki_engine/maintenance_protocol.py:179`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_StorageStagingAuthority` in `src/llm_wiki_cli/services/maintenance_protocol.py`._
+_Auto-generated from `_StorageStagingAuthority` in `src/llm_wiki_engine/maintenance_protocol.py`._
 
 ## Attributes
 
@@ -30,8 +30,8 @@ _Auto-generated from `_StorageStagingAuthority` in `src/llm_wiki_cli/services/ma
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_StorageStagingAuthority (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n1["WikiWriteBasis.bind_committed_state (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n0["_StorageStagingAuthority (src/llm_wiki_engine/maintenance_protocol.py)"]
+    n1["WikiWriteBasis.bind_committed_state (src/llm_wiki_engine/maintenance_protocol.py)"]
     n1 --> n0
     click n0 "../modules/maintenance_protocol.md"
     click n1 "../modules/maintenance_protocol.md"

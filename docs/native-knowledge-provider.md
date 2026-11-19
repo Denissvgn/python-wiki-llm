@@ -22,6 +22,9 @@ for how installed annotations are discovered.
 | Public operation | Scope and result | Workspace and cache effects |
 |---|---|---|
 | `bootstrap_wiki(source_root, wiki_root)` | Creates initial deterministic Markdown and native projections; always uses source-adapter behavior | Explicit wiki creation; managed helper setup may occur; no agent setup |
+| `sync_wiki(source_root, wiki_root)` | Incrementally updates a managed wiki and returns page counts; `dry_run=True` reports without writing | Writes changed pages and native projections; source plugins only when trusted; managed helper setup may occur |
+| `migrate_wiki(source_root, wiki_root)` | Brings a wiki written by an older version to current page naming and returns page totals; `dry_run=True` and `plan_chunks=True` report without writing | Rewrites and archives pages and native projections; project plugins only when trusted; managed helper setup may occur |
+| `lint_wiki(source_root, wiki_root)` | Checks links, coverage and manifest freshness and returns the lint report; a failing lint is a result, not an error | Wiki unchanged; may update the inventory cache; project plugins only when trusted; managed helper setup may occur |
 | `extract_source(..., deep=True, read_only=True)` | Source inventory with declared extraction scope | No implicit preparation or source edits |
 | `inspect_concept(..., live=False)` | One exact concept, typed edges, sections and coverage from a committed snapshot | None |
 | `inspect_concept(..., live=True)` | The same bounded result with one live full source capture and final input checks | Workspace unchanged; managed helper setup may occur |

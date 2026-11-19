@@ -1,6 +1,6 @@
 # OciProbeCheck
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1548`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:1549`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

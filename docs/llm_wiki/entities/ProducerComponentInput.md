@@ -1,6 +1,6 @@
 # ProducerComponentInput
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:219`
+**Location:** `src/llm_wiki_engine/knowledge_envelope.py:220`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -34,15 +34,15 @@ complete safe configuration basis was unavailable.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ProducerComponentInput (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n1["_build_component (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["build_producer_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n3["plugin_producer_inputs (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n5["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
-    n6["_infrastructure_extractor_component (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["_producer_evidence (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["_tool_component (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n0["ProducerComponentInput (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n1["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n2["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n3["_infrastructure_extractor_component (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n4["_producer_evidence (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["_tool_component (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["_build_component (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n7["build_producer_record (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n8["plugin_producer_inputs (src/llm_wiki_engine/knowledge_envelope.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -52,14 +52,14 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     click n0 "../modules/knowledge_envelope.md"
-    click n1 "../modules/knowledge_envelope.md"
-    click n2 "../modules/knowledge_envelope.md"
-    click n3 "../modules/knowledge_envelope.md"
-    click n4 "../modules/knowledge_generation.md"
-    click n5 "../modules/knowledge_maintenance.md"
-    click n6 "../modules/knowledge_orchestration.md"
-    click n7 "../modules/knowledge_orchestration.md"
-    click n8 "../modules/knowledge_orchestration.md"
+    click n1 "../modules/knowledge_generation.md"
+    click n2 "../modules/knowledge_maintenance.md"
+    click n3 "../modules/knowledge_orchestration.md"
+    click n4 "../modules/knowledge_orchestration.md"
+    click n5 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_envelope.md"
+    click n7 "../modules/knowledge_envelope.md"
+    click n8 "../modules/knowledge_envelope.md"
 ```
 
 ### Summary
@@ -72,10 +72,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_build_component` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
-| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
-| `plugin_producer_inputs` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
-| `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `_infrastructure_extractor_component` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
@@ -83,3 +79,7 @@ flowchart LR
 | `_producer_evidence` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 2 |
 | `_producer_evidence` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_tool_component` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `_build_component` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `plugin_producer_inputs` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |

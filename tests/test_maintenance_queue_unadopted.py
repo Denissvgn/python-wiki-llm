@@ -7,13 +7,15 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import maintenance_queue, maintenance_service, mcp_server
-from llm_wiki_cli.services.context_packet import ContextPacketSourceMutationError
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
-from llm_wiki_cli.services.maintenance_evidence import MaintenanceCapture
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
-from llm_wiki_cli.services.maintenance_status import build_maintenance_status
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_cli.services.context_packet_builder import (
+    ContextPacketSourceMutationError,
+)
+from llm_wiki_engine.knowledge_storage import canonical_bytes
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.maintenance_evidence import MaintenanceCapture
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.maintenance_status import build_maintenance_status
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.combined_workflows import (
     AFTER_PROSE,
     BEFORE_PROSE,

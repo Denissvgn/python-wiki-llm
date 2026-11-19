@@ -12,7 +12,7 @@ import pytest
 from llm_wiki_cli.commands import review_cmd
 from llm_wiki_cli.services import impact, review_service
 from llm_wiki_cli.services.extraction_service import InventoryResult
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     with_source_selection_generation_input,
@@ -22,7 +22,7 @@ from llm_wiki_cli.services.source_snapshot import (
     SourceSnapshotError,
     build_source_snapshot,
 )
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_change_selection import git
 
 

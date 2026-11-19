@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from tests.developer_value.fixtures import POLICY_SOURCE
 
@@ -226,7 +226,7 @@ def test_source_contract_only_has_committed_comparison_and_capture_binding(
 def test_rehashed_task_payload_cannot_requalify_implementation(
     tmp_path, monkeypatch, capsys, schema, mutation,
 ):
-    from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+    from llm_wiki_engine.workflow_profile import canonical_json, content_id
 
     path, _ = _project(tmp_path, monkeypatch, capsys, "sharded-v2")
     path.write_text(SOURCE.replace("values[:limit]", "values[:limit - 1]"))
@@ -258,7 +258,7 @@ def test_rehashed_snapshot_cannot_claim_a_live_implementation_verdict(
     tmp_path, monkeypatch, capsys, schema,
 ):
     from copy import deepcopy
-    from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+    from llm_wiki_engine.workflow_profile import canonical_json, content_id
 
     _project(tmp_path, monkeypatch, capsys, "sharded-v2")
     request = {"schema_version": schema, "options": {"read_scope": "snapshot", "knowledge_mode": "required"},
@@ -285,7 +285,7 @@ def test_rehashed_snapshot_cannot_claim_a_live_implementation_verdict(
 def test_rehashed_task_cannot_substitute_same_file_owner_or_declaration_kind(
     tmp_path, monkeypatch, capsys, schema, mutation,
 ):
-    from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+    from llm_wiki_engine.workflow_profile import canonical_json, content_id
 
     _project(tmp_path, monkeypatch, capsys, "sharded-v2")
     request = {"schema_version": schema, "anchors": [{"kind": "source", "value": "policy.py"}],

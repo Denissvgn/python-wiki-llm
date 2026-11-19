@@ -1,6 +1,6 @@
 # AgentConfigInspection
 
-**Location:** `src/llm_wiki_cli/config.py:326`
+**Location:** `src/llm_wiki_cli/config.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [config](../modules/config.md)
@@ -34,11 +34,11 @@ flowchart LR
     n1["_configured_agent (src/llm_wiki_cli/commands/status_cmd.py)"]
     n2["_diagnostic_schema_target (src/llm_wiki_cli/commands/status_cmd.py)"]
     n3["_print_managed_lifecycle (src/llm_wiki_cli/commands/status_cmd.py)"]
-    n4["_resolve_agent (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n5["config_requires_manual_recovery (src/llm_wiki_cli/config.py)"]
-    n6["inspect_config (src/llm_wiki_cli/config.py)"]
-    n7["inspect_config_path (src/llm_wiki_cli/config.py)"]
-    n8["require_config_inspection_unchanged (src/llm_wiki_cli/config.py)"]
+    n4["config_requires_manual_recovery (src/llm_wiki_cli/config.py)"]
+    n5["inspect_config (src/llm_wiki_cli/config.py)"]
+    n6["inspect_config_path (src/llm_wiki_cli/config.py)"]
+    n7["require_config_inspection_unchanged (src/llm_wiki_cli/config.py)"]
+    n8["_resolve_agent (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -51,11 +51,11 @@ flowchart LR
     click n1 "../modules/status_cmd.md"
     click n2 "../modules/status_cmd.md"
     click n3 "../modules/status_cmd.md"
-    click n4 "../modules/upgrade_cmd.md"
+    click n4 "../modules/config.md"
     click n5 "../modules/config.md"
     click n6 "../modules/config.md"
     click n7 "../modules/config.md"
-    click n8 "../modules/config.md"
+    click n8 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
@@ -71,10 +71,10 @@ flowchart LR
 | `_configured_agent` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
 | `_diagnostic_schema_target` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
 | `_print_managed_lifecycle` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
-| `_resolve_agent` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
 | `config_requires_manual_recovery` | type_reference | [config](../modules/config.md) | — |
 | `inspect_config` | call | [config](../modules/config.md) | 1 |
 | `inspect_config` | type_reference | [config](../modules/config.md) | — |
 | `inspect_config_path` | call | [config](../modules/config.md) | 10 |
 | `inspect_config_path` | type_reference | [config](../modules/config.md) | — |
 | `require_config_inspection_unchanged` | type_reference | [config](../modules/config.md) | — |
+| `_resolve_agent` | type_reference | [upgrade_runtime](../modules/upgrade_runtime.md) | — |

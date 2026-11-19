@@ -17,7 +17,7 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import task_compact
 from llm_wiki_cli.services import context_session
 from llm_wiki_cli.services import mcp_server
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from llm_wiki_cli.services.token_counting import EstimatedCounter
 from tests.developer_value.fixtures import POLICY_SOURCE

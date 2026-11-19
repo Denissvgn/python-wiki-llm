@@ -21,23 +21,23 @@ sequenceDiagram
     participant p7 as _remember_syntax
     participant p8 as SharedValidationError
     participant p9 as portable_path_key
-    participant p10 as isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p10 as isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path)
     participant p11 as value.strip
     participant p12 as value.strip().replace
-    participant p13 as PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p13 as PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path)
     participant p14 as normalized_input.startswith
-    participant p15 as path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p16 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p15 as path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path)
+    participant p16 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path)
     participant p17 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p18 as path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p19 as isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p18 as path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path)
+    participant p19 as isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)
     participant p20 as os.fspath
     participant p21 as raw.encode
     participant p22 as raw.replace
-    participant p23 as PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p24 as path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p25 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p26 as path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p23 as PurePosixPath (src/llm_wiki_engine/valid…ire_portable_relative_path)
+    participant p24 as path.is_absolute (src/llm_wiki_engine/valid…ire_portable_relative_path)
+    participant p25 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…ire_portable_relative_path)
+    participant p26 as path.as_posix (src/llm_wiki_engine/valid…ire_portable_relative_path)
     participant p27 as normalized.strip
     participant p28 as canonical.casefold().endswith
     p0->>p1: require_portable_relative_path
@@ -49,25 +49,25 @@ sequenceDiagram
     p1->>p7: _remember_syntax
     p2->>p8: SharedValidationError
     p3->>p9: portable_path_key
-    p0-->>p10: isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)(value, str)
+    p0-->>p10: isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path)(value, str)
     p0-->>p11: value.strip
     p0-->>p12: value.strip().replace('\\', '/')
     p0-->>p11: value.strip
-    p0-->>p13: PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)
+    p0-->>p13: PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path)(normalized_input)
     p0-->>p14: normalized_input.startswith('.//')
-    p0-->>p15: path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)
-    p0-->>p16: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)
+    p0-->>p15: path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path)
+    p0-->>p16: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path)(normalized_input)
     p0-->>p17: _WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)
-    p0-->>p18: path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)
-    p1-->>p19: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(value, (...))
+    p0-->>p18: path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path)
+    p1-->>p19: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(value, (...))
     p1-->>p20: os.fspath(value)
-    p1-->>p19: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(raw, str)
+    p1-->>p19: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(raw, str)
     p1-->>p21: raw.encode('utf-8')
     p1-->>p22: raw.replace('\\', '/')
-    p1-->>p23: PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)(normalized)
-    p1-->>p24: path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p1-->>p25: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)(raw)
-    p1-->>p26: path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
+    p1-->>p23: PurePosixPath (src/llm_wiki_engine/valid…ire_portable_relative_path)(normalized)
+    p1-->>p24: path.is_absolute (src/llm_wiki_engine/valid…ire_portable_relative_path)
+    p1-->>p25: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…ire_portable_relative_path)(raw)
+    p1-->>p26: path.as_posix (src/llm_wiki_engine/valid…ire_portable_relative_path)
     p1-->>p27: normalized.strip
     p1-->>p28: canonical.casefold().endswith(required_suffix.casefold(...))
 ```
@@ -80,14 +80,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 19 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 26 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 30 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 30 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 29 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 12 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 12 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 7 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 19 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 26 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 30 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:portable_path_key` | 30 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 29 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 29 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 12 | - | unresolved | 2 |
 > Omission summary shows 8 of 13 groups; 5 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -110,42 +110,42 @@ Collector observations for 16 source steps with known totals: observed: 85, emit
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `normalize_legacy_portable_relative_path` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
-| `isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip().replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `normalized_input.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_WINDOWS_DRIVE_PREFIX_RE.match` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `require_portable_relative_path` | `available` | `partial` | `available` | `21` | `11` | `10` |
 
 ```mermaid
 flowchart LR
     s1["1. normalize_legacy_portable_relative_path"]
-    s2["2. isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)"]
+    s2["2. isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path)"]
     s3["3. value.strip"]
     s4["4. value.strip().replace"]
     s5["5. value.strip"]
-    s6["6. PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)"]
+    s6["6. PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path)"]
     s7["7. normalized_input.startswith"]
-    s8["8. path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)"]
-    s9["9. _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)"]
+    s8["8. path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path)"]
+    s9["9. _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path)"]
     s10["10. _WINDOWS_DRIVE_PREFIX_RE.match"]
-    s11["11. path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)"]
+    s11["11. path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path)"]
     s12["12. require_portable_relative_path"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)(value, str)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path)(value, str)" .-> s2
     s1 -. "value.strip(data not statically known)" .-> s3
     s1 -. "value.strip().replace('\\', '/')" .-> s4
     s1 -. "value.strip(data not statically known)" .-> s5
-    s1 -. "PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)" .-> s6
+    s1 -. "PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path)(normalized_input)" .-> s6
     s1 -. "normalized_input.startswith('.//')" .-> s7
-    s1 -. "path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)(data not statically known)" .-> s8
-    s1 -. "_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)" .-> s9
+    s1 -. "path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path)(data not statically known)" .-> s8
+    s1 -. "_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path)(normalized_input)" .-> s9
     s1 -. "_WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)" .-> s10
-    s1 -. "path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)(data not statically known)" .-> s11
+    s1 -. "path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path)(data not statically known)" .-> s11
     s1 -->|"require_portable_relative_path(normalized)"| s12
     click s1 "../modules/validation.md"
     click s12 "../modules/validation.md"
@@ -156,32 +156,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `normalize_legacy_portable_relative_path` | `value: object`, `text_error: Exception \| None`, `absolute_error: Exception \| None`, `traversal_error: Exception \| None`, `empty_error: Exception \| None`, `invalid_error: Exception \| None`, `reject_dot_prefixed_absolute: bool` | `SharedValidationError` | - | `None`, `None`, `None`, `None`, `require_portable_relative_path(...)`, `None` |
-| `isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path)` | - | - | - | - |
 | `value.strip` | - | - | - | - |
 | `value.strip().replace` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
+| `PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path)` | - | - | - | - |
 | `normalized_input.startswith` | - | - | - | - |
-| `path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
-| `_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
+| `path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path)` | - | - | - | - |
+| `_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path)` | - | - | - | - |
 | `_WINDOWS_DRIVE_PREFIX_RE.match` | - | - | - | - |
-| `path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
+| `path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path)` | - | - | - | - |
 | `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_legacy_portable_relative_path | isinstance (src/llm_wiki_cli/services…acy_portable_relative_path) | 392 | `isinstance(value, str)` |
+| normalize_legacy_portable_relative_path | isinstance (src/llm_wiki_engine/valid…acy_portable_relative_path) | 392 | `isinstance(value, str)` |
 | normalize_legacy_portable_relative_path | value.strip | 392 | `value.strip(data not statically known)` |
 | normalize_legacy_portable_relative_path | value.strip().replace | 396 | `value.strip().replace('\\', '/')` |
 | normalize_legacy_portable_relative_path | value.strip | 396 | `value.strip(data not statically known)` |
-| normalize_legacy_portable_relative_path | PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path) | 397 | `PurePosixPath(normalized_input)` |
+| normalize_legacy_portable_relative_path | PurePosixPath (src/llm_wiki_engine/valid…acy_portable_relative_path) | 397 | `PurePosixPath(normalized_input)` |
 | normalize_legacy_portable_relative_path | normalized_input.startswith | 401 | `normalized_input.startswith('.//')` |
-| normalize_legacy_portable_relative_path | path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path) | 403 | `path.is_absolute(data not statically known)` |
-| normalize_legacy_portable_relative_path | _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path) | 404 | `_WINDOWS_ABSOLUTE_RE.match(normalized_input)` |
+| normalize_legacy_portable_relative_path | path.is_absolute (src/llm_wiki_engine/valid…acy_portable_relative_path) | 403 | `path.is_absolute(data not statically known)` |
+| normalize_legacy_portable_relative_path | _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_engine/valid…acy_portable_relative_path) | 404 | `_WINDOWS_ABSOLUTE_RE.match(normalized_input)` |
 | normalize_legacy_portable_relative_path | _WINDOWS_DRIVE_PREFIX_RE.match | 405 | `_WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)` |
-| normalize_legacy_portable_relative_path | path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path) | 414 | `path.as_posix(data not statically known)` |
+| normalize_legacy_portable_relative_path | path.as_posix (src/llm_wiki_engine/valid…acy_portable_relative_path) | 414 | `path.as_posix(data not statically known)` |
 | normalize_legacy_portable_relative_path | require_portable_relative_path | 420 | `require_portable_relative_path(normalized)` |
 
 ### Boundary effects

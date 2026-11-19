@@ -2,15 +2,15 @@
 
 **Entry point:** `validate_live_query_source_selection` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [documentation_queries](../modules/documentation_queries.md), and 10 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 10 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
-- [common](../modules/common.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [integrations](../modules/integrations.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -92,21 +92,21 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 497 interactions; 467 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 143 (142 omitted); unresolved 1 of 91 (90 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 141 (140 omitted); unresolved 1 of 92 (91 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 2 | - | external | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 2 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 2 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:is_portable_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | - | unresolved | 9 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 11 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 149 groups; 141 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 2 | - | external | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 2 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:is_portable_relative_path` | 12 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 13 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 13 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 13 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 13 | - | unresolved | 9 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_require_relative_name` | 11 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+> Omission summary shows 8 of 152 groups; 144 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -119,9 +119,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 264; effect analysis evaluated: 138, partial: 10, unavailable: 116. Counts include steps omitted from the displayed trace.
+Source steps: 265; effect analysis evaluated: 139, partial: 10, unavailable: 116. Counts include steps omitted from the displayed trace.
 
-Collector observations for 148 source steps with known totals: observed: 747, emitted: 705, omitted: 42. Unavailable totals are excluded.
+Collector observations for 149 source steps with known totals: observed: 746, emitted: 704, omitted: 42. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -133,10 +133,10 @@ Collector observations for 148 source steps with known totals: observed: 747, em
 | `SyncManifest.load` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `manifest_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `FileNotFoundError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `manifest_path.read_text` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `StorageReadSession` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `StorageReadSession.read` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
 | `_require_relative_name` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
@@ -148,10 +148,10 @@ flowchart LR
     s2["2. SyncManifest.load"]
     s3["3. manifest_path.exists"]
     s4["4. FileNotFoundError"]
-    s5["5. json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)"]
+    s5["5. json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)"]
     s6["6. manifest_path.read_text"]
-    s7["7. isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)"]
-    s8["8. data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)"]
+    s7["7. isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)"]
+    s8["8. data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)"]
     s9["9. StorageReadSession"]
     s10["10. StorageReadSession.read"]
     s11["11. _require_relative_name"]
@@ -159,10 +159,10 @@ flowchart LR
     s1 -->|"SyncManifest.load(wiki_root)"| s2
     s2 -. "manifest_path.exists(data not statically known)" .-> s3
     s2 -. "FileNotFoundError(manifest_path)" .-> s4
-    s2 -. "json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)" .-> s5
+    s2 -. "json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)" .-> s5
     s2 -. "manifest_path.read_text(encoding='utf-8')" .-> s6
-    s2 -. "isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)(data, dict)" .-> s7
-    s2 -. "data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)('version')" .-> s8
+    s2 -. "isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)(data, dict)" .-> s7
+    s2 -. "data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)('version')" .-> s8
     s2 -->|"StorageReadSession(wiki_dir)"| s9
     s2 -->|"StorageReadSession.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)"| s10
     s10 -->|"_require_relative_name(relative)"| s11
@@ -187,10 +187,10 @@ flowchart LR
 | `SyncManifest.load` | `wiki_dir: Path` | `MANIFEST_FILENAME`, `MANIFEST_FILENAME` | - | `manifest`, `cls.from_payload(...)` |
 | `manifest_path.exists` | - | - | - | - |
 | `FileNotFoundError` | - | - | - | - |
-| `json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | - | - | - | - |
+| `json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)` | - | - | - | - |
 | `manifest_path.read_text` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | - | - | - | - |
-| `data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)` | - | - | - | - |
+| `data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load)` | - | - | - | - |
 | `StorageReadSession` | - | - | - | - |
 | `StorageReadSession.read` | `relative: str`, `maximum: int` | `self.maximum`, `self.bytes_read`, `self.root`, `KnowledgeStorageError` | `self.bytes_read`, `self.reads`, `self.observations[...]` | `observed.content` |
 | `_require_relative_name` | `relative: str` | - | - | - |
@@ -201,14 +201,14 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_live_query_source_selection | SyncManifest.load | 303 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1160 | `manifest_path.exists(data not statically known)` |
-| SyncManifest.load | FileNotFoundError | 1161 | `FileNotFoundError(manifest_path)` |
-| SyncManifest.load | json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1180 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| SyncManifest.load | manifest_path.read_text | 1181 | `manifest_path.read_text(encoding='utf-8')` |
-| SyncManifest.load | isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1185 | `isinstance(data, dict)` |
-| SyncManifest.load | data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1185 | `data.get('version')` |
-| SyncManifest.load | StorageReadSession | 1188 | `StorageReadSession(wiki_dir)` |
-| SyncManifest.load | StorageReadSession.read | 1189 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
+| SyncManifest.load | manifest_path.exists | 1031 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | FileNotFoundError | 1032 | `FileNotFoundError(manifest_path)` |
+| SyncManifest.load | json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1051 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| SyncManifest.load | manifest_path.read_text | 1052 | `manifest_path.read_text(encoding='utf-8')` |
+| SyncManifest.load | isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1056 | `isinstance(data, dict)` |
+| SyncManifest.load | data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1056 | `data.get('version')` |
+| SyncManifest.load | StorageReadSession | 1059 | `StorageReadSession(wiki_dir)` |
+| SyncManifest.load | StorageReadSession.read | 1060 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
 | StorageReadSession.read | _require_relative_name | 354 | `_require_relative_name(relative)` |
 | _require_relative_name | is_portable_relative_path | 44 | `is_portable_relative_path(relative)` |
 
@@ -216,17 +216,17 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1181 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1052 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1160 |
-| external_call | `SyncManifest.load` | `FileNotFoundError` | 1161 |
-| external_call | `SyncManifest.load` | `json.loads` | 1180 |
-| external_call | `SyncManifest.load` | `isinstance` | 1185 |
-| unresolved_call | `SyncManifest.load` | `data.get` | 1185 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1031 |
+| external_call | `SyncManifest.load` | `FileNotFoundError` | 1032 |
+| external_call | `SyncManifest.load` | `json.loads` | 1051 |
+| external_call | `SyncManifest.load` | `isinstance` | 1056 |
+| unresolved_call | `SyncManifest.load` | `data.get` | 1056 |
 | step_limit | `validate_live_query_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `validate_live_query_source_selection` | `depth limit` | 0 |
 

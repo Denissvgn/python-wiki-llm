@@ -12,11 +12,11 @@ Defines versioned task requests and detached canonical results. Normalization va
 |--------|---------|
 | `.change_selection` | `validate_changes` |
 | `.documentation_query_builder` | `normalize_concept_coordinate`, `normalize_supplied_paths` |
-| `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `bounded_text`, `canonical_json`, `content_id`, `exact_fields`, `normalize_profile` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `bounded_text`, `canonical_json`, `content_id`, `exact_fields`, `normalize_profile` |
 | `types` | `MappingProxyType` |
 | `typing` | `Any` |
 
@@ -35,7 +35,7 @@ flowchart LR
     n7["src/llm_wiki_cli/services/task_context.py"]
     n8["src/llm_wiki_cli/services/task_context_v2.py"]
     n9["src/llm_wiki_cli/services/task_contract.py"]
-    n10["src/llm_wiki_cli/services/workflow_profile.py"]
+    n10["src/llm_wiki_engine/workflow_profile.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4

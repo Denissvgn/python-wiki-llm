@@ -3,7 +3,9 @@
 Bootstrap and sync record their date in the architectural log, whose exact
 bytes feed knowledge and packet commitments. Wheel/sdist consumers can run on
 different days. Control that fixture input before generation, keeping every
-output byte and digest under comparison. Runtime clocks and deadlines stay real.
+output byte and digest under comparison. The log date comes from the host's
+calendar (``Host.today``), so the fixture pins only that; runtime clocks and
+deadlines (``Host.now``) stay real.
 """
 
 from datetime import date
@@ -17,10 +19,11 @@ from types import ModuleType
 from unittest.mock import patch
 
 
-class FixtureDate(date):
-    @classmethod
-    def today(cls):
-        return cls(2000, 1, 1)
+FIXTURE_DATE = date(2000, 1, 1)
+
+
+def fixture_today(host) -> date:
+    return FIXTURE_DATE
 
 
 def _run_inline(code, arguments):
@@ -39,8 +42,8 @@ def _run_inline(code, arguments):
 def main():
     # Imports still resolve from the consumer interpreter's installed package.
     # This helper is invoked with -I, outside the candidate source tree.
-    from llm_wiki_cli.commands import sync_cmd
-    from llm_wiki_cli.services import bootstrap_runtime, maintenance_state
+    from llm_wiki_engine import maintenance_state
+    from llm_wiki_engine.host import Host
 
     # Adoption identity is a generated input, just like the architectural date.
     # Freeze only this fixture allocation; compare all resulting bytes unchanged.
@@ -53,9 +56,10 @@ def main():
         digest = hashlib.sha256(identity_seed + str(next(sequence)).encode()).digest()
         return UUID(bytes=digest[:16], version=4)
 
-    with patch.object(bootstrap_runtime, "date", FixtureDate), patch.object(
-        sync_cmd, "date", FixtureDate
-    ), patch.object(maintenance_state, "uuid4", fixture_identity):
+    # Patch the class so hosts that an embedding engine creates keep the date too.
+    with patch.object(Host, "today", fixture_today), patch.object(
+        maintenance_state, "uuid4", fixture_identity
+    ):
         if sys.argv[1:3] == ["-m", "llm_wiki_cli.cli"]:
             from llm_wiki_cli import cli
 

@@ -9,12 +9,12 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import search_service
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
-from llm_wiki_cli.services.knowledge_storage_io import StorageReadSession
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
-from llm_wiki_cli.services.search_discovery import DiscoveryError
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.search_discovery import DiscoveryError
+from llm_wiki_engine.sync_manifest import SyncManifest
 
 
 @pytest.fixture
@@ -156,7 +156,7 @@ def test_effectively_selected_missing_source_is_retained_without_live_claim(sele
 
 @pytest.mark.parametrize("mutation", ["page", "source", "membership", "marker"])
 def test_mutation_during_serialization_is_rejected_by_final_guards(project, monkeypatch, mutation):
-    from llm_wiki_cli.services import workflow_profile
+    from llm_wiki_engine import workflow_profile
     original = workflow_profile.canonical_json
     before = tree(project)
     changed = False
@@ -189,7 +189,7 @@ def test_mutation_during_serialization_is_rejected_by_final_guards(project, monk
 
 
 def test_complete_boundary_metadata_cap_fails_with_stable_discovery_error(project, monkeypatch):
-    from llm_wiki_cli.services import workflow_profile
+    from llm_wiki_engine import workflow_profile
     original = workflow_profile.canonical_json
     def serialize(value):
         if isinstance(value, dict) and 'capture_work' in value:
@@ -217,7 +217,7 @@ def test_declared_native_root_disappearance_is_integrity_failure(project):
 @pytest.mark.parametrize('reason', ['unselected', 'ignored'])
 def test_historical_mapped_ineligible_owner_never_enters_reader_or_results(selected, monkeypatch, mode, reason):
     from hashlib import sha256
-    from llm_wiki_cli.services.sync_manifest import (
+    from llm_wiki_engine.sync_manifest import (
         ManifestPageSource, ManifestTombstone, TOMBSTONE_UNKNOWN_PROVENANCE, MANIFEST_STATE_UNAVAILABLE,
     )
     profile, _ = selected
@@ -253,7 +253,7 @@ def test_empty_result_root_replacement_during_enrichment_cannot_publish(tmp_path
     monkeypatch.chdir(tmp_path)
     Path('src').mkdir()
     Path('wiki').mkdir()
-    from llm_wiki_cli.services import search_discovery
+    from llm_wiki_engine import search_discovery
     original = search_discovery.enrich_search
     attempted = False
     def replace_root(*args, **kwargs):

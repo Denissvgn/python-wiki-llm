@@ -7,12 +7,12 @@ from pathlib import Path
 import sys
 
 from . import publication_cmd
-from ..services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
 )
-from ..services.knowledge_storage import KnowledgeStorageError
-from ..services.knowledge_storage_io import StorageReadSession, _absolute_path
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, _absolute_path
 from ..services.publication_config import (
     load_publication_config,
     publication_control_overlap,
@@ -21,103 +21,6 @@ from ..services.publication_config import (
 from ..services.publication_contracts import validate_publication_basis
 from ..services.publication_impact import MAX_JSON_BYTES, read_publication_document
 from ..services.source_snapshot import _is_package_marker
-
-
-def _common(parser):
-    parser.add_argument("--consumer-root", default=".")
-    parser.add_argument("--config", default=".llm-wiki/publication.json")
-
-
-def add_commands(docs_sub):
-    parser = docs_sub.add_parser(
-        "wiki", help="Prepare and check a local GitHub wiki candidate"
-    )
-    actions = parser.add_subparsers(dest="publication_action", required=True)
-    export = actions.add_parser(
-        "export", help="Render explicitly owned content without publishing"
-    )
-    check = actions.add_parser(
-        "check", help="Recheck candidate bytes, inputs and review readiness"
-    )
-    review = actions.add_parser(
-        "review", help="Prepare an exact-candidate review proposal"
-    )
-    maintain = actions.add_parser(
-        "maintain",
-        help="Give a prepared documentation workspace the mapped topics that need edits",
-    )
-    patch = actions.add_parser(
-        "patch",
-        help="Export independently reviewed workspace edits as a repository patch",
-    )
-    for action in (export, check, review, maintain, patch):
-        _common(action)
-        action.add_argument(
-            "--receipt",
-            required=True,
-            help="Candidate receipt JSON; output for export, input otherwise",
-        )
-    export.add_argument(
-        "--output-dir",
-        required=True,
-        help="New or empty candidate directory; accepts consumer-relative or absolute paths",
-    )
-    for action in (check, review, maintain, patch):
-        action.add_argument(
-            "--candidate-dir", required=True, help="Exact exported candidate directory"
-        )
-    for action in (maintain, patch):
-        action.add_argument(
-            "--workspace",
-            required=True,
-            help="Documentation workspace prepared with docs prepare",
-        )
-        action.add_argument(
-            "--topic",
-            action="append",
-            dest="topic_ids",
-            help="Scope the work to this mapped topic ID (repeatable)",
-        )
-    patch.add_argument(
-        "--format",
-        choices=("json", "patch"),
-        default="json",
-        help="Print the review proposal or its UTF-8 Git patch",
-    )
-    check.add_argument("--output", help="Optional separate rechecked receipt JSON")
-    review.add_argument("--reviewer", required=True)
-    review.add_argument("--reason", required=True)
-    review.add_argument(
-        "--target-dir",
-        help="Original pinned local wiki copy; required for local-snapshot review",
-    )
-    review.add_argument(
-        "--output", required=True, help="Proposed candidate approval JSON"
-    )
-    for action in (export, check, maintain, patch):
-        action.add_argument(
-            "--target-dir", help="Consumer-relative pinned local sibling wiki copy"
-        )
-        action.add_argument("--baseline", help="Accepted publication basis JSON")
-        action.add_argument("--reviews", help="Accepted topic review ledger JSON")
-        action.add_argument(
-            "--previous-receipt", help="Previously accepted candidate ownership receipt"
-        )
-        action.add_argument(
-            "--candidate-review", help="Accepted exact-candidate review JSON"
-        )
-    for action in (export, check):
-        action.add_argument(
-            "--source-revision", help="Explicit caller-declared source revision"
-        )
-        action.add_argument(
-            "--target-revision", help="Explicit caller-declared target-copy revision"
-        )
-        action.add_argument(
-            "--require-ready",
-            action="store_true",
-            help="Exit 1 until local checks and all exact reviews are ready",
-        )
 
 
 def _path(args, value):
@@ -139,7 +42,7 @@ def _basis_files(basis):
     yield from basis.get("files", {})
     for reference in basis.get("references", {}).values():
         configuration = reference["configuration"]
-        if configuration["kind"] == "contract-file":
+        if "path" in configuration:
             yield configuration["path"]
 
 

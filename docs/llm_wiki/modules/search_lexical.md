@@ -1,6 +1,6 @@
 # search_lexical Module
 
-**Path:** `src/llm_wiki_cli/services/search_lexical.py`
+**Path:** `src/llm_wiki_engine/search_lexical.py`
 
 ## Description
 
@@ -83,20 +83,20 @@ is a lexical association, without a runtime call or source-correctness claim.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/markdown_sections.py"]
-    n1["src/llm_wiki_cli/services/search_lexical.py"]
-    n2["src/llm_wiki_cli/services/search_rank.py"]
-    n3["src/llm_wiki_cli/services/search_service.py"]
-    n4["src/llm_wiki_cli/services/wiki_media.py"]
-    n1 --> n0
-    n1 --> n2
-    n1 --> n4
-    n3 --> n1
-    n3 --> n2
-    click n0 "../modules/markdown_sections.md"
-    click n1 "../modules/search_lexical.md"
-    click n2 "../modules/search_rank.md"
-    click n3 "../modules/search_service.md"
+    n0["src/llm_wiki_cli/services/search_service.py"]
+    n1["src/llm_wiki_engine/markdown_sections.py"]
+    n2["src/llm_wiki_engine/search_lexical.py"]
+    n3["src/llm_wiki_engine/search_rank.py"]
+    n4["src/llm_wiki_engine/wiki_media.py"]
+    n0 --> n2
+    n0 --> n3
+    n2 --> n1
+    n2 --> n3
+    n2 --> n4
+    click n0 "../modules/search_service.md"
+    click n1 "../modules/markdown_sections.md"
+    click n2 "../modules/search_lexical.md"
+    click n3 "../modules/search_rank.md"
     click n4 "../modules/wiki_media.md"
 ```
 

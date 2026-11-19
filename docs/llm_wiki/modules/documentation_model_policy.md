@@ -22,12 +22,12 @@ provider as the default.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION` |
-| `.validation` | `require_exact_fields`, `require_mapping`, `require_mapping_tuple`, `require_nonempty_text`, `require_string_tuple`, `trimmed_text_or_none` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION` |
+| `llm_wiki_engine.validation` | `require_exact_fields`, `require_mapping`, `require_mapping_tuple`, `require_nonempty_text`, `require_string_tuple`, `trimmed_text_or_none` |
 | `re` | `re` |
 | `typing` | `Any`, `Mapping` |
 
@@ -37,17 +37,17 @@ provider as the default.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/contracts.py"]
-    n2["src/llm_wiki_cli/services/documentation_model_policy.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
+    n1["src/llm_wiki_cli/services/documentation_model_policy.py"]
+    n2["src/llm_wiki_engine/contracts.py"]
+    n3["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
-    n2 --> n1
-    n2 --> n3
+    n1 --> n2
+    n1 --> n3
     click n0 "../modules/api.md"
-    click n1 "../modules/services_contracts.md"
-    click n2 "../modules/documentation_model_policy.md"
+    click n1 "../modules/documentation_model_policy.md"
+    click n2 "../modules/llm_wiki_engine_contracts.md"
     click n3 "../modules/validation.md"
 ```
 
@@ -56,7 +56,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

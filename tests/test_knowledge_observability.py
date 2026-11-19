@@ -8,12 +8,12 @@ from typing import Any, cast
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_consumption
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine import knowledge_consumption
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import ComputedFreshness
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
     BASIS_INCOMPATIBLE_REASON_CODES,
     KnowledgeAggregateSummary,

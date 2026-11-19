@@ -20,7 +20,7 @@ from llm_wiki_cli.services.task_compact import (
 )
 from llm_wiki_cli.services.task_contract import TaskContext, TASK_RESULT_SCHEMA_V2
 from llm_wiki_cli.services.token_counting import EstimatedCounter
-from llm_wiki_cli.services.workflow_profile import canonical_json, content_id, WorkflowRequestError
+from llm_wiki_engine.workflow_profile import canonical_json, content_id, WorkflowRequestError
 from tests.developer_value.fixtures import POLICY_SOURCE
 
 

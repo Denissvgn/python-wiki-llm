@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from ..services.request_json import load_request
+from llm_wiki_engine.request_json import load_request
 
 
 def _capture_options(args):
@@ -85,7 +85,7 @@ def run(args) -> None:
             )
         elif args.maintenance_action == "recover-new-pages":
             from ..config import validate_path
-            from ..services.sync_recovery import recover_new_sync_pages
+            from llm_wiki_engine.sync_recovery import recover_new_sync_pages
 
             result = recover_new_sync_pages(
                 validate_path(args.wiki_dir, "--wiki-dir"),

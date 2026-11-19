@@ -1,6 +1,6 @@
 # Phase
 
-**Location:** `src/llm_wiki_cli/services/progress.py:40`
+**Location:** `src/llm_wiki_engine/progress.py:40`
 **Kind:** Class
 **Bases:** —
 **Module:** [progress](../modules/progress.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `Phase` in `src/llm_wiki_cli/services/progress.py`._
+_Auto-generated from `Phase` in `src/llm_wiki_engine/progress.py`._
 
 ## Attributes
 
@@ -30,9 +30,9 @@ _Auto-generated from `Phase` in `src/llm_wiki_cli/services/progress.py`._
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["Phase (src/llm_wiki_cli/services/progress.py)"]
-    n1["phase (src/llm_wiki_cli/services/progress.py)"]
-    n2["Progress.phase (src/llm_wiki_cli/services/progress.py)"]
+    n0["Phase (src/llm_wiki_engine/progress.py)"]
+    n1["phase (src/llm_wiki_engine/progress.py)"]
+    n2["Progress.phase (src/llm_wiki_engine/progress.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/progress.md"

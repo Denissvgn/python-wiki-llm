@@ -1,6 +1,6 @@
 # KnowledgeLoadResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:58`
+**Location:** `src/llm_wiki_engine/knowledge_loader.py:58`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_loader](../modules/knowledge_loader.md)
@@ -33,17 +33,17 @@ Validated knowledge state or an explicit compatibility fallback.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeLoadResult (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n0["KnowledgeLoadResult (src/llm_wiki_engine/knowledge_loader.py)"]
     n1["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n2["_knowledge_error_view (src/llm_wiki_cli/services/context_service.py)"]
-    n3["_validate_load_result (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n4["build_knowledge_read_view (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n5["load_knowledge_read_view (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n6["_load_once (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n7["load_knowledge_state (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n8["_degraded_snapshot_view (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n9["_snapshot_error_view (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n10["_with_current_source_selection (src/llm_wiki_cli/services/knowledge_observability.py)"]
+    n3["_reliably_missing_source_paths (src/llm_wiki_cli/services/lint_service.py)"]
+    n4["_validate_load_result (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n5["build_knowledge_read_view (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n6["load_knowledge_read_view (src/llm_wiki_engine/knowledge_consumption.py)"]
+    n7["_load_once (src/llm_wiki_engine/knowledge_loader.py)"]
+    n8["load_knowledge_state (src/llm_wiki_engine/knowledge_loader.py)"]
+    n9["_degraded_snapshot_view (src/llm_wiki_engine/knowledge_observability.py)"]
+    n10["_snapshot_error_view (src/llm_wiki_engine/knowledge_observability.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -57,12 +57,12 @@ flowchart LR
     click n0 "../modules/knowledge_loader.md"
     click n1 "../modules/context_service.md"
     click n2 "../modules/context_service.md"
-    click n3 "../modules/knowledge_consumption.md"
+    click n3 "../modules/lint_service.md"
     click n4 "../modules/knowledge_consumption.md"
     click n5 "../modules/knowledge_consumption.md"
-    click n6 "../modules/knowledge_loader.md"
+    click n6 "../modules/knowledge_consumption.md"
     click n7 "../modules/knowledge_loader.md"
-    click n8 "../modules/knowledge_observability.md"
+    click n8 "../modules/knowledge_loader.md"
     click n9 "../modules/knowledge_observability.md"
     click n10 "../modules/knowledge_observability.md"
 ```
@@ -79,6 +79,7 @@ flowchart LR
 |---|---|---|---:|
 | `_build_context_knowledge_view` | call | [context_service](../modules/context_service.md) | 1 |
 | `_knowledge_error_view` | call | [context_service](../modules/context_service.md) | 2 |
+| `_reliably_missing_source_paths` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_validate_load_result` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `build_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `load_knowledge_read_view` | call | [knowledge_consumption](../modules/knowledge_consumption.md) | 1 |
@@ -88,6 +89,5 @@ flowchart LR
 | `load_knowledge_state` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `_degraded_snapshot_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
 | `_snapshot_error_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 2 |
-| `_with_current_source_selection` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
 
 > References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

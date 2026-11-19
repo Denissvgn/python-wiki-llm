@@ -1,7 +1,7 @@
 # PageTransitionExecution_apply
 
 **Entry point:** `sync_transition_execution.PageTransitionExecution.apply`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [protected_artifacts](../modules/protected_artifacts.md), [sync_transition_execution](../modules/sync_transition_execution.md), [sync_transitions](../modules/sync_transitions.md)
+**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [protected_artifacts](../modules/protected_artifacts.md), [sync_transition_execution](../modules/sync_transition_execution.md), [sync_transitions](../modules/sync_transitions.md)
 
 ## Sequence
 
@@ -17,11 +17,13 @@
 9. `filesystem_guard.unlink_guarded_bytes`
 10. `filesystem_guard.ensure_guarded_directory`
 11. `filesystem_guard.atomic_write_guarded_bytes`
-12. `sync_transitions.PageTransitionError`
+12. `host.emit`
+13. `sync_transitions.PageTransitionError`
 
 ## Touches
 
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [host](../modules/host.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [protected_artifacts](../modules/protected_artifacts.md)
 - [sync_transition_execution](../modules/sync_transition_execution.md)

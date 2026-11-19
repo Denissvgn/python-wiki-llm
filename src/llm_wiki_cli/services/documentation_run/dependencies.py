@@ -21,7 +21,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Optional
 from urllib.parse import urlsplit
 from ... import __version__
-from ..contracts import (
+from llm_wiki_engine.contracts import (
     DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION,
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
     DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION,
@@ -68,7 +68,7 @@ from ..documentation_policy import (
     source_snapshot_tree_baseline,
     source_tree_baseline,
 )
-from ..source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
     resolve_source_selection,
@@ -89,21 +89,21 @@ from ..documentation_review import (
     reconcile_review_ledger,
 )
 from ..documentation_wiki_input import SUPPORTED_MANIFEST_VERSIONS
-from ..filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     WindowsDirectoryGuardError,
     guard_windows_directory_chain,
 )
-from ..io import read_md, write_bytes_atomic, write_text_output
-from ..knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from ..knowledge_consumption import KnowledgeReadView
-from ..knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.io import read_md, write_bytes_atomic, write_text_output
+from llm_wiki_engine.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_engine.knowledge_consumption import KnowledgeReadView
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
 from ..skills import (
     REFERENCE_DEPENDENT_SKILLS,
     REFERENCE_SKILL_ID,
     export_skills,
     list_bundled_skills,
 )
-from ..validation import (
+from llm_wiki_engine.validation import (
     parse_utc_timestamp,
     portable_path_key,
     require_exact_fields as require_shared_exact_fields,
@@ -113,13 +113,13 @@ from ..validation import (
     require_trimmed_text_list,
     resolve_workspace_path,
 )
-from ..verification_contracts import VERIFICATION_RECEIPT_FILENAME
-from ..wiki_media import (
+from llm_wiki_engine.verification_contracts import VERIFICATION_RECEIPT_FILENAME
+from llm_wiki_engine.wiki_media import (
     iter_markdown_link_targets,
     local_link_path,
     strip_fenced_code_blocks,
 )
-from ..wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
+from llm_wiki_engine.wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 
 # Documentation preparation emits calibration evidence, but importing the

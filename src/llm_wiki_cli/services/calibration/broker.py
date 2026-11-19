@@ -38,7 +38,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterator, Mapping, Optional, Protocol, Sequence
 
 from . import _restore_legacy_definition_modules
-from ..contracts import (
+from llm_wiki_engine.contracts import (
     OCI_MAX_PACKET_BYTES,
     P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION,
     P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION,
@@ -46,12 +46,13 @@ from ..contracts import (
     P0_CALIBRATION_ISOLATION_PROBE_REQUEST_SCHEMA_VERSION,
     P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION,
 )
-from ..filesystem_guard import atomic_write_private_bytes
-from ..redaction import (
+from llm_wiki_engine.canonical_json import compact_line_bytes
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes
+from llm_wiki_engine.redaction import (
     LIKELY_SECRET_RE as _LIKELY_SECRET_RE,
     SENSITIVE_KEYS as _SENSITIVE_KEYS,
 )
-from ..validation import (
+from llm_wiki_engine.validation import (
     is_canonical_uuid,
     path_is_within as shared_path_is_within,
     require_bounded_int,
@@ -2015,16 +2016,7 @@ def canonical_result_json_bytes(payload: Mapping[str, Any]) -> bytes:
     if not isinstance(payload, Mapping):
         raise OciBrokerError("Agent result must be a JSON object.")
     try:
-        return (
-            json.dumps(
-                payload,
-                allow_nan=False,
-                ensure_ascii=False,
-                separators=(",", ":"),
-                sort_keys=True,
-            )
-            + "\n"
-        ).encode("utf-8")
+        return compact_line_bytes(payload)
     except (TypeError, ValueError) as exc:
         raise OciBrokerError("Agent result is not canonical JSON.") from exc
 

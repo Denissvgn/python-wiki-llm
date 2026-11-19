@@ -8,10 +8,10 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services import knowledge_orchestration as ko
-from llm_wiki_cli.services import sync_recovery as recovery
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes, digest
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
-from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+from llm_wiki_engine import sync_recovery as recovery
+from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
+from llm_wiki_engine.maintenance_protocol import snapshot_wiki
 
 
 def rejected(tmp_path, monkeypatch, capsys, layout: str | None = "v1"):
@@ -313,7 +313,7 @@ def test_read_only_and_no_new_page_operations_create_no_journal(tmp_path):
 
 
 def test_oversized_new_page_fails_before_file_write(tmp_path):
-    from llm_wiki_cli.services.io import write_bytes_atomic
+    from llm_wiki_engine.io import write_bytes_atomic
     from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
     source, wiki = tmp_path / "src", tmp_path / "wiki"
@@ -328,7 +328,7 @@ def test_oversized_new_page_fails_before_file_write(tmp_path):
 def test_current_manifest_owner_cannot_be_deleted_by_modified_journal(
     tmp_path, monkeypatch, capsys
 ):
-    from llm_wiki_cli.services.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     wiki, directory, info, record = rejected(tmp_path, monkeypatch, capsys)
     owned = wiki / "modules/app.md"
@@ -355,7 +355,7 @@ def test_adopted_complete_preimage_recovery_remains_available(
     tmp_path, monkeypatch, capsys
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services import maintenance_protocol
+    from llm_wiki_engine import maintenance_protocol
 
     captured = []
     original = maintenance_protocol.save_recovery_snapshot
@@ -383,7 +383,7 @@ def test_adopted_complete_preimage_recovery_remains_available(
 def test_journal_bounds_do_not_block_operations_without_new_pages(
     tmp_path, monkeypatch
 ):
-    from llm_wiki_cli.services.io import write_bytes_atomic
+    from llm_wiki_engine.io import write_bytes_atomic
     from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
     source, wiki = tmp_path / "src", tmp_path / "wiki"
@@ -449,7 +449,7 @@ def test_cli_refuses_wiki_outside_project_before_reading_journal(
 def test_success_discards_only_unchanged_private_scratch(
     tmp_path, monkeypatch, capsys, foreign
 ):
-    from llm_wiki_cli.services.io import write_bytes_atomic
+    from llm_wiki_engine.io import write_bytes_atomic
     from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
     source, wiki = tmp_path / "src", tmp_path / "wiki"

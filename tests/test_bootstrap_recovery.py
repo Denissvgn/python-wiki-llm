@@ -14,16 +14,16 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import bootstrap_recovery as recovery
 from llm_wiki_cli.services import bootstrap_runtime as runtime
-from llm_wiki_cli.services import knowledge_governance as governance
+from llm_wiki_engine import knowledge_governance as governance
 from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
-from llm_wiki_cli.services.maintenance_protocol import (
+from llm_wiki_engine.maintenance_protocol import (
     ADOPTION_FILENAME,
     MaintenanceProtocolError,
     guard_maintenance_owner,
     snapshot_wiki,
     WikiWriteBasis,
 )
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 
 
 def run_cli(monkeypatch, *arguments):
@@ -213,7 +213,7 @@ def test_actual_readonly_storage_lock_is_retryable(project, monkeypatch):
 
 
 def interrupt_after(monkeypatch, name, *, occurrence=1):
-    from llm_wiki_cli.services import wiki_write_basis
+    from llm_wiki_engine import wiki_write_basis
 
     original = wiki_write_basis.after_wiki_write
     count = 0
@@ -469,7 +469,7 @@ cli.main()
 
 def test_unadopted_writers_cannot_enter_during_bootstrap_capture(project, monkeypatch):
     from concurrent.futures import ThreadPoolExecutor
-    from llm_wiki_cli.services.maintenance_protocol import maintenance_write_operation
+    from llm_wiki_engine.maintenance_protocol import maintenance_write_operation
 
     original = runtime._extract_bootstrap_inventory
 

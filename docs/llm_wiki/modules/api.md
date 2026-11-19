@@ -16,7 +16,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 |--------|---------|
 | `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `DoctorV3Result`, `DoctorV4Result`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `FlowSegmentResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult`, `MaintenanceStatusResult`, `MaintenanceAdoptionResult`, `MaintenanceAcknowledgmentResult`, `MaintenanceRecoveryResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
-| `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
+| `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `context_packet_builder` |
 | `.services.analysis_capture` | `analysis_input_status` |
 | `.services.behavior_reference` | `get_behavior_facts`, `validate_behavior_facts`, `render_behavior_reference` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
@@ -26,9 +26,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.ci_installer` | `InstallCiResult`, `install_documentation_ci_workflow` |
 | `.services.cli_reference` | `build_cli_contract`, `get_cli_contract`, `render_cli_reference`, `validate_cli_contract` |
 | `.services.context_budget` | `BudgetedContext`, `build_budgeted_context`, `validate_budgeted_context` |
-| `.services.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
 | `.services.context_session` | `ContextSession`, `SessionReply`, `CompactSessionReply`, `CanonicalReceipt`, `apply_task_delta` |
-| `.services.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
 | `.services.dependencies` | `analyze_dependencies` |
 | `.services.doctor_service` | `build_doctor_report` |
 | `.services.documentation_model_policy` | `DocumentationModelEscalationRule`, `DocumentationModelOverride`, `DocumentationModelPolicyError`, `DocumentationModelRoute`, `DocumentationModelRoutingPolicy`, `DocumentationModelRoutingRequest`, `DocumentationModelSelection`, `select_documentation_model`, `validate_documentation_model_selection` |
@@ -42,32 +40,25 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.flow_followup` | `validate_request`, `validate_request` |
 | `.services.helper_cache` | `HelperPreparationError` |
 | `.services.helper_runtime` | `current_helper_operation`, `helper_operation`, `helper_policy` |
-| `.services.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
-| `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
-| `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
-| `.services.knowledge_loader` | `KnowledgeStateLoadError` |
-| `.services.knowledge_storage` | `KnowledgeStorageError` |
-| `.services.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `.services.lint_request` | `LintRequest`, `LintRequestError` |
+| `.services.lint_service` | `execute_lint`, `report_to_dict` |
 | `.services.maintenance_queue` | `build_maintenance_queue`, `validate_queue_limit` |
 | `.services.maintenance_service` | `adopt_maintenance_authority`, `get_maintenance_status_authority`, `acknowledge_maintenance_authority`, `recover_maintenance_authority` |
-| `.services.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
+| `.services.migrate_runtime` | `execute_migrate` |
+| `.services.migrate_service` | `MigrateError`, `MigrateOutcome`, `MigrateRequest`, `MigrateRequestError` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
 | `.services.publication_candidate` | `export_publication_candidate`, `check_publication_candidate`, `review_publication_candidate`, `validate_publication_receipt` |
 | `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
 | `.services.publication_maintenance` | `build_publication_patch`, `prepare_publication_maintenance` |
-| `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
-| `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
-| `.services.storage_receipts` | `expand_storage_receipt` |
+| `.services.sync_runtime` | `execute_sync` |
+| `.services.sync_service` | `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError` |
 | `.services.task_compact` | `CompactTaskContext`, `render_compact_task_context`, `validate_compact_task_context`, `expand_compact_task_context` |
 | `.services.task_compact_delivery` | `build_compact_task_context` |
 | `.services.task_context` | `build_task_context`, `validate_task_context`, `reconcile_task_context` |
 | `.services.task_contract` | `TaskContext` |
 | `.services.token_counting` | `TokenCounter` |
-| `.services.validation` | `require_portable_relative_path` |
-| `.services.wiki_surface_index` | `evaluate_surface_index` |
-| `.services.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping`, `Sequence` |
@@ -76,6 +67,23 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `inspect` | `inspect` |
 | `itertools` | `islice` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility`, `query_result_format`, `wiki_surface` |
+| `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `discarding_output`, `discarding_output`, `discarding_output` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeStateLoadError` |
+| `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError` |
+| `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `llm_wiki_engine.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
+| `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
+| `llm_wiki_engine.storage_receipts` | `expand_storage_receipt` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
+| `llm_wiki_engine.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `TYPE_CHECKING`, `Any`, `NoReturn`, `ParamSpec`, `TypeVar`, `cast`, `Literal`, `overload` |
@@ -100,20 +108,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (58) |
+| Outbound | `src` (67) |
 
-> All 65 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 74 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 283 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 364 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 379 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 383 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 387 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1614 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 288 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 369 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 384 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 388 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 392 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1766 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -144,6 +152,9 @@ flowchart LR
 | `get_knowledge_coverage` | `(*, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, live: bool = False, service: DocumentationGraphQueryService \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| Path \| None = None, comparison_policy: str \| None = None) -> KnowledgeCoverageResult` | `@_native_query_boundary`, `@ac.comparison_entrypoint` | Explain modeled coverage from a snapshot, live capture or existing service. |
 | `inspect_concept` | `(locator_or_exact_route: object, *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, live: bool = False, limit: int = 20, include_evidence: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| Path \| None = None, comparison_policy: str \| None = None) -> NativeInspectionResult` | `@_native_query_boundary`, `@ac.comparison_entrypoint` | Inspect a concept, typed edges, sections and coverage from one read. |
 | `bootstrap_wiki` | `(source_root: str, wiki_root: str, *, depth: str = 'full', skip_workflows: bool = False, skip_flows: bool = False, skip_data_flow: bool = False, skip_dependencies: bool = False, api_contracts: bool = False, openapi_file: str \| None = None, dependency_graph_detail: str = 'auto', overwrite: bool = False, helper_cache_dir: str \| None = None, include_tests: list[str] \| None = None, trust_source_plugins: bool = False, source_selection: str \| Path \| None = None, knowledge_format: str \| None = None) -> BootstrapResult` | `@_api_boundary` | Build a first-use deterministic wiki through the typed service boundary. |
+| `sync_wiki` | `(source_root: str, wiki_root: str, *, dry_run: bool = False, force: bool = False, preserve_semantic: bool = True, initialize_surfaces: list[str] \| None = None, flow_categories: list[str] \| None = None, exclude_tests: bool = False, include_tests: list[str] \| None = None, openapi_file: str \| None = None, clear_openapi_file: bool = False, helper_cache_dir: str \| None = None, trust_source_plugins: bool = False, source_selection: str \| Path \| None = None, knowledge_format: str \| None = None, rebuild_knowledge: bool = False) -> SyncOutcome` | `@_api_boundary` | Incrementally update a managed wiki from its source tree. |
+| `migrate_wiki` | `(source_root: str, wiki_root: str, *, dry_run: bool = False, chunk_size: int \| None = None, chunk: int \| None = None, plan_chunks: bool = False, trust_source_plugins: bool = False, source_selection: str \| Path \| None = None) -> MigrateOutcome` | `@_api_boundary` | Bring a wiki written by an older llm-wiki to the current page naming. |
+| `lint_wiki` | `(source_root: str, wiki_root: str, *, strict: bool = False, knowledge_drift_report: bool = False, include_tests: list[str] \| None = None, helper_cache_dir: str \| None = None, trust_source_plugins: bool = False, source_selection: str \| Path \| None = None, media_size_warn_bytes: int \| None = None) -> dict[str, Any]` | `@_api_boundary` | Check a wiki against its source tree and return the lint report. |
 | `extract_source` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package: str \| None = None, include_empty: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> ExtractSourceResult` | `@_api_boundary` | Return the stable ``llm-wiki extract`` JSON payload as a dict. |
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: Literal['json'] = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None, comparison_policy: str \| None = None) -> ContextPayload` | `@overload` | — |
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: Literal['markdown'], focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None, comparison_policy: str \| None = None) -> MarkdownContextResult` | `@overload` | — |

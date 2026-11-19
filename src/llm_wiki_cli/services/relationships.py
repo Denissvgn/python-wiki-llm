@@ -14,7 +14,7 @@ from typing import Iterable, Mapping, Optional
 
 from .imports import build_module_path_resolver
 from .python_imports import is_python_source, module_binding_imports
-from .validation import positive_int_or_none
+from llm_wiki_engine.validation import positive_int_or_none
 
 _RELATION_LIMIT = 12
 _RELATIONSHIP_SUMMARIES_SCHEMA = "llm-wiki-relationship-summaries/v1"

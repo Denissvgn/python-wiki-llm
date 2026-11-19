@@ -8,7 +8,7 @@ from .schema import *
 from .workspace import *
 from .integrity import *
 from .refresh import *
-from ..markdown_sections import GENERATED_INDEX_INTROS
+from llm_wiki_engine.markdown_sections import GENERATED_INDEX_INTROS
 
 def _validate_result_work_ids(
     result: DocumentationAgentResult,

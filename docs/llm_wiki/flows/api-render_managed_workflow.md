@@ -37,10 +37,10 @@ sequenceDiagram
     participant p23 as body.encode
     participant p24 as value.lower
     participant p25 as (…).encode
-    participant p26 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p26 as isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)
     participant p27 as value.strip
-    participant p28 as any (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p29 as ord (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p28 as any (src/llm_wiki_engine/valid…e_repository_relative_path)
+    participant p29 as ord (src/llm_wiki_engine/valid…e_repository_relative_path)
     p0->>p1: normalize_action_ref
     p0->>p2: _portable_project_path
     p0->>p3: _workflow_body
@@ -67,10 +67,10 @@ sequenceDiagram
     p4-->>p23: body.encode('utf-8')
     p1-->>p24: value.lower
     p4-->>p25: (…).encode('utf-8')
-    p7-->>p26: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)
+    p7-->>p26: isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)(value, str)
     p7-->>p27: value.strip
-    p7-->>p28: any (src/llm_wiki_cli/services…e_repository_relative_path)(...)
-    p7-->>p29: ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)
+    p7-->>p28: any (src/llm_wiki_engine/valid…e_repository_relative_path)(...)
+    p7-->>p29: ord (src/llm_wiki_engine/valid…e_repository_relative_path)(character)
 ```
 
 > Call sequence diagram shows 30 of 98 interactions; 68 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -82,13 +82,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 8 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 13 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 34 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 34 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 43 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 13 | - | external | 6 |
+| `src/llm_wiki_engine/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 11 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_repository_relative_path` | 11 | - | unresolved | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 34 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 34 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_engine/validation.py:_check_path_collision` | 43 | - | unresolved | 2 |
 > Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -123,7 +123,7 @@ Collector observations for 27 source steps with known totals: observed: 132, emi
 | `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_validated_project_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
-| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -138,7 +138,7 @@ flowchart LR
     s9["9. InstallCiError"]
     s10["10. _validated_project_path"]
     s11["11. require_repository_relative_path"]
-    s12["12. isinstance (src/llm_wiki_cli/services…e_repository_relative_path)"]
+    s12["12. isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)"]
     s1 -->|"normalize_action_ref(action_ref)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)(value, str)" .-> s3
     s2 -. "_ACTION_REF_RE.fullmatch(value)" .-> s4
@@ -149,7 +149,7 @@ flowchart LR
     s8 -->|"InstallCiError(...)"| s9
     s7 -->|"_validated_project_path(value, label=label)"| s10
     s10 -->|"require_repository_relative_path(…)"| s11
-    s11 -. "isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)(value, str)" .-> s12
     click s1 "../modules/ci_installer.md"
     click s2 "../modules/ci_installer.md"
     click s5 "../modules/ci_installer.md"
@@ -175,7 +175,7 @@ flowchart LR
 | `InstallCiError` | - | - | - | - |
 | `_validated_project_path` | `value: object`, `label: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
-| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…e_repository_relative_path)` | - | - | - | - |
 
 ### Call data
 
@@ -191,7 +191,7 @@ flowchart LR
 | _without_github_expression | InstallCiError | 105 | `InstallCiError(...)` |
 | _portable_project_path | _validated_project_path | 113 | `_validated_project_path(value, label=label)` |
 | _validated_project_path | require_repository_relative_path | 81 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 304 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…e_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
 

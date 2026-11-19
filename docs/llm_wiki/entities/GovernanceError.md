@@ -1,6 +1,6 @@
 # GovernanceError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:113`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:114`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -24,9 +24,9 @@ A field-specific governance validation or mutation failure.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GovernanceError (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["GovernanceError (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["ValueError"]
-    n2["GovernanceConflictError (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["GovernanceConflictError (src/llm_wiki_engine/knowledge_governance.py)"]
     n3["_assert_bundle_continuity (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n4["_assert_snapshot_unchanged (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n5["_committed_artifact_snapshot (src/llm_wiki_cli/commands/knowledge_cmd.py)"]

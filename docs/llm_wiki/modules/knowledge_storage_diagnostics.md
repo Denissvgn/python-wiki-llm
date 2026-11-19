@@ -1,6 +1,6 @@
 # knowledge_storage_diagnostics Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_storage_diagnostics.py`
+**Path:** `src/llm_wiki_engine/knowledge_storage_diagnostics.py`
 
 ## Description
 
@@ -17,7 +17,6 @@ Logical review continuations bind both snapshot commitments, native root locatio
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.knowledge_artifacts` | `validated_artifact_bytes` |
 | `.knowledge_index` | `_model_to_payload` |
 | `.knowledge_loader` | `load_knowledge_state` |
@@ -29,13 +28,14 @@ Logical review continuations bind both snapshot commitments, native root locatio
 | `.knowledge_storage_lifecycle` | `stored_object_paths` |
 | `.manifest_storage` | `OBJECT_NAME`, `OBJECT_LIMIT` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
 | `binascii` | `binascii` |
 | `heapq` | `heapq` |
 | `json` | `json` |
-| `os` | `os` |
+| `llm_wiki_engine.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `subprocess` | `subprocess` |
@@ -48,7 +48,7 @@ Logical review continuations bind both snapshot commitments, native root locatio
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
+    n1["src/llm_wiki_engine/knowledge_storage_diagnostics.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_storage_diagnostics.md"
@@ -61,9 +61,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (13) |
+| Outbound | `src` (14) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

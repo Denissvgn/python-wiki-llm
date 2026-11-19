@@ -12,8 +12,8 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands.extract_cmd import _parse_dockerfile
 from llm_wiki_cli.commands.bootstrap_cmd import _generate_dockerfile_md
 from llm_wiki_cli.services.dockerfile_parser import DOCKERFILE_STAGES_SCHEMA
-from llm_wiki_cli.services.section_ownership import SectionOwnership, observe_page_sections
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.section_ownership import SectionOwnership, observe_page_sections
+from llm_wiki_engine.wiki_surface import PageKind
 
 
 INDEPENDENT = '''FROM scratch AS build

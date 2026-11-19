@@ -2,11 +2,11 @@
 
 **Entry point:** `materialize_typed_graph` (`api`)
 **Source:** [knowledge_graph](../modules/knowledge_graph.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_graph](../modules/knowledge_graph.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
 
 **Complete modules touched:**
 
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -37,7 +37,7 @@ sequenceDiagram
     participant p15 as KnowledgeGraphError
     participant p16 as _graph_concept_payload
     participant p17 as _sorted_json_records
-    participant p18 as sha256_bytes
+    participant p18 as sha256_digest
     participant p19 as _observation_collection
     participant p20 as _parse_typed_graph
     participant p21 as concept_endpoint
@@ -48,8 +48,8 @@ sequenceDiagram
     participant p26 as _coverage
     participant p27 as _relative_path
     participant p28 as _positive_int
-    participant p29 as isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)
-    participant p30 as _canonical_json(…).encode (src/llm_wiki_cli/services…y:materialize_typed_graph)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)
+    participant p30 as _canonical_json(…).encode (src/llm_wiki_engine/knowl…y:materialize_typed_graph)
     p0->>p1: _normalise_graph_concepts
     p0->>p2: _json_value
     p0->>p3: _observation_bundle_for_hash
@@ -67,7 +67,7 @@ sequenceDiagram
     p0->>p15: KnowledgeGraphError
     p0->>p16: _graph_concept_payload
     p0->>p17: _sorted_json_records
-    p0->>p18: sha256_bytes
+    p0->>p18: sha256_digest
     p8->>p19: _observation_collection
     p14->>p20: _parse_typed_graph
     p7->>p21: concept_endpoint
@@ -78,8 +78,8 @@ sequenceDiagram
     p7->>p26: _coverage
     p1->>p27: _relative_path
     p1->>p28: _positive_int
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs, KnowledgeGraphInputs)
-    p0-->>p30: _canonical_json(…).encode (src/llm_wiki_cli/services…y:materialize_typed_graph)('utf-8')
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)(inputs, KnowledgeGraphInputs)
+    p0-->>p30: _canonical_json(…).encode (src/llm_wiki_engine/knowl…y:materialize_typed_graph)('utf-8')
 ```
 
 > Call sequence diagram shows 30 of 886 interactions; 856 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -90,14 +90,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_graph.py:materialize_typed_graph` | 1 | - | external | 6 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_normalise_graph_concepts` | 7 | - | external | 6 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_normalise_graph_concepts` | 7 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 7 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_locator` | 15 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_name` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 19 | - | external | 1 |
+| `src/llm_wiki_engine/knowledge_graph.py:materialize_typed_graph` | 1 | - | external | 6 |
+| `src/llm_wiki_engine/knowledge_graph.py:_normalise_graph_concepts` | 7 | - | external | 6 |
+| `src/llm_wiki_engine/knowledge_graph.py:_normalise_graph_concepts` | 7 | [src/llm_wiki_engine/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 7 |
+| `src/llm_wiki_engine/knowledge_graph.py:_locator` | 15 | [src/llm_wiki_engine/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 3 |
+| `src/llm_wiki_engine/knowledge_graph.py:_name` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 17 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_nonempty_text` | 17 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 19 | - | external | 1 |
 > Omission summary shows 8 of 203 groups; 195 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 390; effect analysis evaluated: 298, partial: 4, unavailable: 88. Counts include steps omitted from the displayed trace.
 
-Collector observations for 302 source steps with known totals: observed: 1435, emitted: 1418, omitted: 17. Unavailable totals are excluded.
+Collector observations for 302 source steps with known totals: observed: 1436, emitted: 1419, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -122,43 +122,43 @@ Collector observations for 302 source steps with known totals: observed: 1435, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `materialize_typed_graph` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_normalise_graph_concepts` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
-| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `set (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `set (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `enumerate (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. materialize_typed_graph"]
-    s2["2. isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)"]
     s3["3. TypeError"]
-    s4["4. isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)"]
-    s5["5. isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)"]
+    s4["4. isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)"]
+    s5["5. isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)"]
     s6["6. KnowledgeGraphError"]
     s7["7. _normalise_graph_concepts"]
-    s8["8. isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)"]
-    s9["9. isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)"]
+    s8["8. isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)"]
+    s9["9. isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)"]
     s10["10. KnowledgeGraphError"]
-    s11["11. set (src/llm_wiki_cli/services…_normalise_graph_concepts)"]
-    s12["12. enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs, KnowledgeGraphInputs)" .-> s2
+    s11["11. set (src/llm_wiki_engine/knowl…_normalise_graph_concepts)"]
+    s12["12. enumerate (src/llm_wiki_engine/knowl…_normalise_graph_concepts)"]
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)(inputs, KnowledgeGraphInputs)" .-> s2
     s1 -. "TypeError('inputs must be a KnowledgeGraphInputs')" .-> s3
-    s1 -. "isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs.evidence_limit, bool)" .-> s4
-    s1 -. "isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs.evidence_limit, int)" .-> s5
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)(inputs.evidence_limit, bool)" .-> s4
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)(inputs.evidence_limit, int)" .-> s5
     s1 -->|"KnowledgeGraphError('evidence_limit', ...)"| s6
     s1 -->|"_normalise_graph_concepts(inputs.concepts)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)(values, (...))" .-> s8
-    s7 -. "isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)(values, Sequence)" .-> s9
+    s7 -. "isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)(values, (...))" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)(values, Sequence)" .-> s9
     s7 -->|"KnowledgeGraphError('concepts', 'must be a sequence')"| s10
-    s7 -. "set (src/llm_wiki_cli/services…_normalise_graph_concepts)(data not statically known)" .-> s11
-    s7 -. "enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts)(values)" .-> s12
+    s7 -. "set (src/llm_wiki_engine/knowl…_normalise_graph_concepts)(data not statically known)" .-> s11
+    s7 -. "enumerate (src/llm_wiki_engine/knowl…_normalise_graph_concepts)(values)" .-> s12
     b0["mutation seen.add"]
     s7 -. "mutation seen.add" .-> b0
     b1["mutation concepts.append"]
@@ -180,33 +180,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `materialize_typed_graph` | `inputs: KnowledgeGraphInputs` | `KnowledgeGraphInputs`, `MAX_EVIDENCE_LIMIT`, `MAX_EVIDENCE_LIMIT`, `TYPED_GRAPH_SCHEMA_VERSION` | `input_hashes[...]` | `validate_typed_graph(...)` |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph)` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
 | `_normalise_graph_concepts` | `values: Sequence[GraphConcept]` | `Mapping`, `Sequence`, `GraphConcept` | - | `tuple(...)` |
-| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
-| `set (src/llm_wiki_cli/services…_normalise_graph_concepts)` | - | - | - | - |
-| `enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts)` | - | - | - | - |
+| `set (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | - | - | - | - |
+| `enumerate (src/llm_wiki_engine/knowl…_normalise_graph_concepts)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| materialize_typed_graph | isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph) | 331 | `isinstance(inputs, KnowledgeGraphInputs)` |
+| materialize_typed_graph | isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph) | 331 | `isinstance(inputs, KnowledgeGraphInputs)` |
 | materialize_typed_graph | TypeError | 332 | `TypeError('inputs must be a KnowledgeGraphInputs')` |
-| materialize_typed_graph | isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph) | 334 | `isinstance(inputs.evidence_limit, bool)` |
-| materialize_typed_graph | isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph) | 335 | `isinstance(inputs.evidence_limit, int)` |
+| materialize_typed_graph | isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph) | 334 | `isinstance(inputs.evidence_limit, bool)` |
+| materialize_typed_graph | isinstance (src/llm_wiki_engine/knowl…y:materialize_typed_graph) | 335 | `isinstance(inputs.evidence_limit, int)` |
 | materialize_typed_graph | KnowledgeGraphError | 338 | `KnowledgeGraphError('evidence_limit', ...)` |
 | materialize_typed_graph | _normalise_graph_concepts | 342 | `_normalise_graph_concepts(inputs.concepts)` |
-| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1276 | `isinstance(values, (...))` |
-| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1276 | `isinstance(values, Sequence)` |
+| _normalise_graph_concepts | isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts) | 1276 | `isinstance(values, (...))` |
+| _normalise_graph_concepts | isinstance (src/llm_wiki_engine/knowl…_normalise_graph_concepts) | 1276 | `isinstance(values, Sequence)` |
 | _normalise_graph_concepts | KnowledgeGraphError | 1277 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
-| _normalise_graph_concepts | set (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1279 | `set(data not statically known)` |
-| _normalise_graph_concepts | enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1280 | `enumerate(values)` |
+| _normalise_graph_concepts | set (src/llm_wiki_engine/knowl…_normalise_graph_concepts) | 1279 | `set(data not statically known)` |
+| _normalise_graph_concepts | enumerate (src/llm_wiki_engine/knowl…_normalise_graph_concepts) | 1280 | `enumerate(values)` |
 
 ### Boundary effects
 

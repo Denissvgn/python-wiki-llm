@@ -11,7 +11,6 @@ Documentation-run verify services.
 | Source | Symbols |
 |--------|---------|
 | `.` | `publication` |
-| `..knowledge_consumption` | `load_knowledge_read_view` |
 | `..knowledge_projection` | `project_knowledge` |
 | `.contracts` | `*` |
 | `.dependencies` | `*` |
@@ -21,6 +20,7 @@ Documentation-run verify services.
 | `.schema` | `*` |
 | `.workspace` | `*` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
 
 ## Local dependency map
 

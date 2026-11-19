@@ -1,6 +1,6 @@
 # _MaintenanceAdoptionOptions
 
-**Location:** `src/llm_wiki_cli/api_types.py:141`
+**Location:** `src/llm_wiki_cli/api_types.py:142`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

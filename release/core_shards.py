@@ -119,7 +119,7 @@ def constraints(value: dict) -> str:
             and re.fullmatch(r"[A-Za-z0-9.!+_-]+", version) is not None,
             "unsafe package pin",
         )
-        if name != "agent-wiki-cli":
+        if name not in {"agent-wiki-cli", "llm-wiki-engine"}:
             result.append(f"{name}=={version}\n")
     return "".join(sorted(result))
 
@@ -828,7 +828,7 @@ def validate_aggregation(
         assert spec is not None and spec.loader is not None
         coverage = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(coverage)
-        coverage.validate_combination(directory, shards, source_root / "src/llm_wiki_cli", read)
+        coverage.validate_combination(directory, shards, source_root / "src", read)
     return record
 
 

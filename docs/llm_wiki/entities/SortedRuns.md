@@ -1,6 +1,6 @@
 # SortedRuns
 
-**Location:** `src/llm_wiki_cli/services/storage_sort.py:14`
+**Location:** `src/llm_wiki_engine/storage_sort.py:14`
 **Kind:** Class
 **Bases:** —
 **Module:** [storage_sort](../modules/storage_sort.md)
@@ -35,10 +35,10 @@ Spills ordered audit records into bounded batches, then merges them with at most
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SortedRuns (src/llm_wiki_cli/services/storage_sort.py)"]
-    n1["audit_spilled_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
-    n2["expected_records (src/llm_wiki_cli/services/knowledge_audit.py)"]
-    n3["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n0["SortedRuns (src/llm_wiki_engine/storage_sort.py)"]
+    n1["audit_spilled_records (src/llm_wiki_engine/knowledge_audit.py)"]
+    n2["expected_records (src/llm_wiki_engine/knowledge_audit.py)"]
+    n3["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

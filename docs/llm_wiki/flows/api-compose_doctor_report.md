@@ -2,10 +2,11 @@
 
 **Entry point:** `compose_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [doctor_service](../modules/doctor_service.md), [health_policy](../modules/health_policy.md), [knowledge_observability](../modules/knowledge_observability.md), and 6 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [doctor_service](../modules/doctor_service.md), [health_policy](../modules/health_policy.md), [knowledge_observability](../modules/knowledge_observability.md), and 6 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [doctor_service](../modules/doctor_service.md)
 - [health_policy](../modules/health_policy.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -86,9 +87,9 @@ sequenceDiagram
     p7-->>p30: unhealthy.append('source-selection-mismatch')
 ```
 
-> Call sequence diagram shows 30 of 316 interactions; 286 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 315 interactions; 285 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 91 (90 omitted); unresolved 1 of 70 (69 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 90 (89 omitted); unresolved 1 of 69 (68 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -96,13 +97,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/doctor_service.py:compose_doctor_report` | 1 | - | external | 5 |
 | `src/llm_wiki_cli/services/doctor_service.py:_knowledge_declared` | 8 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | external | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 3 |
-> Omission summary shows 8 of 85 groups; 77 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 11 | - | external | 3 |
+| `src/llm_wiki_engine/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 3 |
+> Omission summary shows 8 of 84 groups; 76 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -115,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 156; effect analysis evaluated: 92, partial: 6, unavailable: 58. Counts include steps omitted from the displayed trace.
+Source steps: 157; effect analysis evaluated: 93, partial: 6, unavailable: 58. Counts include steps omitted from the displayed trace.
 
-Collector observations for 98 source steps with known totals: observed: 542, emitted: 528, omitted: 14. Unavailable totals are excluded.
+Collector observations for 99 source steps with known totals: observed: 543, emitted: 529, omitted: 14. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -204,13 +205,13 @@ flowchart LR
 | _knowledge_declared | path.exists | 348 | `path.exists(data not statically known)` |
 | _knowledge_declared | path.is_symlink | 348 | `path.is_symlink(data not statically known)` |
 | _knowledge_declared | SyncManifest.load | 351 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1160 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | manifest_path.exists | 1031 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1181 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1052 |
 
 ### Static analysis gaps
 
@@ -222,7 +223,7 @@ flowchart LR
 | external_call | `compose_doctor_report` | `TypeError` | 193 |
 | unresolved_call | `_knowledge_declared` | `path.exists` | 348 |
 | unresolved_call | `_knowledge_declared` | `path.is_symlink` | 348 |
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1160 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1031 |
 | step_limit | `compose_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `compose_doctor_report` | `depth limit` | 0 |
 

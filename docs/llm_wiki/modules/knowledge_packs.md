@@ -1,6 +1,6 @@
 # knowledge_packs Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_packs.py`
+**Path:** `src/llm_wiki_engine/knowledge_packs.py`
 
 ## Description
 
@@ -12,7 +12,6 @@ Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains i
 |--------|---------|
 | `.knowledge_artifacts` | `require_validated_artifacts`, `validated_artifact_bytes` |
 | `.knowledge_storage` | `COLLECTIONS`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_READ_OBJECTS`, `MAX_ROOT_BYTES`, `OBJECT_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStorePlan`, `KnowledgeStoreReader`, `build_knowledge_store`, `canonical_bytes`, `decode_bytes`, `digest`, `parse_store_root`, `_fields`, `_hash`, `_integer` |
-| `.progress` | `observed_phase` |
 | `.storage_spool` | `ByteSpool` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
@@ -21,6 +20,7 @@ Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains i
 | `hashlib` | `hashlib` |
 | `io` | `io` |
 | `json` | `json` |
+| `llm_wiki_engine.progress` | `observed_phase` |
 | `re` | `re` |
 | `struct` | `struct` |
 | `typing` | `Any`, `NoReturn` |
@@ -33,7 +33,7 @@ Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains i
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_packs.py"]
+    n1["src/llm_wiki_engine/knowledge_packs.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_packs.md"

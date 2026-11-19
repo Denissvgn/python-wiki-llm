@@ -26,20 +26,20 @@ follow unsafe paths.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR` |
-| `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
 | `.change_selection` | `_git`, `affected_page_map`, `patch_paths`, `portable_path`, `select_changes`, `source_relative_paths` |
+| `.domain_pack` | `current_pack` |
 | `.entrypoints` | `get_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `_snapshot_path_is_selection_input`, `filter_source_diff`, `get_inventory_result` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
-| `.sync_manifest` | `SyncManifest` |
-| `.wiki_surface` | `PageKind`, `collect_wiki_pages` |
-| `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `build_surface_index` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `collect_wiki_pages` |
+| `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `build_surface_index` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
 
@@ -70,13 +70,14 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ReviewFinding](../entities/ReviewFinding.md) | 90 | — | — |
-| [ReviewAnalysis](../entities/ReviewAnalysis.md) | 99 | — | — |
+| [ReviewFinding](../entities/ReviewFinding.md) | 96 | — | — |
+| [ReviewAnalysis](../entities/ReviewAnalysis.md) | 105 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_source_extensions` | `() -> tuple[str, ...]` | — | Every file extension the active domain pack classifies as a source. |
 | `_review_physical_state` | `(root: Path, path: str) -> str` | — | Observe bounded metadata only, stopping before unsafe ancestors. |
 | `_review_scope_preflight` | `(snapshot: SourceSnapshot, requested: dict, selected: dict) -> dict \| None` | — | Describe configured selection separately from physical/inventory state. |
 | `_review_scope_findings` | `(scope: dict \| None) -> list[ReviewFinding]` | — | — |

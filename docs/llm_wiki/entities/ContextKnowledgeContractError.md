@@ -1,6 +1,6 @@
 # ContextKnowledgeContractError
 
-**Location:** `src/llm_wiki_cli/services/context_knowledge_contract.py:1393`
+**Location:** `src/llm_wiki_engine/context_knowledge_contract.py:1393`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_knowledge_contract](../modules/context_knowledge_contract.md)
@@ -22,12 +22,12 @@ A serialized context-knowledge contract violates the frozen shape.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextKnowledgeContractError (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
+    n0["ContextKnowledgeContractError (src/llm_wiki_engine/context_knowledge_contract.py)"]
     n1["ValueError"]
-    n2["_contract_snapshot (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
-    n3["_matrix_by_state (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
-    n4["_validate_context_knowledge_contract (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
-    n5["validate_context_knowledge_contract (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
+    n2["_contract_snapshot (src/llm_wiki_engine/context_knowledge_contract.py)"]
+    n3["_matrix_by_state (src/llm_wiki_engine/context_knowledge_contract.py)"]
+    n4["_validate_context_knowledge_contract (src/llm_wiki_engine/context_knowledge_contract.py)"]
+    n5["validate_context_knowledge_contract (src/llm_wiki_engine/context_knowledge_contract.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

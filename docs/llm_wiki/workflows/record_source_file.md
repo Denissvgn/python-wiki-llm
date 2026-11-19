@@ -1,7 +1,7 @@
 # record_source_file
 
 **Entry point:** `source_snapshot._record_source_file`
-**Modules involved:** [common](../modules/common.md), [config](../modules/config.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
+**Modules involved:** [common](../modules/common.md), [path_policy](../modules/path_policy.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
 
 ## Sequence
 
@@ -10,12 +10,12 @@
 2. `source_selection.path_is_selected`
 3. `source_selection.path_is_link_or_reparse`
 4. `common.is_bundled_helper_implementation_path`
-5. `config.is_agent_worktree_path`
+5. `path_policy.is_agent_worktree_path`
 
 ## Touches
 
 - [common](../modules/common.md)
-- [config](../modules/config.md)
+- [path_policy](../modules/path_policy.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 

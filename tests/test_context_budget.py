@@ -299,7 +299,7 @@ def test_packet_budget_fits_before_applying_wire_item_limit(tmp_path, monkeypatc
     monkeypatch.setattr(context_budget.packets, "_MAX_JSON_ITEMS", 5000)
     with pytest.raises(context_budget.packets.ContextPacketMalformedError,
                        match="5000-item limit"):
-        context_budget.packets.build_qualified_context(request={
+        context_budget.packet_builder.build_qualified_context(request={
             "budget_tokens": 1_000_000, "focus": ["all"],
             "knowledge_mode": "off",
         })
@@ -388,12 +388,12 @@ def test_fitted_packet_retains_captured_native_file_identity_guard(tmp_path, mon
     tree, _ = _materialize_ready_project(tmp_path, monkeypatch)
     target = tree["wiki_root"] / ".llm-wiki-knowledge.json"
     original = target.read_bytes()
-    capture = context_budget.packets.capture_context_read
+    capture = context_budget.packet_builder.capture_context_read
 
     def capture_with_integrity(*args, **kwargs):
         return capture(*args, **kwargs, respect_ignores=True)
 
-    monkeypatch.setattr(context_budget.packets, "capture_context_read", capture_with_integrity)
+    monkeypatch.setattr(context_budget.packet_builder, "capture_context_read", capture_with_integrity)
 
     class ReplacingCounter(ByteCounter):
         replaced = False
@@ -404,7 +404,7 @@ def test_fitted_packet_retains_captured_native_file_identity_guard(tmp_path, mon
                 self.replaced = True
             return super().count(text)
 
-    with pytest.raises(context_budget.packets.ContextPacketSourceMutationError) as caught:
+    with pytest.raises(context_budget.packet_builder.ContextPacketSourceMutationError) as caught:
         build_budgeted_context(".", str(tree["wiki_root"]), {
             "budget_tokens": 300_000, "budget_mode": "exact", "format": "packet",
             "knowledge_mode": "auto",

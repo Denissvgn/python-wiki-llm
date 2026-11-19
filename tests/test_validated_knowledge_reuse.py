@@ -10,16 +10,12 @@ from unittest.mock import patch
 
 import pytest
 
-from llm_wiki_cli.services import (
-    knowledge_artifacts,
-    knowledge_freshness,
-    knowledge_index,
-    knowledge_orchestration,
-)
-from llm_wiki_cli.services.immutable import FrozenDict
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_cli.services import knowledge_orchestration
+from llm_wiki_engine import knowledge_artifacts, knowledge_freshness, knowledge_index
+from llm_wiki_engine.immutable import FrozenDict
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_knowledge_generation import _runtime_input_case
 from tests.test_knowledge_loader import _committed_state
 
@@ -175,7 +171,7 @@ def test_public_serialization_still_rejects_manually_invalid_model(tmp_path):
 
 
 def test_revision_change_with_new_inputs_builds_only_one_candidate(tmp_path):
-    from llm_wiki_cli.services.knowledge_envelope import RepositoryEvidence
+    from llm_wiki_engine.knowledge_envelope import RepositoryEvidence
     from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
     runtime, _, fixture = _runtime_input_case(tmp_path, inventory_complete=True)

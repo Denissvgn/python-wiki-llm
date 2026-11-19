@@ -183,34 +183,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3750 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
+| resolve_publication_finding (src/llm_wiki_cli/api.py) | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | 3902 | `resolve(report, candidate, finding_id=finding_id, reviewer=reviewer, reason=reason, reviews=reviews, decision=decision)` |
 | resolve_publication_finding (src/llm_wiki_cli/services/publication_impact.py) | validate_publication_report | 630 | `validate_publication_report(report)` |
-| validate_publication_report | _guard | 933 | `_guard(_report, value)` |
-| _guard | _json_tree | 913 | `_json_tree(value)` |
-| _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
-| _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
-| _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
-| _json_tree | isinstance | 139 | `isinstance(item, Mapping)` |
-| _json_tree | any (src/llm_wiki_cli/services…on_contracts.py:_json_tree) | 140 | `any(...)` |
-| _json_tree | type | 140 | `type(key)` |
-| _json_tree | _fail | 141 | `_fail('document', 'object keys must be strings')` |
+| validate_publication_report | _guard | 945 | `_guard(_report, value)` |
+| _guard | _json_tree | 925 | `_json_tree(value)` |
+| _json_tree | pending.pop | 140 | `pending.pop(data not statically known)` |
+| _json_tree | _fail | 143 | `_fail('document', 'exceeds JSON structural bounds')` |
+| _fail | PublicationProtocolError | 48 | `PublicationProtocolError(...)` |
+| _json_tree | isinstance | 144 | `isinstance(item, Mapping)` |
+| _json_tree | any (src/llm_wiki_cli/services…on_contracts.py:_json_tree) | 145 | `any(...)` |
+| _json_tree | type | 145 | `type(key)` |
+| _json_tree | _fail | 146 | `_fail('document', 'object keys must be strings')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `records.append` | `resolve_publication_finding` | 678 |
-| mutation | `pending.pop` | `_json_tree` | 135 |
-| mutation | `pending.extend` | `_json_tree` | 142 |
-| mutation | `pending.extend` | `_json_tree` | 144 |
+| mutation | `pending.pop` | `_json_tree` | 140 |
+| mutation | `pending.extend` | `_json_tree` | 147 |
+| mutation | `pending.extend` | `_json_tree` | 149 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_json_tree` | `isinstance` | 139 |
-| external_call | `_json_tree` | `any` | 140 |
-| external_call | `_json_tree` | `type` | 140 |
+| external_call | `_json_tree` | `isinstance` | 144 |
+| external_call | `_json_tree` | `any` | 145 |
+| external_call | `_json_tree` | `type` | 145 |
 | step_limit | `resolve_publication_finding` | `first 12 steps` | 0 |
 
 ## Behavior

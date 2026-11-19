@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from tests import knowledge_performance_benchmark as benchmark
 from tests.test_knowledge_loader import _committed_state
 

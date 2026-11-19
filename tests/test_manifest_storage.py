@@ -5,20 +5,20 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     CommitStage, build_knowledge_commit_plan, commit_knowledge_artifacts, current_knowledge_format,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError, canonical_bytes
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, canonical_bytes
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, prune_knowledge_storage, recover_knowledge_storage,
 )
-from llm_wiki_cli.services.manifest_storage import (
+from llm_wiki_engine.manifest_storage import (
     OBJECT_LIMIT, ROOT_LIMIT, ManifestStoreReader, build_manifest_store,
     object_path, read_manifest_header, current_manifest_format,
 )
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from tests.test_knowledge_loader import _committed_state
 
 

@@ -654,3 +654,18 @@ def test_canary_rechecks_source_after_final_provider_observation(tmp_path, monke
     assert (args.output / "installed-origin-after.json").exists()
     hashes = json.loads((args.output / "base-reader-hashes.json").read_text())
     assert hashes == {name: canary.sha(args.output / "base-tools" / name) for name in canary.READERS}
+
+
+@pytest.mark.parametrize("copy", ["identical", "changed", "untracked"])
+def test_pr_source_guard_admits_only_byte_copies_in_the_engine_build_tree(pr_checkout, copy):
+    root, _git, source, base, head, tree = pr_checkout
+    # Installing src/ (the engine project) builds it in place under src/build/lib.
+    name = "llm_wiki_cli/__init__.py" if copy != "untracked" else "llm_wiki_cli/extra.py"
+    built = root / "src/build/lib" / name
+    built.parent.mkdir(parents=True)
+    built.write_bytes(b"VALUE = 1\n" if copy == "identical" else b"VALUE = 2\n")
+    if copy == "identical":
+        assert canary.verify_pr_source(root, source, base, head, tree_sha=tree) == tree
+        return
+    with pytest.raises(canary.CanaryError, match="unfrozen source input: src/build/lib/"):
+        canary.verify_pr_source(root, source, base, head, tree_sha=tree)

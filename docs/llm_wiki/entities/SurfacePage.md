@@ -1,6 +1,6 @@
 # _SurfacePage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:170`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:170`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_SurfacePage` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_SurfacePage` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -33,9 +33,9 @@ _Auto-generated from `_SurfacePage` in `src/llm_wiki_cli/services/knowledge_inde
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_SurfacePage (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n1["_surface_pages (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n2["_validate_surface_page (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_SurfacePage (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["_surface_pages (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_validate_surface_page (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_index.md"

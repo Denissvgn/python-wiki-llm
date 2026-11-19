@@ -1,7 +1,7 @@
 # plan_source_page_transitions
 
-**Entry point:** `sync_cmd._plan_source_page_transitions`
-**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [source_retirement](../modules/source_retirement.md), [source_selection](../modules/source_selection.md), [sync_cmd](../modules/sync_cmd.md), [sync_transitions](../modules/sync_transitions.md)
+**Entry point:** `sync_runtime._plan_source_page_transitions`
+**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [source_retirement](../modules/source_retirement.md), [source_selection](../modules/source_selection.md), [sync_runtime](../modules/sync_runtime.md), [sync_transitions](../modules/sync_transitions.md)
 
 ## Sequence
 
@@ -18,7 +18,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
-- [sync_cmd](../modules/sync_cmd.md)
+- [sync_runtime](../modules/sync_runtime.md)
 - [sync_transitions](../modules/sync_transitions.md)
 
 ## Behavior

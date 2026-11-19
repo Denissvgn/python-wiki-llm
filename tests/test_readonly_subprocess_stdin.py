@@ -19,13 +19,8 @@ from llm_wiki_cli.extractors.go_extractor import GoExtractor
 from llm_wiki_cli.extractors.haskell_extractor import HaskellExtractor
 from llm_wiki_cli.extractors.rust_extractor import RustExtractor
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
-from llm_wiki_cli.services import (
-    change_selection,
-    extraction_service,
-    extractor_helpers,
-    knowledge_envelope,
-    wiki_git_policy,
-)
+from llm_wiki_cli.services import change_selection, extraction_service, extractor_helpers, wiki_git_policy
+from llm_wiki_engine import knowledge_envelope
 
 
 def _exercise_probe(name, root):

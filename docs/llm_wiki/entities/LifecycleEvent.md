@@ -1,6 +1,6 @@
 # LifecycleEvent
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:193`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:194`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -36,18 +36,18 @@ One predecessor-linked lifecycle transition.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["LifecycleEvent (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["LifecycleEvent (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["src/llm_wiki_cli/commands/knowledge_cmd.py"]
-    n2["_lifecycle_event_digest_payload (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["_lifecycle_event_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n4["_ordered_lifecycle_events (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n5["_parse_lifecycle_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n6["_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n7["_supersession_records (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n8["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n9["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["_validate_selected_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n11["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n2["_lifecycle_event_digest_payload (src/llm_wiki_engine/knowledge_governance.py)"]
+    n3["_lifecycle_event_summary (src/llm_wiki_engine/knowledge_governance.py)"]
+    n4["_ordered_lifecycle_events (src/llm_wiki_engine/knowledge_governance.py)"]
+    n5["_parse_lifecycle_event (src/llm_wiki_engine/knowledge_governance.py)"]
+    n6["_supersession_edges (src/llm_wiki_engine/knowledge_governance.py)"]
+    n7["_supersession_records (src/llm_wiki_engine/knowledge_governance.py)"]
+    n8["_validate_lifecycle_event_fields (src/llm_wiki_engine/knowledge_governance.py)"]
+    n9["_validate_lifecycle_histories (src/llm_wiki_engine/knowledge_governance.py)"]
+    n10["_validate_selected_supersession_edges (src/llm_wiki_engine/knowledge_governance.py)"]
+    n11["current_lifecycle (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

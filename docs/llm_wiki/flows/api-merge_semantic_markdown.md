@@ -28,19 +28,20 @@ sequenceDiagram
     participant p14 as semantic_table_key
     participant p15 as format_table_row
     participant p16 as _line_content
-    participant p17 as range (src/llm_wiki_cli/services…y:table_description_cells)
-    participant p18 as (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)
-    participant p19 as text.replace(…).replace
-    participant p20 as text.replace
-    participant p21 as (…).strip (src/llm_wiki_cli/services…d_preserve_semantic_value)
-    participant p22 as (…).join(…).strip (src/llm_wiki_cli/services…_sections.py:section_body)
-    participant p23 as (…).strip (src/llm_wiki_cli/services…reserve_semantic_value, 1)
-    participant p24 as range (src/llm_wiki_cli/services…e_table_description_cells)
-    participant p25 as '\n'.join (src/llm_wiki_cli/services…_sections.py:section_body)
-    participant p26 as old_generated.strip
-    participant p27 as '\n'.join (src/llm_wiki_cli/services…s.py:replace_section_body)
-    participant p28 as headers.index (src/llm_wiki_cli/services…y:table_description_cells)
-    participant p29 as headers.index (src/llm_wiki_cli/services…e_table_description_cells)
+    participant p17 as range (src/llm_wiki_engine/markd…y:table_description_cells)
+    participant p18 as (…).get (src/llm_wiki_engine/secti…y:merge_semantic_markdown)
+    participant p19 as generated.endswith
+    participant p20 as merged.endswith
+    participant p21 as text.replace(…).replace
+    participant p22 as text.replace
+    participant p23 as (…).strip (src/llm_wiki_engine/markd…d_preserve_semantic_value)
+    participant p24 as (…).join(…).strip (src/llm_wiki_engine/markd…_sections.py:section_body)
+    participant p25 as (…).strip (src/llm_wiki_engine/markd…reserve_semantic_value, 1)
+    participant p26 as range (src/llm_wiki_engine/markd…e_table_description_cells)
+    participant p27 as '\n'.join (src/llm_wiki_engine/markd…_sections.py:section_body)
+    participant p28 as old_generated.strip
+    participant p29 as '\n'.join (src/llm_wiki_engine/markd…s.py:replace_section_body)
+    participant p30 as headers.index (src/llm_wiki_engine/markd…y:table_description_cells)
     p0->>p1: section_body
     p0->>p2: should_preserve_semantic_value
     p0->>p3: replace_section_body
@@ -57,38 +58,38 @@ sequenceDiagram
     p4->>p14: semantic_table_key
     p5->>p15: format_table_row
     p8->>p16: _line_content
-    p4-->>p17: range (src/llm_wiki_cli/services…y:table_description_cells)(start, end)
-    p0-->>p18: (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)(heading)
-    p6-->>p19: text.replace(…).replace('\r', '\n')
-    p6-->>p20: text.replace('\r\n', '\n')
-    p2-->>p21: (…).strip (src/llm_wiki_cli/services…d_preserve_semantic_value)
-    p1-->>p22: (…).join(…).strip (src/llm_wiki_cli/services…_sections.py:section_body)
-    p2-->>p23: (…).strip (src/llm_wiki_cli/services…reserve_semantic_value, 1)
-    p5-->>p24: range (src/llm_wiki_cli/services…e_table_description_cells)(start, end)
-    p1-->>p25: '\n'.join (src/llm_wiki_cli/services…_sections.py:section_body)(trim_blank_lines(...))
-    p2-->>p26: old_generated.strip
-    p3-->>p27: '\n'.join (src/llm_wiki_cli/services…s.py:replace_section_body)(...)
-    p4-->>p28: headers.index (src/llm_wiki_cli/services…y:table_description_cells)('Description')
-    p5-->>p29: headers.index (src/llm_wiki_cli/services…e_table_description_cells)('Description')
-    p4-->>p17: range (src/llm_wiki_cli/services…y:table_description_cells)(row_start, end)
+    p4-->>p17: range (src/llm_wiki_engine/markd…y:table_description_cells)(start, end)
+    p0-->>p18: (…).get (src/llm_wiki_engine/secti…y:merge_semantic_markdown)(heading)
+    p0-->>p19: generated.endswith('\n')
+    p0-->>p20: merged.endswith('\n')
+    p6-->>p21: text.replace(…).replace('\r', '\n')
+    p6-->>p22: text.replace('\r\n', '\n')
+    p2-->>p23: (…).strip (src/llm_wiki_engine/markd…d_preserve_semantic_value)
+    p1-->>p24: (…).join(…).strip (src/llm_wiki_engine/markd…_sections.py:section_body)
+    p2-->>p25: (…).strip (src/llm_wiki_engine/markd…reserve_semantic_value, 1)
+    p5-->>p26: range (src/llm_wiki_engine/markd…e_table_description_cells)(start, end)
+    p1-->>p27: '\n'.join (src/llm_wiki_engine/markd…_sections.py:section_body)(trim_blank_lines(...))
+    p2-->>p28: old_generated.strip
+    p3-->>p29: '\n'.join (src/llm_wiki_engine/markd…s.py:replace_section_body)(...)
+    p4-->>p30: headers.index (src/llm_wiki_engine/markd…y:table_description_cells)('Description')
 ```
 
-> Call sequence diagram shows 30 of 103 interactions; 73 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 105 interactions; 75 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 20 (17 omitted); unresolved 11 of 50 (39 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 2 of 20 (18 omitted); unresolved 12 of 52 (40 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 6 | - | external | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 6 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 11 | - | unresolved | 10 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 11 | - | external | 6 |
-| `src/llm_wiki_cli/services/markdown_sections.py:trim_blank_lines` | 30 | - | external | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:trim_blank_lines` | 30 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/section_ownership.py:merge_semantic_markdown` | 1 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 6 | - | external | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 6 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 11 | - | unresolved | 10 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 11 | - | external | 6 |
+| `src/llm_wiki_engine/markdown_sections.py:trim_blank_lines` | 30 | - | external | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:trim_blank_lines` | 30 | - | unresolved | 2 |
+| `src/llm_wiki_engine/section_ownership.py:merge_semantic_markdown` | 1 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
 > Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

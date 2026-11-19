@@ -7,13 +7,11 @@
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_evidence.hash_json`
-2. `publication_config.publication_repository`
-3. `publication_config.publication_repository`
-4. `publication_config.publication_ref_name`
-5. `publication_candidate._check_hash`
+2. `publication_config.publication_ref_name`
+3. `publication_candidate._check_hash`
+4. `publication_candidate._check_hash`
+5. `publication_candidate._hash_map`
 6. `publication_candidate._check_hash`
-7. `publication_candidate._hash_map`
-8. `publication_candidate._check_hash`
 
 ## Touches
 

@@ -1,6 +1,6 @@
 # KnowledgeIndexBuildError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:136`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:136`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -24,20 +24,20 @@ Field-specific failure at the pure knowledge-index join boundary.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeIndexBuildError (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["KnowledgeIndexBuildError (src/llm_wiki_engine/knowledge_index.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n3["_expected_page_coordinates (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["_nonempty_string (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n5["_reject_extra_state (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n6["_relative_path (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n7["_require_exact_keys (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n8["_surface_pages (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n9["_typed_mapping (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n10["_validate_and_join_inputs (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n11["_validate_observation_endpoint (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n12["_validate_observation_source_syntax (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n13["_validate_page_evidence (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n3["_expected_page_coordinates (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["_nonempty_string (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["_reject_extra_state (src/llm_wiki_engine/knowledge_index.py)"]
+    n6["_relative_path (src/llm_wiki_engine/knowledge_index.py)"]
+    n7["_require_exact_keys (src/llm_wiki_engine/knowledge_index.py)"]
+    n8["_surface_pages (src/llm_wiki_engine/knowledge_index.py)"]
+    n9["_typed_mapping (src/llm_wiki_engine/knowledge_index.py)"]
+    n10["_validate_and_join_inputs (src/llm_wiki_engine/knowledge_index.py)"]
+    n11["_validate_observation_endpoint (src/llm_wiki_engine/knowledge_index.py)"]
+    n12["_validate_observation_source_syntax (src/llm_wiki_engine/knowledge_index.py)"]
+    n13["_validate_page_evidence (src/llm_wiki_engine/knowledge_index.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

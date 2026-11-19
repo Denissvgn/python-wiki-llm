@@ -1,6 +1,6 @@
 # _BuildContext
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:204`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:204`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `_BuildContext` in `src/llm_wiki_cli/services/knowledge_index.py`._
+_Auto-generated from `_BuildContext` in `src/llm_wiki_engine/knowledge_index.py`._
 
 ## Attributes
 
@@ -29,8 +29,8 @@ _Auto-generated from `_BuildContext` in `src/llm_wiki_cli/services/knowledge_ind
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_BuildContext (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n1["_validate_and_join_inputs (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["_BuildContext (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["_validate_and_join_inputs (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     click n0 "../modules/knowledge_index.md"
     click n1 "../modules/knowledge_index.md"

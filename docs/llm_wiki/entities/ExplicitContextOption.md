@@ -1,9 +1,9 @@
 # _ExplicitContextOption
 
-**Location:** `src/llm_wiki_cli/cli.py:63`
+**Location:** `src/llm_wiki_cli/cli_declarations.py:48`
 **Kind:** Class
 **Bases:** `argparse.Action`
-**Module:** [cli](../modules/cli.md)
+**Module:** [cli_declarations](../modules/cli_declarations.md)
 
 ## Description
 
@@ -24,17 +24,17 @@ Retain which semantic options were supplied beside a request file.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_ExplicitContextOption (src/llm_wiki_cli/cli.py)"]
+    n0["_ExplicitContextOption (src/llm_wiki_cli/cli_declarations.py)"]
     n1["argparse.Action"]
     n0 --> n1
-    click n0 "../modules/cli.md"
+    click n0 "../modules/cli_declarations.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [cli](../modules/cli.md) | 1 | — |
+| [cli_declarations](../modules/cli_declarations.md) | 1 | — |
 
 ### Structure
 

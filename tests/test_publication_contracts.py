@@ -7,9 +7,9 @@ from typing import Any
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_evidence import hash_json, sha256_bytes
+from llm_wiki_engine.knowledge_evidence import hash_json, sha256_bytes
 from llm_wiki_cli import api
-from llm_wiki_cli.services.markdown_sections import parse_markdown_document
+from llm_wiki_engine.markdown_sections import parse_markdown_document
 from llm_wiki_cli.services.publication_config import (
     PUBLICATION_CONFIG_SCHEMA_VERSION,
     validate_publication_config,

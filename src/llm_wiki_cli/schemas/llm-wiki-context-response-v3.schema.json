@@ -1,0 +1,1879 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-context-response-v3.schema.json",
+  "title": "Budgeted context response",
+  "description": "A response to an llm-wiki-context/v3 request: a budgeted context envelope whose accounting covers the complete emitted text, an invalid-request envelope, or a cannot-fit refusal. JSON and packet output is this document followed by a newline; Markdown output carries it as the first fenced JSON block. A response is valid only if it also passes checks a JSON Schema cannot express: used_tokens must not exceed budget_tokens (and must exceed it in a refusal), the embedded context or packet must pass its own format checks, change paths must be portable, sorted and hashed into paths_id, and refusal counts must agree. Binding request_id to a request and recounting the emitted text need the request and the named counter. A failure to provide required knowledge is reported with the llm-wiki-context/v2 error envelope. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "const": "llm-wiki-context/v3"
+    },
+    "ok": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "ok",
+    "protocol"
+  ],
+  "if": {
+    "properties": {
+      "ok": {
+        "const": true
+      }
+    }
+  },
+  "then": {
+    "$ref": "#/$defs/success"
+  },
+  "else": {
+    "$ref": "#/$defs/error"
+  },
+  "$defs": {
+    "accounting": {
+      "type": "object",
+      "properties": {
+        "budget_tokens": {
+          "$ref": "#/$defs/count"
+        },
+        "used_tokens": {
+          "$ref": "#/$defs/count"
+        },
+        "counter_id": {
+          "$ref": "#/$defs/text"
+        },
+        "mode": {
+          "enum": [
+            "exact",
+            "estimated"
+          ]
+        },
+        "exact_compliance": {
+          "type": "boolean"
+        },
+        "usage_kind": {
+          "const": "upper-bound-including-accounting"
+        },
+        "scope": {
+          "const": "emitted-text-without-host-chat-framing"
+        }
+      },
+      "required": [
+        "budget_tokens",
+        "counter_id",
+        "exact_compliance",
+        "mode",
+        "scope",
+        "usage_kind",
+        "used_tokens"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "estimated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exact_compliance": {
+            "const": false
+          }
+        }
+      }
+    },
+    "cannot_fit": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "llm-wiki-context/v3"
+        },
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "const": "cannot-fit"
+        },
+        "accounting": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/accounting"
+            },
+            {
+              "properties": {
+                "exact_compliance": {
+                  "const": false
+                }
+              }
+            }
+          ]
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/refusal"
+        }
+      },
+      "required": [
+        "accounting",
+        "diagnostics",
+        "error",
+        "ok",
+        "protocol"
+      ],
+      "additionalProperties": false
+    },
+    "changes": {
+      "description": "The change selection: the legacy last-commit default, or explicit paths, a Git range or the staged index with their resolved identities.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "const": "legacy-last-commit"
+                }
+              },
+              "required": [
+                "mode"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "request": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "const": "paths"
+                    },
+                    "paths": {
+                      "$ref": "#/$defs/source_paths"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "paths"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "const": "range"
+                    },
+                    "base": {
+                      "$ref": "#/$defs/revision"
+                    },
+                    "head": {
+                      "$ref": "#/$defs/revision"
+                    },
+                    "commits": {
+                      "type": "object",
+                      "properties": {
+                        "base": {
+                          "$ref": "#/$defs/commit_id"
+                        },
+                        "head": {
+                          "$ref": "#/$defs/commit_id"
+                        }
+                      },
+                      "required": [
+                        "base",
+                        "head"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "base",
+                    "commits",
+                    "head",
+                    "mode"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "const": "staged"
+                    },
+                    "index_id": {
+                      "$ref": "#/$defs/sha256"
+                    }
+                  },
+                  "required": [
+                    "index_id",
+                    "mode"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "paths": {
+              "$ref": "#/$defs/source_paths"
+            },
+            "path_basis": {
+              "const": "source-root"
+            },
+            "selection_boundary_changed": {
+              "type": "boolean"
+            },
+            "paths_id": {
+              "$ref": "#/$defs/sha256"
+            },
+            "affected_pages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/page_path"
+                },
+                "uniqueItems": true
+              }
+            }
+          },
+          "required": [
+            "affected_pages",
+            "path_basis",
+            "paths",
+            "paths_id",
+            "request",
+            "selection_boundary_changed"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "collection_bound": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "returned": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "returned",
+        "total",
+        "truncated"
+      ],
+      "additionalProperties": false
+    },
+    "commit_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$"
+    },
+    "context_v2": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "llm-wiki-context/v2"
+        },
+        "ok": {
+          "const": true
+        },
+        "budget_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "used_tokens": {
+          "$ref": "#/$defs/count"
+        },
+        "format": {
+          "$ref": "#/$defs/format"
+        },
+        "focus": {
+          "$ref": "#/$defs/focus"
+        },
+        "filters": {
+          "$ref": "#/$defs/filters"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "omitted_files": {
+          "$ref": "#/$defs/strings"
+        },
+        "downgraded_files": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "deep",
+              "slim",
+              "summary"
+            ]
+          }
+        },
+        "bounds": {
+          "type": "object",
+          "properties": {
+            "files": {
+              "$ref": "#/$defs/collection_bound"
+            }
+          },
+          "required": [
+            "files"
+          ],
+          "additionalProperties": false
+        },
+        "warnings": {
+          "$ref": "#/$defs/strings"
+        },
+        "graphs": {
+          "type": "object"
+        },
+        "surface": {
+          "type": "object"
+        },
+        "knowledge": {
+          "$ref": "#/$defs/knowledge_response"
+        },
+        "typed_graph": {
+          "type": "object"
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "priority": {
+                "$ref": "#/$defs/priority"
+              }
+            },
+            "required": [
+              "priority"
+            ]
+          }
+        },
+        "content": {
+          "type": "string"
+        },
+        "prefer_fresh": {
+          "const": true
+        },
+        "ranking_policy": {
+          "type": "object"
+        },
+        "source_priorities": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/priority"
+          }
+        }
+      },
+      "required": [
+        "bounds",
+        "budget_tokens",
+        "downgraded_files",
+        "filters",
+        "focus",
+        "format",
+        "knowledge",
+        "ok",
+        "omitted_files",
+        "protocol",
+        "truncated",
+        "used_tokens"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "format": {
+                "const": "json"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "files"
+            ],
+            "not": {
+              "required": [
+                "content"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "content"
+            ],
+            "not": {
+              "required": [
+                "files"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "prefer_fresh"
+            ]
+          },
+          "then": {
+            "required": [
+              "ranking_policy"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "ranking_policy"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "embedded_context": {
+      "description": "The llm-wiki-context/v2 JSON response the envelope carries. Its budget_tokens is the internal allocation bound, not the requested budget.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/context_v2"
+        },
+        {
+          "properties": {
+            "format": {
+              "const": "json"
+            }
+          },
+          "required": [
+            "source_priorities"
+          ]
+        }
+      ]
+    },
+    "error": {
+      "if": {
+        "properties": {
+          "error": {
+            "type": "object"
+          }
+        }
+      },
+      "then": {
+        "$ref": "#/$defs/invalid_request"
+      },
+      "else": {
+        "$ref": "#/$defs/cannot_fit"
+      }
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "$ref": "#/$defs/text"
+        },
+        "module": {
+          "$ref": "#/$defs/text"
+        },
+        "symbol": {
+          "$ref": "#/$defs/text"
+        },
+        "entrypoint": {
+          "$ref": "#/$defs/text"
+        },
+        "surface": {
+          "$ref": "#/$defs/text"
+        },
+        "relationship_kind": {
+          "$ref": "#/$defs/text"
+        },
+        "freshness": {
+          "enum": [
+            "basis-incompatible",
+            "current",
+            "nonsemantic-source-change",
+            "source-changed",
+            "source-missing",
+            "unknown"
+          ]
+        },
+        "evidence": {
+          "enum": [
+            "invalid",
+            "missing",
+            "not-applicable",
+            "present",
+            "unknown"
+          ]
+        },
+        "relationship_origin": {
+          "enum": [
+            "extracted",
+            "governance",
+            "inferred",
+            "markdown"
+          ]
+        },
+        "relationship_resolution": {
+          "enum": [
+            "ambiguous",
+            "external",
+            "resolved",
+            "unresolved"
+          ]
+        },
+        "relationship_direction": {
+          "enum": [
+            "both",
+            "incoming",
+            "outgoing"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "focus": {
+      "enum": [
+        [
+          "all"
+        ],
+        [
+          "changed"
+        ],
+        [
+          "changed",
+          "neighbors"
+        ]
+      ]
+    },
+    "format": {
+      "enum": [
+        "json",
+        "markdown"
+      ]
+    },
+    "invalid_request": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "llm-wiki-context/v3"
+        },
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "invalid_request"
+            },
+            "message": {
+              "$ref": "#/$defs/text"
+            },
+            "field": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "error",
+        "ok",
+        "protocol"
+      ],
+      "additionalProperties": false
+    },
+    "knowledge_response": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "off",
+            "auto",
+            "required"
+          ]
+        },
+        "status": {
+          "enum": [
+            "disabled",
+            "selected",
+            "fallback"
+          ]
+        },
+        "availability": {
+          "enum": [
+            "not-evaluated",
+            "ready",
+            "absent",
+            "degraded",
+            "unsupported"
+          ]
+        },
+        "reason": {
+          "$ref": "#/$defs/code"
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "freshness_evaluated": {
+          "type": "boolean"
+        },
+        "bounds": {
+          "type": "object"
+        },
+        "fallback": {
+          "type": "object",
+          "properties": {
+            "used": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "$ref": "#/$defs/strings"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "evidence",
+            "reason",
+            "used"
+          ],
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object"
+        },
+        "maintenance": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "availability",
+        "bounds",
+        "fallback",
+        "freshness_evaluated",
+        "mode",
+        "reason",
+        "selected",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "markdown_metadata": {
+      "description": "Everything the Markdown body renders except the source entries themselves.",
+      "type": "object",
+      "properties": {
+        "budget": {
+          "$ref": "#/$defs/count"
+        },
+        "used": {
+          "$ref": "#/$defs/count"
+        },
+        "bounds": {
+          "type": "object",
+          "properties": {
+            "files": {
+              "$ref": "#/$defs/collection_bound"
+            }
+          },
+          "required": [
+            "files"
+          ],
+          "additionalProperties": false
+        },
+        "downgraded_files": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "deep",
+              "slim",
+              "summary"
+            ]
+          }
+        },
+        "graphs": {
+          "type": "object"
+        },
+        "knowledge": {
+          "$ref": "#/$defs/knowledge_response"
+        },
+        "omitted_files": {
+          "$ref": "#/$defs/strings"
+        },
+        "ranking_policy": {
+          "type": "object"
+        },
+        "source_priorities": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/priority"
+          }
+        },
+        "surface": {
+          "type": "object"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "typed_graph": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "bounds",
+        "budget",
+        "downgraded_files",
+        "knowledge",
+        "omitted_files",
+        "source_priorities",
+        "truncated",
+        "used"
+      ],
+      "additionalProperties": false
+    },
+    "packet_v2": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-qualified-context-packet/v2"
+        },
+        "packet_id": {
+          "$ref": "#/$defs/sha256"
+        },
+        "assurance": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": "content-integrity"
+            },
+            "scope": {
+              "const": "canonical-packet-content"
+            }
+          },
+          "required": [
+            "level",
+            "scope"
+          ],
+          "additionalProperties": false
+        },
+        "request": {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "llm-wiki-context/v2"
+            },
+            "budget_tokens": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "format": {
+              "$ref": "#/$defs/format"
+            },
+            "focus": {
+              "$ref": "#/$defs/focus"
+            },
+            "filters": {
+              "$ref": "#/$defs/filters"
+            },
+            "prefer_fresh": {
+              "type": "boolean"
+            },
+            "knowledge_mode": {
+              "enum": [
+                "off",
+                "auto",
+                "required"
+              ]
+            }
+          },
+          "required": [
+            "budget_tokens",
+            "filters",
+            "focus",
+            "format",
+            "knowledge_mode",
+            "prefer_fresh",
+            "protocol"
+          ],
+          "additionalProperties": false
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "llm-wiki-context/v2"
+            },
+            "ok": {
+              "const": true
+            },
+            "budget_tokens": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "used_tokens": {
+              "$ref": "#/$defs/count"
+            },
+            "format": {
+              "$ref": "#/$defs/format"
+            },
+            "focus": {
+              "$ref": "#/$defs/focus"
+            },
+            "filters": {
+              "$ref": "#/$defs/filters"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "omitted_files": {
+              "$ref": "#/$defs/strings"
+            },
+            "downgraded_files": {
+              "type": "object",
+              "additionalProperties": {
+                "enum": [
+                  "deep",
+                  "slim",
+                  "summary"
+                ]
+              }
+            },
+            "bounds": {
+              "type": "object",
+              "properties": {
+                "files": {
+                  "$ref": "#/$defs/collection_bound"
+                }
+              },
+              "required": [
+                "files"
+              ],
+              "additionalProperties": false
+            },
+            "warnings": {
+              "$ref": "#/$defs/strings"
+            },
+            "graphs": {
+              "type": "object"
+            },
+            "surface": {
+              "type": "object"
+            },
+            "knowledge": {
+              "$ref": "#/$defs/knowledge_response"
+            },
+            "typed_graph": {
+              "type": "object"
+            },
+            "files": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "priority": {
+                    "$ref": "#/$defs/priority"
+                  }
+                },
+                "required": [
+                  "priority"
+                ]
+              }
+            },
+            "content": {
+              "type": "string"
+            },
+            "prefer_fresh": {
+              "const": true
+            },
+            "ranking_policy": {
+              "type": "object"
+            },
+            "source_priorities": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/priority"
+              }
+            }
+          },
+          "required": [
+            "bounds",
+            "budget_tokens",
+            "downgraded_files",
+            "filters",
+            "focus",
+            "format",
+            "knowledge",
+            "ok",
+            "omitted_files",
+            "protocol",
+            "source_priorities",
+            "truncated",
+            "used_tokens"
+          ],
+          "additionalProperties": false
+        },
+        "basis": {
+          "type": "object",
+          "properties": {
+            "source_snapshot": {
+              "type": "object",
+              "properties": {
+                "identity": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "input_count": {
+                  "$ref": "#/$defs/count"
+                }
+              },
+              "required": [
+                "identity",
+                "input_count"
+              ],
+              "additionalProperties": false
+            },
+            "repository": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "const": "unavailable"
+                    },
+                    "reason": {
+                      "const": "native-knowledge-envelope-unavailable"
+                    }
+                  },
+                  "required": [
+                    "reason",
+                    "state"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "const": "recorded"
+                    },
+                    "identity": {
+                      "$ref": "#/$defs/text"
+                    },
+                    "evaluated_revision": {
+                      "$ref": "#/$defs/text"
+                    },
+                    "working_tree": {
+                      "$ref": "#/$defs/text"
+                    }
+                  },
+                  "required": [
+                    "evaluated_revision",
+                    "identity",
+                    "state",
+                    "working_tree"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "knowledge": {
+              "oneOf": [
+                {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "const": "unavailable"
+                        },
+                        "availability": {
+                          "const": "absent"
+                        },
+                        "reason": {
+                          "enum": [
+                            "knowledge-projection-not-present"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "availability",
+                        "reason",
+                        "state"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "const": "unavailable"
+                        },
+                        "availability": {
+                          "const": "degraded"
+                        },
+                        "reason": {
+                          "enum": [
+                            "governance-missing",
+                            "knowledge-basis-incompatible",
+                            "policy-selected-surface-only-fallback-after-invalid",
+                            "policy-selected-surface-only-fallback-after-mixed-snapshot",
+                            "surface-validation-failed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "availability",
+                        "reason",
+                        "state"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "const": "unavailable"
+                        },
+                        "availability": {
+                          "const": "unsupported"
+                        },
+                        "reason": {
+                          "enum": [
+                            "knowledge-schema-version-unsupported",
+                            "manifest-version-unsupported",
+                            "surface-schema-version-unsupported"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "availability",
+                        "reason",
+                        "state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "const": "recorded"
+                    },
+                    "availability": {
+                      "const": "ready"
+                    },
+                    "reason": {
+                      "const": "all-projection-commitments-match"
+                    },
+                    "envelope_hash": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "knowledge_index_hash": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "surface_index_hash": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "governance_hash": {
+                      "$ref": "#/$defs/sha256"
+                    }
+                  },
+                  "required": [
+                    "availability",
+                    "envelope_hash",
+                    "knowledge_index_hash",
+                    "reason",
+                    "state",
+                    "surface_index_hash"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "generator": {
+              "type": "object",
+              "properties": {
+                "component": {
+                  "const": "agent-wiki-cli"
+                },
+                "version": {
+                  "$ref": "#/$defs/text"
+                },
+                "context_protocol": {
+                  "const": "llm-wiki-context/v2"
+                },
+                "policy_digest": {
+                  "const": "sha256:f209c2deb8b370c946c5f09a34f660524e655b417d0226421c3e5254d6f3f1f6"
+                }
+              },
+              "required": [
+                "component",
+                "context_protocol",
+                "policy_digest",
+                "version"
+              ],
+              "additionalProperties": false
+            },
+            "freshness": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "const": "unevaluated"
+                    },
+                    "evaluated": {
+                      "const": false
+                    },
+                    "disclosure": {
+                      "const": "unevaluated (snapshot-only read)"
+                    },
+                    "reason": {
+                      "const": "snapshot-only-read"
+                    }
+                  },
+                  "required": [
+                    "disclosure",
+                    "evaluated",
+                    "reason",
+                    "state"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "const": "unevaluated"
+                    },
+                    "evaluated": {
+                      "const": false
+                    },
+                    "disclosure": {
+                      "const": "unevaluated (knowledge basis incompatible)"
+                    },
+                    "reason": {
+                      "const": "knowledge-basis-incompatible"
+                    }
+                  },
+                  "required": [
+                    "disclosure",
+                    "evaluated",
+                    "reason",
+                    "state"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "const": "evaluated"
+                    },
+                    "evaluated": {
+                      "const": true
+                    },
+                    "disclosure": {
+                      "type": "string",
+                      "pattern": "^evaluated \\((0|[1-9][0-9]*) concepts\\)$"
+                    },
+                    "concept_count": {
+                      "$ref": "#/$defs/count"
+                    },
+                    "counts": {
+                      "type": "object",
+                      "properties": {
+                        "basis-incompatible": {
+                          "$ref": "#/$defs/count"
+                        },
+                        "current": {
+                          "$ref": "#/$defs/count"
+                        },
+                        "nonsemantic-source-change": {
+                          "$ref": "#/$defs/count"
+                        },
+                        "source-changed": {
+                          "$ref": "#/$defs/count"
+                        },
+                        "source-missing": {
+                          "$ref": "#/$defs/count"
+                        },
+                        "unknown": {
+                          "$ref": "#/$defs/count"
+                        }
+                      },
+                      "required": [
+                        "basis-incompatible",
+                        "current",
+                        "nonsemantic-source-change",
+                        "source-changed",
+                        "source-missing",
+                        "unknown"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "evaluation_digest": {
+                      "$ref": "#/$defs/sha256"
+                    }
+                  },
+                  "required": [
+                    "concept_count",
+                    "counts",
+                    "disclosure",
+                    "evaluated",
+                    "evaluation_digest",
+                    "state"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "freshness",
+            "generator",
+            "knowledge",
+            "repository",
+            "source_snapshot"
+          ],
+          "additionalProperties": false
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "bounds": {
+              "type": "object"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "warnings": {
+              "$ref": "#/$defs/strings"
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/code"
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "bounds",
+            "limitations",
+            "truncated",
+            "warnings"
+          ],
+          "additionalProperties": false
+        },
+        "path_policy": {
+          "type": "object",
+          "properties": {
+            "policy_version": {
+              "const": "qualified-context-path-policy-v1"
+            },
+            "policy_digest": {
+              "const": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025"
+            },
+            "field_counts": {
+              "type": "object",
+              "properties": {
+                "free_text_values": {
+                  "$ref": "#/$defs/count"
+                },
+                "opaque_values": {
+                  "$ref": "#/$defs/count"
+                },
+                "portable_identities": {
+                  "$ref": "#/$defs/count"
+                },
+                "public_uris": {
+                  "$ref": "#/$defs/count"
+                },
+                "repository_relative_paths": {
+                  "$ref": "#/$defs/count"
+                }
+              },
+              "required": [
+                "free_text_values",
+                "opaque_values",
+                "portable_identities",
+                "public_uris",
+                "repository_relative_paths"
+              ],
+              "additionalProperties": false
+            },
+            "finding_counts": {
+              "type": "object",
+              "properties": {
+                "accepted": {
+                  "$ref": "#/$defs/count"
+                },
+                "redacted": {
+                  "const": 0
+                },
+                "rejected": {
+                  "const": 0
+                }
+              },
+              "required": [
+                "accepted",
+                "redacted",
+                "rejected"
+              ],
+              "additionalProperties": false
+            },
+            "quarantined": {
+              "const": false
+            },
+            "final_scan": {
+              "const": "passed"
+            },
+            "limitations": {
+              "const": [
+                "does-not-establish-absence-of-arbitrary-sensitive-content"
+              ]
+            }
+          },
+          "required": [
+            "field_counts",
+            "final_scan",
+            "finding_counts",
+            "limitations",
+            "policy_digest",
+            "policy_version",
+            "quarantined"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "packet_id",
+        "assurance",
+        "request",
+        "response",
+        "basis",
+        "delivery",
+        "path_policy"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "request": {
+                "properties": {
+                  "format": {
+                    "const": "json"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "response": {
+                "required": [
+                  "files"
+                ],
+                "not": {
+                  "required": [
+                    "content"
+                  ]
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "response": {
+                "required": [
+                  "content"
+                ],
+                "not": {
+                  "required": [
+                    "files"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "request": {
+                "properties": {
+                  "prefer_fresh": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "response": {
+                "required": [
+                  "prefer_fresh",
+                  "ranking_policy"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "response": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "prefer_fresh"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "ranking_policy"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "page_path": {
+      "type": "string",
+      "pattern": "\\.md$"
+    },
+    "priority": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "recovery_route": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "enum": [
+            "scoped-evidence",
+            "explicit-larger-budget"
+          ]
+        },
+        "automatic": {
+          "const": false
+        },
+        "new_request_binding_required": {
+          "const": true
+        },
+        "description": {
+          "$ref": "#/$defs/text"
+        }
+      },
+      "required": [
+        "automatic",
+        "description",
+        "id",
+        "new_request_binding_required"
+      ],
+      "additionalProperties": false
+    },
+    "refusal": {
+      "description": "Bounded diagnostics for a candidate that could not fit. They describe the rejected candidate, never emitted context or a global minimum.",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-context-budget-refusal/v1"
+        },
+        "request_id": {
+          "$ref": "#/$defs/sha256"
+        },
+        "selection_policy": {
+          "enum": [
+            "joint-native-source/v1",
+            "source-tail-reduction/v1"
+          ]
+        },
+        "reason": {
+          "const": "permitted-selection-reductions-exhausted"
+        },
+        "accounting_meaning": {
+          "const": "rejected-candidate-not-emitted-context-or-global-minimum"
+        },
+        "counter_id": {
+          "$ref": "#/$defs/text"
+        },
+        "budget_mode": {
+          "enum": [
+            "exact",
+            "estimated"
+          ]
+        },
+        "emitted_context_bytes": {
+          "const": 0
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted": {
+              "$ref": "#/$defs/count"
+            }
+          },
+          "required": [
+            "omitted",
+            "returned",
+            "total"
+          ],
+          "additionalProperties": false
+        },
+        "native": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "off",
+                "auto",
+                "required"
+              ]
+            },
+            "status": {
+              "enum": [
+                "disabled",
+                "selected",
+                "fallback"
+              ]
+            },
+            "availability": {
+              "enum": [
+                "not-evaluated",
+                "ready",
+                "absent",
+                "degraded",
+                "unsupported"
+              ]
+            },
+            "bounds": {
+              "type": "object",
+              "propertyNames": {
+                "enum": [
+                  "concepts",
+                  "pages",
+                  "relationships"
+                ]
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/collection_bound"
+              }
+            }
+          },
+          "required": [
+            "availability",
+            "bounds",
+            "mode",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "component_bytes": {
+          "type": "object",
+          "properties": {
+            "measurement": {
+              "const": "canonical-json-fragments-not-additive-token-costs"
+            },
+            "source_entries": {
+              "$ref": "#/$defs/count"
+            },
+            "native_knowledge": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted_files": {
+              "$ref": "#/$defs/count"
+            },
+            "source_priorities": {
+              "$ref": "#/$defs/count"
+            }
+          },
+          "required": [
+            "measurement",
+            "native_knowledge",
+            "omitted_files",
+            "source_entries",
+            "source_priorities"
+          ],
+          "additionalProperties": false
+        },
+        "recovery": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/recovery_route",
+              "properties": {
+                "id": {
+                  "const": "scoped-evidence"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/recovery_route",
+              "properties": {
+                "id": {
+                  "const": "explicit-larger-budget"
+                }
+              }
+            }
+          ],
+          "items": false,
+          "minItems": 2
+        }
+      },
+      "required": [
+        "accounting_meaning",
+        "budget_mode",
+        "component_bytes",
+        "counter_id",
+        "emitted_context_bytes",
+        "native",
+        "reason",
+        "recovery",
+        "request_id",
+        "schema_version",
+        "selection_policy",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[^\\u0000-\\u001f-][^\\u0000-\\u001f]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_paths": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_path"
+      },
+      "uniqueItems": true
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "success": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "llm-wiki-context/v3"
+        },
+        "ok": {
+          "const": true
+        },
+        "format": {
+          "enum": [
+            "json",
+            "markdown",
+            "packet"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/$defs/sha256"
+        },
+        "changes": {
+          "$ref": "#/$defs/changes"
+        },
+        "accounting": {
+          "description": "A successful exact-mode response was counted by an exact counter.",
+          "allOf": [
+            {
+              "$ref": "#/$defs/accounting"
+            },
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "exact"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "exact_compliance": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "context": {
+          "$ref": "#/$defs/embedded_context"
+        },
+        "packet": {
+          "description": "A complete llm-wiki-qualified-context-packet/v2 document.",
+          "$ref": "#/$defs/packet_v2"
+        },
+        "metadata": {
+          "$ref": "#/$defs/markdown_metadata"
+        },
+        "warnings": {
+          "$ref": "#/$defs/strings"
+        }
+      },
+      "required": [
+        "accounting",
+        "changes",
+        "format",
+        "ok",
+        "protocol",
+        "request_id"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "format": {
+                "const": "json"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "context"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "metadata"
+                  ]
+                },
+                {
+                  "required": [
+                    "packet"
+                  ]
+                },
+                {
+                  "required": [
+                    "warnings"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "format": {
+                "const": "packet"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "packet"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "context"
+                  ]
+                },
+                {
+                  "required": [
+                    "metadata"
+                  ]
+                },
+                {
+                  "required": [
+                    "warnings"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "format": {
+                "const": "markdown"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "metadata",
+              "warnings"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "context"
+                  ]
+                },
+                {
+                  "required": [
+                    "packet"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

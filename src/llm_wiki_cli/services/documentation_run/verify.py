@@ -241,7 +241,7 @@ def _load_documentation_knowledge_projection(
     if knowledge_mode == "off":
         return None
 
-    from ..knowledge_consumption import load_knowledge_read_view
+    from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
     from ..knowledge_projection import project_knowledge
 
     try:

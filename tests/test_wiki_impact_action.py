@@ -217,7 +217,7 @@ def _run(
 
 
 def _report(*, complete=True, review=False) -> dict:
-    from llm_wiki_cli.services.knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
 
     findings = []
     coverage = {"total": 0, "mapped": 0, "excluded": 0, "unmapped": 0}
@@ -318,7 +318,7 @@ def test_report_policy_keeps_required_failures_and_incomplete_evidence_blocking(
 def test_review_required_threshold_rejects_an_unready_report_without_pending_findings(
     tmp_path,
 ):
-    from llm_wiki_cli.services.knowledge_evidence import hash_json
+    from llm_wiki_engine.knowledge_evidence import hash_json
 
     report = _report()
     report["ready"] = False
@@ -363,7 +363,7 @@ def test_invalid_or_unavailable_report_cannot_emit_ready_output(tmp_path, corrup
     elif corruption == "schema":
         report["schema_version"] = "unknown/v1"
     elif corruption == "resealed-coverage":
-        from llm_wiki_cli.services.knowledge_evidence import hash_json
+        from llm_wiki_engine.knowledge_evidence import hash_json
 
         report["coverage"]["total"] = 1
         report["report_id"] = hash_json(
@@ -425,6 +425,22 @@ def _installed_fixture(tmp_path: Path):
     metadata.mkdir()
     (metadata / "METADATA").write_text(
         "Metadata-Version: 2.1\nName: agent-wiki-cli\nVersion: 1.0.0\n",
+        encoding="utf-8",
+    )
+    # The provider pins its engine, a second distribution from the same source.
+    engine = provider / "src/llm_wiki_engine"
+    engine.mkdir()
+    (engine / "__init__.py").write_text('__version__ = "0.1.0"\n', encoding="utf-8")
+    (engine / "py.typed").touch()
+    (provider / "src/pyproject.toml").write_text(
+        '[project]\nversion="0.1.0"\n[tool.setuptools.package-data]\nllm_wiki_engine=["py.typed"]\n',
+        encoding="utf-8",
+    )
+    shutil.copytree(engine, site / "llm_wiki_engine")
+    engine_metadata = site / "llm_wiki_engine-0.1.0.dist-info"
+    engine_metadata.mkdir()
+    (engine_metadata / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: llm-wiki-engine\nVersion: 0.1.0\n",
         encoding="utf-8",
     )
     consumer = tmp_path / "consumer"

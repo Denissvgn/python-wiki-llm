@@ -12,8 +12,9 @@ from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 
 def test_case_colliding_source_and_entity_names_keep_distinct_pages(tmp_path, monkeypatch):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services import bootstrap_runtime, sync_manifest
-    from llm_wiki_cli.services.validation import portable_path_key
+    from llm_wiki_cli.services import bootstrap_runtime
+    from llm_wiki_engine import sync_manifest
+    from llm_wiki_engine.validation import portable_path_key
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"

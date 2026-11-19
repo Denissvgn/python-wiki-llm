@@ -15,11 +15,11 @@ import pytest
 from llm_wiki_cli.services import implementation_evidence as ie
 from llm_wiki_cli.services import python_implementation as pi
 from llm_wiki_cli.services.analysis_capture import _issued, attach
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ProducerComponentInput,
     build_producer_record,
 )
-from llm_wiki_cli.services.sync_manifest import ManifestPageSource
+from llm_wiki_engine.sync_manifest import ManifestPageSource
 
 HASH = "sha256:" + "a" * 64
 OTHER = "sha256:" + "b" * 64
@@ -465,17 +465,17 @@ def test_selected_native_read_rejects_rehashed_inconsistent_commit(
     tmp_path, monkeypatch, capsys, corruption
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services.knowledge_storage import ROOT_FILENAME
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-    from llm_wiki_cli.services.knowledge_storage import (
+    from llm_wiki_engine.knowledge_storage import ROOT_FILENAME
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+    from llm_wiki_engine.knowledge_storage import (
         build_knowledge_store,
         KnowledgeStorageError,
         digest,
     )
-    from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-    from llm_wiki_cli.services.manifest_storage import build_manifest_store
-    from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+    from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+    from llm_wiki_engine.manifest_storage import build_manifest_store
+    from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
 
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
@@ -577,13 +577,13 @@ def test_full_artifact_parity_rejects_available_evidence_on_unmapped_retained_pa
     tmp_path, monkeypatch, capsys
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services.knowledge_artifacts import (
+    from llm_wiki_engine.knowledge_artifacts import (
         KnowledgeArtifactError,
         _validate_manifest_knowledge_parity,
     )
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-    from llm_wiki_cli.services.knowledge_model import StructuralFacet
-    from llm_wiki_cli.services.sync_manifest import (
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
+    from llm_wiki_engine.knowledge_model import StructuralFacet
+    from llm_wiki_engine.sync_manifest import (
         ManifestTombstone,
         TOMBSTONE_UNKNOWN_PROVENANCE,
     )

@@ -13,17 +13,17 @@ Setup distinguishes untouched scaffolds from established canonical wikis and inc
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `ensure_guarded_directory` |
-| `.knowledge_artifacts` | `current_knowledge_format` |
-| `.knowledge_consumption` | `load_knowledge_read_view` |
-| `.knowledge_storage_lifecycle` | `_committed_inputs`, `migrate_knowledge_storage`, `_absolute_path` |
-| `.maintenance_protocol` | `load_adoption_marker`, `guard_maintenance_owner`, `snapshot_wiki`, `save_recovery_snapshot` |
 | `.maintenance_service` | `adopt_maintenance_authority` |
-| `.manifest_storage` | `current_manifest_format` |
 | `.wiki_lifecycle` | `is_pristine_wiki_target` |
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `ensure_guarded_directory` |
+| `llm_wiki_engine.knowledge_artifacts` | `current_knowledge_format` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_storage_lifecycle` | `_committed_inputs`, `migrate_knowledge_storage`, `_absolute_path` |
+| `llm_wiki_engine.maintenance_protocol` | `load_adoption_marker`, `guard_maintenance_owner`, `snapshot_wiki`, `save_recovery_snapshot` |
+| `llm_wiki_engine.manifest_storage` | `current_manifest_format` |
 | `pathlib` | `Path` |
 | `tempfile` | `tempfile` |
 

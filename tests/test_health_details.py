@@ -15,15 +15,15 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import ci_report, doctor_service, lint_service
 from llm_wiki_cli.services.health_details import capture_health_details
 from llm_wiki_cli.services.inventory_cache import InventoryCacheStats
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeLoadIssue,
     KnowledgeLoadResult,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import EvidenceState, KnowledgeLoadState
-from llm_wiki_cli.services.knowledge_observability import KnowledgePhaseDurations
-from llm_wiki_cli.services.knowledge_verification import (
+from llm_wiki_engine.knowledge_model import EvidenceState, KnowledgeLoadState
+from llm_wiki_engine.knowledge_observability import KnowledgePhaseDurations
+from llm_wiki_engine.knowledge_verification import (
     attach_machine_verification_read_view,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
@@ -420,7 +420,7 @@ def test_action_reader_accepts_v3_but_still_rejects_duplicate_json(tmp_path):
 def test_one_evaluation_serves_both_v3_reports_without_metrics_expansion(
     recorded_project, monkeypatch, schema, policy
 ):
-    from llm_wiki_cli.services import knowledge_consumption
+    from llm_wiki_engine import knowledge_consumption
 
     calls = {"inventory": 0, "freshness": 0}
     inventory = lint_service.get_inventory_result

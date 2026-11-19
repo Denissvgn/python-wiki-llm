@@ -9,11 +9,12 @@ import re
 import shlex
 import sys
 from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
-from datetime import date
+from functools import partial
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, TextIO
 
 from .. import __version__
@@ -38,7 +39,7 @@ from .bootstrap_service import (
     BootstrapRequest,
     BootstrapResult,
 )
-from .contracts import (
+from llm_wiki_engine.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     KNOWLEDGE_SCHEMA_VERSION,
 )
@@ -91,12 +92,12 @@ from .infrastructure_sync import (
     validate_infrastructure_generation_input,
     with_infrastructure_generation_input,
 )
-from .io import read_md, write_bytes_atomic, write_md
-from .knowledge_artifacts import (
+from llm_wiki_engine.io import read_md, write_bytes_atomic, write_md
+from llm_wiki_engine.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
 )
-from .knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_FILENAME,
     GovernanceError,
     load_governance,
@@ -112,7 +113,7 @@ from .knowledge_orchestration import (
     runtime_graph_analyzer_limitations,
     runtime_source_snapshot_hash,
 )
-from .markdown_sections import (
+from llm_wiki_engine.markdown_sections import (
     GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
     GENERATED_INDEX_INTRO_WITH_GUIDES,
@@ -123,7 +124,7 @@ from .markdown_sections import (
 )
 from .module_maps import build_module_dependency_maps
 from .dockerfile_parser import DOCKERFILE_STAGES_SCHEMA
-from .paths import normalize_source_path, portable_source_root_label
+from llm_wiki_engine.paths import normalize_source_path, portable_source_root_label
 from .relationships import build_entity_page_relationship_summaries
 from .schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
@@ -145,15 +146,14 @@ from .source_snapshot import (
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from .source_selection import (
+from llm_wiki_engine.source_selection import (
     SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
-from .sync_manifest import SyncManifest, SyncManifestError
-from .validation import (
+from llm_wiki_engine.sync_manifest import SyncManifest, SyncManifestError
+from llm_wiki_engine.validation import (
     portable_page_component,
-    portable_path_key,
     posix_path_text as shared_posix_path_text,
 )
 from .wiki_lifecycle import (
@@ -163,7 +163,7 @@ from .wiki_lifecycle import (
     migration_guidance,
     sync_guidance,
 )
-from .wiki_surface import (
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     WikiSurfaceError,
     canonical_path,
@@ -171,7 +171,7 @@ from .wiki_surface import (
     iter_page_kinds,
     mcp_uri,
 )
-from .wiki_surface_index import evaluate_surface_index
+from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from .extraction_service import (
     InventoryResult,
     get_call_graph,
@@ -180,6 +180,15 @@ from .extraction_service import (
     print_inventory_failures,
     resolve_call_observations,
     resolve_call_edges,
+)
+from llm_wiki_engine.host import current_host, emit
+from .domain_pack import (
+    EntityOccurrenceKey,
+    EntityPageRequest,
+    PageRequest,
+    ModulePageRequest,
+    current_pack,
+    render_with_pack,
 )
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
@@ -200,7 +209,6 @@ _HASKELL_FUNCTION_LABELS = {
     "value": "Value",
     "function": "Function",
 }
-EntityOccurrenceKey = tuple[str, str, int]
 
 
 def _preserve_source_doc_link(target: str) -> bool:
@@ -330,122 +338,16 @@ def _page_name_for_entity(cls_name: str) -> str:
 # ── Collision-aware page-name builders ────────────────────────────────
 
 
-def _disambiguate_paths(fps: list[str], stem: str) -> dict[str, str]:
-    """Given filepaths sharing *stem*, return ``{filepath: unique_name}``.
-
-    Progressively adds parent directory components until every name is
-    unique.  Falls back to the full path (sans extension) if needed.
-    """
-    max_depth = max(len(Path(fp).parts) for fp in fps)
-    for depth in range(1, max_depth):
-        candidates: dict[str, str] = {}
-        for fp in fps:
-            dir_parts = Path(fp).parts[:-1]  # directories only
-            prefix_parts = dir_parts[-depth:] if len(dir_parts) >= depth else dir_parts
-            candidates[fp] = "_".join(prefix_parts) + "_" + stem
-        if len(set(candidates.values())) == len(fps):
-            return candidates
-    # Fallback: full path plus extension, with a final numeric guard.
-    candidates = {fp: _page_name_with_extension(fp) for fp in fps}
-    if len(set(candidates.values())) == len(fps):
-        return candidates
-
-    seen: dict[str, int] = defaultdict(int)
-    unique: dict[str, str] = {}
-    for fp in sorted(fps):
-        name = candidates[fp]
-        seen[name] += 1
-        unique[fp] = name if seen[name] == 1 else f"{name}_{seen[name]}"
-    return unique
-
-
-def _page_name_with_extension(filepath: str) -> str:
-    """Return a page-safe path stem that includes the source extension."""
-    path = Path(filepath)
-    base = path.with_suffix("").as_posix()
-    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
-    ext = path.suffix.lower().lstrip(".") or "file"
-    ext = ext.replace(".", "_")
-    return f"{base}_{ext}"
-
-
-def _page_name_from_source_path(filepath: str) -> str:
-    """Return a page-safe stem from the full source path without extension."""
-    path = Path(filepath)
-    base = path.with_suffix("").as_posix()
-    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
-    return _safe_page_component(base, fallback=_page_name_for_module(filepath))
-
-
-def _globally_disambiguate_module_pages(page_map: dict[str, str]) -> dict[str, str]:
-    """Resolve portable filesystem collisions after stem-group disambiguation."""
-    from collections import Counter
-
-    page_counts = Counter(portable_path_key(page) for page in page_map.values())
-    colliding_pages = {page for page, count in page_counts.items() if count > 1}
-    if not colliding_pages:
-        return page_map
-
-    resolved = dict(page_map)
-    used = {
-        portable_path_key(page) for page in page_map.values()
-        if portable_path_key(page) not in colliding_pages
-    }
-    for filepath in sorted(page_map):
-        if portable_path_key(page_map[filepath]) not in colliding_pages:
-            continue
-        base = _page_name_from_source_path(filepath)
-        candidates = [base, _page_name_with_extension(filepath)]
-        candidate = next(
-            (item for item in candidates if portable_path_key(item) not in used), base
-        )
-        suffix = 2
-        while portable_path_key(candidate) in used:
-            candidate = f"{base}_{suffix}"
-            suffix += 1
-        resolved[filepath] = candidate
-        used.add(portable_path_key(candidate))
-    return resolved
-
-
 def build_module_page_map(inventory: dict) -> dict[str, str]:
-    """Return ``{filepath: page_stem}`` qualifying colliding stems.
+    """Return ``{filepath: page_stem}`` named by the active domain pack.
 
-    When two files share the same stem (e.g. ``pkg_a/cli.py`` and
-    ``pkg_b/cli.py``) parent directory components are prepended to
-    disambiguate.  A final global pass resolves collisions between already
-    qualified names and unrelated raw stems. Non-colliding stems keep their
-    short name.
+    The default pack qualifies colliding stems: when two files share the same
+    stem (e.g. ``pkg_a/cli.py`` and ``pkg_b/cli.py``) parent directory
+    components are prepended to disambiguate, and a final global pass
+    resolves collisions between already qualified names and unrelated raw
+    stems. Non-colliding stems keep their short name.
     """
-    from collections import defaultdict
-
-    stem_groups: defaultdict[str, list[str]] = defaultdict(list)
-    for fp in inventory:
-        stem_groups[Path(fp).stem].append(fp)
-
-    page_map: dict[str, str] = {}
-    for stem, fps in stem_groups.items():
-        if len(fps) == 1:
-            page_map[fps[0]] = stem
-        else:
-            page_map.update(_disambiguate_paths(fps, stem))
-    return _globally_disambiguate_module_pages(page_map)
-
-
-def _entity_occurrences(
-    inventory: Mapping[str, Mapping],
-) -> list[tuple[EntityOccurrenceKey, Mapping]]:
-    occurrences: list[tuple[EntityOccurrenceKey, Mapping]] = []
-    for fp, data in inventory.items():
-        seen_names: defaultdict[str, int] = defaultdict(int)
-        for cls in data.get("classes", []):
-            name = cls.get("name")
-            if not name:
-                continue
-            name_text = str(name)
-            seen_names[name_text] += 1
-            occurrences.append(((name_text, fp, seen_names[name_text]), cls))
-    return occurrences
+    return current_pack().page_namer.module_pages(inventory)
 
 
 def _legacy_entity_page_map(
@@ -465,43 +367,11 @@ def build_entity_occurrence_page_map(
 
     The occurrence value is one-based per class name within a file. This keeps
     duplicate class declarations in one source file addressable without
-    changing stable page names for non-colliding entities.
+    changing stable page names for non-colliding entities. The active domain
+    pack names the pages.
     """
-    from collections import Counter
-
-    occurrences = _entity_occurrences(inventory)
-    name_counts = Counter(key[0] for key, _cls in occurrences)
-    files_by_name: defaultdict[str, set[str]] = defaultdict(set)
-    for (name, filepath, _occurrence), _cls in occurrences:
-        files_by_name[name].add(filepath)
-
     mod_page_map = dict(module_page_map or build_module_page_map(inventory))
-    proposed_pages: list[tuple[EntityOccurrenceKey, str, str]] = []
-    for key, _cls in occurrences:
-        name, filepath, occurrence = key
-        safe_name = _page_name_for_entity(name)
-        if name_counts[name] > 1 and len(files_by_name[name]) > 1:
-            page_name = _safe_page_component(f"{mod_page_map[filepath]}_{safe_name}")
-        else:
-            page_name = safe_name
-        if occurrence > 1:
-            page_name = _safe_page_component(f"{page_name}_{occurrence}")
-        proposed_pages.append((key, page_name, mod_page_map[filepath]))
-
-    page_counts = Counter(portable_path_key(page) for _, page, _ in proposed_pages)
-    used: set[str] = set()
-    page_map: dict[EntityOccurrenceKey, str] = {}
-    for key, page_name, module_page in proposed_pages:
-        candidate = page_name
-        if page_counts[portable_path_key(page_name)] > 1:
-            candidate = _safe_page_component(f"{module_page}_{page_name}")
-        suffix = 2
-        while portable_path_key(candidate) in used:
-            candidate = f"{page_name}_{suffix}"
-            suffix += 1
-        page_map[key] = candidate
-        used.add(portable_path_key(candidate))
-    return page_map
+    return current_pack().page_namer.entity_pages(inventory, mod_page_map)
 
 
 def build_entity_page_map(inventory: dict) -> dict[tuple[str, str], str]:
@@ -1947,7 +1817,7 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
     lines.append("")
 
 
-def _generate_entity_md(
+def _builtin_entity_md(
     class_info: dict,
     filepath: str,
     relationships: dict,
@@ -1957,7 +1827,7 @@ def _generate_entity_md(
     module_page_map: Mapping[str, str] | None = None,
     diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
-    """Generate comprehensive markdown for a class entity."""
+    """The built-in markdown for a class entity."""
     if _is_haskell_filepath(filepath):
         return _generate_haskell_entity_md(
             class_info,
@@ -2059,7 +1929,7 @@ def _generate_entity_md(
     return "\n".join(lines)
 
 
-def _generate_module_md(
+def _builtin_module_md(
     filepath: str,
     file_data: dict,
     entity_page_map: dict | None = None,
@@ -2069,7 +1939,7 @@ def _generate_module_md(
     entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
     diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
-    """Generate comprehensive markdown for a module page."""
+    """The built-in markdown for a module page."""
     is_haskell = _is_haskell_file_data(file_data)
     declared_haskell_module = _haskell_module_name(file_data)
     mod_name = _display_module_name(filepath, file_data)
@@ -2275,6 +2145,249 @@ def _append_surface_overview(
     )
 
 
+_EMPTY_MAPPING: Mapping[Any, Any] = MappingProxyType({})
+
+
+def _generate_entity_md(
+    class_info: dict,
+    filepath: str,
+    relationships: dict,
+    mod_page_name: str | None = None,
+    *,
+    relationship_summary: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render a class entity page with the current pack's page renderer."""
+    return render_with_pack(
+        EntityPageRequest(
+            entity=class_info,
+            source_path=filepath,
+            module_page=mod_page_name,
+            relationships=relationships or _EMPTY_MAPPING,
+            relationship_summary=relationship_summary or _EMPTY_MAPPING,
+            module_pages=module_page_map or _EMPTY_MAPPING,
+            diagram_style=diagram_style,
+            _builtin=partial(
+                _builtin_entity_md,
+                class_info,
+                filepath,
+                relationships,
+                mod_page_name,
+                relationship_summary=relationship_summary,
+                module_page_map=module_page_map,
+                diagram_style=diagram_style,
+            ),
+        )
+    )
+
+
+def _generate_module_md(
+    filepath: str,
+    file_data: dict,
+    entity_page_map: dict | None = None,
+    *,
+    module_dependency_map: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render a module page with the current pack's page renderer."""
+    return render_with_pack(
+        ModulePageRequest(
+            source_path=filepath,
+            file_data=file_data,
+            entity_pages=entity_page_map or _EMPTY_MAPPING,
+            module_pages=module_page_map or _EMPTY_MAPPING,
+            entity_occurrence_pages=entity_occurrence_page_map or _EMPTY_MAPPING,
+            module_dependencies=module_dependency_map,
+            diagram_style=diagram_style,
+            _builtin=partial(
+                _builtin_module_md,
+                filepath,
+                file_data,
+                entity_page_map,
+                module_dependency_map=module_dependency_map,
+                module_page_map=module_page_map,
+                entity_occurrence_page_map=entity_occurrence_page_map,
+                diagram_style=diagram_style,
+            ),
+        )
+    )
+
+
+def _render_page(page_kind: PageKind, builtin: Callable[[], str], **inputs: Any) -> str:
+    return render_with_pack(PageRequest(page_kind, inputs, builtin))
+
+
+def _generate_index_md(
+    entity_names: list[str],
+    module_entries: list[dict],
+    workflow_entries: list[dict] | None = None,
+    guide_entries: list[dict] | None = None,
+    infra_entries: list[dict] | None = None,
+    flow_entries: list[dict] | None = None,
+    architecture_entries: list[dict] | None = None,
+    *,
+    retired_entity_pages: list[str] | None = None,
+    api_contracts_present: bool = False,
+    log_present: bool = True,
+) -> str:
+    """Render the index page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.INDEX,
+        partial(
+            _builtin_index_md,
+            entity_names,
+            module_entries,
+            workflow_entries,
+            guide_entries,
+            infra_entries,
+            flow_entries,
+            architecture_entries,
+            retired_entity_pages=retired_entity_pages,
+            api_contracts_present=api_contracts_present,
+            log_present=log_present,
+        ),
+        entity_names=entity_names,
+        module_entries=module_entries,
+        workflow_entries=workflow_entries,
+        guide_entries=guide_entries,
+        infra_entries=infra_entries,
+        flow_entries=flow_entries,
+        architecture_entries=architecture_entries,
+        retired_entity_pages=retired_entity_pages,
+        api_contracts_present=api_contracts_present,
+        log_present=log_present,
+    )
+
+
+def _generate_workflow_md(
+    name: str,
+    wf: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Render a workflow page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.WORKFLOWS,
+        partial(_builtin_workflow_md, name, wf, module_page_map),
+        name=name,
+        workflow=wf,
+        module_pages=module_page_map,
+    )
+
+
+def _generate_flow_md(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    data_flow: Mapping | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+    api_contract_operations: Sequence[Mapping[str, Any]] | None = None,
+) -> str:
+    """Render a flow page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.FLOWS,
+        partial(
+            _builtin_flow_md,
+            flow,
+            module_page_map,
+            data_flow=data_flow,
+            diagram_style=diagram_style,
+            api_contract_operations=api_contract_operations,
+        ),
+        flow=flow,
+        module_pages=module_page_map,
+        data_flow=data_flow,
+        diagram_style=diagram_style,
+        api_contract_operations=api_contract_operations,
+    )
+
+
+def _generate_dependencies_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    detail: str = "auto",
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render the dependencies page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.DEPENDENCIES,
+        partial(
+            _builtin_dependencies_md,
+            analysis,
+            module_page_map,
+            detail=detail,
+            diagram_style=diagram_style,
+        ),
+        analysis=analysis,
+        module_pages=module_page_map,
+        detail=detail,
+        diagram_style=diagram_style,
+    )
+
+
+def _generate_load_order_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Render the load-order page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.LOAD_ORDER,
+        partial(_builtin_load_order_md, analysis, module_page_map),
+        analysis=analysis,
+        module_pages=module_page_map,
+    )
+
+
+def _generate_infrastructure_md(
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
+    *,
+    notes_placeholder: bool = True,
+) -> str:
+    """Render an infrastructure page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.INFRASTRUCTURE,
+        partial(
+            _builtin_infrastructure_md,
+            filename,
+            info,
+            module_links,
+            unsupported_sources,
+            notes_placeholder=notes_placeholder,
+        ),
+        source_path=filename,
+        info=info,
+        module_links=module_links,
+        unsupported_sources=unsupported_sources,
+    )
+
+
+def _generate_api_contracts_md(
+    contracts: Mapping[str, Any],
+    *,
+    module_page_map: Mapping[str, str] | None = None,
+    entity_page_map: Mapping[Any, str] | None = None,
+) -> str:
+    """Render the API contracts page with the current pack's page renderer."""
+    return _render_page(
+        PageKind.API_CONTRACTS,
+        partial(
+            render_api_contracts_markdown,
+            contracts,
+            module_page_map=module_page_map,
+            entity_page_map=entity_page_map,
+        ),
+        contracts=contracts,
+        module_pages=module_page_map,
+        entity_pages=entity_page_map,
+    )
+
+
 def _append_index_entities(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] | None = None) -> None:
     if not entity_names and not retired_entity_pages:
         return
@@ -2442,7 +2555,7 @@ def _append_index_log(lines: list[str], *, log_present: bool) -> None:
     lines.append("")
 
 
-def _generate_index_md(
+def _builtin_index_md(
     entity_names: list[str],
     module_entries: list[dict],
     workflow_entries: list[dict] | None = None,
@@ -2514,7 +2627,7 @@ def _workflow_module_refs(
     return [(m, m) for m in wf.get("modules_touched", [])]
 
 
-def _generate_workflow_md(
+def _builtin_workflow_md(
     name: str,
     wf: dict,
     module_page_map: Mapping[str, str] | None = None,
@@ -3176,7 +3289,7 @@ def _generate_data_flow_section(
     return lines
 
 
-def _generate_flow_md(
+def _builtin_flow_md(
     flow: dict,
     module_page_map: Mapping[str, str] | None = None,
     *,
@@ -3521,7 +3634,7 @@ def _append_external_dependencies(lines: list[str], reconciliation: dict) -> Non
         lines.append("")
 
 
-def _generate_dependencies_md(
+def _builtin_dependencies_md(
     analysis: dict,
     module_page_map: Mapping[str, str] | None = None,
     *,
@@ -3669,7 +3782,7 @@ def _format_side_effect_call(call: Mapping) -> str:
     return f"{target} = {label}" if target else label
 
 
-def _generate_load_order_md(
+def _builtin_load_order_md(
     analysis: dict,
     module_page_map: Mapping[str, str] | None = None,
 ) -> str:
@@ -3953,11 +4066,13 @@ def _generate_docker_md(
     return _generate_compose_md(filename, info, module_links)
 
 
-def _generate_infrastructure_md(
+def _builtin_infrastructure_md(
     filename: str,
     info: dict,
     module_links: Mapping[str, str] | set[str] | None = None,
     unsupported_sources: dict[str, dict[str, object]] | None = None,
+    *,
+    notes_placeholder: bool = True,
 ) -> str:
     """Generate a wiki page for any supported infrastructure inventory entry."""
     if info["type"] in {"dockerfile", "compose"}:
@@ -3974,6 +4089,8 @@ def _generate_infrastructure_md(
         generated = _generate_runtime_config_md(filename, info)
     else:
         generated = _generate_unsupported_infrastructure_md(filename, info)
+    if not notes_placeholder:
+        return generated
     return _with_infrastructure_notes_placeholder(generated)
 
 
@@ -4859,8 +4976,8 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         include_tests=getattr(args, "include_tests", None),
         trust_source_plugins=True,
         source_selection=getattr(args, "source_selection", None),
-        progress_stream=sys.stderr if json_mode else sys.stdout,
-        diagnostic_stream=sys.stderr,
+        progress_stream=current_host().stderr if json_mode else current_host().stdout,  # type: ignore[arg-type]
+        diagnostic_stream=current_host().stderr,  # type: ignore[arg-type]
         knowledge_format=getattr(args, "knowledge_format", None),
     )
 
@@ -5385,7 +5502,7 @@ def _write_bootstrap_api_contract_page(
     if contracts is None:
         return _ApiContractResult(None, page_path.is_file(), 0)
 
-    generated = render_api_contracts_markdown(
+    generated = _generate_api_contracts_md(
         contracts,
         module_page_map=page_maps.module_page_map,
         entity_page_map=page_maps.entity_page_name_cache,
@@ -5869,7 +5986,7 @@ def _append_bootstrap_log(
         # full log participates in review across checkouts and dates.
         heading, source_label = "Source snapshot", "."
     else:
-        heading = date.today().isoformat()
+        heading = current_host().today().isoformat()
         source_label = portable_source_root_label(state.options.src_dir_for_scan)
     log_entry = (
         f"\n## {heading}\n\n"
@@ -6526,7 +6643,7 @@ def _finalize_bootstrap(
     if state.options.knowledge_format is None:
         from types import SimpleNamespace
         from .current_contracts import upgrade_current_knowledge
-        from .knowledge_consumption import load_knowledge_read_view
+        from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 
         # Use the exact writer capture: no second inventory with different
         # helper, plugin, include-tests or source-selection authority.
@@ -6541,7 +6658,7 @@ def _finalize_bootstrap(
                 knowledge_view=view))
         assert state.summary is not None
         state.summary["current_contracts"] = current
-        from .knowledge_packs import LOCAL_PACKED_SCHEMA
+        from llm_wiki_engine.knowledge_packs import LOCAL_PACKED_SCHEMA
         state.summary["knowledge_schema_version"] = LOCAL_PACKED_SCHEMA
         if current.get("recovery_dir"):
             _emit_bootstrap(state, f"Native setup recovery: {current['recovery_dir']}")
@@ -6678,7 +6795,7 @@ def _execute_bootstrap_options(
     *,
     _workspace_refresh_authorized: bool = False,
 ) -> BootstrapResult:
-    from .maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
+    from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
     from .bootstrap_recovery import bootstrap_write_operation, pending_bootstrap
 
     interrupted = not _workspace_refresh_authorized and pending_bootstrap(options.wiki_dir)
@@ -6720,7 +6837,7 @@ def _execute_bootstrap_options(
     if state.completion_message is not None:
         _emit_bootstrap(state, state.completion_message)
     if options.json_mode:
-        print(json.dumps(result.summary, indent=2))
+        emit(json.dumps(result.summary, indent=2))
     return result
 
 
@@ -6864,7 +6981,7 @@ def run(args):
     except BootstrapExtractionError:
         raise SystemExit(1)
     except BootstrapContractError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        emit(f"Error: {exc}", stream="stderr")
         raise SystemExit(2) from exc
 
 

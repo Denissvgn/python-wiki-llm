@@ -11,7 +11,7 @@ import sys
 import pytest
 
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services import knowledge_governance as governance
+from llm_wiki_engine import knowledge_governance as governance
 from tests.test_knowledge_loader import _committed_state
 
 

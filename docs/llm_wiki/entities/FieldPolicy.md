@@ -1,6 +1,6 @@
 # FieldPolicy
 
-**Location:** `src/llm_wiki_cli/services/packet_field_policy.py:16`
+**Location:** `src/llm_wiki_engine/packet_field_policy.py:16`
 **Kind:** Class
 **Bases:** —
 **Module:** [packet_field_policy](../modules/packet_field_policy.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `FieldPolicy` in `src/llm_wiki_cli/services/packet_field_policy.py`._
+_Auto-generated from `FieldPolicy` in `src/llm_wiki_engine/packet_field_policy.py`._
 
 ## Attributes
 
@@ -30,12 +30,12 @@ _Auto-generated from `FieldPolicy` in `src/llm_wiki_cli/services/packet_field_po
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["FieldPolicy (src/llm_wiki_cli/services/packet_field_policy.py)"]
-    n1["_json (src/llm_wiki_cli/services/packet_field_policy.py)"]
-    n2["_list (src/llm_wiki_cli/services/packet_field_policy.py)"]
-    n3["_mapping (src/llm_wiki_cli/services/packet_field_policy.py)"]
-    n4["_record (src/llm_wiki_cli/services/packet_field_policy.py)"]
-    n5["packet_policy (src/llm_wiki_cli/services/packet_field_policy.py)"]
+    n0["FieldPolicy (src/llm_wiki_engine/packet_field_policy.py)"]
+    n1["_json (src/llm_wiki_engine/packet_field_policy.py)"]
+    n2["_list (src/llm_wiki_engine/packet_field_policy.py)"]
+    n3["_mapping (src/llm_wiki_engine/packet_field_policy.py)"]
+    n4["_record (src/llm_wiki_engine/packet_field_policy.py)"]
+    n5["packet_policy (src/llm_wiki_engine/packet_field_policy.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

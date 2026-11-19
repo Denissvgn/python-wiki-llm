@@ -10,29 +10,32 @@ Read-only candidate/producer preflight and bound health-policy commands.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `extractor_helpers`, `analysis_compatibility` |
-| `..config` | `EXTRACTOR_REGISTRY`, `validate_path`, `validate_source_root` |
+| `.` | `extractor_helpers` |
 | `..extractors.common` | `inventory_language_for_path` |
 | `.analysis_capture` | `capture_analysis`, `attach` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `.extractor_registry` | `EXTRACTOR_REGISTRY` |
 | `.health_policy` | `PREFLIGHT_SCHEMA`, `MaintenanceError`, `derive_policy`, `digest`, `strict_json`, `verify_policy`, `_binding` |
-| `.knowledge_envelope` | `ProducerComponentInput`, `build_producer_record`, `hash_source_snapshot` |
-| `.knowledge_evidence` | `hash_json` |
-| `.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
 | `.knowledge_orchestration` | `_producer_evidence`, `_infrastructure_extractor_component`, `runtime_generation_options`, `runtime_generation_options_hash` |
-| `.knowledge_packs` | `parse_packed_root` |
-| `.knowledge_storage` | `parse_store_root` |
-| `.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
-| `.source_selection` | `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `build_source_snapshot` |
-| `.sync_manifest` | `SyncManifest` |
-| `.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `hashlib` | `hashlib` |
 | `importlib.metadata` | `importlib.metadata` |
 | `json` | `json` |
 | `llm_wiki_cli` | `llm_wiki_cli` |
+| `llm_wiki_engine` | `analysis_compatibility`, `llm_wiki_engine` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host` |
+| `llm_wiki_engine.knowledge_envelope` | `ProducerComponentInput`, `build_producer_record`, `hash_source_snapshot` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
+| `llm_wiki_engine.knowledge_packs` | `parse_packed_root` |
+| `llm_wiki_engine.knowledge_storage` | `parse_store_root` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
+| `llm_wiki_engine.path_policy` | `validate_path`, `validate_source_root` |
+| `llm_wiki_engine.source_selection` | `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
+| `llm_wiki_engine.wiki_surface_index` | `WIKI_SURFACE_INDEX_SCHEMA_VERSION` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
@@ -58,15 +61,15 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (19) |
+| Outbound | `src` (21) |
 
 ### External packages
 
 | Language | Used packages | Undeclared packages |
 |---|---:|---:|
-| python | 1 | 0 |
+| python | 2 | 1 |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

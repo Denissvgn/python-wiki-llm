@@ -1,6 +1,6 @@
 # knowledge_freshness Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_freshness.py`
+**Path:** `src/llm_wiki_engine/knowledge_freshness.py`
 
 ## Description
 
@@ -28,20 +28,20 @@ turn unknown evidence into known evidence or alter freshness classification.
 | Source | Symbols |
 |--------|---------|
 | `.` | `analysis_compatibility` |
-| `.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
-| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
-| `.knowledge_evidence` | `UNKNOWN_ENTITY_NOT_FOUND`, `ConceptObservationBasis`, `hash_json`, `is_valid_sha256` |
 | `.knowledge_model` | `BundleRecord`, `ComputedFreshness`, `ConceptRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `ObservationScope`, `ProducerComponent`, `ProducerRecord`, `SnapshotRecord`, `_knowledge_index_to_payload_unchecked`, `knowledge_index_to_payload`, `parse_knowledge_index` |
-| `.normalization_diagnostics` | `NormalizationDiagnostic` |
 | `.source_retirement` | `qualified_retired_entity_locators` |
 | `.sync_manifest` | `SyncManifest` |
-| `.validation` | `require_repository_relative_path` |
-| `.wiki_surface` | `PageKind` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping`, `Set` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
+| `llm_wiki_engine.knowledge_evidence` | `UNKNOWN_ENTITY_NOT_FOUND`, `ConceptObservationBasis`, `hash_json`, `is_valid_sha256` |
+| `llm_wiki_engine.normalization_diagnostics` | `NormalizationDiagnostic` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_surface` | `PageKind` |
 | `types` | `MappingProxyType` |
 | `typing` | `TYPE_CHECKING` |
 
@@ -51,7 +51,7 @@ turn unknown evidence into known evidence or alter freshness classification.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n1["src/llm_wiki_engine/knowledge_freshness.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_freshness.md"

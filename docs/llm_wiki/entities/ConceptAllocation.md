@@ -1,6 +1,6 @@
 # ConceptAllocation
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:116`
+**Location:** `src/llm_wiki_engine/concept_identity.py:116`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -32,14 +32,14 @@ A persisted UID bound to the concept's current coordinates.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptAllocation (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["add_identity_alias (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["aliases_for_move (src/llm_wiki_cli/services/concept_identity.py)"]
-    n3["allocate_concept (src/llm_wiki_cli/services/concept_identity.py)"]
-    n4["find_identity_collisions (src/llm_wiki_cli/services/concept_identity.py)"]
-    n5["move_allocation (src/llm_wiki_cli/services/concept_identity.py)"]
-    n6["validate_identity_registry (src/llm_wiki_cli/services/concept_identity.py)"]
-    n7["validate_governance_ledger (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["ConceptAllocation (src/llm_wiki_engine/concept_identity.py)"]
+    n1["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n2["aliases_for_move (src/llm_wiki_engine/concept_identity.py)"]
+    n3["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n4["find_identity_collisions (src/llm_wiki_engine/concept_identity.py)"]
+    n5["move_allocation (src/llm_wiki_engine/concept_identity.py)"]
+    n6["validate_identity_registry (src/llm_wiki_engine/concept_identity.py)"]
+    n7["validate_governance_ledger (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

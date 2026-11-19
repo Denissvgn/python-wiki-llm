@@ -1,6 +1,6 @@
 # VerificationInvalidationReason
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:103`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:103`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -29,7 +29,7 @@ Reasons a syntactically valid receipt is not current.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["VerificationInvalidationReason (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["VerificationInvalidationReason (src/llm_wiki_engine/verification_contracts.py)"]
     n1["Enum"]
     n2["str"]
     n0 --> n1

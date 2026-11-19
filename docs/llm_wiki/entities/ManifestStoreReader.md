@@ -1,6 +1,6 @@
 # ManifestStoreReader
 
-**Location:** `src/llm_wiki_cli/services/manifest_storage.py:153`
+**Location:** `src/llm_wiki_engine/manifest_storage.py:153`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)
@@ -27,10 +27,10 @@ Authenticates bounded immutable manifest catalogs for physical v6/logical v5 and
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ManifestStoreReader (src/llm_wiki_cli/services/manifest_storage.py)"]
-    n1["_capture_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n2["read_manifest_header (src/llm_wiki_cli/services/manifest_storage.py)"]
-    n3["SyncManifest.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n0["ManifestStoreReader (src/llm_wiki_engine/manifest_storage.py)"]
+    n1["_capture_slice (src/llm_wiki_engine/knowledge_storage_access.py)"]
+    n2["read_manifest_header (src/llm_wiki_engine/manifest_storage.py)"]
+    n3["SyncManifest.from_payload (src/llm_wiki_engine/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

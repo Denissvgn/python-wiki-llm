@@ -1,9 +1,9 @@
 # StructureUpgradeResult
 
-**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:90`
+**Location:** `src/llm_wiki_cli/services/upgrade_runtime.py:92`
 **Kind:** Class
 **Bases:** —
-**Module:** [upgrade_cmd](../modules/upgrade_cmd.md)
+**Module:** [upgrade_runtime](../modules/upgrade_runtime.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
@@ -30,22 +30,22 @@ Paths created while refreshing the framework-owned wiki structure.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["StructureUpgradeResult (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
-    n1["_upgrade_dirs (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
+    n0["StructureUpgradeResult (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n1["_upgrade_dirs (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n1 --> n0
-    click n0 "../modules/upgrade_cmd.md"
-    click n1 "../modules/upgrade_cmd.md"
+    click n0 "../modules/upgrade_runtime.md"
+    click n1 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [upgrade_cmd](../modules/upgrade_cmd.md) | 1 | `directories`, `files`, `gitkeeps` |
+| [upgrade_runtime](../modules/upgrade_runtime.md) | 1 | `directories`, `files`, `gitkeeps` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_upgrade_dirs` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
-| `_upgrade_dirs` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_upgrade_dirs` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 1 |
+| `_upgrade_dirs` | type_reference | [upgrade_runtime](../modules/upgrade_runtime.md) | — |

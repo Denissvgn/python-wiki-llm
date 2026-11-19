@@ -10,7 +10,7 @@ import zipfile
 import pytest
 
 from release import qualification as q
-from llm_wiki_cli.services import analysis_compatibility as ac
+from llm_wiki_engine import analysis_compatibility as ac
 
 
 def write(path, value):

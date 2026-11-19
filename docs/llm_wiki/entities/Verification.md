@@ -1,13 +1,13 @@
 # Verification
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:178`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:180`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
 
 ## Description
 
-_Auto-generated from `Verification` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `Verification` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -29,12 +29,12 @@ _Auto-generated from `Verification` in `src/llm_wiki_cli/services/knowledge_mode
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["Verification (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["Verification (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/knowledge_index.py"]
-    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n5["src/llm_wiki_engine/knowledge_index.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -42,8 +42,8 @@ flowchart LR
     n5 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
-    click n4 "../modules/knowledge_index.md"
-    click n5 "../modules/knowledge_projection.md"
+    click n4 "../modules/knowledge_projection.md"
+    click n5 "../modules/knowledge_index.md"
 ```
 
 ### Summary
@@ -64,5 +64,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |

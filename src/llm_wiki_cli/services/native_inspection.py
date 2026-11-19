@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from ..api_types import QueryCostDisclosure
-from . import context_packet
+from . import context_packet_builder
 from .documentation_queries import (
     DocumentationQueryError,
     QUERY_RESULT_SERIALIZED_BYTE_LIMIT,
@@ -14,7 +14,7 @@ from .documentation_query_builder import (
     build_documentation_query_service_from_view,
     build_snapshot_documentation_query_service,
 )
-from .knowledge_coverage import MAX_COVERAGE_BYTES, build_knowledge_coverage
+from llm_wiki_engine.knowledge_coverage import MAX_COVERAGE_BYTES, build_knowledge_coverage
 
 
 NATIVE_INSPECTION_SCHEMA_VERSION = "llm-wiki-native-inspection/v1"
@@ -36,7 +36,7 @@ def inspect_native_concept(
     """Compose existing queries, then check that their common inputs still hold."""
     captured = None
     if live:
-        captured = context_packet.capture_context_read(
+        captured = context_packet_builder.capture_context_read(
             src_dir,
             str(wiki_root),
             read_only=True,
@@ -60,7 +60,7 @@ def inspect_native_concept(
         )
         wiki_anchor = captured.wiki_anchor
     else:
-        wiki_anchor = context_packet._wiki_anchor(wiki_root)
+        wiki_anchor = context_packet_builder._wiki_anchor(wiki_root)
         service = build_snapshot_documentation_query_service(
             wiki_root=wiki_root, limit=limit
         )
@@ -109,8 +109,8 @@ def inspect_native_concept(
     ):
         raise DocumentationQueryError("inspection exceeds its serialized byte bound")
     if captured is not None:
-        context_packet._assert_source_unchanged(
+        context_packet_builder._assert_source_unchanged(
             captured.source_snapshot, captured.source_anchor
         )
-    context_packet._assert_wiki_unchanged(wiki_root, wiki_anchor)
+    context_packet_builder._assert_wiki_unchanged(wiki_root, wiki_anchor)
     return result

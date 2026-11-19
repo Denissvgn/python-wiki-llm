@@ -21,21 +21,21 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
 from . import _restore_legacy_definition_modules
-from ..contracts import (
+from llm_wiki_engine.contracts import (
     P0_CALIBRATION_PREFLIGHT_SCHEMA_VERSION,
     P0_CALIBRATION_SHADOW_SCHEMA_VERSION,
     P0_CALIBRATION_VERDICT_SCHEMA_VERSION,
     P0_FLOW_CENSUS_SCHEMA_VERSION,
 )
-from ..validation import (
+from llm_wiki_engine.validation import (
     bool_or_none,
     filtered_trimmed_text_list,
     nonnegative_int_or_none,
     normalize_optional_portable_relative_path,
     trimmed_text_or_none,
 )
-from ..wiki_surface import is_safe_page_id
-from ..wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface import is_safe_page_id
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 CALIBRATION_TERMINAL_OUTCOMES = (

@@ -2,29 +2,31 @@
 
 **Entry point:** `__main__` (`process`)
 **Source:** [wiki-candidate_prepare](../modules/wiki-candidate_prepare.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 53 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 57 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_native](../modules/documentation_native.md)
+- [domain_pack](../modules/domain_pack.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
+- [gitignore](../modules/gitignore.md)
 - [helper_cache](../modules/helper_cache.md)
 - [helper_preparation](../modules/helper_preparation.md)
 - [helper_runtime](../modules/helper_runtime.md)
+- [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
-- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -35,21 +37,24 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
-- [maintenance_projection](../modules/maintenance_projection.md)
+- [knowledge_validators](../modules/knowledge_validators.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
-- [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
+- [path_policy](../modules/path_policy.md)
 - [publication_config](../modules/publication_config.md)
+- [publication_targets](../modules/publication_targets.md)
 - [python_implementation](../modules/python_implementation.md)
+- [reference_providers](../modules/reference_providers.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
@@ -97,7 +102,7 @@ sequenceDiagram
     participant p11 as _consumer_root
     participant p12 as build_source_snapshot
     participant p13 as _relative_path
-    participant p14 as canonical_json_bytes
+    participant p14 as compact_bytes
     participant p15 as locate_exact_repository_path
     participant p16 as _native_source_snapshot_preflight
     participant p17 as _safe
@@ -127,7 +132,7 @@ sequenceDiagram
     p2->>p11: _consumer_root
     p5->>p12: build_source_snapshot
     p2->>p13: _relative_path
-    p7->>p14: canonical_json_bytes
+    p7->>p14: compact_bytes
     p2->>p15: locate_exact_repository_path
     p10->>p16: _native_source_snapshot_preflight
     p6->>p17: _safe
@@ -146,9 +151,9 @@ sequenceDiagram
     p0-->>p30: parser.add_argument('mode', choices=(...))
 ```
 
-> Call sequence diagram shows 30 of 2918 interactions; 2888 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2891 interactions; 2861 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 922 (921 omitted); unresolved 1 of 707 (706 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 908 (907 omitted); unresolved 1 of 712 (711 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,12 +162,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/wiki-candidate/prepare.py:__main__` | 1 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | - | external | 2 |
-| `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 15 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 1 |
-| `src/llm_wiki_cli/services/source_selection.py:_is_link_or_reparse_stat` | 16 | - | external | 4 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_link_or_reparse` | 15 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 1 |
+| `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 15 | [src/llm_wiki_engine/source_selection.py](../modules/source_selection.md) | internal | 1 |
+| `src/llm_wiki_engine/source_selection.py:_is_link_or_reparse_stat` | 16 | - | external | 4 |
+| `src/llm_wiki_engine/source_selection.py:path_is_link_or_reparse` | 15 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 12 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 3 |
-> Omission summary shows 8 of 688 groups; 680 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 694 groups; 686 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -175,9 +180,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1290; effect analysis evaluated: 834, partial: 51, unavailable: 405. Counts include steps omitted from the displayed trace.
+Source steps: 1272; effect analysis evaluated: 824, partial: 50, unavailable: 398. Counts include steps omitted from the displayed trace.
 
-Collector observations for 885 source steps with known totals: observed: 5311, emitted: 5038, omitted: 273. Unavailable totals are excluded.
+Collector observations for 874 source steps with known totals: observed: 5168, emitted: 4901, omitted: 267. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

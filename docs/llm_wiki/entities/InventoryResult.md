@@ -1,6 +1,6 @@
 # InventoryResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:185`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:188`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -52,18 +52,17 @@ The `failed` property covers extractor statuses. A successful diagnostic helper 
 ```mermaid
 flowchart LR
     n0["InventoryResult (src/llm_wiki_cli/services/extraction_service.py)"]
-    n1["src/llm_wiki_cli/commands/migrate_cmd.py"]
-    n2["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["_exit_if_large_unforced_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n4["_sync_reuse_input_basis (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n5["_try_sync_knowledge_reuse (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n6["_finalize_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n7["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n8["src/llm_wiki_cli/services/context_packet.py"]
-    n9["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
-    n10["_build_protocol_enrichment (src/llm_wiki_cli/services/context_service.py)"]
-    n11["_capture_protocol_enrichment_session (src/llm_wiki_cli/services/context_service.py)"]
-    n12["get_inventory (src/llm_wiki_cli/services/context_service.py)"]
+    n1["_finalize_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n2["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n3["src/llm_wiki_cli/services/context_packet_builder.py"]
+    n4["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
+    n5["_build_protocol_enrichment (src/llm_wiki_cli/services/context_service.py)"]
+    n6["_capture_protocol_enrichment_session (src/llm_wiki_cli/services/context_service.py)"]
+    n7["get_inventory (src/llm_wiki_cli/services/context_service.py)"]
+    n8["_build_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n9["_completed_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n10["_extractor_failure_message (src/llm_wiki_cli/services/extraction_service.py)"]
+    n11["ensure_complete_inventory (src/llm_wiki_cli/services/extraction_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -75,20 +74,18 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
-    n12 --> n0
     click n0 "../modules/extraction_service.md"
-    click n1 "../modules/migrate_cmd.md"
-    click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/sync_cmd.md"
-    click n4 "../modules/sync_cmd.md"
-    click n5 "../modules/sync_cmd.md"
-    click n6 "../modules/bootstrap_runtime.md"
-    click n7 "../modules/bootstrap_runtime.md"
-    click n8 "../modules/context_packet.md"
-    click n9 "../modules/context_service.md"
-    click n10 "../modules/context_service.md"
-    click n11 "../modules/context_service.md"
-    click n12 "../modules/context_service.md"
+    click n1 "../modules/bootstrap_runtime.md"
+    click n2 "../modules/bootstrap_runtime.md"
+    click n3 "../modules/context_packet_builder.md"
+    click n4 "../modules/context_service.md"
+    click n5 "../modules/context_service.md"
+    click n6 "../modules/context_service.md"
+    click n7 "../modules/context_service.md"
+    click n8 "../modules/extraction_service.md"
+    click n9 "../modules/extraction_service.md"
+    click n10 "../modules/extraction_service.md"
+    click n11 "../modules/extraction_service.md"
 ```
 
 ### Summary
@@ -101,17 +98,17 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_sync_reuse_input_basis` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
-| `_try_sync_knowledge_reuse` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
 | `_build_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) | — |
 | `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
 | `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_completed_inventory_result` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_extractor_failure_message` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `ensure_complete_inventory` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 
-> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.
+> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.

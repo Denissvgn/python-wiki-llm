@@ -1,6 +1,6 @@
 # WindowsDirectoryGuardError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:44`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:44`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -22,19 +22,19 @@ Raised when a Windows directory chain cannot be pinned safely.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WindowsDirectoryGuardError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["WindowsDirectoryGuardError (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["OSError"]
-    n2["_WindowsDirectoryGuardUnavailableError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n2["_WindowsDirectoryGuardUnavailableError (src/llm_wiki_engine/filesystem_guard.py)"]
     n3["src/llm_wiki_cli/services/calibration/controller.py"]
     n4["src/llm_wiki_cli/services/documentation_policy.py"]
     n5["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n6["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n7["_open_windows_directory_guard (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n8["create_private_windows_directory (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n9["guard_windows_directory_chain (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n10["remove_guarded_tree (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n11["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n12["src/llm_wiki_cli/services/protected_artifacts.py"]
+    n7["_open_windows_directory_guard (src/llm_wiki_engine/filesystem_guard.py)"]
+    n8["create_private_windows_directory (src/llm_wiki_engine/filesystem_guard.py)"]
+    n9["guard_windows_directory_chain (src/llm_wiki_engine/filesystem_guard.py)"]
+    n10["remove_guarded_tree (src/llm_wiki_engine/filesystem_guard.py)"]
+    n11["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n12["src/llm_wiki_engine/protected_artifacts.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

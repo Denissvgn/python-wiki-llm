@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from .knowledge_envelope import ConsumedInput, hash_source_snapshot
+from llm_wiki_engine.knowledge_envelope import ConsumedInput, hash_source_snapshot
 from .python_implementation import analysis_identity
 
 SCHEMA = "llm-wiki-task-implementation-capture/v1"
@@ -12,7 +12,7 @@ SCHEMA = "llm-wiki-task-implementation-capture/v1"
 
 def native_bindings(concepts):
     """Extract owner bindings from consumed native records, never display names."""
-    from .knowledge_storage import canonical_bytes, digest
+    from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
     from .implementation_evidence import validate_implementation_evidence
 
     result = {}
@@ -78,7 +78,7 @@ def attach_capture(body, inventory_result):
 
 def validate_task_implementations(payload, settings):
     from .implementation_evidence import validate_implementation_comparison
-    from .knowledge_evidence import is_valid_sha256
+    from llm_wiki_engine.knowledge_evidence import is_valid_sha256
 
     comparisons = [(item, fact) for fact in payload["facts"] for item in _comparisons(fact)]
     receipt = payload.get("implementation_capture")
@@ -136,7 +136,7 @@ def validate_task_implementations(payload, settings):
             if persisted is not None and comparison["recorded"] != persisted:
                 raise ValueError("implementation recorded basis differs from consumed native record")
             if coordinate is not None:
-                from .knowledge_storage import canonical_bytes, digest
+                from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
 
                 binding = bindings.get(observed.get("locator"))
                 if not isinstance(binding, dict) or set(binding) != {"coordinate", "scope", "recorded_hash"}:

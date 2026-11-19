@@ -8,13 +8,13 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .io import decode_markdown_bytes
-from .knowledge_storage import KnowledgeStorageError
-from .knowledge_storage_diagnostics import _git
-from .knowledge_storage_lifecycle import _committed_inputs
-from .knowledge_storage_io import _absolute_path
-from .knowledge_governance import GOVERNANCE_FILENAME
-from .maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.io import decode_markdown_bytes
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_diagnostics import _git
+from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs
+from llm_wiki_engine.knowledge_storage_io import _absolute_path
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
 from .wiki_git_policy import _git_environment, classify_wiki_git_policy
 
 MAX_DELIVERY_FILES = 20_000

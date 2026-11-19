@@ -9,7 +9,7 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.services import mcp_server, task_compact
 from llm_wiki_cli.services.token_counting import EstimatedCounter
-from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from llm_wiki_cli.services.context_budget import _accounted_render
 from tests.test_task_compact import reseal_canonical
 from tests.test_task_compact_receiving import tiny_request
@@ -124,7 +124,7 @@ def test_counter_mutation_cannot_publish_false_current_readable_view(project):
 
 
 def test_selected_native_mutation_aborts_readable_publication(project, capsys):
-    from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+    from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 
     request, _ = project
     api.bootstrap_wiki("src", "wiki")
@@ -236,7 +236,7 @@ def test_presentation_classification_does_not_change_analysis_identity():
 
 
 def test_minimal_metadata_preserves_new_qualifications_and_conditional_base(project):
-    from llm_wiki_cli.services.task_compact_readable import readable_session_metadata
+    from llm_wiki_engine.task_compact_readable import readable_session_metadata
 
     request, _ = project
     with api.open_context_session(src_dir="src", wiki_dir="wiki") as owner:
@@ -252,7 +252,7 @@ def test_minimal_metadata_preserves_new_qualifications_and_conditional_base(proj
 
 @pytest.mark.parametrize("state", ["stale", "selected-review", "missing", "corrupt"])
 def test_native_gaps_and_review_scope_survive_readable_delivery(project, capsys, state):
-    from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+    from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
     from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
 
     request, _ = project

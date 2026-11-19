@@ -1,6 +1,6 @@
 # source_retirement Module
 
-**Path:** `src/llm_wiki_cli/services/source_retirement.py`
+**Path:** `src/llm_wiki_engine/source_retirement.py`
 
 ## Description
 
@@ -31,15 +31,15 @@ the independent historical retirement policy.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_evidence` | `entity_observation_hash` |
 | `.knowledge_model` | `KnowledgeIndex`, `EvidenceState`, `Origin` |
-| `.sync_analysis` | `_recorded_entity_pages` |
 | `.sync_manifest` | `ManifestPageSource`, `SyncManifest`, `SyncManifestError`, `generated_semantics_for_file` |
-| `.validation` | `portable_path_key` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.knowledge_evidence` | `entity_observation_hash` |
+| `llm_wiki_engine.validation` | `portable_path_key` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
 | `pathlib` | `PurePosixPath` |
 | `typing` | `TYPE_CHECKING` |
 
@@ -50,7 +50,7 @@ the independent historical retirement policy.
 flowchart LR
     n0["integrations"]
     n1["src"]
-    n2["src/llm_wiki_cli/services/source_retirement.py"]
+    n2["src/llm_wiki_engine/source_retirement.py"]
     n0 --> n2
     n1 --> n2
     n2 --> n1
@@ -64,16 +64,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (1) |
-| Inbound | `src` (13) |
+| Inbound | `src` (12) |
 | Outbound | `src` (6) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceRetirementError](../entities/SourceRetirementError.md) | 27 | `ValueError` | A retirement record cannot be reconciled with authoritative ownership. |
+| [SourceRetirementError](../entities/SourceRetirementError.md) | 29 | `ValueError` | A retirement record cannot be reconciled with authoritative ownership. |
 
 ## Functions
 

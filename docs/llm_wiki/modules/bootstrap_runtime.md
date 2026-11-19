@@ -28,12 +28,12 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
 | `.bootstrap_recovery` | `pending_bootstrap`, `bootstrap_write_operation`, `pending_bootstrap` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
-| `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `upgrade_current_knowledge` |
 | `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `startup_cycle_groups`, `top_level_package` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
 | `.dockerfile_parser` | `DOCKERFILE_STAGES_SCHEMA` |
+| `.domain_pack` | `EntityOccurrenceKey`, `EntityPageRequest`, `PageRequest`, `ModulePageRequest`, `current_pack`, `render_with_pack` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges`, `InventoryRequest`, `prepare_inventory_helpers` |
 | `.flow_overview` | `FlowOverview`, `select_flow_overview`, `trim_flow_overview` |
@@ -41,40 +41,42 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
 | `.infrastructure_inventory` | `RUNTIME_CONFIG_TYPES`, `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
-| `.io` | `read_md`, `write_bytes_atomic`, `write_md` |
-| `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
-| `.knowledge_consumption` | `load_knowledge_read_view` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
-| `.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
-| `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
-| `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
-| `.paths` | `normalize_source_path`, `portable_source_root_label` |
 | `.python_imports` | `is_python_source`, `module_binding_imports` |
 | `.relationships` | `build_entity_page_relationship_summaries` |
 | `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `decode_managed_document_bytes`, `encode_managed_document_text`, `pin_source_selection_command_recipes` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
-| `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `.validation` | `portable_page_component`, `portable_path_key`, `posix_path_text` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle`, `is_pristine_wiki_target`, `migration_guidance`, `sync_guidance` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
-| `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
-| `collections` | `defaultdict`, `Counter`, `defaultdict`, `Counter` |
-| `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
+| `collections` | `defaultdict` |
+| `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
-| `datetime` | `date` |
+| `functools` | `partial` |
 | `io` | `io` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `current_host`, `emit` |
+| `llm_wiki_engine.io` | `read_md`, `write_bytes_atomic`, `write_md` |
+| `llm_wiki_engine.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
+| `llm_wiki_engine.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
+| `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
+| `llm_wiki_engine.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
+| `llm_wiki_engine.paths` | `normalize_source_path`, `portable_source_root_label` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `SyncManifestError` |
+| `llm_wiki_engine.validation` | `portable_page_component`, `posix_path_text` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shlex` | `shlex` |
 | `sys` | `sys` |
-| `types` | `SimpleNamespace` |
+| `types` | `MappingProxyType`, `SimpleNamespace` |
 | `typing` | `Any`, `TextIO` |
 
 ## Local dependency map
@@ -95,28 +97,28 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (18) |
-| Outbound | `src` (40) |
+| Inbound | `src` (19) |
+| Outbound | `src` (42) |
 
-> All 58 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 61 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 785 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1063 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3309 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4694 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4721 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4735 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4742 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4750 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4756 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4767 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4778 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4786 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4793 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 655 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 933 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3422 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4811 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4838 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4852 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4859 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4867 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4873 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4884 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4895 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4903 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4910 | — | — |
 
 ## Functions
 
@@ -135,12 +137,7 @@ flowchart LR
 | `_safe_page_component` | `(value: object, *, fallback: str = 'page') -> str` | — | — |
 | `_page_name_for_module` | `(filepath: str) -> str` | — | Return the wiki page stem for a module. |
 | `_page_name_for_entity` | `(cls_name: str) -> str` | — | Return the wiki page stem for an entity. |
-| `_disambiguate_paths` | `(fps: list[str], stem: str) -> dict[str, str]` | — | Given filepaths sharing *stem*, return ``{filepath: unique_name}``. |
-| `_page_name_with_extension` | `(filepath: str) -> str` | — | Return a page-safe path stem that includes the source extension. |
-| `_page_name_from_source_path` | `(filepath: str) -> str` | — | Return a page-safe stem from the full source path without extension. |
-| `_globally_disambiguate_module_pages` | `(page_map: dict[str, str]) -> dict[str, str]` | — | Resolve portable filesystem collisions after stem-group disambiguation. |
-| `build_module_page_map` | `(inventory: dict) -> dict[str, str]` | — | Return ``{filepath: page_stem}`` qualifying colliding stems. |
-| `_entity_occurrences` | `(inventory: Mapping[str, Mapping]) -> list[tuple[EntityOccurrenceKey, Mapping]]` | — | — |
+| `build_module_page_map` | `(inventory: dict) -> dict[str, str]` | — | Return ``{filepath: page_stem}`` named by the active domain pack. |
 | `_legacy_entity_page_map` | `(occurrence_page_map: Mapping[EntityOccurrenceKey, str]) -> dict[tuple[str, str], str]` | — | — |
 | `build_entity_occurrence_page_map` | `(inventory: dict, module_page_map: Mapping[str, str] \| None = None) -> dict[EntityOccurrenceKey, str]` | — | Return occurrence-aware ``{(class_name, filepath, occurrence): page_stem}``. |
 | `build_entity_page_map` | `(inventory: dict) -> dict[tuple[str, str], str]` | — | Return ``{(class_name, filepath): page_stem}`` qualifying collisions. |
@@ -197,12 +194,22 @@ flowchart LR
 | `_model_config_value` | `(setting: Mapping) -> str` | — | — |
 | `_append_model_contract_sections` | `(lines: list[str], class_info: Mapping) -> None` | — | — |
 | `_append_attribute_contract` | `(lines: list[str], class_info: Mapping) -> None` | — | — |
-| `_generate_entity_md` | `(class_info: dict, filepath: str, relationships: dict, mod_page_name: str \| None = None, *, relationship_summary: Mapping \| None = None, module_page_map: Mapping[str, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Generate comprehensive markdown for a class entity. |
-| `_generate_module_md` | `(filepath: str, file_data: dict, entity_page_map: dict \| None = None, *, module_dependency_map: Mapping \| None = None, module_page_map: Mapping[str, str] \| None = None, entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Generate comprehensive markdown for a module page. |
+| `_builtin_entity_md` | `(class_info: dict, filepath: str, relationships: dict, mod_page_name: str \| None = None, *, relationship_summary: Mapping \| None = None, module_page_map: Mapping[str, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> str` | — | The built-in markdown for a class entity. |
+| `_builtin_module_md` | `(filepath: str, file_data: dict, entity_page_map: dict \| None = None, *, module_dependency_map: Mapping \| None = None, module_page_map: Mapping[str, str] \| None = None, entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> str` | — | The built-in markdown for a module page. |
 | `_flow_index_category` | `(flow: dict) -> str` | — | Category for a flow index entry, derived from the id prefix when absent. |
 | `_overview_target` | `(count: int, heading: str) -> str` | — | — |
 | `_overview_row` | `(label: str, count: int, target: str) -> str` | — | — |
 | `_append_surface_overview` | `(lines: list[str], *, entity_count: int, module_count: int, workflow_count: int, guide_count: int, flow_count: int, infrastructure_count: int, api_contracts_present: bool, architecture_count: int, log_present: bool) -> None` | — | — |
+| `_generate_entity_md` | `(class_info: dict, filepath: str, relationships: dict, mod_page_name: str \| None = None, *, relationship_summary: Mapping \| None = None, module_page_map: Mapping[str, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Render a class entity page with the current pack's page renderer. |
+| `_generate_module_md` | `(filepath: str, file_data: dict, entity_page_map: dict \| None = None, *, module_dependency_map: Mapping \| None = None, module_page_map: Mapping[str, str] \| None = None, entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Render a module page with the current pack's page renderer. |
+| `_render_page` | `(page_kind: PageKind, builtin: Callable[[], str], **inputs: Any) -> str` | — | — |
+| `_generate_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, retired_entity_pages: list[str] \| None = None, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Render the index page with the current pack's page renderer. |
+| `_generate_workflow_md` | `(name: str, wf: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Render a workflow page with the current pack's page renderer. |
+| `_generate_flow_md` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None, *, data_flow: Mapping \| None = None, diagram_style: Mapping[str, Any] \| None = None, api_contract_operations: Sequence[Mapping[str, Any]] \| None = None) -> str` | — | Render a flow page with the current pack's page renderer. |
+| `_generate_dependencies_md` | `(analysis: dict, module_page_map: Mapping[str, str] \| None = None, *, detail: str = 'auto', diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Render the dependencies page with the current pack's page renderer. |
+| `_generate_load_order_md` | `(analysis: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Render the load-order page with the current pack's page renderer. |
+| `_generate_infrastructure_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None, *, notes_placeholder: bool = True) -> str` | — | Render an infrastructure page with the current pack's page renderer. |
+| `_generate_api_contracts_md` | `(contracts: Mapping[str, Any], *, module_page_map: Mapping[str, str] \| None = None, entity_page_map: Mapping[Any, str] \| None = None) -> str` | — | Render the API contracts page with the current pack's page renderer. |
 | `_append_index_entities` | `(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] \| None = None) -> None` | — | — |
 | `_append_index_modules` | `(lines: list[str], module_entries: list[dict]) -> None` | — | — |
 | `_append_index_workflows` | `(lines: list[str], workflow_entries: list[dict] \| None) -> None` | — | — |
@@ -214,9 +221,9 @@ flowchart LR
 | `_architecture_order` | `(entry: dict) -> int` | — | — |
 | `_append_index_architecture` | `(lines: list[str], architecture_entries: list[dict] \| None) -> None` | — | Append the dependency architecture section linking top-level analysis pages. |
 | `_append_index_log` | `(lines: list[str], *, log_present: bool) -> None` | — | — |
-| `_generate_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, retired_entity_pages: list[str] \| None = None, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Generate the full index.md content. |
+| `_builtin_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, retired_entity_pages: list[str] \| None = None, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Generate the full index.md content. |
 | `_workflow_module_refs` | `(wf: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return ``(label, page_stem)`` pairs for workflow module links. |
-| `_generate_workflow_md` | `(name: str, wf: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Generate a workflow page from call-graph data. |
+| `_builtin_workflow_md` | `(name: str, wf: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Generate a workflow page from call-graph data. |
 | `_flow_module_refs` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return sorted ``(label, page_stem)`` pairs for a flow's touched modules. |
 | `_flow_related_module_refs` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return sorted module links for process-related internal imports. |
 | `_flow_module_link` | `(ref: tuple[str, str]) -> str` | — | — |
@@ -236,7 +243,7 @@ flowchart LR
 | `_flow_analysis_limitations` | `(data_flow: Mapping) -> list[str]` | — | — |
 | `_append_flow_analysis_coverage` | `(lines: list[str], data_flow: Mapping) -> bool` | — | — |
 | `_generate_data_flow_section` | `(data_flow: Mapping, module_page_map: Mapping[str, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> list[str]` | — | — |
-| `_generate_flow_md` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None, *, data_flow: Mapping \| None = None, diagram_style: Mapping[str, Any] \| None = None, api_contract_operations: Sequence[Mapping[str, Any]] \| None = None) -> str` | — | Generate a user-flow page with a Mermaid sequence diagram from *flow*. |
+| `_builtin_flow_md` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None, *, data_flow: Mapping \| None = None, diagram_style: Mapping[str, Any] \| None = None, api_contract_operations: Sequence[Mapping[str, Any]] \| None = None) -> str` | — | Generate a user-flow page with a Mermaid sequence diagram from *flow*. |
 | `_preserve_level_two_section` | `(existing: str, generated: str, heading: str) -> str` | — | Carry one human-owned level-two section into regenerated Markdown. |
 | `_dependency_module_link` | `(filepath: str, module_page_map: Mapping[str, str]) -> str` | — | Markdown link from an architecture page (wiki root) to a module page. |
 | `_cyclic_edges` | `(edges: list[tuple[str, str]], cycles: list[list[str]]) -> set[tuple[str, str]]` | — | Return the edges whose endpoints sit in the same import cycle. |
@@ -246,9 +253,9 @@ flowchart LR
 | `_render_dependency_graph` | `(analysis: dict, module_page_map: Mapping[str, str], detail: str, diagram_style: Mapping[str, Any] \| None = None) -> tuple[str \| None, str]` | — | Return the bounded diagram and rendered detail for compatibility. |
 | `_format_package_list` | `(packages: list[str]) -> str` | — | — |
 | `_append_external_dependencies` | `(lines: list[str], reconciliation: dict) -> None` | — | Append the per-language external-dependency section to *lines*. |
-| `_generate_dependencies_md` | `(analysis: dict, module_page_map: Mapping[str, str] \| None = None, *, detail: str = 'auto', diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Render ``dependencies.md`` from a :func:`analyze_dependencies` bundle. |
+| `_builtin_dependencies_md` | `(analysis: dict, module_page_map: Mapping[str, str] \| None = None, *, detail: str = 'auto', diagram_style: Mapping[str, Any] \| None = None) -> str` | — | Render ``dependencies.md`` from a :func:`analyze_dependencies` bundle. |
 | `_format_side_effect_call` | `(call: Mapping) -> str` | — | Render a ``module_calls`` record as ``target = label`` or ``label``. |
-| `_generate_load_order_md` | `(analysis: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Render ``load-order.md`` from a :func:`analyze_dependencies` bundle. |
+| `_builtin_load_order_md` | `(analysis: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Render ``load-order.md`` from a :func:`analyze_dependencies` bundle. |
 | `_normalize_source_path` | `(path: str) -> str` | — | Normalize Docker COPY source paths for comparison with inventory keys. |
 | `_coerce_module_links` | `(module_links: Mapping[str, str] \| set[str] \| None) -> dict[str, str]` | — | Return ``{source_path: module_page_stem}`` for Docker COPY linking. |
 | `_copy_source_candidates` | `(source: str, docker_filename: str) -> list[str]` | — | Return likely project-relative source paths for a Docker COPY source. |
@@ -259,7 +266,7 @@ flowchart LR
 | `_unsupported_copy_source_matches` | `(source: str, docker_filename: str, unsupported_sources: dict[str, dict[str, object]] \| None) -> list[dict[str, str]]` | — | Resolve Docker COPY sources to known unsupported source paths. |
 | `_unsupported_language_label` | `(language: str) -> str` | — | — |
 | `_generate_docker_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, *, module_stems: set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate a wiki page for a Dockerfile or docker-compose file. |
-| `_generate_infrastructure_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate a wiki page for any supported infrastructure inventory entry. |
+| `_builtin_infrastructure_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None, *, notes_placeholder: bool = True) -> str` | — | Generate a wiki page for any supported infrastructure inventory entry. |
 | `_with_infrastructure_notes_placeholder` | `(markdown: str) -> str` | — | Append the sole supported semantic surface to generated infra pages. |
 | `_append_infrastructure_advisories` | `(lines: list[str], advisories: list[str]) -> None` | — | — |
 | `_generate_yaml_format_md` | `(filename: str, info: dict) -> str` | — | Render named structural summaries without exposing arbitrary config values. |

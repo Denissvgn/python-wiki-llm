@@ -1,9 +1,9 @@
 # ContextBasisComparison
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:567`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:345`
 **Kind:** Class
 **Bases:** —
-**Module:** [context_packet](../modules/context_packet.md)
+**Module:** [context_packet_builder](../modules/context_packet_builder.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
@@ -32,22 +32,22 @@ Comparison with caller data, which can never assert currentness.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextBasisComparison (src/llm_wiki_cli/services/context_packet.py)"]
-    n1["compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextBasisComparison (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n1["compare_context_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n1 --> n0
-    click n0 "../modules/context_packet.md"
-    click n1 "../modules/context_packet.md"
+    click n0 "../modules/context_packet_builder.md"
+    click n1 "../modules/context_packet_builder.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 1 | `current`, `facet_matches`, `matches_expected`, `packet_id`, `reason` |
+| [context_packet_builder](../modules/context_packet_builder.md) | 1 | `current`, `facet_matches`, `matches_expected`, `packet_id`, `reason` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `compare_context_packet_basis` | call | [context_packet](../modules/context_packet.md) | 1 |
-| `compare_context_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `compare_context_packet_basis` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
+| `compare_context_packet_basis` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |

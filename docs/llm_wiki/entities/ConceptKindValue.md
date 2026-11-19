@@ -1,6 +1,6 @@
 # ConceptKindValue
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:258`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:260`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -8,7 +8,7 @@
 
 ## Description
 
-_Auto-generated from `ConceptKindValue` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `ConceptKindValue` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 

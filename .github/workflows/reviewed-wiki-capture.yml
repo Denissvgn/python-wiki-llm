@@ -74,7 +74,7 @@ jobs:
           envdir="${RUNNER_TEMP}/publication-venv"
           python -I release/helper_ownership.py freeze --checkout . --source-sha "${GITHUB_SHA}" --repository "${GITHUB_REPOSITORY}" --output "${input}"
           python -m venv "${envdir}"
-          "${envdir}/bin/python" -m pip install "${input}/source[dev,tokens]"
+          "${envdir}/bin/python" -m pip install "${input}/source/src" "${input}/source[dev,tokens]"
           "${envdir}/bin/python" -I release/helper_ownership.py probe --root "${input}/source" \
             --archive "${input}/candidate-source.tar" --identity "${input}/identity.json" --source-sha "${GITHUB_SHA}" \
             --publication-only --output "${RUNNER_TEMP}/publication-consumer"
@@ -94,7 +94,7 @@ jobs:
         run: |
           "${{ steps.python.outputs.python-path }}" -m venv .venv
           .venv/bin/python -m pip install --require-hashes -r release/validation-requirements.txt
-          .venv/bin/python -m pip install --no-build-isolation --no-deps .
+          .venv/bin/python -m pip install --no-build-isolation --no-deps ./src .
       - name: Prepare the selected locked helper
         run: |
           .venv/bin/python -m llm_wiki_cli.cli prepare-extractors --src-dir . --plan --format json > "${RUNNER_TEMP}/reviewed-extractor-plan.json"

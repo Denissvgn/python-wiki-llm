@@ -22,9 +22,9 @@ from llm_wiki_cli.services import (
 )
 from llm_wiki_cli.services.ci_report import build_ci_check_payload
 from llm_wiki_cli.services.doctor_service import compose_doctor_report
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.lint_service import build_report
-from llm_wiki_cli.services.markdown_sections import replace_section_body
+from llm_wiki_engine.markdown_sections import replace_section_body
 
 
 def _version(monkeypatch, value):

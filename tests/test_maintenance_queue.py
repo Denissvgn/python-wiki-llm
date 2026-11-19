@@ -8,8 +8,8 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.services import maintenance_queue
-from llm_wiki_cli.services.knowledge_freshness import ConceptFreshnessResult
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness
+from llm_wiki_engine.knowledge_freshness import ConceptFreshnessResult
+from llm_wiki_engine.knowledge_model import ComputedFreshness
 from llm_wiki_cli.services.lint_service import LintIssue
 from llm_wiki_cli.services.maintenance_queue import (
     compose_queue,
@@ -304,12 +304,12 @@ def test_unresolved_source_specific_review_hint_remains_a_full_queue_item(
     }
     original = analysis_capture.implementation_hash
 
-    def incompatible(root, paths):
+    def incompatible(root, paths, engine_paths=()):
         from hashlib import sha256
 
         return (
             "sha256:"
-            + sha256(("changed:" + original(root, paths)).encode()).hexdigest()
+            + sha256(("changed:" + original(root, paths, engine_paths)).encode()).hexdigest()
         )
 
     monkeypatch.setattr(analysis_capture, "implementation_hash", incompatible)
@@ -449,7 +449,7 @@ def test_actual_queue_custody_reaches_api_cli_and_local_mcp_without_writes(tmp_p
 
 
 def test_captured_queue_qualification_discloses_partial_basis_and_truncation():
-    from llm_wiki_cli.services.maintenance_status import MaintenanceStatusReport
+    from llm_wiki_engine.maintenance_status import MaintenanceStatusReport
 
     payload = {"availability": "ready", "adoption_id": "owned", "live_evaluation_performed": True,
                "requires_sync": False, "coverage": {"issues": [], "untracked_semantic_total": 0}}

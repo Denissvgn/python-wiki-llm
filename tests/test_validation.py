@@ -8,9 +8,8 @@ from pathlib import Path, PurePosixPath
 import pytest
 
 from llm_wiki_cli.services import bootstrap_runtime
-from llm_wiki_cli.services import (
-    documentation_calibration_controller as calibration_controller,
-)
+from llm_wiki_cli.services.domain_pack import StemPageNamer
+from llm_wiki_cli.services import documentation_calibration_controller as calibration_controller
 from llm_wiki_cli.services import documentation_calibration
 from llm_wiki_cli.services import (
     documentation_claim_evidence as claim_evidence,
@@ -22,28 +21,28 @@ from llm_wiki_cli.services import documentation_run
 from llm_wiki_cli.services import documentation_worklist
 from llm_wiki_cli.services import documentation_wiki_input as wiki_input
 from llm_wiki_cli.services import infrastructure_sync
-from llm_wiki_cli.services import knowledge_artifacts
-from llm_wiki_cli.services import knowledge_envelope
-from llm_wiki_cli.services import knowledge_evidence
-from llm_wiki_cli.services import knowledge_freshness
-from llm_wiki_cli.services import knowledge_governance
-from llm_wiki_cli.services import knowledge_graph
-from llm_wiki_cli.services import knowledge_index
-from llm_wiki_cli.services import knowledge_links
-from llm_wiki_cli.services import knowledge_model
+from llm_wiki_engine import knowledge_artifacts
+from llm_wiki_engine import knowledge_envelope
+from llm_wiki_engine import knowledge_evidence
+from llm_wiki_engine import knowledge_freshness
+from llm_wiki_engine import knowledge_governance
+from llm_wiki_engine import knowledge_graph
+from llm_wiki_engine import knowledge_index
+from llm_wiki_engine import knowledge_links
+from llm_wiki_engine import knowledge_model
 from llm_wiki_cli.services import knowledge_projection
 from llm_wiki_cli.services import mcp_server
 from llm_wiki_cli.services import obsidian
 from llm_wiki_cli.services import plugins
-from llm_wiki_cli.services import section_ownership
+from llm_wiki_engine import section_ownership
 from llm_wiki_cli.services import site_export
 from llm_wiki_cli.services import skills
 from llm_wiki_cli.services import source_snapshot
-from llm_wiki_cli.services import sync_manifest
+from llm_wiki_engine import sync_manifest
 from llm_wiki_cli.services import team
-from llm_wiki_cli.services import verification_contracts
-from llm_wiki_cli.services import wiki_surface
-from llm_wiki_cli.services import wiki_surface_index
+from llm_wiki_engine import verification_contracts
+from llm_wiki_engine import wiki_surface
+from llm_wiki_engine import wiki_surface_index
 from llm_wiki_cli.services.documentation_calibration_controller import (
     P0CalibrationSchemaError,
 )
@@ -60,7 +59,7 @@ from llm_wiki_cli.services.documentation_wiki_input import (
 )
 from llm_wiki_cli.services.knowledge_projection import KnowledgeProjectionError
 from llm_wiki_cli.services.site_export import SiteExportError
-from llm_wiki_cli.services.validation import (
+from llm_wiki_engine.validation import (
     SharedValidationError,
     coerce_nonnegative_int,
     coerce_positive_int,
@@ -1177,9 +1176,9 @@ def test_wiki_page_ids_reject_reserved_or_nonportable_components(
 )
 def test_page_component_generators_share_portable_output(value: str) -> None:
     bootstrap_value = bootstrap_runtime._safe_page_component(value)
-    manifest_value = sync_manifest._safe_page_component(value)
+    pack_value = StemPageNamer().entity_pages({"a.py": {"classes": [{"name": value}]}}, {"a.py": "a"})
 
-    assert bootstrap_value == manifest_value
+    assert pack_value == {(value, "a.py", 1): bootstrap_value}
     assert wiki_surface.is_safe_page_id(bootstrap_value) is True
 
 

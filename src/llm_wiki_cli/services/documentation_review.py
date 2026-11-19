@@ -19,7 +19,7 @@ from collections.abc import Iterable as IterableABC
 from dataclasses import asdict, dataclass, is_dataclass, replace
 from typing import Any, Iterable, Mapping, Sequence
 
-from .validation import (
+from llm_wiki_engine.validation import (
     coerce_nonnegative_int,
     coerce_positive_int,
     coerce_trimmed_text,

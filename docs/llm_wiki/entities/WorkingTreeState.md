@@ -1,13 +1,13 @@
 # WorkingTreeState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:231`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:233`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
 
 ## Description
 
-_Auto-generated from `WorkingTreeState` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `WorkingTreeState` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -26,18 +26,18 @@ _Auto-generated from `WorkingTreeState` in `src/llm_wiki_cli/services/knowledge_
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WorkingTreeState (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["WorkingTreeState (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["_working_tree (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["_working_tree (src/llm_wiki_engine/knowledge_envelope.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
     n4 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n3 "../modules/knowledge_envelope.md"
-    click n4 "../modules/knowledge_projection.md"
+    click n3 "../modules/knowledge_projection.md"
+    click n4 "../modules/knowledge_envelope.md"
 ```
 
 ### Summary
@@ -57,6 +57,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `_working_tree` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `_working_tree` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

@@ -8,7 +8,7 @@ from llm_wiki_cli.services.extraction_service import (
     resolve_call_observations,
 )
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
-from llm_wiki_cli.services.knowledge_graph import (
+from llm_wiki_engine.knowledge_graph import (
     GraphConcept,
     KnowledgeGraphInputs,
     materialize_typed_graph,

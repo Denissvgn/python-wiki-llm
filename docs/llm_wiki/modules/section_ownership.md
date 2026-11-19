@@ -1,6 +1,6 @@
 # section_ownership Module
 
-**Path:** `src/llm_wiki_cli/services/section_ownership.py`
+**Path:** `src/llm_wiki_engine/section_ownership.py`
 
 ## Description
 
@@ -34,7 +34,7 @@ behavior can identify without guessing.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/section_ownership.py"]
+    n1["src/llm_wiki_engine/section_ownership.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/section_ownership.md"
@@ -46,10 +46,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (12) |
+| Inbound | `src` (11) |
 | Outbound | `src` (5) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

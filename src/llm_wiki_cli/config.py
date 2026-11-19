@@ -4,91 +4,43 @@ from __future__ import annotations
 
 import json
 import os
-import sys
-import warnings
-from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from fnmatch import fnmatch
 from pathlib import Path
 
-from .services.filesystem_guard import (
-    WindowsSecurityGuardError,
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
-    windows_current_user_sid,
-    windows_path_owner_sid,
 )
-from .services.io import first_unsafe_path_component
-from .services.knowledge_evidence import formatted_json_bytes
-
-DEFAULT_WIKI_DIR = "docs/llm_wiki"
-
-# Directories excluded from source-file scans.  This intentionally covers both
-# conventional environment names (``.venv``) and environment internals
-# (``site-packages``) so renamed virtualenvs still stay out of the wiki.
-EXCLUDED_DIRS: set[str] = {
-    ".cache",
-    ".direnv",
-    ".eggs",
-    ".env",
-    ".git",
-    ".llm-wiki-knowledge",
-    ".llm-wiki-manifest",
-    ".mypy_cache",
-    ".next",
-    ".nox",
-    ".npm",
-    ".nuxt",
-    ".parcel-cache",
-    ".pnpm-store",
-    ".pyre",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".svelte-kit",
-    ".tox",
-    ".venv",
-    ".virtualenv",
-    ".vite",
-    ".yarn",
-    "__pycache__",
-    "__pypackages__",
-    "bower_components",
-    "build",
-    "coverage",
-    "dist",
-    "env",
-    "htmlcov",
-    "jspm_packages",
-    "llm-wiki-extractors",
-    "node_modules",
-    "out",
-    "site-packages",
-    "target",
-    "venv",
-    "virtualenv",
-}
-
-AGENT_WORKTREE_DIR_PATTERNS: tuple[tuple[str, ...], ...] = ((".claude", "worktrees"),)
-
-
-def _normalized_rel_parts(path: "str | Path") -> tuple[str, ...]:
-    text = path.as_posix() if isinstance(path, Path) else str(path)
-    text = text.replace("\\", "/").strip("/")
-    return tuple(part for part in text.split("/") if part and part != ".")
-
-
-def is_agent_worktree_path(path: "str | Path") -> bool:
-    """Return whether *path* is inside a generated agent worktree subtree."""
-    parts = _normalized_rel_parts(path)
-    for pattern in AGENT_WORKTREE_DIR_PATTERNS:
-        pattern_len = len(pattern)
-        if pattern_len == 0 or len(parts) < pattern_len:
-            continue
-        for index in range(len(parts) - pattern_len + 1):
-            if parts[index : index + pattern_len] == pattern:
-                return True
-    return False
+from llm_wiki_engine.io import first_unsafe_path_component
+from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.path_policy import (  # noqa: F401  (re-exported)
+    DEFAULT_WIKI_DIR,
+    EXCLUDED_DIRS,
+    AGENT_WORKTREE_DIR_PATTERNS,
+    _normalized_rel_parts,
+    is_agent_worktree_path,
+    PathValidationError,
+    validate_path,
+    validate_source_root,
+    validate_source_paths,
+)
+from llm_wiki_engine.gitignore import (  # noqa: F401  (re-exported)
+    _GitignoreRule,
+    GitIgnoreMatcher,
+    _normalize_gitignore_trailing_spaces,
+    _parse_gitignore_text,
+    _parse_gitignore_file,
+    _match_gitignore_pattern,
+    _rule_matches,
+    build_gitignore_matcher,
+    is_ignored_by_gitignore,
+)
+from .services.extractor_registry import (  # noqa: F401  (re-exported)
+    DOCKERFILE_PATTERNS,
+    COMPOSE_PATTERNS,
+    EXTRACTOR_REGISTRY,
+)
 
 
 AGENT_CHOICES = ["claude", "cursor", "copilot", "aider", "opencode", "generic"]
@@ -102,190 +54,6 @@ CLI_AGENTS: dict[str, str] = {
 
 # Agents that are IDE-only and cannot run headlessly
 IDE_AGENTS: set[str] = {"cursor", "copilot", "generic"}
-
-# Docker file discovery patterns
-DOCKERFILE_PATTERNS: list[str] = [
-    "Dockerfile",
-    "Dockerfile.*",
-    "*.dockerfile",
-]
-COMPOSE_PATTERNS: list[str] = [
-    "docker-compose.yml",
-    "docker-compose.*.yml",
-    "docker-compose.yaml",
-    "docker-compose.*.yaml",
-    "compose.yml",
-    "compose.*.yml",
-    "compose.yaml",
-    "compose.*.yaml",
-]
-
-
-class PathValidationError(ValueError):
-    """Raised when a user-provided path escapes the project root."""
-
-
-def validate_path(path: str, label: str = "path") -> Path:
-    """Ensure *path* resolves inside the current working directory.
-
-    Raises PathValidationError with a clear message if the resolved path escapes the
-    repository root (cwd).
-    """
-    if "\0" in path:
-        raise PathValidationError(f"Error: {label} contains an embedded NUL character.")
-    resolved = (Path.cwd() / path).resolve()
-    cwd = Path.cwd().resolve()
-    try:
-        resolved.relative_to(cwd)
-    except ValueError:
-        raise PathValidationError(
-            f"Error: {label} '{path}' resolves to '{resolved}', "
-            f"which is outside the project root '{cwd}'."
-        )
-    return resolved
-
-
-def validate_source_root(
-    path: str,
-    label: str = "--src-dir",
-    *,
-    allow_external: bool = False,
-) -> Path:
-    """Validate a source root according to the CLI source-read policy.
-
-    By default this preserves :func:`validate_path` behaviour and rejects paths
-    outside the current working directory.  When ``allow_external`` is true, the
-    path may live outside cwd but must resolve to an existing directory.
-    """
-    if not allow_external:
-        return validate_path(path, label)
-
-    try:
-        candidate = Path(path).expanduser()
-        if not candidate.is_absolute():
-            candidate = Path.cwd() / candidate
-        resolved = candidate.resolve(strict=True)
-    except (OSError, RuntimeError, ValueError) as exc:
-        raise PathValidationError(
-            f"Error: {label} '{path}' cannot be resolved to an existing "
-            f"directory: {exc}."
-        ) from exc
-    if not resolved.is_dir():
-        raise PathValidationError(
-            f"Error: {label} '{path}' resolves to '{resolved}', "
-            "which is not an existing directory."
-        )
-    normalized_candidate = Path(os.path.abspath(candidate))
-    if resolved != normalized_candidate:
-        effective_uid: int | None = None
-        trusted_owner: Callable[[Path], bool] | None = None
-        ownership_is_verifiable = False
-        if sys.platform == "win32":
-            try:
-                current_sid = windows_current_user_sid()
-            except (OSError, RuntimeError, TypeError, ValueError):
-                pass
-            else:
-                if isinstance(current_sid, str) and current_sid:
-                    ownership_is_verifiable = True
-                    trusted_windows_sids = {
-                        current_sid,
-                        "S-1-5-18",  # LocalSystem
-                        "S-1-5-32-544",  # Built-in Administrators
-                    }
-
-                    def is_trusted_windows_owner(component: Path) -> bool:
-                        return windows_path_owner_sid(component) in trusted_windows_sids
-
-                    trusted_owner = is_trusted_windows_owner
-        else:
-            get_effective_uid = getattr(os, "geteuid", None)
-            if callable(get_effective_uid):
-                try:
-                    derived_uid = get_effective_uid()
-                except (OSError, RuntimeError, TypeError, ValueError):
-                    pass
-                else:
-                    if (
-                        isinstance(derived_uid, int)
-                        and not isinstance(derived_uid, bool)
-                        and derived_uid >= 0
-                    ):
-                        effective_uid = derived_uid
-                        ownership_is_verifiable = True
-        trusted_uids = {0, effective_uid} if effective_uid is not None else set()
-        try:
-            unsafe = first_unsafe_path_component(
-                candidate,
-                trusted_symlink_uids=trusted_uids,
-                trusted_symlink_owner=trusted_owner,
-            )
-        except (OSError, RuntimeError, WindowsSecurityGuardError) as exc:
-            raise PathValidationError(
-                f"Error: {label} '{path}' traverses a symlink or reparse point "
-                "whose ownership cannot be verified on this platform."
-            ) from exc
-        if unsafe is not None:
-            if not ownership_is_verifiable:
-                raise PathValidationError(
-                    f"Error: {label} '{path}' traverses symlink or reparse point "
-                    f"'{unsafe}' whose ownership cannot be verified on this "
-                    "platform."
-                )
-            if sys.platform == "win32":
-                raise PathValidationError(
-                    f"Error: {label} '{path}' traverses symlink or reparse point "
-                    f"'{unsafe}' not owned by the current Windows user, "
-                    "LocalSystem, or Administrators."
-                )
-            raise PathValidationError(
-                f"Error: {label} '{path}' traverses symlink or reparse point "
-                f"'{unsafe}' not owned by the current user or root."
-            )
-        warnings.warn(
-            f"external source root '{normalized_candidate}' resolves to '{resolved}'.",
-            UserWarning,
-            stacklevel=2,
-        )
-    return resolved
-
-
-def validate_source_paths(
-    src_dir: str | Path,
-    paths: list[str] | tuple[str, ...] | None,
-    label: str = "--paths",
-) -> None:
-    """Ensure requested source file paths stay inside *src_dir*.
-
-    The extract CLI accepts paths relative to ``--src-dir``.  Absolute paths are
-    tolerated only when they still resolve inside the source root.
-    """
-    if not paths:
-        return
-
-    root = Path(src_dir).resolve()
-    for raw_path in paths:
-        candidate = Path(raw_path).expanduser()
-        if not candidate.is_absolute():
-            candidate = root / candidate
-        try:
-            candidate.resolve().relative_to(root)
-        except (OSError, ValueError):
-            raise PathValidationError(
-                f"Error: {label} '{raw_path}' resolves outside source root '{root}'."
-            )
-
-
-# Registry mapping language name → extractor entry point.
-# Format: "module.path:ClassName"
-# New extractors (TypeScript, Go, Rust, …) are registered here.
-EXTRACTOR_REGISTRY: dict[str, str] = {
-    "python": "llm_wiki_cli.extractors.python_extractor:PythonExtractor",
-    "typescript": "llm_wiki_cli.extractors.ts_extractor:TypeScriptExtractor",
-    "go": "llm_wiki_cli.extractors.go_extractor:GoExtractor",
-    "rust": "llm_wiki_cli.extractors.rust_extractor:RustExtractor",
-    "haskell": "llm_wiki_cli.extractors.haskell_extractor:HaskellExtractor",
-}
 
 
 def get_agent_config_path(wiki_dir: "str | Path") -> Path:
@@ -370,220 +138,6 @@ _OPAQUE_CONFIG_REASONS = frozenset(
         "multiple-agent-config-homes",
     }
 )
-
-
-@dataclass(frozen=True)
-class _GitignoreRule:
-    base: str
-    pattern: str
-    negated: bool
-    directory_only: bool
-    anchored: bool
-
-
-class GitIgnoreMatcher:
-    """Ordered gitignore matcher for repository scans.
-
-    This supports the semantics the extractors need without reparsing the same
-    .gitignore file for every source file: negation, root-anchored patterns,
-    nested .gitignore files, directory-only rules, and common ``**`` patterns.
-    """
-
-    def __init__(self, rules: list[_GitignoreRule]):
-        self._rules = rules
-
-    def last_matching_rule(self, rel_path: str) -> _GitignoreRule | None:
-        """Return the final gitignore rule that matches *rel_path*, if any."""
-        rel_path = rel_path.replace("\\", "/").strip("/")
-        last_rule: _GitignoreRule | None = None
-        for rule in self._rules:
-            if _rule_matches(rel_path, rule):
-                last_rule = rule
-        return last_rule
-
-    def is_ignored(self, rel_path: str) -> bool:
-        rule = self.last_matching_rule(rel_path)
-        return rule is not None and not rule.negated
-
-
-def _normalize_gitignore_trailing_spaces(line: str) -> str:
-    """Remove Git-insignificant trailing spaces from one ignore pattern.
-
-    Backslashes quote the next character, so escaped spaces are retained while
-    an unescaped trailing run is removed.  Decode only quoted spaces here;
-    broader gitignore escape and wildmatch semantics remain unchanged.  Tabs
-    are intentionally untouched.
-    """
-    first_trailing_space: int | None = None
-    index = 0
-    while index < len(line):
-        if line[index] == "\\":
-            first_trailing_space = None
-            index += 2
-            continue
-        if line[index] == " ":
-            if first_trailing_space is None:
-                first_trailing_space = index
-        else:
-            first_trailing_space = None
-        index += 1
-
-    if first_trailing_space is not None:
-        line = line[:first_trailing_space]
-
-    normalized: list[str] = []
-    index = 0
-    while index < len(line):
-        if line[index] != "\\":
-            normalized.append(line[index])
-            index += 1
-            continue
-
-        run_start = index
-        while index < len(line) and line[index] == "\\":
-            index += 1
-        backslash_count = index - run_start
-        if index < len(line) and line[index] == " " and backslash_count % 2:
-            normalized.append("\\" * (backslash_count - 1))
-            normalized.append(" ")
-            index += 1
-            continue
-        normalized.append("\\" * backslash_count)
-
-    return "".join(normalized)
-
-
-def _parse_gitignore_text(raw_text: str, base: str = "") -> list[_GitignoreRule]:
-    """Parse already captured gitignore text without performing file I/O."""
-    rules: list[_GitignoreRule] = []
-    for raw in raw_text.splitlines():
-        line = _normalize_gitignore_trailing_spaces(raw)
-        if not line or line.startswith("#"):
-            continue
-        negated = line.startswith("!")
-        if negated:
-            line = line[1:]
-        anchored = line.startswith("/")
-        if anchored:
-            line = line[1:]
-        directory_only = line.endswith("/")
-        line = line.rstrip("/")
-        if line:
-            rules.append(
-                _GitignoreRule(
-                    base=base.strip("/"),
-                    pattern=line.replace("\\", "/"),
-                    negated=negated,
-                    directory_only=directory_only,
-                    anchored=anchored,
-                )
-            )
-    return rules
-
-
-def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_GitignoreRule]:
-    rules: list[_GitignoreRule] = []
-    if not gitignore_path.exists():
-        return rules
-
-    try:
-        return _parse_gitignore_text(
-            gitignore_path.read_text(encoding="utf-8"),
-            base,
-        )
-    except OSError:
-        return rules
-
-
-def _match_gitignore_pattern(
-    rel_path: str, pattern: str, *, directory_only: bool = False
-) -> bool:
-    """Check if a relative path matches a gitignore pattern."""
-    rel_path = rel_path.replace("\\", "/").strip("/")
-    pattern = pattern.replace("\\", "/").strip("/")
-
-    if not rel_path or not pattern:
-        return False
-
-    if directory_only:
-        if "/" in pattern:
-            return (
-                rel_path == pattern
-                or rel_path.startswith(pattern + "/")
-                or fnmatch(rel_path, pattern + "/**")
-            )
-        parts = rel_path.split("/")
-        return any(fnmatch(part, pattern) for part in parts[:-1])
-
-    if pattern.endswith("/**"):
-        prefix = pattern[:-3].rstrip("/")
-        return rel_path == prefix or rel_path.startswith(prefix + "/")
-
-    if "/" in pattern:
-        return fnmatch(rel_path, pattern) or fnmatch(rel_path, pattern + "/**")
-
-    return any(fnmatch(part, pattern) for part in rel_path.split("/"))
-
-
-def _rule_matches(rel_path: str, rule: _GitignoreRule) -> bool:
-    if rule.base:
-        if rel_path == rule.base:
-            candidate = ""
-        elif rel_path.startswith(rule.base + "/"):
-            candidate = rel_path[len(rule.base) + 1 :]
-        else:
-            return False
-    else:
-        candidate = rel_path
-    if not candidate:
-        return False
-
-    if rule.anchored:
-        pattern = rule.pattern
-        if rule.directory_only:
-            return (
-                candidate == pattern
-                or candidate.startswith(pattern + "/")
-                or fnmatch(candidate, pattern + "/**")
-            )
-        if "/" not in pattern:
-            return "/" not in candidate and fnmatch(candidate, pattern)
-        return fnmatch(candidate, pattern) or fnmatch(candidate, pattern + "/**")
-
-    return _match_gitignore_pattern(
-        candidate,
-        rule.pattern,
-        directory_only=rule.directory_only,
-    )
-
-
-def build_gitignore_matcher(root: "str | Path") -> GitIgnoreMatcher:
-    """Parse root and nested .gitignore files once for a source scan."""
-    root_path = Path(root)
-    rules: list[_GitignoreRule] = []
-    if not root_path.exists():
-        return GitIgnoreMatcher(rules)
-
-    for gitignore in sorted(root_path.rglob(".gitignore")):
-        try:
-            rel_parent = gitignore.parent.relative_to(root_path)
-        except ValueError:
-            continue
-        if not EXCLUDED_DIRS.isdisjoint(rel_parent.parts) or is_agent_worktree_path(
-            rel_parent
-        ):
-            continue
-        base = "" if rel_parent == Path(".") else rel_parent.as_posix()
-        rules.extend(_parse_gitignore_file(gitignore, base))
-    return GitIgnoreMatcher(rules)
-
-
-def is_ignored_by_gitignore(
-    rel_path: str, gitignore_path: Path = Path(".gitignore")
-) -> bool:
-    """Check if a relative path is ignored according to one .gitignore file."""
-    matcher = GitIgnoreMatcher(_parse_gitignore_file(gitignore_path, ""))
-    return matcher.is_ignored(rel_path)
 
 
 def inspect_config_path(config_path: "str | Path") -> AgentConfigInspection:

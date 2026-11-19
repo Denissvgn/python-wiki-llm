@@ -9,11 +9,11 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     MANIFEST_STATE_UNAVAILABLE,
     TOMBSTONE_UNKNOWN_PROVENANCE,
@@ -67,7 +67,7 @@ def _retirement_pages(manifest: SyncManifest) -> dict:
 def _assert_retired(
     wiki: Path, relative: str, owner: ManifestPageSource
 ) -> SyncManifest:
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     manifest = SyncManifest.load(wiki)
     assert manifest.page_source_mappings[relative] == owner
@@ -103,7 +103,7 @@ def test_removed_member_in_surviving_file_retains_page_and_historical_basis(
     monkeypatch,
     authored,
 ):
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     project, wiki = _bootstrap_project(
         tmp_path,
@@ -145,7 +145,7 @@ def test_removed_member_in_surviving_file_retains_page_and_historical_basis(
 def test_unchanged_sync_recovers_prior_unqualified_member_removal(
     tmp_path, monkeypatch, unknown
 ):
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     # Exercise the cached publication path on every host, independently of
     # whether CI supplied a shared helper cache in the outer environment.
@@ -340,7 +340,7 @@ def test_move_between_surviving_sources_is_not_retirement(tmp_path, monkeypatch)
 def test_exact_member_reappearance_revives_authored_page_and_current_evidence(
     tmp_path, monkeypatch
 ):
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     source = _draft_source("Original draft.")
     project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"model.py": source})
@@ -374,7 +374,7 @@ def test_revival_updates_generated_defaults_and_preserves_authored_fields(
     monkeypatch,
     authored,
 ):
-    from llm_wiki_cli.services.markdown_sections import table_description_cells
+    from llm_wiki_engine.markdown_sections import table_description_cells
 
     source = (
         'class Draft:\n    """Old generated description."""\n'
@@ -453,7 +453,7 @@ def test_revival_updates_generated_defaults_and_preserves_authored_fields(
 
 
 def test_failed_source_parse_cannot_authorize_member_retirement(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}
@@ -475,7 +475,7 @@ def test_unmapped_historical_page_is_not_given_guessed_source_identity(
     tmp_path, monkeypatch
 ):
     from llm_wiki_cli.commands import lint_cmd
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}
@@ -650,7 +650,7 @@ def test_retirement_preserves_durable_governance_identity_without_lifecycle_even
 ):
     from llm_wiki_cli import cli
     from llm_wiki_cli.commands import knowledge_cmd
-    from llm_wiki_cli.services.knowledge_governance import load_governance
+    from llm_wiki_engine.knowledge_governance import load_governance
 
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}
@@ -715,8 +715,8 @@ def test_symlinked_retirement_candidate_blocks_before_any_owned_page_write(
 
 def test_concurrent_authored_edit_during_retirement_is_preserved(tmp_path, monkeypatch):
     from llm_wiki_cli.services import sync_transition_execution
-    from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.maintenance_protocol import MaintenanceProtocolError
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
     from llm_wiki_cli.services.sync_transitions import PageTransitionError
 
     project, wiki = _bootstrap_project(
@@ -832,7 +832,7 @@ def test_valid_comment_only_source_requires_explicit_empty_module_classification
 
 
 def test_cp1252_authored_markdown_survives_retirement_as_text(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
+    from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}

@@ -762,7 +762,9 @@ class Coordinator:
             else:
                 kinds = {x["kind"]: x for x in manifest["artifacts"]}
                 qualification.verify_bundle(argparse.Namespace(bundle=directory, repository=self.repository, workflow_run_id=run["id"], candidate_sha=run["head_sha"],
-                    verify_repository=False, require_tag=False, check_registry=False, wheel_sha256=kinds["wheel"]["sha256"], sdist_sha256=kinds["sdist"]["sha256"], output=directory / "verification-result.json"))
+                    verify_repository=False, require_tag=False, check_registry=False, wheel_sha256=kinds["wheel"]["sha256"], sdist_sha256=kinds["sdist"]["sha256"],
+                    engine_wheel_sha256=kinds.get("engine-wheel", {}).get("sha256"), engine_sdist_sha256=kinds.get("engine-sdist", {}).get("sha256"),
+                    output=directory / "verification-result.json"))
         receipt.update(status="qualified", attempt=run["run_attempt"], version=manifest["version"], artifact_id=artifact["id"], artifact_digest=artifact["digest"],
                        artifact_url=f"https://github.com/{self.repository}/actions/runs/{run['id']}/artifacts/{artifact['id']}")
         return self.save(receipt)

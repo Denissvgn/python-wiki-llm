@@ -31,55 +31,26 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_service`, `wiki_surface` |
-| `..` | `__version__` |
-| `..config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path` |
-| `.change_selection` | `select_changes` |
-| `.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` |
-| `.dependencies` | `analyze_dependencies` |
-| `.documentation_queries` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT`, `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
-| `.documentation_query_builder` | `validate_live_query_source_selection` |
-| `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
-| `.extraction_service` | `InventoryResult` |
-| `.extractor_helpers` | `SUPPORTED_HELPERS` |
-| `.filesystem_guard` | `fresh_no_follow_stat`, `guard_windows_directory_chain`, `hold_windows_readonly_file` |
-| `.helper_cache` | `HelperPreparationError` |
+| `.` | `context_packet_builder` |
 | `.implementation_evidence` | `validate_implementation_summary` |
-| `.io` | `first_unsafe_path_component` |
-| `.knowledge_consumption` | `KnowledgeReadView` |
-| `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_source_snapshot`, `validate_configured_public_identity` |
-| `.knowledge_evidence` | `canonical_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
-| `.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
-| `.knowledge_governance` | `GOVERNANCE_LOCK_FILENAME`, `_governance_lock_root` |
-| `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_COVERAGE_ANALYZERS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
-| `.knowledge_loader` | `KnowledgeLoadIssue` |
-| `.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
-| `.knowledge_observability` | `knowledge_freshness_disclosure` |
-| `.knowledge_storage_io` | `read_guarded` |
-| `.knowledge_verification` | `verification_summaries_for_concepts` |
-| `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
-| `.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary`, `validate_maintenance_summary`, `validate_maintenance_summary` |
-| `.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
-| `.plugins` | `runtime_plugin_fallback_root` |
-| `.source_retirement` | `retained_empty_module_paths_from_wiki` |
-| `.source_snapshot` | `directory_identity`, `SourceSnapshot`, `SourceSnapshotError`, `SourceSnapshotMutationError`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_inputs_match_current_files`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
-| `.validation` | `require_repository_relative_path` |
-| `.wiki_media` | `contains_uri_authority_userinfo` |
-| `.wiki_surface_index` | `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence` |
-| `contextlib` | `ExitStack` |
-| `contextvars` | `ContextVar` |
-| `copy` | `deepcopy` |
+| `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass` |
-| `enum` | `Enum` |
-| `functools` | `wraps` |
 | `json` | `json` |
+| `llm_wiki_engine` | `context_request_format`, `wiki_surface` |
+| `llm_wiki_engine.context_request_format` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT` |
+| `llm_wiki_engine.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` |
+| `llm_wiki_engine.knowledge_envelope` | `KnowledgeEnvelopeError`, `validate_configured_public_identity` |
+| `llm_wiki_engine.knowledge_evidence` | `canonical_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
+| `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_COVERAGE_ANALYZERS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
+| `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
+| `llm_wiki_engine.maintenance_status` | `validate_maintenance_summary`, `validate_maintenance_summary` |
+| `llm_wiki_engine.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
+| `llm_wiki_engine.validation` | `require_repository_relative_path` |
+| `llm_wiki_engine.wiki_media` | `contains_uri_authority_userinfo` |
 | `math` | `math` |
-| `os` | `os` |
-| `pathlib` | `Path` |
 | `re` | `re` |
-| `stat` | `stat` |
 | `types` | `MappingProxyType` |
 | `typing` | `Any` |
 | `urllib.parse` | `urlsplit` |
@@ -102,72 +73,36 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (13) |
-| Outbound | `src` (36) |
+| Inbound | `src` (11) |
+| Outbound | `src` (14) |
 
-> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 179 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 226 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 232 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 245 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
-| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 257 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 267 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 303 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 434 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 487 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 524 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 567 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 593 | — | Consumer-time comparison against one fresh official read. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 123 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 170 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 176 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 189 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 218 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 255 | — | Successful structural validation with explicitly unevaluated freshness. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `describe_context_packet_error` | `(error: BaseException) -> dict[str, Any]` | — | Describe a packet failure without echoing offending values or host roots. |
 | `_packet_contract_for_schema` | `(schema_version: object) -> _PacketWireContract` | — | — |
-| `_packet_contract_for_request` | `(request: Mapping[str, Any]) -> _PacketWireContract` | — | — |
-| `_validate_reconciliation_contract` | `(*, packet_id: object, policy: object, state: object, current: object, facets: object, limitations: object) -> None` | — | — |
-| `_guarded_capture` | `(function)` | — | — |
-| `_guard_windows_inputs` | `(root: Path, paths: Iterable[str]) -> None` | — | — |
-| `capture_context_read` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None, allow_selection_mismatch: bool = False, strict_wiki_symlinks: bool = False, helper_cache_dir: str \| None = None, only_files: Iterable[str] \| None = None, max_source_files: int \| None = None, max_source_bytes: int \| None = None, max_wiki_bytes: int \| None = None, respect_ignores: bool = False, capture_implementation_observations: bool = True) -> CapturedContextRead` | `@_guarded_capture` | Capture one source inventory, wiki surface, and knowledge read view. |
-| `build_context_from_captured_read` | `(captured: CapturedContextRead, request: Mapping[str, Any], *, freshness_ranking_out: dict[str, int] \| None = None) -> tuple[dict[str, Any], list[str]]` | — | Build a versioned context payload solely from one captured read. |
-| `_build_legacy_context_from_captured_read` | `(captured: CapturedContextRead, normalized: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]` | — | Retain the frozen v1 response construction without semantic changes. |
-| `_build_knowledge_context_from_captured_read` | `(captured: CapturedContextRead, normalized: Mapping[str, Any], *, freshness_ranking_out: dict[str, int] \| None = None) -> tuple[dict[str, Any], list[str]]` | — | Build explicit v2 knowledge selection from the coordinated capture. |
-| `_captured_source_classification` | `(captured: CapturedContextRead, inventory: Mapping[str, Any], normalized: Mapping[str, Any], warnings: list[str]) -> dict[str, str]` | — | — |
-| `_captured_source_payload` | `(inventory: Mapping[str, Any], classification: Mapping[str, str], budget: int, *, freshness_rank_by_source: Mapping[str, int]) -> tuple[dict[str, Any], bool]` | — | — |
-| `_captured_query_service` | `(captured: CapturedContextRead, inventory: Mapping[str, Any], query_surface: Mapping[str, Any], knowledge_view: KnowledgeReadView \| None) -> DocumentationGraphQueryService` | — | — |
-| `_explicit_filter_enrichment_from_captured_read` | `(query_service: DocumentationGraphQueryService \| None, query_surface: Mapping[str, Any] \| None, filters: Mapping[str, Any], warnings: list[str]) -> dict[str, Any]` | — | — |
-| `build_qualified_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None) -> QualifiedContextPacket` | — | Build a canonical packet in memory from one coordinated read view. |
-| `packet_from_captured_response` | `(captured: CapturedContextRead, normalized: Mapping[str, Any], response: Mapping[str, Any]) -> QualifiedContextPacket` | — | Seal and validate a selected response against its unchanged captured basis. |
-| `_fit_knowledge_packet_response` | `(captured: CapturedContextRead, request: Mapping[str, Any], response: dict[str, Any], packet_contract: _PacketWireContract) -> dict[str, Any]` | — | Tail-reduce v2 native selection before the canonical byte limit. |
-| `_set_knowledge_collection_prefix` | `(selection: dict[str, Any], bounds: dict[str, Any], name: str, original_items: list[Any], returned: int) -> None` | — | — |
-| `_candidate_packet_size` | `(captured: CapturedContextRead, request: Mapping[str, Any], response: Mapping[str, Any], packet_contract: _PacketWireContract) -> int` | — | — |
 | `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | — | Strictly validate canonical bytes without performing live reads. |
-| `compare_context_packet_basis` | `(packet_bytes: bytes \| bytearray \| memoryview, expected_basis: Mapping[str, Any]) -> ContextBasisComparison` | — | Compare caller-provided expected basis without claiming currentness. |
-| `reconcile_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None) -> ContextPacketReconciliation` | — | Validate first, then compare every packet facet with a fresh read. |
-| `_reconcile_packet_views` | `(packet_payload: Mapping[str, Any], live_payload: Mapping[str, Any]) -> ContextPacketReconciliation` | — | Compare validated packet views produced by an official captured read. |
-| `_build_protocol_enrichment_from_captured_read` | `(captured: CapturedContextRead, inventory: dict[str, Any], filters: dict[str, Any], warnings: list[str], *, prefer_fresh: bool = False, freshness_ranking_out: dict[str, int] \| None = None) -> dict[str, Any]` | — | — |
-| `_normalized_request` | `(request: Mapping[str, Any]) -> dict[str, Any]` | — | — |
-| `_packet_body` | `(captured: CapturedContextRead, request: Mapping[str, Any], response: Mapping[str, Any], packet_contract: _PacketWireContract) -> dict[str, Any]` | — | — |
-| `_packet_basis` | `(captured: CapturedContextRead, packet_contract: _PacketWireContract, request: Mapping[str, Any]) -> dict[str, Any]` | — | — |
-| `_freshness_basis` | `(view: KnowledgeReadView) -> dict[str, Any]` | — | — |
 | `_packet_limitations` | `(response: Mapping[str, Any], basis: Mapping[str, Any]) -> list[str]` | — | — |
 | `_context_policy_digest` | `(schema_version: str = CONTEXT_PACKET_SCHEMA_VERSION) -> str` | — | — |
 | `_path_policy_digest` | `() -> str` | — | — |
 | `_path_policy_receipt` | `(value: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_mapping_key_is_repository_path` | `(pointer: tuple[str, ...]) -> bool` | — | — |
 | `_list_item_is_repository_path` | `(pointer: tuple[str, ...]) -> bool` | — | — |
-| `_is_free_text_pointer` | `(pointer: tuple[str, ...]) -> bool` | — | — |
 | `_repository_path` | `(value: object, field: str) -> str` | — | — |
 | `_reject_machine_local_path` | `(value: object, error: ContextPacketPathPolicyError) -> None` | — | — |
-| `_reconciliation_facets` | `(packet: Mapping[str, Any], live: Mapping[str, Any]) -> dict[str, dict[str, Any]]` | — | — |
-| `_live_facet` | `(expected: Any, observed: Any, *, mismatch_reason: str) -> dict[str, Any]` | — | — |
-| `_unevaluated_facet` | `(matches: bool, reason: str) -> dict[str, Any]` | — | — |
 | `_packet_id` | `(body: Mapping[str, Any]) -> str` | — | — |
 | `_encode_packet_payload` | `(payload: Mapping[str, Any]) -> bytes` | — | — |
 | `_coerce_packet_bytes` | `(value: bytes \| bytearray \| memoryview) -> bytes` | — | — |
@@ -210,18 +145,8 @@ flowchart LR
 | `_object_list` | `(value: Any, field: str) -> list[Mapping[str, Any]]` | — | — |
 | `_stable_code` | `(value: Any, field: str) -> str` | — | — |
 | `_nonnegative_integer` | `(value: Any, field: str) -> int` | — | — |
-| `_source_anchor` | `(snapshot: SourceSnapshot) -> str` | — | — |
-| `_source_snapshot_anchor_payload` | `(snapshot: SourceSnapshot) -> dict[str, Any]` | — | — |
-| `_assert_source_unchanged` | `(snapshot: SourceSnapshot, expected_anchor: str, *, metrics: dict[str, int] \| None = None) -> None` | — | — |
-| `confirmed_missing_source_paths` | `(snapshot: SourceSnapshot, requested_paths: Iterable[str]) -> frozenset[str]` | — | Adapt the shared source owner's guarded requested-absence observation. |
-| `_assert_source_inputs_unchanged` | `(snapshot: SourceSnapshot, expected_anchor: str) -> None` | — | — |
-| `_assert_selection_unchanged` | `(captured: CapturedContextRead) -> None` | — | — |
-| `_wiki_anchor` | `(root: Path, *, reject_all_symlinks: bool = False, max_bytes: int \| None = None, metrics: dict[str, int] \| None = None, integrity_out: dict[str, tuple[int, ...]] \| None = None, guard_windows: bool = False) -> str` | — | — |
-| `_assert_wiki_integrity` | `(expected: Mapping[str, tuple[int, ...]]) -> None` | — | — |
-| `_wiki_symlink_is_captured_input` | `(relative_path: str) -> bool` | — | — |
-| `_assert_wiki_unchanged` | `(root: Path, expected_anchor: str, *, reject_all_symlinks: bool = False, max_bytes: int \| None = None, metrics: dict[str, int] \| None = None, expected_integrity: Mapping[str, tuple[int, ...]] \| None = None) -> None` | — | — |
 | `_domain_hash` | `(domain: str, value: Mapping[str, Any]) -> str` | — | — |
-| `_wire_value` | `(value: Any) -> Any` | — | — |
 | `_freeze_json` | `(value: Any) -> Any` | — | — |
 | `_thaw_json` | `(value: Any) -> Any` | — | — |
 | `_pointer` | `(parts: Sequence[str]) -> str` | — | — |
+| `__getattr__` | `(name: str) -> Any` | — | — |

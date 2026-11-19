@@ -1,6 +1,6 @@
 # GovernanceLedger
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:266`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:267`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -37,7 +37,7 @@ Validated non-rebuildable governance authority.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["GovernanceLedger (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n0["GovernanceLedger (src/llm_wiki_engine/knowledge_governance.py)"]
     n1["_assert_bundle_continuity (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n2["_concept_for_uid (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n3["_init_ledger (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
@@ -46,9 +46,9 @@ flowchart LR
     n6["_projected_commit_plan (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n7["_status_payload (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n8["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n9["_add_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["_governance_concept_summaries (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n11["_governance_projection_payload (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n9["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n10["_add_supersession_edges (src/llm_wiki_engine/knowledge_governance.py)"]
+    n11["_governance_concept_summaries (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -69,7 +69,7 @@ flowchart LR
     click n6 "../modules/knowledge_cmd.md"
     click n7 "../modules/knowledge_cmd.md"
     click n8 "../modules/knowledge_generation.md"
-    click n9 "../modules/knowledge_governance.md"
+    click n9 "../modules/knowledge_orchestration.md"
     click n10 "../modules/knowledge_governance.md"
     click n11 "../modules/knowledge_governance.md"
 ```
@@ -93,8 +93,8 @@ flowchart LR
 | `_projected_commit_plan` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `_status_payload` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_prepared_runtime_governance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_add_supersession_edges` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_governance_concept_summaries` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `_governance_projection_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 
 > References: showing 12 of 33 logical references; 21 omitted by the 12-row generated summary limit.

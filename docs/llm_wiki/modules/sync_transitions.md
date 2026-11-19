@@ -21,18 +21,18 @@ retry.
 | Source | Symbols |
 |--------|---------|
 | `.bootstrap_runtime` | `_module_name_from_path` |
-| `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
-| `.knowledge_storage_io` | `StorageReadSession` |
-| `.markdown_sections` | `normalize_markdown` |
-| `.source_retirement` | `retired_entity_mappings` |
 | `.sync_analysis` | `SyncOwnershipError`, `_recorded_entity_pages` |
-| `.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
-| `.sync_retained_links` | `repair_retained_page_links` |
-| `.validation` | `portable_path_key` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession` |
+| `llm_wiki_engine.markdown_sections` | `normalize_markdown` |
+| `llm_wiki_engine.source_retirement` | `retired_entity_mappings` |
+| `llm_wiki_engine.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
+| `llm_wiki_engine.sync_retained_links` | `repair_retained_page_links` |
+| `llm_wiki_engine.validation` | `portable_path_key` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
 | `typing` | `Mapping` |
@@ -55,10 +55,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (6) |
+| Inbound | `src` (5) |
 | Outbound | `src` (10) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -78,6 +78,8 @@ flowchart LR
 | `_retained_page_repairs` | `(wiki_dir: Path, transitions: list[PageTransition], prior: _Ownership, existing: Mapping[str, tuple[str, bool]], deleted_source_paths: frozenset[str]) -> tuple[RetainedPageRepair, ...]` | — | — |
 | `_page_path` | `(scope: str, page: str) -> str` | — | — |
 | `_prior_ownership` | `(manifest: SyncManifest) -> _Ownership` | — | — |
+| `_moved_module_owner` | `(prior: _Ownership, target: str, inventory: Mapping[str, Mapping]) -> ManifestPageSource \| None` | — | Return the retired module whose page a new module continues, if any. |
+| `_moved_entity_owner` | `(prior: _Ownership, target: str, owner: ManifestPageSource, inventory: Mapping[str, Mapping]) -> ManifestPageSource \| None` | — | Return the retired declaration whose page a moved declaration continues. |
 | `_existing_pages` | `(wiki_dir: Path) -> dict[str, tuple[str, bool]]` | — | Inventory names and file kinds without reading content or following links. |
 | `_current_pages` | `(inventory: Mapping[str, Mapping], module_pages: Mapping[str, str], entity_pages: Mapping[tuple[str, str, int], str]) -> dict[ManifestPageSource, str]` | — | — |
 | `plan_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: Mapping[str, Mapping], *, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], refresh_sources: frozenset[str] = frozenset(), moved_entities: Mapping[str, tuple[str, str]] \| None = None, deleted_source_paths: frozenset[str] = frozenset()) -> PageTransitionPlan` | — | Plan every live source-owned page using supplied names, without mutations. |

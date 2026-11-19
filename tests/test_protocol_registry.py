@@ -6,7 +6,7 @@ import ast
 import re
 from pathlib import Path
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     CONTEXT_PROTOCOL_VERSION,
     PROTOCOL_VERSIONS,
 )

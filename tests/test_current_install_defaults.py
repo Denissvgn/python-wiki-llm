@@ -10,8 +10,8 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import init_cmd, upgrade_cmd
 from llm_wiki_cli.config import AGENT_CHOICES, read_config
 from llm_wiki_cli.services.current_contracts import current_contract_defaults, upgrade_current_knowledge
-from llm_wiki_cli.services.knowledge_artifacts import current_knowledge_format
-from llm_wiki_cli.services.manifest_storage import current_manifest_format
+from llm_wiki_engine.knowledge_artifacts import current_knowledge_format
+from llm_wiki_engine.manifest_storage import current_manifest_format
 from llm_wiki_cli.services.schema import SCHEMA_FILENAMES
 from llm_wiki_cli.services.task_contract import normalize_task_request
 
@@ -56,7 +56,7 @@ def test_versionless_first_use_gets_current_storage_tasks_and_readable_views(pro
 
 def test_first_use_packet_defaults_match_cli_and_mcp(project, capsys):
     from llm_wiki_cli.services import context_service
-    from llm_wiki_cli.services.context_knowledge_contract import context_knowledge_contract
+    from llm_wiki_engine.context_knowledge_contract import context_knowledge_contract
     from llm_wiki_cli.services.mcp_server import McpWikiService
 
     api.bootstrap_wiki("src", "wiki")
@@ -109,7 +109,7 @@ def test_upgrade_retains_complete_recovery_and_prose_and_is_idempotent(project):
 
 
 def test_failed_storage_publication_does_not_adopt_legacy_authority(project, monkeypatch):
-    from llm_wiki_cli.services import knowledge_storage_lifecycle
+    from llm_wiki_engine import knowledge_storage_lifecycle
 
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     before = files(project / "wiki")
@@ -127,7 +127,7 @@ def test_failed_storage_publication_does_not_adopt_legacy_authority(project, mon
 
 def test_failed_adoption_keeps_packed_authority_and_legacy_recovery_for_retry(project, monkeypatch):
     from llm_wiki_cli.services import maintenance_service
-    from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs, recover_knowledge_storage
+    from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs, recover_knowledge_storage
 
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     before = files(project / "wiki")
@@ -162,9 +162,10 @@ def test_failed_adoption_keeps_packed_authority_and_legacy_recovery_for_retry(pr
 @pytest.mark.parametrize("operation", ["knowledge", "adoption"])
 @pytest.mark.parametrize("stage", ["knowledge-index-written", "manifest-written"])
 def test_interrupted_upgrade_reports_recovery_and_can_resume(project, monkeypatch, operation, stage):
-    from llm_wiki_cli.services import knowledge_storage_lifecycle, maintenance_service
-    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
-    from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME, load_adoption_marker
+    from llm_wiki_cli.services import maintenance_service
+    from llm_wiki_engine import knowledge_storage_lifecycle
+    from llm_wiki_engine.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME, load_adoption_marker
 
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     before = files(project / "wiki")
@@ -212,8 +213,8 @@ def test_interrupted_upgrade_reports_recovery_and_can_resume(project, monkeypatc
 
 @pytest.mark.parametrize("command", ["init", "upgrade"])
 def test_native_setup_failure_prints_the_retained_storage_recovery(project, monkeypatch, capsys, command):
-    from llm_wiki_cli.services import knowledge_storage_lifecycle
-    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+    from llm_wiki_engine import knowledge_storage_lifecycle
+    from llm_wiki_engine.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
 
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     before = files(project / "wiki")
@@ -250,8 +251,8 @@ def test_cli_abort_keeps_recovery_diagnostics_and_exit_status(
     project, monkeypatch, capsys, command, failure_kind, exit_code
 ):
     import sys
-    from llm_wiki_cli.services import knowledge_storage_lifecycle
-    from llm_wiki_cli.services.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
+    from llm_wiki_engine import knowledge_storage_lifecycle
+    from llm_wiki_engine.knowledge_artifacts import CommitStage, commit_knowledge_artifacts
 
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     before = files(project / "wiki")
@@ -405,7 +406,7 @@ def test_budgeted_mcp_and_api_accept_the_same_versionless_request(project):
 
 def test_default_current_ownership_survives_noop_and_changed_source_sync(project):
     from llm_wiki_cli.commands import sync_cmd
-    from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs
+    from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs
     api.bootstrap_wiki("src", "wiki")
     marker_path = Path("wiki/.llm-wiki-maintenance-adoption.json")
     marker = marker_path.read_bytes()
@@ -442,7 +443,7 @@ def test_missing_authority_is_not_an_empty_install_target(project, authority):
 
 def test_upgrade_preserves_existing_governance_bytes(project):
     from llm_wiki_cli.commands import knowledge_cmd
-    from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs
+    from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     knowledge_cmd.run(cli._build_parser().parse_args(["knowledge", "init", "--wiki-dir", "wiki", "--bundle-id", "kb_current_upgrade"]))
     ledger = Path("wiki/.llm-wiki-governance.json").read_bytes()
@@ -470,7 +471,7 @@ def test_current_team_resolution_never_decodes_native_packs(project, monkeypatch
 def test_current_static_cache_reuses_observations_but_reconciles_prose(project, monkeypatch, coverage):
     from llm_wiki_cli.commands import sync_cmd
     from llm_wiki_cli.services import sync_analysis_cache, sync_analysis_storage
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
     api.bootstrap_wiki("src", "wiki")
     page = Path("wiki/modules/app.md")
     page.write_text(page.read_text().replace("## Description", "## Description\n\nFirst authored purpose."))

@@ -27,35 +27,34 @@ render profile or explain the live schema/reference combination.
 flowchart LR
     n0["src/llm_wiki_cli/commands/init_cmd.py"]
     n1["src/llm_wiki_cli/commands/status_cmd.py"]
-    n2["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n3["src/llm_wiki_cli/services/rendering_lifecycle.py"]
-    n4["src/llm_wiki_cli/services/schema.py"]
-    n5["src/llm_wiki_cli/services/skills.py"]
+    n2["src/llm_wiki_cli/services/rendering_lifecycle.py"]
+    n3["src/llm_wiki_cli/services/schema.py"]
+    n4["src/llm_wiki_cli/services/skills.py"]
+    n5["src/llm_wiki_cli/services/upgrade_runtime.py"]
     n6["src/llm_wiki_cli/services/wiki_lifecycle.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n0 --> n5
     n0 --> n6
+    n1 --> n2
     n1 --> n3
     n1 --> n4
-    n1 --> n5
     n1 --> n6
     n2 --> n3
     n2 --> n4
-    n2 --> n5
-    n2 --> n6
     n3 --> n4
-    n3 --> n5
-    n4 --> n5
+    n5 --> n2
+    n5 --> n3
+    n5 --> n4
+    n5 --> n6
+    n6 --> n2
     n6 --> n3
-    n6 --> n4
     click n0 "../modules/init_cmd.md"
     click n1 "../modules/status_cmd.md"
-    click n2 "../modules/upgrade_cmd.md"
-    click n3 "../modules/rendering_lifecycle.md"
-    click n4 "../modules/services_schema.md"
-    click n5 "../modules/skills.md"
+    click n2 "../modules/rendering_lifecycle.md"
+    click n3 "../modules/services_schema.md"
+    click n4 "../modules/skills.md"
+    click n5 "../modules/upgrade_runtime.md"
     click n6 "../modules/wiki_lifecycle.md"
 ```
 
@@ -65,7 +64,7 @@ flowchart LR
 |---|---|
 | Inbound | [init_cmd](../modules/init_cmd.md) |
 | Inbound | [status_cmd](../modules/status_cmd.md) |
-| Inbound | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Inbound | [upgrade_runtime](../modules/upgrade_runtime.md) |
 | Inbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
 | Outbound | [services_schema](../modules/services_schema.md) |
 | Outbound | [skills](../modules/skills.md) |

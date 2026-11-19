@@ -7,14 +7,14 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.services import knowledge_evidence
+from llm_wiki_engine import knowledge_evidence
 from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.evidence_diagnostics import captured_evidence_diagnostic
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_evidence import ConceptObservationBasis
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness, EvidenceState
-from llm_wiki_cli.services.sync_manifest import ManifestEvidenceBaseline, SyncManifest
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_evidence import ConceptObservationBasis
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import ComputedFreshness, EvidenceState
+from llm_wiki_engine.sync_manifest import ManifestEvidenceBaseline, SyncManifest
 from tests.test_knowledge_freshness import MODULE_LOCATOR, _live_evaluation
 from tests.test_knowledge_lint import _loaded_knowledge, _report_for_view
 from tests.test_sync_guard_diagnostics import _options, _refusal
@@ -207,7 +207,7 @@ def test_evidence_refresh_keeps_broad_guard_and_truthful_reason(tmp_path, monkey
 
 def test_still_malformed_inventory_is_not_scheduled_as_repaired():
     from llm_wiki_cli.services.sync_analysis import SyncDiff
-    from llm_wiki_cli.services.sync_manifest import ManifestPageSource
+    from llm_wiki_engine.sync_manifest import ManifestPageSource
 
     basis = ConceptObservationBasis('module', 'app.py', 'python', 'sha256:' + 'a' * 64, None, 'invalid-inventory-shape')
     manifest = SyncManifest(evidence_baselines={'modules/app.md': ManifestEvidenceBaseline.from_basis(basis)}, page_source_mappings={'modules/app.md': ManifestPageSource('module', 'app.py')})

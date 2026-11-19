@@ -1,6 +1,6 @@
 # verification_contracts Module
 
-**Path:** `src/llm_wiki_cli/services/verification_contracts.py`
+**Path:** `src/llm_wiki_engine/verification_contracts.py`
 
 ## Description
 
@@ -21,17 +21,17 @@ it is not stored as a timeless boolean.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `VERIFICATION_RECEIPT_SCHEMA_VERSION` |
-| `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
 | `.knowledge_artifacts` | `require_validated_artifacts`, `require_validated_artifacts` |
-| `.knowledge_evidence` | `formatted_json_bytes`, `hash_json` |
 | `.knowledge_model` | `KnowledgeIndex`, `RelationshipKind`, `Resolution`, `TargetClass`, `knowledge_index_to_payload`, `parse_knowledge_index` |
-| `.validation` | `require_exact_fields`, `require_bounded_text`, `require_list`, `require_mapping`, `require_nonnegative_int`, `require_sha256`, `require_string` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping`, `Sequence` |
 | `dataclasses` | `InitVar`, `dataclass`, `field` |
 | `enum` | `Enum` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `VERIFICATION_RECEIPT_SCHEMA_VERSION` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
+| `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes`, `hash_json` |
+| `llm_wiki_engine.validation` | `require_exact_fields`, `require_bounded_text`, `require_list`, `require_mapping`, `require_nonnegative_int`, `require_sha256`, `require_string` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -44,65 +44,65 @@ it is not stored as a timeless boolean.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/knowledge_cmd.py"]
-    n1["src/llm_wiki_cli/services/contracts.py"]
-    n2["src/llm_wiki_cli/services/doctor_service.py"]
-    n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n4["src/llm_wiki_cli/services/io.py"]
-    n5["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n6["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n7["src/llm_wiki_cli/services/knowledge_model.py"]
-    n8["src/llm_wiki_cli/services/knowledge_verification.py"]
-    n9["src/llm_wiki_cli/services/lint_service.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
-    n11["src/llm_wiki_cli/services/verification_contracts.py"]
-    n0 --> n4
+    n1["src/llm_wiki_cli/services/doctor_service.py"]
+    n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n3["src/llm_wiki_cli/services/lint_service.py"]
+    n4["src/llm_wiki_engine/contracts.py"]
+    n5["src/llm_wiki_engine/io.py"]
+    n6["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n7["src/llm_wiki_engine/knowledge_evidence.py"]
+    n8["src/llm_wiki_engine/knowledge_model.py"]
+    n9["src/llm_wiki_engine/knowledge_verification.py"]
+    n10["src/llm_wiki_engine/validation.py"]
+    n11["src/llm_wiki_engine/verification_contracts.py"]
     n0 --> n5
-    n0 --> n7
+    n0 --> n6
+    n0 --> n8
     n0 --> n11
-    n2 --> n1
+    n1 --> n3
+    n1 --> n4
+    n1 --> n6
+    n1 --> n8
+    n1 --> n11
+    n2 --> n4
     n2 --> n5
-    n2 --> n7
-    n2 --> n9
+    n2 --> n6
+    n2 --> n10
     n2 --> n11
-    n3 --> n1
-    n3 --> n4
     n3 --> n5
+    n3 --> n6
+    n3 --> n8
+    n3 --> n9
     n3 --> n10
     n3 --> n11
-    n4 --> n6
-    n5 --> n1
-    n5 --> n4
-    n5 --> n6
     n5 --> n7
-    n5 --> n10
+    n6 --> n4
+    n6 --> n5
+    n6 --> n7
+    n6 --> n8
     n6 --> n10
-    n7 --> n1
-    n7 --> n6
     n7 --> n10
-    n8 --> n6
-    n8 --> n11
-    n9 --> n4
-    n9 --> n5
+    n8 --> n4
+    n8 --> n7
+    n8 --> n10
     n9 --> n7
-    n9 --> n8
-    n9 --> n10
     n9 --> n11
-    n11 --> n1
     n11 --> n4
     n11 --> n5
     n11 --> n6
     n11 --> n7
+    n11 --> n8
     n11 --> n10
     click n0 "../modules/knowledge_cmd.md"
-    click n1 "../modules/services_contracts.md"
-    click n2 "../modules/doctor_service.md"
-    click n3 "../modules/documentation_run_dependencies.md"
-    click n4 "../modules/io.md"
-    click n5 "../modules/knowledge_artifacts.md"
-    click n6 "../modules/knowledge_evidence.md"
-    click n7 "../modules/knowledge_model.md"
-    click n8 "../modules/knowledge_verification.md"
-    click n9 "../modules/lint_service.md"
+    click n1 "../modules/doctor_service.md"
+    click n2 "../modules/documentation_run_dependencies.md"
+    click n3 "../modules/lint_service.md"
+    click n4 "../modules/llm_wiki_engine_contracts.md"
+    click n5 "../modules/io.md"
+    click n6 "../modules/knowledge_artifacts.md"
+    click n7 "../modules/knowledge_evidence.md"
+    click n8 "../modules/knowledge_model.md"
+    click n9 "../modules/knowledge_verification.md"
     click n10 "../modules/validation.md"
     click n11 "../modules/verification_contracts.md"
 ```
@@ -114,9 +114,9 @@ flowchart LR
 | Inbound | [knowledge_cmd](../modules/knowledge_cmd.md) |
 | Inbound | [doctor_service](../modules/doctor_service.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Inbound | [knowledge_verification](../modules/knowledge_verification.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Inbound | [knowledge_verification](../modules/knowledge_verification.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [io](../modules/io.md) |
 | Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |

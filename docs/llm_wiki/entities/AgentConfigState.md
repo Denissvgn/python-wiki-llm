@@ -1,6 +1,6 @@
 # AgentConfigState
 
-**Location:** `src/llm_wiki_cli/config.py:316`
+**Location:** `src/llm_wiki_cli/config.py:84`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [config](../modules/config.md)
@@ -32,7 +32,7 @@ flowchart LR
     n2["str"]
     n3["src/llm_wiki_cli/commands/init_cmd.py"]
     n4["src/llm_wiki_cli/commands/status_cmd.py"]
-    n5["src/llm_wiki_cli/commands/upgrade_cmd.py"]
+    n5["src/llm_wiki_cli/services/upgrade_runtime.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -41,7 +41,7 @@ flowchart LR
     click n0 "../modules/config.md"
     click n3 "../modules/init_cmd.md"
     click n4 "../modules/status_cmd.md"
-    click n5 "../modules/upgrade_cmd.md"
+    click n5 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
@@ -63,4 +63,4 @@ flowchart LR
 |---|---|---|---:|
 | `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
 | `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `upgrade_runtime` | import | [upgrade_runtime](../modules/upgrade_runtime.md) | — |

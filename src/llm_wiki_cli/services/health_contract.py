@@ -13,16 +13,16 @@ from collections import Counter
 import re
 from typing import Any, NoReturn
 
-from .contracts import HEALTH_DETAILS_SCHEMA_VERSION
-from . import analysis_compatibility as ac
-from .knowledge_freshness import (
+from llm_wiki_engine.contracts import HEALTH_DETAILS_SCHEMA_VERSION
+from llm_wiki_engine import analysis_compatibility as ac
+from llm_wiki_engine.knowledge_freshness import (
     FRESHNESS_REASON_STATES,
     KNOWN_FRESHNESS_REASON_CODES,
     REASON_FRESHNESS_NOT_MODELED,
     REASON_LIVE_EVALUATION_NOT_PERFORMED,
     comparable_producer_components,
 )
-from .knowledge_model import ComputedFreshness, ProducerComponent
+from llm_wiki_engine.knowledge_model import ComputedFreshness, ProducerComponent
 
 EXAMPLE_LIMIT = 3
 MAX_COMPONENTS = 4096

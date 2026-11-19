@@ -165,7 +165,7 @@ def constraints_text(environment: dict[str, Any]) -> str:
     return "".join(
         f"{name}=={version}\n"
         for name, version in sorted(packages.items())
-        if name != "agent-wiki-cli"
+        if name not in {"agent-wiki-cli", "llm-wiki-engine"}
     )
 
 

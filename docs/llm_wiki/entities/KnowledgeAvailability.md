@@ -1,6 +1,6 @@
 # KnowledgeAvailability
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:46`
+**Location:** `src/llm_wiki_engine/knowledge_consumption.py:49`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -27,15 +27,15 @@ Knowledge capability available to every native read consumer.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeAvailability (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n0["KnowledgeAvailability (src/llm_wiki_engine/knowledge_consumption.py)"]
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/services/context_service.py"]
     n4["src/llm_wiki_cli/services/doctor_service.py"]
     n5["src/llm_wiki_cli/services/documentation_queries.py"]
-    n6["KnowledgeAggregateSummary.__post_init__ (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n7["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
+    n6["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n8["KnowledgeAggregateSummary.__post_init__ (src/llm_wiki_engine/knowledge_observability.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -48,9 +48,9 @@ flowchart LR
     click n3 "../modules/context_service.md"
     click n4 "../modules/doctor_service.md"
     click n5 "../modules/documentation_queries.md"
-    click n6 "../modules/knowledge_observability.md"
-    click n7 "../modules/knowledge_projection.md"
-    click n8 "../modules/lint_service.md"
+    click n6 "../modules/knowledge_projection.md"
+    click n7 "../modules/lint_service.md"
+    click n8 "../modules/knowledge_observability.md"
 ```
 
 ### Summary
@@ -73,6 +73,6 @@ flowchart LR
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
 | `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) | — |
-| `KnowledgeAggregateSummary.__post_init__` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `KnowledgeAggregateSummary.__post_init__` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |

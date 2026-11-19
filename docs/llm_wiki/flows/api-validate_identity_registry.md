@@ -36,11 +36,11 @@ sequenceDiagram
     participant p22 as WikiSurfaceError
     participant p23 as _matches_directory_path
     participant p24 as _matches_directory_uri
-    participant p25 as tuple (src/llm_wiki_cli/services…alidate_identity_registry)
+    participant p25 as tuple (src/llm_wiki_engine/conce…alidate_identity_registry)
     participant p26 as allocations_by_uid[…].append
-    participant p27 as sorted (src/llm_wiki_cli/services…alidate_identity_registry)
-    participant p28 as isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p29 as tuple (src/llm_wiki_cli/services…entity.py:_sorted_aliases)
+    participant p27 as sorted (src/llm_wiki_engine/conce…alidate_identity_registry)
+    participant p28 as isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)
+    participant p29 as tuple (src/llm_wiki_engine/conce…entity.py:_sorted_aliases)
     participant p30 as TypeError
     p0->>p1: find_identity_collisions
     p0->>p2: _typed_tuple
@@ -66,11 +66,11 @@ sequenceDiagram
     p11->>p22: WikiSurfaceError
     p11->>p23: _matches_directory_path
     p11->>p24: _matches_directory_uri
-    p0-->>p25: tuple (src/llm_wiki_cli/services…alidate_identity_registry)(sorted(...))
+    p0-->>p25: tuple (src/llm_wiki_engine/conce…alidate_identity_registry)(sorted(...))
     p1-->>p26: allocations_by_uid[…].append(allocation)
-    p0-->>p27: sorted (src/llm_wiki_cli/services…alidate_identity_registry)(current, key=...)
-    p2-->>p28: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))
-    p4-->>p29: tuple (src/llm_wiki_cli/services…entity.py:_sorted_aliases)(sorted(...))
+    p0-->>p27: sorted (src/llm_wiki_engine/conce…alidate_identity_registry)(current, key=...)
+    p2-->>p28: isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values, (...))
+    p4-->>p29: tuple (src/llm_wiki_engine/conce…entity.py:_sorted_aliases)(sorted(...))
     p2-->>p30: TypeError(...)
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 2 | - | external | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_identity_registry` | 1 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 11 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 8 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 11 | - | external | 24 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 11 | - | unresolved | 14 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 21 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_value` | 25 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 28 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_typed_tuple` | 2 | - | external | 5 |
+| `src/llm_wiki_engine/concept_identity.py:validate_identity_registry` | 1 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:find_identity_collisions` | 11 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 8 |
+| `src/llm_wiki_engine/concept_identity.py:find_identity_collisions` | 11 | - | external | 24 |
+| `src/llm_wiki_engine/concept_identity.py:find_identity_collisions` | 11 | - | unresolved | 14 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_type` | 21 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_value` | 25 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 28 | - | external | 6 |
 > Omission summary shows 8 of 28 groups; 20 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -114,12 +114,12 @@ Collector observations for 31 source steps with known totals: observed: 138, emi
 |---|---|---|---|---:|---:|---:|
 | `validate_identity_registry` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `_typed_tuple` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_typed_tuple` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `find_identity_collisions` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
@@ -129,23 +129,23 @@ Collector observations for 31 source steps with known totals: observed: 138, emi
 flowchart LR
     s1["1. validate_identity_registry"]
     s2["2. _typed_tuple"]
-    s3["3. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s3["3. isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
     s4["4. TypeError"]
-    s5["5. tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s5["5. tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
     s6["6. TypeError"]
     s7["7. enumerate"]
-    s8["8. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s8["8. isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
     s9["9. TypeError"]
     s10["10. _typed_tuple"]
     s11["11. find_identity_collisions"]
     s12["12. _typed_tuple"]
     s1 -->|"_typed_tuple(allocations, ConceptAllocation, 'allocations')"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values, (...))" .-> s3
     s2 -. "TypeError(...)" .-> s4
-    s2 -. "tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values)" .-> s5
+    s2 -. "tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values)" .-> s5
     s2 -. "TypeError(...)" .-> s6
     s2 -. "enumerate(result)" .-> s7
-    s2 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(value, expected_type)" .-> s8
+    s2 -. "isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(value, expected_type)" .-> s8
     s2 -. "TypeError(...)" .-> s9
     s1 -->|"_typed_tuple(aliases, IdentityAlias, 'aliases')"| s10
     s1 -->|"find_identity_collisions(current, historical)"| s11
@@ -182,12 +182,12 @@ flowchart LR
 |---|---|---|---|---|
 | `validate_identity_registry` | `allocations: Iterable[ConceptAllocation]`, `aliases: Iterable[IdentityAlias]` | `ConceptAllocation`, `IdentityAlias` | - | `(...)` |
 | `_typed_tuple` | `values: Iterable[_RecordT]`, `expected_type: type[_RecordT]`, `field: str` | - | - | `result` |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `enumerate` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `_typed_tuple` | `values: Iterable[_RecordT]`, `expected_type: type[_RecordT]`, `field: str` | - | - | `result` |
 | `find_identity_collisions` | `allocations: Iterable[ConceptAllocation]`, `aliases: Iterable[IdentityAlias]` | `ConceptAllocation`, `IdentityAlias`, `AliasType`, `AliasType`, `AliasType` | - | `tuple(...)` |
@@ -198,12 +198,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_identity_registry | _typed_tuple | 758 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
+| _typed_tuple | isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
 | _typed_tuple | TypeError | 1014 | `TypeError(...)` |
-| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
+| _typed_tuple | tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
 | _typed_tuple | TypeError | 1018 | `TypeError(...)` |
 | _typed_tuple | enumerate | 1021 | `enumerate(result)` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1022 | `isinstance(value, expected_type)` |
+| _typed_tuple | isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1022 | `isinstance(value, expected_type)` |
 | _typed_tuple | TypeError | 1023 | `TypeError(...)` |
 | validate_identity_registry | _typed_tuple | 759 | `_typed_tuple(aliases, IdentityAlias, 'aliases')` |
 | validate_identity_registry | find_identity_collisions | 760 | `find_identity_collisions(current, historical)` |

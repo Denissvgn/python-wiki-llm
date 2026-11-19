@@ -2,7 +2,7 @@
 
 **Entry point:** `build_dependency_version_details` (`api`)
 **Source:** [dependency_versions](../modules/dependency_versions.md)
-**Modules touched:** [config](../modules/config.md), [dependency_versions](../modules/dependency_versions.md)
+**Modules touched:** [dependency_versions](../modules/dependency_versions.md), [path_policy](../modules/path_policy.md)
 
 ## Call sequence
 
@@ -82,8 +82,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | [src/llm_wiki_cli/services/dependency_versions.py](../modules/dependency_versions.md) | internal | 2 |
 | `src/llm_wiki_cli/services/dependency_versions.py:_source_path` | 12 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/dependency_versions.py:_walk_sources` | 25 | - | external | 3 |
-| `src/llm_wiki_cli/config.py:_normalized_rel_parts` | 29 | - | external | 3 |
-| `src/llm_wiki_cli/config.py:_normalized_rel_parts` | 29 | - | unresolved | 4 |
+| `src/llm_wiki_engine/path_policy.py:_normalized_rel_parts` | 29 | - | external | 3 |
+| `src/llm_wiki_engine/path_policy.py:_normalized_rel_parts` | 29 | - | unresolved | 4 |
 > Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

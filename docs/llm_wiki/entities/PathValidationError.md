@@ -1,9 +1,9 @@
 # PathValidationError
 
-**Location:** `src/llm_wiki_cli/config.py:124`
+**Location:** `src/llm_wiki_engine/path_policy.py:90`
 **Kind:** Class
 **Bases:** `ValueError`
-**Module:** [config](../modules/config.md)
+**Module:** [path_policy](../modules/path_policy.md)
 
 ## Description
 
@@ -22,20 +22,20 @@ Raised when a user-provided path escapes the project root.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PathValidationError (src/llm_wiki_cli/config.py)"]
+    n0["PathValidationError (src/llm_wiki_engine/path_policy.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/api.py"]
-    n3["src/llm_wiki_cli/cli.py"]
-    n4["src/llm_wiki_cli/commands/docs_cmd.py"]
-    n5["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n6["require_committed_config (src/llm_wiki_cli/config.py)"]
-    n7["require_config_inspection_unchanged (src/llm_wiki_cli/config.py)"]
-    n8["require_safe_config_path (src/llm_wiki_cli/config.py)"]
-    n9["validate_path (src/llm_wiki_cli/config.py)"]
-    n10["validate_source_paths (src/llm_wiki_cli/config.py)"]
-    n11["validate_source_root (src/llm_wiki_cli/config.py)"]
-    n12["src/llm_wiki_cli/services/context_packet.py"]
-    n13["src/llm_wiki_cli/services/context_service.py"]
+    n2["require_committed_config (src/llm_wiki_cli/config.py)"]
+    n3["require_config_inspection_unchanged (src/llm_wiki_cli/config.py)"]
+    n4["require_safe_config_path (src/llm_wiki_cli/config.py)"]
+    n5["src/llm_wiki_cli/services/context_packet_builder.py"]
+    n6["src/llm_wiki_cli/services/context_service.py"]
+    n7["src/llm_wiki_cli/services/extraction_service.py"]
+    n8["src/llm_wiki_cli/services/lint_service.py"]
+    n9["source_path_diagnostics (src/llm_wiki_cli/services/source_path_diagnostics.py)"]
+    n10["_sync_run_options_from_request (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n11["validate_path (src/llm_wiki_engine/path_policy.py)"]
+    n12["validate_source_paths (src/llm_wiki_engine/path_policy.py)"]
+    n13["validate_source_root (src/llm_wiki_engine/path_policy.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -49,26 +49,26 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     n13 --> n0
-    click n0 "../modules/config.md"
-    click n2 "../modules/api.md"
-    click n3 "../modules/cli.md"
-    click n4 "../modules/docs_cmd.md"
-    click n5 "../modules/upgrade_cmd.md"
-    click n6 "../modules/config.md"
-    click n7 "../modules/config.md"
-    click n8 "../modules/config.md"
-    click n9 "../modules/config.md"
-    click n10 "../modules/config.md"
-    click n11 "../modules/config.md"
-    click n12 "../modules/context_packet.md"
-    click n13 "../modules/context_service.md"
+    click n0 "../modules/path_policy.md"
+    click n2 "../modules/config.md"
+    click n3 "../modules/config.md"
+    click n4 "../modules/config.md"
+    click n5 "../modules/context_packet_builder.md"
+    click n6 "../modules/context_service.md"
+    click n7 "../modules/extraction_service.md"
+    click n8 "../modules/lint_service.md"
+    click n9 "../modules/source_path_diagnostics.md"
+    click n10 "../modules/sync_runtime.md"
+    click n11 "../modules/path_policy.md"
+    click n12 "../modules/path_policy.md"
+    click n13 "../modules/path_policy.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [config](../modules/config.md) | 0 | — |
+| [path_policy](../modules/path_policy.md) | 0 | — |
 
 ### Structure
 
@@ -80,17 +80,15 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `api` | import | [api](../modules/api.md) | — |
-| `cli` | import | [cli](../modules/cli.md) | — |
-| `docs_cmd` | import | [docs_cmd](../modules/docs_cmd.md) | — |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
 | `require_committed_config` | call | [config](../modules/config.md) | 1 |
 | `require_config_inspection_unchanged` | call | [config](../modules/config.md) | 1 |
 | `require_safe_config_path` | call | [config](../modules/config.md) | 2 |
-| `validate_path` | call | [config](../modules/config.md) | 2 |
-| `validate_source_paths` | call | [config](../modules/config.md) | 1 |
-| `validate_source_root` | call | [config](../modules/config.md) | 6 |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
-
-> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.
+| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `source_path_diagnostics` | call | [source_path_diagnostics](../modules/source_path_diagnostics.md) | 1 |
+| `_sync_run_options_from_request` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `validate_path` | call | [path_policy](../modules/path_policy.md) | 2 |
+| `validate_source_paths` | call | [path_policy](../modules/path_policy.md) | 1 |
+| `validate_source_root` | call | [path_policy](../modules/path_policy.md) | 6 |

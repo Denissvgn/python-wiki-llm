@@ -14,9 +14,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..config import AGENT_CHOICES, validate_path
-from .filesystem_guard import unlink_guarded_bytes
-from .io import first_unsafe_path_component
-from .paths import display_project_path, shell_quote
+from llm_wiki_engine.filesystem_guard import unlink_guarded_bytes
+from llm_wiki_engine.io import first_unsafe_path_component
+from llm_wiki_engine.paths import display_project_path, shell_quote
 
 HOOK_NAMES = ("post-commit", "pre-commit", "pre-push")
 

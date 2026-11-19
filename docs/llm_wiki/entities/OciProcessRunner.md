@@ -1,6 +1,6 @@
 # OciProcessRunner
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:137`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:138`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [broker](../modules/broker.md)

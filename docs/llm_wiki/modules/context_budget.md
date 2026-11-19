@@ -27,12 +27,8 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service` |
-| `..config` | `DEFAULT_WIKI_DIR` |
-| `.change_selection` | `affected_page_map`, `changes_from_args`, `select_changes`, `validate_changes` |
-| `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
-| `.io` | `write_text_output`, `write_utf8_stdout` |
-| `.request_json` | `_pairs`, `_constant` |
+| `.` | `context_packet`, `context_service`, `context_packet_builder` |
+| `.change_selection` | `affected_page_map`, `changes_from_args`, `select_changes` |
 | `.token_counting` | `EstimatedCounter`, `LocalTokenizerCounter`, `TokenCounter` |
 | `__future__` | `annotations` |
 | `contextlib` | `nullcontext` |
@@ -40,7 +36,12 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 | `dataclasses` | `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
-| `sys` | `sys` |
+| `llm_wiki_engine.context_request_format` | `validate_budget_request`, `validate_changes` |
+| `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
+| `llm_wiki_engine.host` | `emit` |
+| `llm_wiki_engine.io` | `write_text_output`, `write_utf8_stdout` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `typing` | `Any`, `Mapping` |
 
 ## Local dependency map
@@ -62,23 +63,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (6) |
-| Outbound | `src` (8) |
+| Outbound | `src` (11) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [BudgetedContext](../entities/BudgetedContext.md) | 27 | — | — |
-| [_JointSelection](../entities/JointSelection.md) | 138 | — | Spend one budget across whole native groups and source detail. |
+| [BudgetedContext](../entities/BudgetedContext.md) | 31 | — | — |
+| [_JointSelection](../entities/JointSelection.md) | 95 | — | Spend one budget across whole native groups and source detail. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `refusal_diagnostics` | `(payload, request, counter, accounting, *, policy)` | — | Describe a rejected candidate without emitting source or native rows. |
-| `validate_request` | `(data: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_accounted_render` | `(render, accounting, counter)` | — | — |
 | `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None, envelope_renderer = None, freshness_rank_by_source = None, source_json_lower_bound = False, broad_refusal_diagnostics = False, joint_native_source = False)` | — | Select whole source entries; keep all enrichment and omission evidence. |
 | `build_budgeted_context` | `(src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, request = None, *, counter: TokenCounter \| None = None, allow_external_src = False, source_selection = None) -> BudgetedContext` | — | — |

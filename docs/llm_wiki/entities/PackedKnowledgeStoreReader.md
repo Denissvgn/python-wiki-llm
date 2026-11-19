@@ -1,6 +1,6 @@
 # PackedKnowledgeStoreReader
 
-**Location:** `src/llm_wiki_cli/services/knowledge_packs.py:570`
+**Location:** `src/llm_wiki_engine/knowledge_packs.py:570`
 **Kind:** Class
 **Bases:** `KnowledgeStoreReader`
 **Module:** [knowledge_packs](../modules/knowledge_packs.md)
@@ -36,12 +36,12 @@ Reads selected authenticated member ranges or fully captures indexed ZIP storage
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PackedKnowledgeStoreReader (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n1["KnowledgeStoreReader (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n2["_pack_logical (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n3["open_knowledge_store (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n4["_prune_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n5["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n0["PackedKnowledgeStoreReader (src/llm_wiki_engine/knowledge_packs.py)"]
+    n1["KnowledgeStoreReader (src/llm_wiki_engine/knowledge_storage.py)"]
+    n2["_pack_logical (src/llm_wiki_engine/knowledge_packs.py)"]
+    n3["open_knowledge_store (src/llm_wiki_engine/knowledge_packs.py)"]
+    n4["_prune_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
+    n5["src/llm_wiki_engine/knowledge_stream_audit.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

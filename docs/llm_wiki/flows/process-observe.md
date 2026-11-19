@@ -2,13 +2,16 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [observe](../modules/observe.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [observe](../modules/observe.md), [publication_config](../modules/publication_config.md), [source_selection](../modules/source_selection.md), and 1 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), [observe](../modules/observe.md), [publication_config](../modules/publication_config.md), and 4 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [domain_pack](../modules/domain_pack.md)
 - [observe](../modules/observe.md)
 - [publication_config](../modules/publication_config.md)
+- [publication_targets](../modules/publication_targets.md)
+- [reference_providers](../modules/reference_providers.md)
 - [source_selection](../modules/source_selection.md)
 - [validation](../modules/validation.md)
 
@@ -40,16 +43,16 @@ sequenceDiagram
     participant p16 as _choice
     participant p17 as _check_path
     participant p18 as _reference_providers
-    participant p19 as _array
-    participant p20 as _dependency
-    participant p21 as publication_ref_name
-    participant p22 as _content_profile
-    participant p23 as _public_content_path
-    participant p24 as _content_source_path
-    participant p25 as require_portable_relative_path
-    participant p26 as _section
-    participant p27 as _content_repository_url
-    participant p28 as _head
+    participant p19 as target_repository
+    participant p20 as _array
+    participant p21 as _dependency
+    participant p22 as publication_ref_name
+    participant p23 as _content_profile
+    participant p24 as _public_content_path
+    participant p25 as _content_source_path
+    participant p26 as reference_provider
+    participant p27 as require_portable_relative_path
+    participant p28 as current_reference_providers
     participant p29 as Path (integrations/wiki-impact/observe.py:main)
     participant p30 as evidence.write_text
     p0->>p1: observe
@@ -70,23 +73,23 @@ sequenceDiagram
     p11->>p16: _choice
     p11->>p17: _check_path
     p11->>p18: _reference_providers
-    p11->>p19: _array
-    p11->>p20: _dependency
-    p11->>p21: publication_ref_name
-    p11->>p22: _content_profile
-    p22->>p23: _public_content_path
-    p22->>p24: _content_source_path
-    p15->>p25: require_portable_relative_path
-    p20->>p26: _section
-    p22->>p27: _content_repository_url
-    p1->>p28: _head
+    p11->>p19: target_repository
+    p11->>p20: _array
+    p11->>p21: _dependency
+    p11->>p22: publication_ref_name
+    p11->>p23: _content_profile
+    p23->>p24: _public_content_path
+    p23->>p25: _content_source_path
+    p21->>p26: reference_provider
+    p15->>p27: require_portable_relative_path
+    p18->>p28: current_reference_providers
     p0-->>p29: Path (integrations/wiki-impact/observe.py:main)(os.environ[...])
     p0-->>p30: evidence.write_text(..., encoding='utf-8')
 ```
 
-> Call sequence diagram shows 30 of 504 interactions; 474 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 512 interactions; 482 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 140 (139 omitted); unresolved 1 of 155 (154 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 145 (144 omitted); unresolved 1 of 156 (155 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -100,7 +103,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_config.py:publication_repository` | 5 | [src/llm_wiki_cli/services/publication_config.py](../modules/publication_config.md) | internal | 1 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 23 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/publication_config.py:_consumer_root` | 23 | - | external | 2 |
-> Omission summary shows 8 of 89 groups; 81 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 97 groups; 89 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 210; effect analysis evaluated: 133, partial: 4, unavailable: 73. Counts include steps omitted from the displayed trace.
+Source steps: 212; effect analysis evaluated: 133, partial: 4, unavailable: 75. Counts include steps omitted from the displayed trace.
 
-Collector observations for 137 source steps with known totals: observed: 723, emitted: 706, omitted: 17. Unavailable totals are excluded.
+Collector observations for 137 source steps with known totals: observed: 703, emitted: 686, omitted: 17. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -219,13 +222,13 @@ flowchart LR
 | main | observe | 157 | `observe(Path(...), repository=os.environ[...], config=os.environ[...], target_dir=os.environ[...])` |
 | observe | publication_repository(…).lower | 49 | `publication_repository(repository, 'source repository').lower(data not statically known)` |
 | observe | publication_repository | 49 | `publication_repository(repository, 'source repository')` |
-| publication_repository | _text | 71 | `_text(value, field, 140)` |
-| _text | type (src/llm_wiki_cli/services…blication_config.py:_text) | 107 | `type(value)` |
-| _text | value.strip (src/llm_wiki_cli/services…blication_config.py:_text) | 107 | `value.strip(data not statically known)` |
-| _text | PublicationConfigError | 108 | `PublicationConfigError(field, 'must be non-empty text without surrounding whitespace')` |
-| _text | len (src/llm_wiki_cli/services…blication_config.py:_text) | 112 | `len(value.encode(...))` |
-| _text | value.encode | 112 | `value.encode('utf-8')` |
-| _text | PublicationConfigError | 114 | `PublicationConfigError(field, 'must be valid UTF-8 text')` |
+| publication_repository | _text | 77 | `_text(value, field, 140)` |
+| _text | type (src/llm_wiki_cli/services…blication_config.py:_text) | 123 | `type(value)` |
+| _text | value.strip (src/llm_wiki_cli/services…blication_config.py:_text) | 123 | `value.strip(data not statically known)` |
+| _text | PublicationConfigError | 124 | `PublicationConfigError(field, 'must be non-empty text without surrounding whitespace')` |
+| _text | len (src/llm_wiki_cli/services…blication_config.py:_text) | 128 | `len(value.encode(...))` |
+| _text | value.encode | 128 | `value.encode('utf-8')` |
+| _text | PublicationConfigError | 130 | `PublicationConfigError(field, 'must be valid UTF-8 text')` |
 
 ### Boundary effects
 
@@ -245,9 +248,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `observe` | `publication_repository(repository, 'source repository').lower` | 49 |
-| external_call | `_text` | `type` | 107 |
-| unresolved_call | `_text` | `value.strip` | 107 |
-| unresolved_call | `_text` | `value.encode` | 112 |
+| external_call | `_text` | `type` | 123 |
+| unresolved_call | `_text` | `value.strip` | 123 |
+| unresolved_call | `_text` | `value.encode` | 128 |
 | step_limit | `main` | `first 12 steps` | 0 |
 | truncated_flow | `main` | `depth limit` | 0 |
 

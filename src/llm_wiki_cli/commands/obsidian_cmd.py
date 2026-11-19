@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from ..services.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 from ..services.knowledge_projection import (
     KnowledgeProjection,
     KnowledgeProjectionError,

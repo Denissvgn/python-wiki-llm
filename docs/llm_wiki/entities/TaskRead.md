@@ -1,6 +1,6 @@
 # TaskRead
 
-**Location:** `src/llm_wiki_cli/services/task_context.py:47`
+**Location:** `src/llm_wiki_cli/services/task_context.py:48`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_context](../modules/task_context.md)
@@ -17,7 +17,7 @@ Private request-owned capture state retained only for an explicitly bounded sess
 |------|------|---------|-------------|
 | `normalized` | `dict[str, Any]` | *required* | — |
 | `profile` | `WorkflowProfile` | *required* | — |
-| `captured` | `packets.CapturedContextRead \| None` | *required* | — |
+| `captured` | `packet_builder.CapturedContextRead \| None` | *required* | — |
 | `wiki_root` | `Path` | *required* | — |
 | `wiki_anchor` | `str` | *required* | — |
 | `result` | `TaskContext` | *required* | — |

@@ -1,6 +1,6 @@
 # knowledge_storage Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_storage.py`
+**Path:** `src/llm_wiki_engine/knowledge_storage.py`
 
 ## Description
 
@@ -15,21 +15,21 @@ from diagnostics.
 
 | Source | Symbols |
 |--------|---------|
-| `.canonical_json` | `canonical_chunks`, `scalar_size` |
-| `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
-| `.implementation_evidence` | `validate_concept_implementation` |
 | `.knowledge_audit` | `audit_logical_records` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge`, `validate_typed_graph_slice` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_parse_extensions` |
-| `.section_ownership` | `validate_section_ownership` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
 | `collections.abc` | `MutableMapping`, `Callable`, `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `canonical_chunks`, `compact_line_bytes`, `scalar_size`, `sha256_digest` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
+| `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge`, `validate_typed_graph_slice` |
+| `llm_wiki_engine.section_ownership` | `validate_section_ownership` |
 | `re` | `re` |
 | `typing` | `Any`, `NoReturn` |
 
@@ -39,7 +39,7 @@ from diagnostics.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n1["src/llm_wiki_engine/knowledge_storage.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_storage.md"
@@ -60,7 +60,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 45 | `ValueError` | A storage contract, integrity or bounded-work failure. |
+| [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 47 | `ValueError` | A storage contract, integrity or bounded-work failure. |
 | [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 205 | — | — |
 | [_Encoder](../entities/Encoder.md) | 212 | — | — |
 | [_TreeBuilder](../entities/TreeBuilder.md) | 238 | — | — |
@@ -72,7 +72,6 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `canonical_bytes` | `(value: Any) -> bytes` | — | — |
-| `digest` | `(data: bytes) -> str` | — | — |
 | `logical_digest` | `(value: Any) -> str` | — | Hash logical JSON without allocating a second monolithic serialization. |
 | `_fail` | `(field: str, message: str, code: str = 'storage-invalid') -> NoReturn` | — | — |
 | `_selected_collections` | `(collections: Iterable[str] \| None) -> set[str]` | — | Validate a projection before any selected record is materialized. |

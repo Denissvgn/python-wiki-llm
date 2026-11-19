@@ -16,36 +16,32 @@ from llm_wiki_cli.api_types import KnowledgeMode
 from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
-from llm_wiki_cli.services import (
-    context_packet as context_packet_service,
-)
-from llm_wiki_cli.services import (
-    knowledge_consumption,
-    mcp_server,
-)
+from llm_wiki_cli.services import context_packet_builder
+from llm_wiki_cli.services import mcp_server
+from llm_wiki_engine import knowledge_consumption
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.knowledge_observability import (
+from llm_wiki_engine.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
 from llm_wiki_cli.services.mcp_server import McpWikiService
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import (
     fail_if_extraction_runs,
     materialize_fixture_tree,
@@ -497,7 +493,7 @@ class TestMcpWikiService:
         )
         monkeypatch.setattr(context_cmd, "_build_context", fake_context_builder)
         monkeypatch.setattr(
-            context_packet_service,
+            context_packet_builder,
             "build_qualified_context",
             fake_packet_builder,
         )
@@ -1273,7 +1269,7 @@ class TestMcpWikiService:
             )
             return Packet()
 
-        monkeypatch.setattr(context_packet, "build_qualified_context", fake_build)
+        monkeypatch.setattr(context_packet_builder, "build_qualified_context", fake_build)
         wiki_dir = tmp_path / "wiki"
         service = mcp_server.McpWikiService(
             src_dir="source-root",
@@ -1312,7 +1308,6 @@ class TestMcpWikiService:
         tmp_path,
         monkeypatch,
     ):
-        from llm_wiki_cli.services import context_packet
 
         monkeypatch.chdir(tmp_path)
         calls: dict[str, object] = {"queries": []}
@@ -1352,7 +1347,7 @@ class TestMcpWikiService:
         )
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
         monkeypatch.setattr(
-            context_packet,
+            context_packet_builder,
             "build_qualified_context",
             fake_build_packet,
         )
@@ -1380,7 +1375,7 @@ class TestMcpWikiService:
         tmp_path,
         monkeypatch,
     ):
-        from llm_wiki_cli.services import context_packet
+        from llm_wiki_cli.services import context_packet_builder
 
         packet_ids = iter(("sha256:" + "a" * 64, "sha256:" + "b" * 64))
 
@@ -1392,7 +1387,7 @@ class TestMcpWikiService:
                 return {"packet_id": self.packet_id}
 
         monkeypatch.setattr(
-            context_packet,
+            context_packet_builder,
             "build_qualified_context",
             lambda *_args, **_kwargs: Packet(next(packet_ids)),
         )

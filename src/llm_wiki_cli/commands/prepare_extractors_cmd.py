@@ -13,7 +13,7 @@ from ..services.extractor_helpers import (
     resolve_helper_cache_root,
 )
 from ..services.source_snapshot import build_source_snapshot
-from ..services.source_selection import resolve_source_selection
+from llm_wiki_engine.source_selection import resolve_source_selection
 from ..services.helper_preparation import selected_helper_languages
 
 

@@ -7,13 +7,13 @@ from dataclasses import replace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services.knowledge_coverage import build_knowledge_coverage
-from llm_wiki_cli.services.knowledge_freshness import (
+from llm_wiki_engine.knowledge_coverage import build_knowledge_coverage
+from llm_wiki_engine.knowledge_freshness import (
     evaluate_knowledge_freshness,
     structural_freshness_modeled,
 )
-from llm_wiki_cli.services.knowledge_index import validate_knowledge_index
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_index import validate_knowledge_index
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     EvidenceBasis,
     EvidenceState,

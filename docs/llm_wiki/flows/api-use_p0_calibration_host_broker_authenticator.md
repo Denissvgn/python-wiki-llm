@@ -21,7 +21,7 @@ sequenceDiagram
     participant p7 as _HOST_BROKER_AUTHENTICATOR.reset
     participant p8 as require_bounded_text
     participant p9 as HostBrokerAuthenticationError
-    participant p10 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
+    participant p10 as isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text)
     participant p11 as len
     participant p12 as value.strip
     participant p13 as contains_control_character
@@ -35,7 +35,7 @@ sequenceDiagram
     p2-->>p7: _HOST_BROKER_AUTHENTICATOR.reset(token)
     p5->>p8: require_bounded_text
     p5->>p9: HostBrokerAuthenticationError
-    p8-->>p10: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)(value, str)
+    p8-->>p10: isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text)(value, str)
     p8-->>p11: len(value)
     p8-->>p11: len(value)
     p8-->>p12: value.strip
@@ -72,7 +72,7 @@ Collector observations for 5 source steps with known totals: observed: 22, emitt
 | `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_require_bounded_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_bounded_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -87,7 +87,7 @@ flowchart LR
     s5["5. HostBrokerAuthenticationUnavailable"]
     s6["6. _require_bounded_text"]
     s7["7. require_bounded_text"]
-    s8["8. isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)"]
+    s8["8. isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text)"]
     s9["9. len"]
     s10["10. len"]
     s11["11. value.strip"]
@@ -98,7 +98,7 @@ flowchart LR
     s3 -->|"HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')"| s5
     s3 -->|"_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')"| s6
     s6 -->|"require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)(value, str)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text)(value, str)" .-> s8
     s7 -. "len(value)" .-> s9
     s7 -. "len(value)" .-> s10
     s7 -. "value.strip(data not statically known)" .-> s11
@@ -122,7 +122,7 @@ flowchart LR
 | `HostBrokerAuthenticationUnavailable` | - | - | - | - |
 | `_require_bounded_text` | `value: Any`, `label: str` | - | - | `require_bounded_text(...)` |
 | `require_bounded_text` | `value: object`, `maximum: int`, `error: Exception`, `minimum: int`, `control_error: Exception \| None`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text)` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
@@ -138,7 +138,7 @@ flowchart LR
 | use_calibration_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 664 | `isinstance(value, str)` |
+| require_bounded_text | isinstance (src/llm_wiki_engine/valid…on.py:require_bounded_text) | 664 | `isinstance(value, str)` |
 | require_bounded_text | len | 665 | `len(value)` |
 | require_bounded_text | len | 666 | `len(value)` |
 | require_bounded_text | value.strip | 667 | `value.strip(data not statically known)` |

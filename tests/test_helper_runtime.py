@@ -230,7 +230,7 @@ def test_planning_keeps_snapshot_exclusions_and_go_test_policy(tmp_path):
 
 
 def test_planning_does_not_widen_persisted_source_selection(tmp_path):
-    from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+    from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
     write(tmp_path, "selected/main.py")
     write(tmp_path, "outside/app.ts")

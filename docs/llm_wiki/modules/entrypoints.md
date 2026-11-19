@@ -26,12 +26,12 @@ Static CLI dispatch alias expansion respects captured module bindings. Method-lo
 | `.plugins` | `PluginError`, `entrypoint_detector_components`, `load_entry_point` |
 | `.python_imports` | `module_binding_imports` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `positive_int_or_none`, `resolved_paths_equal` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.validation` | `positive_int_or_none`, `resolved_paths_equal` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |

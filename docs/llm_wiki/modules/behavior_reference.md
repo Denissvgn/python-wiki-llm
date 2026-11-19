@@ -13,14 +13,14 @@ Versioned reference data derived from the llm-wiki provider's declarations.
 | `.` | `cli_reference`, `current_contracts`, `skills`, `task_compact`, `task_contract` |
 | `..` | `config` |
 | `.helper_runtime` | `resolve_helper_policy` |
-| `.knowledge_evidence` | `hash_json` |
-| `.knowledge_storage_io` | `read_guarded` |
-| `.validation` | `require_portable_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `functools` | `lru_cache` |
 | `importlib` | `resources` |
 | `json` | `json` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
 
@@ -42,10 +42,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (5) |
+| Inbound | `src` (3) |
 | Outbound | `src` (10) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

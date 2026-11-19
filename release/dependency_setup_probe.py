@@ -339,24 +339,30 @@ def run_case(args):
             )
             dist = root / "dist"
             dist.mkdir()
-            build_seconds = invoke(
-                [
-                    executable,
-                    "-I",
-                    "-m",
-                    "build",
-                    "--no-isolation",
-                    "--sdist",
-                    "--wheel",
-                    "--outdir",
-                    dist,
-                    source,
-                ],
-                evidence / "build.log",
-                env,
-            )
-            wheel, sdist = q._dist_files(dist)
-            artifacts = {path.name: d.sha256(path) for path in (wheel, sdist)}
+            build_seconds = 0.0
+            # The CLI and the engine it pins are built by the same builder.
+            for outdir, project, log in (
+                (dist, source, "build.log"),
+                (dist / "engine", source / "src", "build-engine.log"),
+            ):
+                build_seconds += invoke(
+                    [
+                        executable,
+                        "-I",
+                        "-m",
+                        "build",
+                        "--no-isolation",
+                        "--sdist",
+                        "--wheel",
+                        "--outdir",
+                        outdir,
+                        project,
+                    ],
+                    evidence / log,
+                    env,
+                )
+            files = q._build_files(dist)
+            artifacts = {path.name: d.sha256(path) for path in files.values()}
             record["builders"][copy] = {
                 "setup": setup,
                 "build_seconds": build_seconds,
@@ -377,7 +383,7 @@ def run_case(args):
                         env,
                     )
                 validation_seconds = invoke(
-                    [validator, "-I", "-m", "twine", "check", wheel, sdist],
+                    [validator, "-I", "-m", "twine", "check", *files.values()],
                     evidence / "twine.log",
                     env,
                 )
@@ -445,9 +451,9 @@ def validate_result(value):
     artifacts = value["artifacts"]
     d.require(
         isinstance(artifacts, dict)
-        and len(artifacts) == 2
-        and sum(name.endswith(".whl") for name in artifacts) == 1
-        and sum(name.endswith(".tar.gz") for name in artifacts) == 1,
+        and len(artifacts) == len(q.ARTIFACT_KINDS)
+        and sum(name.endswith(".whl") for name in artifacts) == 2
+        and sum(name.endswith(".tar.gz") for name in artifacts) == 2,
         "incomplete comparison artifacts",
     )
     for digest in artifacts.values():

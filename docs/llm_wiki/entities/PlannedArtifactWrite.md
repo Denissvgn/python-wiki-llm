@@ -1,6 +1,6 @@
 # PlannedArtifactWrite
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:117`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:119`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -32,22 +32,22 @@ One exact-byte action in a knowledge artifact commit.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PlannedArtifactWrite (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n1["_apply_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n2["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n3["_verify_persisted (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n4["unchanged_commit_result (src/llm_wiki_cli/services/knowledge_reuse.py)"]
-    n5["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n0["PlannedArtifactWrite (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n1["unchanged_commit_result (src/llm_wiki_cli/services/knowledge_reuse.py)"]
+    n2["_apply_write (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n3["_planned_write (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n4["_verify_persisted (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n5["_recover_knowledge_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     click n0 "../modules/knowledge_artifacts.md"
-    click n1 "../modules/knowledge_artifacts.md"
+    click n1 "../modules/knowledge_reuse.md"
     click n2 "../modules/knowledge_artifacts.md"
     click n3 "../modules/knowledge_artifacts.md"
-    click n4 "../modules/knowledge_reuse.md"
+    click n4 "../modules/knowledge_artifacts.md"
     click n5 "../modules/knowledge_storage_lifecycle.md"
 ```
 
@@ -61,9 +61,9 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `unchanged_commit_result` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 2 |
 | `_apply_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_planned_write` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_planned_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_verify_persisted` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
-| `unchanged_commit_result` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 2 |
 | `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

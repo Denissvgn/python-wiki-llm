@@ -9,21 +9,21 @@ from typing import Any, cast
 
 import pytest
 
-from llm_wiki_cli.services.knowledge_links import (
+from llm_wiki_engine.knowledge_links import (
     KnowledgeLinkError,
     KnowledgeLinkObservation,
     LinkObservation,
     LinkSyntax,
     collect_link_observations,
 )
-from llm_wiki_cli.services.knowledge_model import Resolution, TargetClass
-from llm_wiki_cli.services.wiki_media import mask_fenced_code_blocks
-from llm_wiki_cli.services.wiki_surface import (
+from llm_wiki_engine.knowledge_model import Resolution, TargetClass
+from llm_wiki_engine.wiki_media import mask_fenced_code_blocks
+from llm_wiki_engine.wiki_surface import (
     PageKind,
     SurfaceRole,
     WikiSurfacePage,
 )
-from llm_wiki_cli.services.wiki_surface import mcp_uri as wiki_mcp_uri
+from llm_wiki_engine.wiki_surface import mcp_uri as wiki_mcp_uri
 
 _VIRTUAL_WIKI = Path("/virtual/wiki-that-must-not-be-read")
 

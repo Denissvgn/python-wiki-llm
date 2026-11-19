@@ -20,10 +20,12 @@ repositories, or probe capabilities.
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
-| `llm_wiki_cli.services` | `context_packet` |
-| `llm_wiki_cli.services.context_packet` | `build_qualified_context`, `reconcile_context_packet`, `ContextPacketError`, `QualifiedContextPacket`, `validate_context_packet` |
-| `llm_wiki_cli.services.contracts` | `EVAL_LITE_PLAN_SCHEMA_VERSION`, `EVAL_LITE_TASK_SCHEMA_VERSION` |
-| `llm_wiki_cli.services.validation` | `portable_path_key`, `require_portable_relative_path` |
+| `llm_wiki_cli.services` | `context_packet_builder` |
+| `llm_wiki_cli.services.context_packet` | `ContextPacketError`, `QualifiedContextPacket`, `validate_context_packet` |
+| `llm_wiki_cli.services.context_packet_builder` | `build_qualified_context`, `reconcile_context_packet` |
+| `llm_wiki_engine.canonical_json` | `compact_bytes` |
+| `llm_wiki_engine.contracts` | `EVAL_LITE_PLAN_SCHEMA_VERSION`, `EVAL_LITE_TASK_SCHEMA_VERSION` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `math` | `math` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |
@@ -37,19 +39,28 @@ flowchart LR
     n0["src/llm_wiki_cli/eval_lite/__init__.py"]
     n1["src/llm_wiki_cli/eval_lite/planner.py"]
     n2["src/llm_wiki_cli/services/context_packet.py"]
-    n3["src/llm_wiki_cli/services/contracts.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_cli/services/context_packet_builder.py"]
+    n4["src/llm_wiki_engine/canonical_json.py"]
+    n5["src/llm_wiki_engine/contracts.py"]
+    n6["src/llm_wiki_engine/validation.py"]
     n0 --> n1
     n1 --> n2
     n1 --> n3
     n1 --> n4
+    n1 --> n5
+    n1 --> n6
     n2 --> n3
-    n2 --> n4
+    n2 --> n5
+    n2 --> n6
+    n3 --> n2
+    n3 --> n5
     click n0 "../modules/eval_lite___init__.md"
     click n1 "../modules/planner.md"
     click n2 "../modules/context_packet.md"
-    click n3 "../modules/services_contracts.md"
-    click n4 "../modules/validation.md"
+    click n3 "../modules/context_packet_builder.md"
+    click n4 "../modules/canonical_json.md"
+    click n5 "../modules/llm_wiki_engine_contracts.md"
+    click n6 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -58,15 +69,17 @@ flowchart LR
 |---|---|
 | Inbound | [eval_lite___init__](../modules/eval_lite___init__.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Outbound | [context_packet_builder](../modules/context_packet_builder.md) |
+| Outbound | [canonical_json](../modules/canonical_json.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [EvaluationPlanError](../entities/EvaluationPlanError.md) | 63 | `ValueError` | A task manifest, packet input, or capability declaration is invalid. |
-| [EvaluationPlan](../entities/EvaluationPlan.md) | 73 | — | An immutable canonical inspection plan. |
+| [EvaluationPlanError](../entities/EvaluationPlanError.md) | 64 | `ValueError` | A task manifest, packet input, or capability declaration is invalid. |
+| [EvaluationPlan](../entities/EvaluationPlan.md) | 74 | — | An immutable canonical inspection plan. |
 
 ## Functions
 
@@ -92,7 +105,6 @@ flowchart LR
 | `_require_text` | `(value: Any, field: str) -> str` | — | — |
 | `_require_sequence` | `(value: Any, field: str, *, allow_empty: bool) -> list[Any]` | — | — |
 | `_validate_json_tree` | `(value: Any, field: str, *, depth: int = 0) -> None` | — | — |
-| `_canonical_json_bytes` | `(value: Any) -> bytes` | — | — |
 | `_domain_digest` | `(domain: bytes, value: bytes) -> str` | — | — |
 | `_json_copy` | `(value: Any) -> Any` | — | — |
 | `_json_type` | `(value: Any) -> str` | — | — |

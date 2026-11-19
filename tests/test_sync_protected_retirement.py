@@ -7,8 +7,8 @@ import sys
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.services.knowledge_storage_lifecycle import _committed_inputs
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
 
 
 def _run(monkeypatch, *arguments):

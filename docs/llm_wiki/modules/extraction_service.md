@@ -37,8 +37,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `EXTRACTOR_REGISTRY`, `PathValidationError`, `validate_source_paths`, `validate_source_root` |
-| `..extractors.common` | `LANGUAGE_EXTENSIONS`, `filter_bundled_source_inventory`, `inventory_language_for_path`, `normalize_include_tests` |
+| `..extractors.common` | `LANGUAGE_EXTENSIONS`, `filter_bundled_source_inventory`, `normalize_include_tests` |
 | `..extractors.go_extractor` | `GoExtractionRequest` |
 | `..extractors.haskell_extractor` | `HaskellExtractionRequest` |
 | `..extractors.python_bindings` | `valid_python_constructor_facts` |
@@ -47,30 +46,25 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `..extractors.rust_extractor` | `RustExtractionRequest` |
 | `.analysis_capture` | `capture_operation`, `analysis_diagnostics`, `capture_analysis`, `capture_analysis` |
 | `.api_contracts` | `attach_routes_to_entry_points`, `build_api_contracts` |
-| `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
 | `.dependencies` | `analyze_dependencies` |
 | `.dockerfile_parser` | `parse_dockerfile` |
+| `.domain_pack` | `current_pack`, `pack_extractor`, `uses_default_pack` |
 | `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `build_flow`, `build_flow_detailed`, `build_flow_context`, `detect_entry_points`, `read_console_scripts`, `get_entry_points` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
+| `.extractor_registry` | `EXTRACTOR_REGISTRY` |
 | `.go_calls` | `attach_go_receiver_methods`, `resolve_go_call` |
-| `.helper_preparation` | `prepare_operation_helpers` |
 | `.helper_runtime` | `current_helper_operation`, `current_helper_operation` |
 | `.implementation_evidence` | `_row` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
 | `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
-| `.io` | `write_text_output` |
-| `.knowledge_artifacts` | `require_validated_artifacts` |
-| `.knowledge_evidence` | `hash_json` |
 | `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
-| `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
 | `.python_implementation` | `SCHEMA`, `comparison_id`, `envelope`, `producer`, `analysis_identity`, `producer`, `comparison_id` |
 | `.python_imports` | `is_python_source` |
 | `.python_observations` | `data_effect_sidecar`, `import_sidecar`, `partition_sidecars`, `valid_cached_sidecars` |
 | `.resource_diagnostics` | `format_resource_failure` |
-| `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary`, `SourceSnapshotMutationError` |
 | `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
@@ -83,12 +77,20 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `hashlib` | `hashlib` |
 | `importlib` | `importlib` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
+| `llm_wiki_engine.host` | `HostCapabilityError`, `current_host`, `emit` |
+| `llm_wiki_engine.io` | `write_text_output` |
+| `llm_wiki_engine.knowledge_artifacts` | `require_validated_artifacts` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json` |
+| `llm_wiki_engine.path_policy` | `PathValidationError`, `validate_source_paths`, `validate_source_root` |
+| `llm_wiki_engine.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shlex` | `shlex` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
-| `typing` | `Callable`, `Iterable` |
+| `typing` | `Any`, `Callable`, `Iterable` |
 
 ## Local dependency map
 
@@ -108,24 +110,24 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (23) |
-| Outbound | `src` (36) |
+| Inbound | `src` (22) |
+| Outbound | `src` (38) |
 
-> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 145 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 153 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 185 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 227 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 247 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 272 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 285 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 298 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 324 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 148 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 156 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 188 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 230 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 250 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 277 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 290 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 303 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 329 | — | — |
 
 ## Functions
 

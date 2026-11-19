@@ -1,13 +1,13 @@
 # FrozenDict
 
-**Location:** `src/llm_wiki_cli/services/immutable.py:17`
+**Location:** `src/llm_wiki_engine/immutable.py:17`
 **Kind:** Class
 **Bases:** `dict`
 **Module:** [immutable](../modules/immutable.md)
 
 ## Description
 
-_Auto-generated from `FrozenDict` in `src/llm_wiki_cli/services/immutable.py`._
+_Auto-generated from `FrozenDict` in `src/llm_wiki_engine/immutable.py`._
 
 ## Attributes
 
@@ -24,12 +24,12 @@ _Auto-generated from `FrozenDict` in `src/llm_wiki_cli/services/immutable.py`._
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["FrozenDict (src/llm_wiki_cli/services/immutable.py)"]
+    n0["FrozenDict (src/llm_wiki_engine/immutable.py)"]
     n1["dict"]
     n2["_CapturedAnalysis (src/llm_wiki_cli/services/analysis_capture.py)"]
     n3["src/llm_wiki_cli/services/analysis_capture.py"]
-    n4["freeze (src/llm_wiki_cli/services/immutable.py)"]
-    n5["src/llm_wiki_cli/services/knowledge_model.py"]
+    n4["freeze (src/llm_wiki_engine/immutable.py)"]
+    n5["src/llm_wiki_engine/knowledge_model.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

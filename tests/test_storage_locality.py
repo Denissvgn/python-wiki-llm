@@ -7,18 +7,18 @@ import json
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import knowledge_packs as packs
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine import knowledge_packs as packs
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan, commit_knowledge_artifacts, current_knowledge_format, validated_artifact_bytes,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import COLLECTIONS, KnowledgeStorageError, canonical_bytes, digest
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import COLLECTIONS, KnowledgeStorageError, canonical_bytes, digest
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, recover_knowledge_storage, prune_knowledge_storage, restore_pruned_storage,
 )
-from llm_wiki_cli.services.storage_receipts import compact_storage_receipt, expand_storage_receipt
-from llm_wiki_cli.services.workflow_profile import content_id
+from llm_wiki_engine.storage_receipts import compact_storage_receipt, expand_storage_receipt
+from llm_wiki_engine.workflow_profile import content_id
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_loader import _committed_state, _committed_knowledge_state
 
@@ -224,7 +224,7 @@ def test_storage_options_are_rejected_before_reading(tmp_path, monkeypatch, stor
 
 def test_storage_options_remain_exclusive_to_task_request_v2():
     from llm_wiki_cli.services.task_contract import normalize_task_request
-    from llm_wiki_cli.services.workflow_profile import WorkflowRequestError
+    from llm_wiki_engine.workflow_profile import WorkflowRequestError
     with pytest.raises(WorkflowRequestError, match='requires task request v2'):
         normalize_task_request({'schema_version': 'llm-wiki-task-request/v1', 'storage_options': {'receipt': 'compact-v1'}})
 

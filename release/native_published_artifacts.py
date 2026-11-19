@@ -23,13 +23,18 @@ def is_native_windows() -> bool:
     return os.name == "nt" and sys.platform == "win32"
 
 
-def artifact_names(version: str) -> dict[str, str]:
+def artifact_names(version: str, *, engine: bool = False) -> dict[str, str]:
+    """Release file names; releases since the engine split also ship the engine pair."""
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
         raise ProbeError("version must be a stable X.Y.Z release")
-    return {
+    names = {
         "wheel": f"agent_wiki_cli-{version}-py3-none-any.whl",
         "sdist": f"agent_wiki_cli-{version}.tar.gz",
     }
+    if engine:
+        names["engine-wheel"] = f"llm_wiki_engine-{version}-py3-none-any.whl"
+        names["engine-sdist"] = f"llm_wiki_engine-{version}.tar.gz"
+    return names
 
 
 def require_digest(value: str, length: int, label: str) -> None:
@@ -50,7 +55,7 @@ def require_separate_roots(harness: Path, tools: Path, roots: list[Path]) -> Non
 def verify_archives(directory: Path, names: dict[str, str], hashes: dict[str, str]):
     expected_files = set(names.values())
     if {p.name for p in directory.iterdir()} != expected_files:
-        raise ProbeError("artifact directory must contain only the two expected archives")
+        raise ProbeError("artifact directory must contain only the expected archives")
     for kind, name in names.items():
         path = directory / name
         if path.is_symlink() or not path.is_file():
@@ -60,16 +65,21 @@ def verify_archives(directory: Path, names: dict[str, str], hashes: dict[str, st
 
 
 def verify_comparison(output: Path, hashes: dict[str, str], version: str) -> None:
+    engine = "engine-wheel" in hashes
     for kind in ("wheel", "sdist"):
         value = json.loads((output / f"{kind}.json").read_text(encoding="utf-8"))
         if value["artifact"]["sha256"] != hashes[kind]:
             raise ProbeError(f"{kind} smoke result belongs to another archive")
+        if engine and value.get("engine_artifact", {}).get("sha256") != hashes["engine-" + kind]:
+            raise ProbeError(f"{kind} smoke ran with another engine archive")
     value = json.loads((output / "comparison.json").read_text(encoding="utf-8"))
     if (
         value.get("equal") is not True
         or value.get("version") != version
         or value.get("wheel_sha256") != hashes["wheel"]
         or value.get("sdist_sha256") != hashes["sdist"]
+        or (engine and value.get("engine_wheel_sha256") != hashes["engine-wheel"])
+        or (engine and value.get("engine_sdist_sha256") != hashes["engine-sdist"])
     ):
         raise ProbeError("complete native wheel/sdist comparison did not agree")
 
@@ -155,9 +165,25 @@ from llm_wiki_cli import api
 import json, sys
 assert Path(api.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
 d = distribution('agent-wiki-cli')
+try:
+    e = distribution('llm-wiki-engine')
+except Exception:
+    engine = None
+else:
+    import llm_wiki_engine
+    assert Path(llm_wiki_engine.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
+    engine = {'version': e.version, 'direct_url': json.loads(e.read_text('direct_url.json'))}
 print(json.dumps({'version': d.version, 'module': api.__file__, 'prefix': sys.prefix,
-                  'direct_url': json.loads(d.read_text('direct_url.json'))}))
+                  'direct_url': json.loads(d.read_text('direct_url.json')), 'engine': engine}))
 """
+
+
+def archive_digest(direct_url: dict) -> str | None:
+    archive = direct_url["archive_info"]
+    digest = archive.get("hashes", {}).get("sha256")
+    if digest is None:
+        digest = archive.get("hash", "").removeprefix("sha256=")
+    return digest
 
 
 def main(argv=None) -> int:
@@ -168,6 +194,8 @@ def main(argv=None) -> int:
     parser.add_argument("--harness-sha", required=True)
     parser.add_argument("--wheel-sha256", required=True)
     parser.add_argument("--sdist-sha256", required=True)
+    parser.add_argument("--engine-wheel-sha256")
+    parser.add_argument("--engine-sdist-sha256")
     parser.add_argument("--artifacts", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -195,6 +223,9 @@ def main(argv=None) -> int:
         "expected_archives": {
             "wheel": args.wheel_sha256,
             "sdist": args.sdist_sha256,
+            **({"engine-wheel": args.engine_wheel_sha256,
+                "engine-sdist": args.engine_sdist_sha256}
+               if args.engine_wheel_sha256 or args.engine_sdist_sha256 else {}),
         },
         "native": {
             "os_name": os.name,
@@ -248,9 +279,13 @@ def main(argv=None) -> int:
         return result.stdout
 
     try:
-        names = artifact_names(args.version)
+        engine = bool(args.engine_wheel_sha256 or args.engine_sdist_sha256)
+        names = artifact_names(args.version, engine=engine)
         require_digest(args.harness_sha, 40, "harness SHA")
         hashes = {"wheel": args.wheel_sha256, "sdist": args.sdist_sha256}
+        if engine:
+            hashes.update({"engine-wheel": args.engine_wheel_sha256 or "",
+                           "engine-sdist": args.engine_sdist_sha256 or ""})
         for kind, value in hashes.items():
             require_digest(value, 64, kind)
         if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", args.repository):
@@ -273,7 +308,7 @@ def main(argv=None) -> int:
         args.artifacts.mkdir(parents=True)
         run("download", ["gh", "release", "download", f"v{args.version}",
                          "--repo", args.repository, "--dir", args.artifacts,
-                         "--pattern", names["wheel"], "--pattern", names["sdist"]])
+                         *(word for name in names.values() for word in ("--pattern", name))])
         verify_archives(args.artifacts, names, hashes)
         consumer_environment = dict(environment)
         for key in ("GH_TOKEN", "GITHUB_TOKEN"):
@@ -308,12 +343,15 @@ def main(argv=None) -> int:
                 origin = json.loads(run(f"{kind}-{extra}-origin",
                     [python, "-X", "utf8", "-I", "-c", ORIGIN],
                     env=consumer_environment))
-                archive = origin["direct_url"]["archive_info"]
-                digest = archive.get("hashes", {}).get("sha256")
-                if digest is None:
-                    digest = archive.get("hash", "").removeprefix("sha256=")
+                digest = archive_digest(origin["direct_url"])
                 if origin["version"] != args.version or digest != hashes[kind]:
                     raise ProbeError("consumer origin differs from the published archive")
+                if engine and (
+                    origin["engine"] is None
+                    or origin["engine"]["version"] != args.version
+                    or archive_digest(origin["engine"]["direct_url"]) != hashes["engine-" + kind]
+                ):
+                    raise ProbeError("consumer engine differs from the published engine archive")
                 origins[f"{kind}-{extra}"] = origin
                 if extra == "base":
                     census = json.loads(run(f"{kind}-analysis-inputs",

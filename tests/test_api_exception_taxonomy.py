@@ -32,6 +32,9 @@ _PUBLIC_FUNCTION_NAMES = (
     "admit_p0_calibration_run",
     "adopt_documentation_wiki_snapshot",
     "bootstrap_wiki",
+    "sync_wiki",
+    "lint_wiki",
+    "migrate_wiki",
     "build_calibration_agent_packet",
     "build_budgeted_context",
     "build_context",
@@ -162,6 +165,9 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "validate_cli_contract",
         "validate_behavior_facts",
         "validate_documentation_model_selection",
+        "sync_wiki",
+        "lint_wiki",
+        "migrate_wiki",
     }
 )
 _WORKSPACE_STATE_FAILURES = frozenset(
@@ -358,6 +364,11 @@ def _failure_cases(tmp_path: Path):
             str(missing_source),
             str(tmp_path / "new-wiki"),
         ),
+        "sync_wiki": lambda: api.sync_wiki(
+            ".", "docs/llm_wiki", openapi_file="openapi.yaml", clear_openapi_file=True,
+        ),
+        "lint_wiki": lambda: api.lint_wiki("../outside", "docs/llm_wiki"),
+        "migrate_wiki": lambda: api.migrate_wiki(".", "docs/llm_wiki", plan_chunks=True),
         "extract_source": lambda: api.extract_source(str(missing_source)),
         "build_budgeted_context": lambda: api.build_budgeted_context(
             ".", request={"budget_tokens": 0}
@@ -655,7 +666,7 @@ def test_qualified_context_protocol_fields_follow_context_taxonomy(
         raise internal_error
 
     monkeypatch.setattr(
-        api.context_packet_service,
+        api.context_packet_builder,
         function_name,
         fail,
     )

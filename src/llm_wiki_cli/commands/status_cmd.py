@@ -13,13 +13,13 @@ from ..config import (
     validate_path,
     validate_source_root,
 )
-from ..services import circuit_breaker
-from ..services.io import first_unsafe_path_component
-from ..services.knowledge_observability import (
+from llm_wiki_engine import circuit_breaker
+from llm_wiki_engine.io import first_unsafe_path_component
+from llm_wiki_engine.knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
 )
-from ..services.paths import display_project_path, shell_quote
+from llm_wiki_engine.paths import display_project_path, shell_quote
 from ..services.rendering_lifecycle import (
     LifecycleStatus,
     ManagedLifecycleState,
@@ -39,7 +39,7 @@ from ..services.skills import (
     skills_install_dir,
     verify_reference_skill,
 )
-from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
+from llm_wiki_engine.wiki_surface import PageKind, canonical_path, iter_page_kinds
 from ..services.wiki_lifecycle import (
     WikiScaffoldPathError,
     require_safe_wiki_scaffold,

@@ -1,9 +1,9 @@
 # ContextPacketReconciliation
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:593`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:371`
 **Kind:** Class
 **Bases:** —
-**Module:** [context_packet](../modules/context_packet.md)
+**Module:** [context_packet_builder](../modules/context_packet_builder.md)
 
 **Decorators:** `@dataclass(frozen=True, init=False)`
 
@@ -35,29 +35,29 @@ Consumer-time comparison against one fresh official read.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextPacketReconciliation (src/llm_wiki_cli/services/context_packet.py)"]
-    n1["_reconcile_packet_views (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["ContextPacketReconciliation._from_official_read (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextPacketReconciliation (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n1["_reconcile_packet_views (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n2["ContextPacketReconciliation._from_official_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n3["reconcile_context_packet (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
-    click n0 "../modules/context_packet.md"
-    click n1 "../modules/context_packet.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_packet.md"
+    click n0 "../modules/context_packet_builder.md"
+    click n1 "../modules/context_packet_builder.md"
+    click n2 "../modules/context_packet_builder.md"
+    click n3 "../modules/context_packet_builder.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 3 | `current`, `facets`, `limitations`, `packet_id`, `policy`, `state` |
+| [context_packet_builder](../modules/context_packet_builder.md) | 3 | `current`, `facets`, `limitations`, `packet_id`, `policy`, `state` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_reconcile_packet_views` | type_reference | [context_packet](../modules/context_packet.md) | — |
-| `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
-| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_reconcile_packet_views` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
+| `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |
+| `reconcile_context_packet` | type_reference | [context_packet_builder](../modules/context_packet_builder.md) | — |

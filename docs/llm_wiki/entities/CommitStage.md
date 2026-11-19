@@ -1,6 +1,6 @@
 # CommitStage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:106`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:108`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -28,12 +28,12 @@ Fault-injection points reached after each successful atomic replacement.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["CommitStage (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n0["CommitStage (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n1["Enum"]
     n2["str"]
     n3["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
     n4["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
-    n5["_apply_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n5["_apply_write (src/llm_wiki_engine/knowledge_artifacts.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0

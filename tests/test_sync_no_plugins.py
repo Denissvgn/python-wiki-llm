@@ -217,7 +217,7 @@ def test_real_sync_no_plugins_never_imports_installed_project_code(
         tmp_project, marker=marker
     )
     assert not marker.exists()
-    assert module_name not in sys.modules
+    assert not any(name.rpartition(".")[2] == module_name for name in sys.modules)
 
     models_path = tmp_project / "models.py"
     models_path.write_text(
@@ -246,4 +246,4 @@ def test_real_sync_no_plugins_never_imports_installed_project_code(
         wiki_dir / "modules" / "models.md"
     ).read_text(encoding="utf-8")
     assert not marker.exists()
-    assert module_name not in sys.modules
+    assert not any(name.rpartition(".")[2] == module_name for name in sys.modules)

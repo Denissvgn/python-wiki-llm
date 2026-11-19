@@ -9,7 +9,7 @@ from ..services import team
 from ..services.extraction_service import get_docker_inventory, get_inventory_result
 from ..services.extraction_jobs import extraction_job_request_from_args
 from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
-from ..services.source_selection import (
+from llm_wiki_engine.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
@@ -18,7 +18,7 @@ from ..services.source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from ..services.sync_manifest import SyncManifest, SyncManifestError
+from llm_wiki_engine.sync_manifest import SyncManifest, SyncManifestError
 
 
 def _render_issues_text(title: str, issues: list[dict]) -> str:

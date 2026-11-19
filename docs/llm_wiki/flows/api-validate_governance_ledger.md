@@ -2,12 +2,13 @@
 
 **Entry point:** `validate_governance_ledger` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), [validation](../modules/validation.md), and 2 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [host](../modules/host.md), [knowledge_governance](../modules/knowledge_governance.md), and 3 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [host](../modules/host.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -49,7 +50,7 @@ sequenceDiagram
     participant p26 as _derived_event_id
     participant p27 as _machine_text
     participant p28 as validate_alias_type
-    participant p29 as isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
+    participant p29 as isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)
     participant p30 as concepts.items
     p0->>p1: _bundle_id
     p0->>p2: _concept_uid
@@ -79,27 +80,27 @@ sequenceDiagram
     p6->>p26: _derived_event_id
     p12->>p27: _machine_text
     p18->>p28: validate_alias_type
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)
+    p0-->>p29: isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)(ledger, GovernanceLedger)
     p0-->>p30: concepts.items
 ```
 
-> Call sequence diagram shows 30 of 364 interactions; 334 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 366 interactions; 336 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 77 (76 omitted); unresolved 1 of 93 (92 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 76 (75 omitted); unresolved 1 of 95 (94 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 1 | - | external | 14 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 6 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 6 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 24 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 27 | - | external | 1 |
-> Omission summary shows 8 of 104 groups; 96 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/knowledge_governance.py:validate_governance_ledger` | 1 | - | external | 14 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 6 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 6 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 24 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 27 | - | external | 1 |
+> Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -112,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 195; effect analysis evaluated: 96, partial: 1, unavailable: 98. Counts include steps omitted from the displayed trace.
+Source steps: 196; effect analysis evaluated: 97, partial: 1, unavailable: 98. Counts include steps omitted from the displayed trace.
 
-Collector observations for 97 source steps with known totals: observed: 437, emitted: 431, omitted: 6. Unavailable totals are excluded.
+Collector observations for 98 source steps with known totals: observed: 438, emitted: 432, omitted: 6. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -123,43 +124,43 @@ Collector observations for 97 source steps with known totals: observed: 437, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `validate_governance_ledger` | `available` | `partial` | `available` | `20` | `14` | `6` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_bundle_id` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. validate_governance_ledger"]
-    s2["2. isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)"]
+    s2["2. isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)"]
     s3["3. TypeError"]
     s4["4. GovernanceError"]
     s5["5. _bundle_id"]
     s6["6. validate_bundle_id"]
     s7["7. _machine_text"]
-    s8["8. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s8["8. isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s9["9. ConceptIdentityError"]
-    s10["10. len (src/llm_wiki_cli/services…identity.py:_machine_text)"]
+    s10["10. len (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
     s11["11. ConceptIdentityError"]
-    s12["12. value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s2
+    s12["12. value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)"]
+    s1 -. "isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s2
     s1 -. "TypeError('ledger must be a GovernanceLedger')" .-> s3
     s1 -->|"GovernanceError('schema_version', ..., code='governance-version-unsupported')"| s4
     s1 -->|"_bundle_id(ledger.bundle_id, 'bundle_id')"| s5
     s5 -->|"validate_bundle_id(value)"| s6
     s6 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)(value, str)" .-> s8
     s7 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s9
-    s7 -. "len (src/llm_wiki_cli/services…identity.py:_machine_text)(value)" .-> s10
+    s7 -. "len (src/llm_wiki_engine/conce…identity.py:_machine_text)(value)" .-> s10
     s7 -->|"ConceptIdentityError(field, ...)"| s11
-    s7 -. "value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)(data not statically known)" .-> s12
+    s7 -. "value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)(data not statically known)" .-> s12
     click s1 "../modules/knowledge_governance.md"
     click s4 "../modules/knowledge_governance.md"
     click s5 "../modules/knowledge_governance.md"
@@ -174,33 +175,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `validate_governance_ledger` | `ledger: GovernanceLedger`, `expected_bundle_id: str \| None` | `GovernanceLedger`, `GOVERNANCE_SCHEMA_VERSION`, `GOVERNANCE_SCHEMA_VERSION`, `GovernanceAllocation`, `ConceptIdentityError`, `ALIAS_NATURAL_KEY`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` | `current_keys[...]`, `alias_counts[...]`, `alias_owners[...]` | `GovernanceLedger(...)` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `_bundle_id` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_bundle_id(...)` |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `len (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 526 | `isinstance(ledger, GovernanceLedger)` |
-| validate_governance_ledger | TypeError | 527 | `TypeError('ledger must be a GovernanceLedger')` |
-| validate_governance_ledger | GovernanceError | 529 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
-| validate_governance_ledger | _bundle_id | 534 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3504 | `validate_bundle_id(value)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 527 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | TypeError | 528 | `TypeError('ledger must be a GovernanceLedger')` |
+| validate_governance_ledger | GovernanceError | 530 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
+| validate_governance_ledger | _bundle_id | 535 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
+| _bundle_id | validate_bundle_id | 3505 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | len (src/llm_wiki_engine/conce…identity.py:_machine_text) | 944 | `len(value)` |
 | _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
+| _machine_text | value.strip (src/llm_wiki_engine/conce…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -210,8 +211,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_ledger` | `isinstance` | 526 |
-| external_call | `validate_governance_ledger` | `TypeError` | 527 |
+| external_call | `validate_governance_ledger` | `isinstance` | 527 |
+| external_call | `validate_governance_ledger` | `TypeError` | 528 |
 | external_call | `_machine_text` | `isinstance` | 942 |
 | unresolved_call | `_machine_text` | `value.strip` | 946 |
 | step_limit | `validate_governance_ledger` | `first 12 steps` | 0 |

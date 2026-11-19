@@ -6,7 +6,7 @@ import random
 
 import pytest
 
-from llm_wiki_cli.services.search_lexical import rank_pages
+from llm_wiki_engine.search_lexical import rank_pages
 
 
 def page(name, content, *, kind="modules", title=None, **metadata):
@@ -66,7 +66,7 @@ def test_flow_trace_and_nested_data_have_inventory_weight_without_rewriting_evid
 
 
 def test_only_complete_default_flow_behavior_is_discounted():
-    from llm_wiki_cli.services.search_lexical import _fields
+    from llm_wiki_engine.search_lexical import _fields
     placeholder = ("This flow starts at `dispatch` and is classified as `api`. "
         "The generated call and data-flow sections are bounded static projections; "
         "runtime conditions and side effects require source-level confirmation.")
@@ -81,7 +81,7 @@ def test_only_complete_default_flow_behavior_is_discounted():
 
 
 def test_nonflow_call_sequence_keeps_authored_section_weight():
-    from llm_wiki_cli.services.search_lexical import _fields
+    from llm_wiki_engine.search_lexical import _fields
     guide = page("guide", "# Guide\n\n## Call sequence\nAmber boundary.\n", kind="guides")
     fields = _fields(guide)[0]
     assert next(f["weight"] for f in fields if f["heading"][-1:] == ["Call sequence"]) == 1.0

@@ -22,11 +22,11 @@ from llm_wiki_cli.services.extraction_service import (
     get_inventory_result,
     resolve_call_edges,
 )
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.section_ownership import (
     SectionOwnership,
     observe_page_sections,
 )
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 from tests.developer_value.fixtures import projects
 
 

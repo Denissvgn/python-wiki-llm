@@ -9,12 +9,12 @@ from pathlib import Path
 
 from llm_wiki_cli import api
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.mcp_server import McpWikiService
 
 
@@ -30,7 +30,7 @@ def _sync(wiki_dir: Path) -> None:
 
 
 def _knowledge_payload(wiki_dir: Path) -> dict:
-    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+    from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
     knowledge = load_knowledge_state(wiki_dir).knowledge
     assert knowledge is not None
     return knowledge_index_to_payload(knowledge)

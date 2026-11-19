@@ -7,45 +7,45 @@ from dataclasses import replace
 
 import pytest
 
-from llm_wiki_cli.services.io import write_bytes_atomic
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.io import write_bytes_atomic
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_evidence import (
+from llm_wiki_engine.knowledge_evidence import (
     canonical_json_text,
     formatted_json_bytes,
     sha256_bytes,
 )
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.knowledge_model import KnowledgeLoadState
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     MANIFEST_FILENAME,
     ManifestEvidenceBaseline,
 )
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan, _surface_variant
 from tests.test_knowledge_generation import _planner_inputs
 from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GOVERNANCE_EXTENSION_KEY,
     apply_governance_projection,
 )
-from llm_wiki_cli.services.knowledge_graph import relationship_edge_key
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_graph import relationship_edge_key
+from llm_wiki_engine.knowledge_model import (
     knowledge_index_to_payload,
     parse_knowledge_index,
 )

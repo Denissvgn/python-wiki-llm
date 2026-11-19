@@ -1,6 +1,6 @@
 # KnowledgeGraphError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:112`
+**Location:** `src/llm_wiki_engine/knowledge_graph.py:112`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)
@@ -24,20 +24,20 @@ Field-specific typed-graph contract or materialization failure.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeGraphError (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n0["KnowledgeGraphError (src/llm_wiki_engine/knowledge_graph.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/services/documentation_queries.py"]
-    n3["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n5["_aggregate_flow_coverage (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n6["_canonical_json (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n7["_enum (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n8["_external_uri (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n9["_json_value (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n10["_limitation (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n11["_limitations (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n12["_locator (src/llm_wiki_cli/services/knowledge_graph.py)"]
-    n13["_materialization_state (src/llm_wiki_cli/services/knowledge_graph.py)"]
+    n3["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n4["src/llm_wiki_cli/services/task_context_v2.py"]
+    n5["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n6["_aggregate_flow_coverage (src/llm_wiki_engine/knowledge_graph.py)"]
+    n7["_canonical_json (src/llm_wiki_engine/knowledge_graph.py)"]
+    n8["_enum (src/llm_wiki_engine/knowledge_graph.py)"]
+    n9["_external_uri (src/llm_wiki_engine/knowledge_graph.py)"]
+    n10["_json_value (src/llm_wiki_engine/knowledge_graph.py)"]
+    n11["_limitation (src/llm_wiki_engine/knowledge_graph.py)"]
+    n12["_limitations (src/llm_wiki_engine/knowledge_graph.py)"]
+    n13["_locator (src/llm_wiki_engine/knowledge_graph.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -53,9 +53,9 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/knowledge_graph.md"
     click n2 "../modules/documentation_queries.md"
-    click n3 "../modules/knowledge_artifacts.md"
-    click n4 "../modules/knowledge_generation.md"
-    click n5 "../modules/knowledge_graph.md"
+    click n3 "../modules/knowledge_generation.md"
+    click n4 "../modules/task_context_v2.md"
+    click n5 "../modules/knowledge_artifacts.md"
     click n6 "../modules/knowledge_graph.md"
     click n7 "../modules/knowledge_graph.md"
     click n8 "../modules/knowledge_graph.md"
@@ -83,8 +83,9 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) | — |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `task_context_v2` | import | [task_context_v2](../modules/task_context_v2.md) | — |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_aggregate_flow_coverage` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
 | `_canonical_json` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_enum` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
@@ -93,6 +94,5 @@ flowchart LR
 | `_limitation` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_limitations` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
 | `_locator` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
-| `_materialization_state` | call | [knowledge_graph](../modules/knowledge_graph.md) | 2 |
 
 > References: showing 12 of 38 logical references; 26 omitted by the 12-row generated summary limit.

@@ -321,7 +321,7 @@ def assert_helper_recovery(request, monkeypatch):
     """Check complete recovery guidance using the selected command shell."""
     from llm_wiki_cli.services import extractor_helpers
     from llm_wiki_cli.services.helper_cache import user_helper_cache_root
-    from llm_wiki_cli.services.paths import render_shell_command
+    from llm_wiki_engine.paths import render_shell_command
 
     shell = request.param
     monkeypatch.setattr(

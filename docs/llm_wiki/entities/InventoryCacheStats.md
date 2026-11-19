@@ -1,6 +1,6 @@
 # InventoryCacheStats
 
-**Location:** `src/llm_wiki_cli/services/inventory_cache.py:56`
+**Location:** `src/llm_wiki_cli/services/inventory_cache.py:51`
 **Kind:** Class
 **Bases:** —
 **Module:** [inventory_cache](../modules/inventory_cache.md)
@@ -41,12 +41,12 @@ _Auto-generated from `InventoryCacheStats` in `src/llm_wiki_cli/services/invento
 flowchart LR
     n0["InventoryCacheStats (src/llm_wiki_cli/services/inventory_cache.py)"]
     n1["run (src/llm_wiki_cli/commands/ci_check_cmd.py)"]
-    n2["_print_cache_stats (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["src/llm_wiki_cli/services/extraction_service.py"]
-    n4["format_cache_stats (src/llm_wiki_cli/services/inventory_cache.py)"]
-    n5["InventoryCache.__init__ (src/llm_wiki_cli/services/inventory_cache.py)"]
-    n6["src/llm_wiki_cli/services/lint_service.py"]
-    n7["inventory_result (src/llm_wiki_cli/services/sync_analysis_cache.py)"]
+    n2["src/llm_wiki_cli/services/extraction_service.py"]
+    n3["format_cache_stats (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n4["InventoryCache.__init__ (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n5["src/llm_wiki_cli/services/lint_service.py"]
+    n6["inventory_result (src/llm_wiki_cli/services/sync_analysis_cache.py)"]
+    n7["_print_cache_stats (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -56,12 +56,12 @@ flowchart LR
     n7 --> n0
     click n0 "../modules/inventory_cache.md"
     click n1 "../modules/ci_check_cmd.md"
-    click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/extraction_service.md"
+    click n2 "../modules/extraction_service.md"
+    click n3 "../modules/inventory_cache.md"
     click n4 "../modules/inventory_cache.md"
-    click n5 "../modules/inventory_cache.md"
-    click n6 "../modules/lint_service.md"
-    click n7 "../modules/sync_analysis_cache.md"
+    click n5 "../modules/lint_service.md"
+    click n6 "../modules/sync_analysis_cache.md"
+    click n7 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -75,9 +75,9 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 1 |
-| `_print_cache_stats` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `extraction_service` | import | [extraction_service](../modules/extraction_service.md) | — |
 | `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
 | `InventoryCache.__init__` | call | [inventory_cache](../modules/inventory_cache.md) | 1 |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
 | `inventory_result` | call | [sync_analysis_cache](../modules/sync_analysis_cache.md) | 1 |
+| `_print_cache_stats` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |

@@ -1,7 +1,7 @@
 # context_budget_flow
 
 **Entry point:** `context_budget.run`
-**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_service](../modules/context_service.md), [io](../modules/io.md), [token_counting](../modules/token_counting.md)
+**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_service](../modules/context_service.md), [host](../modules/host.md), [io](../modules/io.md), [token_counting](../modules/token_counting.md)
 
 ## Sequence
 
@@ -11,14 +11,16 @@
 3. `token_counting.LocalTokenizerCounter`
 4. `context_service._packet_helper_diagnostics`
 5. `context_service._emit_packet_error`
-6. `io.write_text_output`
-7. `io.write_utf8_stdout`
+6. `host.emit`
+7. `io.write_text_output`
+8. `io.write_utf8_stdout`
 
 ## Touches
 
 - [change_selection](../modules/change_selection.md)
 - [context_budget](../modules/context_budget.md)
 - [context_service](../modules/context_service.md)
+- [host](../modules/host.md)
 - [io](../modules/io.md)
 - [token_counting](../modules/token_counting.md)
 

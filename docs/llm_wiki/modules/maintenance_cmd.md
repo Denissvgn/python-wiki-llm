@@ -19,10 +19,10 @@ missing authority.
 |--------|---------|
 | `..` | `api` |
 | `..config` | `validate_path` |
-| `..services.request_json` | `load_request` |
-| `..services.sync_recovery` | `recover_new_sync_pages` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.request_json` | `load_request` |
+| `llm_wiki_engine.sync_recovery` | `recover_new_sync_pages` |
 
 ## Local dependency map
 
@@ -34,9 +34,10 @@ flowchart LR
     n2["src/llm_wiki_cli/commands/__init__.py"]
     n3["src/llm_wiki_cli/commands/maintenance_cmd.py"]
     n4["src/llm_wiki_cli/config.py"]
-    n5["src/llm_wiki_cli/services/request_json.py"]
-    n6["src/llm_wiki_cli/services/sync_recovery.py"]
+    n5["src/llm_wiki_engine/request_json.py"]
+    n6["src/llm_wiki_engine/sync_recovery.py"]
     n0 --> n4
+    n1 --> n2
     n1 --> n3
     n1 --> n4
     n2 --> n3

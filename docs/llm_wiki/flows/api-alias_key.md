@@ -33,9 +33,9 @@ sequenceDiagram
     participant p19 as canonical_path
     participant p20 as mcp_uri
     participant p21 as is_safe_page_id
-    participant p22 as isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)
+    participant p22 as isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type)
     participant p23 as text.partition
-    participant p24 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
+    participant p24 as isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type)
     participant p25 as _NATURAL_KEY_PREFIX_RE.fullmatch
     participant p26 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
     participant p27 as _INVALID_PERCENT_RE.search
@@ -63,9 +63,9 @@ sequenceDiagram
     p8->>p19: canonical_path
     p8->>p20: mcp_uri
     p10->>p21: is_safe_page_id
-    p1-->>p22: isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)(value, str)
+    p1-->>p22: isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type)(value, str)
     p6-->>p23: text.partition(':')
-    p4-->>p24: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)(value, AliasType)
+    p4-->>p24: isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type)(value, AliasType)
     p6-->>p25: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
     p6-->>p26: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
     p6-->>p27: _INVALID_PERCENT_RE.search(payload)
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_identity_value` | 5 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 13 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 13 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 13 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 28 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 30 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_locator` | 12 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 34 | - | external | 4 |
+| `src/llm_wiki_engine/knowledge_governance.py:_identity_value` | 5 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 13 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 13 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 13 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 28 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 30 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:validate_locator` | 12 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 34 | - | external | 4 |
 > Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -114,13 +114,13 @@ Collector observations for 25 source steps with known totals: observed: 100, emi
 |---|---|---|---|---:|---:|---:|
 | `alias_key` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_alias_type` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_identity_value` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `_alias_type` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `validate_alias_value` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `validate_alias_type` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `AliasType` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `validate_locator` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -129,24 +129,24 @@ Collector observations for 25 source steps with known totals: observed: 100, emi
 flowchart LR
     s1["1. alias_key"]
     s2["2. _alias_type"]
-    s3["3. isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)"]
+    s3["3. isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type)"]
     s4["4. GovernanceError"]
     s5["5. _identity_value"]
     s6["6. _alias_type"]
     s7["7. validate_alias_value"]
     s8["8. validate_alias_type"]
-    s9["9. isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)"]
+    s9["9. isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type)"]
     s10["10. AliasType"]
     s11["11. ConceptIdentityError"]
     s12["12. validate_locator"]
     s1 -->|"_alias_type(alias_type, 'alias.type')"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)(value, str)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type)(value, str)" .-> s3
     s2 -->|"GovernanceError(path, #34;must be 'locator' or 'natural-key'#34;)"| s4
     s1 -->|"_identity_value(value, selected_type, 'alias.value')"| s5
     s5 -->|"_alias_type(alias_type, ...)"| s6
     s5 -->|"validate_alias_value(..., value)"| s7
     s7 -->|"validate_alias_type(alias_type)"| s8
-    s8 -. "isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)(value, AliasType)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type)(value, AliasType)" .-> s9
     s8 -->|"AliasType(value)"| s10
     s8 -->|"ConceptIdentityError('alias_type', #34;must be 'locator' or 'natural-key'#34;)"| s11
     s7 -->|"validate_locator(value)"| s12
@@ -168,13 +168,13 @@ flowchart LR
 |---|---|---|---|---|
 | `alias_key` | `alias_type: str`, `value: str` | - | - | `...` |
 | `_alias_type` | `value: object`, `path: str` | `ALIAS_TYPES` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type)` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `_identity_value` | `value: object`, `alias_type: str`, `path: str` | `ALIAS_LOCATOR`, `AliasType`, `AliasType`, `ConceptIdentityError` | - | `validate_alias_value(...)` |
 | `_alias_type` | `value: object`, `path: str` | `ALIAS_TYPES` | - | `value` |
 | `validate_alias_value` | `alias_type: AliasType \| str`, `value: object` | `AliasType` | - | `validate_locator(...)`, `validate_natural_key(...)` |
 | `validate_alias_type` | `value: AliasType \| str` | `AliasType` | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type)` | - | - | - | - |
 | `AliasType` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 | `validate_locator` | `value: object` | `_MAX_NATURAL_KEY_LENGTH`, `WikiSurfaceError` | - | `normalized` |
@@ -183,14 +183,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| alias_key | _alias_type | 381 | `_alias_type(alias_type, 'alias.type')` |
-| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3418 | `isinstance(value, str)` |
-| _alias_type | GovernanceError | 3419 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
-| alias_key | _identity_value | 382 | `_identity_value(value, selected_type, 'alias.value')` |
-| _identity_value | _alias_type | 3427 | `_alias_type(alias_type, ...)` |
-| _identity_value | validate_alias_value | 3429 | `validate_alias_value(..., value)` |
+| alias_key | _alias_type | 382 | `_alias_type(alias_type, 'alias.type')` |
+| _alias_type | isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type) | 3419 | `isinstance(value, str)` |
+| _alias_type | GovernanceError | 3420 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
+| alias_key | _identity_value | 383 | `_identity_value(value, selected_type, 'alias.value')` |
+| _identity_value | _alias_type | 3428 | `_alias_type(alias_type, ...)` |
+| _identity_value | validate_alias_value | 3430 | `validate_alias_value(..., value)` |
 | validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
-| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
+| validate_alias_type | isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
 | validate_alias_type | AliasType | 475 | `AliasType(value)` |
 | validate_alias_type | ConceptIdentityError | 477 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
 | validate_alias_value | validate_locator | 488 | `validate_locator(value)` |
@@ -203,7 +203,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_alias_type` | `isinstance` | 3418 |
+| external_call | `_alias_type` | `isinstance` | 3419 |
 | external_call | `validate_alias_type` | `isinstance` | 475 |
 | step_limit | `alias_key` | `first 12 steps` | 0 |
 | truncated_flow | `alias_key` | `depth limit` | 0 |

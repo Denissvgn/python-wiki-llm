@@ -12,14 +12,14 @@ _Auto-generated from `src/llm_wiki_cli/commands/uninstall_cmd.py`._
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR`, `get_agent_config_path`, `validate_path` |
 | `..services.ci_installer` | `DOCUMENTATION_WORKFLOW_PATH`, `MANAGED_WORKFLOW_PATH`, `is_unmodified_managed_workflow` |
-| `..services.filesystem_guard` | `GuardedTreeManifest`, `atomic_write_guarded_bytes`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
-| `..services.io` | `first_unsafe_path_component` |
 | `..services.legacy_hooks` | `HOOK_NAMES`, `LegacyHookError`, `LegacyHookInspection`, `inspect_legacy_hooks`, `remove_legacy_hooks` |
-| `..services.paths` | `display_project_path` |
 | `..services.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `ManagedSchemaBlockError`, `ManagedSchemaBlockState`, `ManagedSchemaPathError`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `encode_managed_document_text`, `require_safe_schema_path`, `strip_wiki_block` |
 | `..services.skills` | `BUNDLED_SKILLS_ROOT`, `KNOWN_INSTALL_TARGETS`, `REFERENCE_SKILL_ID`, `ReferenceSkillReason`, `ReferenceSkillState`, `verify_reference_skill` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
+| `llm_wiki_engine.filesystem_guard` | `GuardedTreeManifest`, `atomic_write_guarded_bytes`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.paths` | `display_project_path` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
 | `sys` | `sys` |
@@ -34,12 +34,12 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/uninstall_cmd.py"]
     n2["src/llm_wiki_cli/config.py"]
     n3["src/llm_wiki_cli/services/ci_installer.py"]
-    n4["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n5["src/llm_wiki_cli/services/io.py"]
-    n6["src/llm_wiki_cli/services/legacy_hooks.py"]
-    n7["src/llm_wiki_cli/services/paths.py"]
-    n8["src/llm_wiki_cli/services/schema.py"]
-    n9["src/llm_wiki_cli/services/skills.py"]
+    n4["src/llm_wiki_cli/services/legacy_hooks.py"]
+    n5["src/llm_wiki_cli/services/schema.py"]
+    n6["src/llm_wiki_cli/services/skills.py"]
+    n7["src/llm_wiki_engine/filesystem_guard.py"]
+    n8["src/llm_wiki_engine/io.py"]
+    n9["src/llm_wiki_engine/paths.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
@@ -50,28 +50,28 @@ flowchart LR
     n1 --> n7
     n1 --> n8
     n1 --> n9
-    n2 --> n4
-    n2 --> n5
-    n3 --> n4
-    n3 --> n5
-    n6 --> n2
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n8 --> n5
-    n8 --> n7
-    n8 --> n9
-    n9 --> n5
+    n2 --> n7
+    n2 --> n8
+    n3 --> n7
+    n3 --> n8
+    n4 --> n2
+    n4 --> n7
+    n4 --> n8
+    n4 --> n9
+    n5 --> n6
+    n5 --> n8
+    n5 --> n9
+    n6 --> n8
     click n0 "../modules/cli.md"
     click n1 "../modules/uninstall_cmd.md"
     click n2 "../modules/config.md"
     click n3 "../modules/ci_installer.md"
-    click n4 "../modules/filesystem_guard.md"
-    click n5 "../modules/io.md"
-    click n6 "../modules/legacy_hooks.md"
-    click n7 "../modules/paths.md"
-    click n8 "../modules/services_schema.md"
-    click n9 "../modules/skills.md"
+    click n4 "../modules/legacy_hooks.md"
+    click n5 "../modules/services_schema.md"
+    click n6 "../modules/skills.md"
+    click n7 "../modules/filesystem_guard.md"
+    click n8 "../modules/io.md"
+    click n9 "../modules/paths.md"
 ```
 
 ### Internal neighbors
@@ -81,12 +81,12 @@ flowchart LR
 | Inbound | [cli](../modules/cli.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [ci_installer](../modules/ci_installer.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
-| Outbound | [io](../modules/io.md) |
 | Outbound | [legacy_hooks](../modules/legacy_hooks.md) |
-| Outbound | [paths](../modules/paths.md) |
 | Outbound | [services_schema](../modules/services_schema.md) |
 | Outbound | [skills](../modules/skills.md) |
+| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
+| Outbound | [io](../modules/io.md) |
+| Outbound | [paths](../modules/paths.md) |
 
 ## Classes
 

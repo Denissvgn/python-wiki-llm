@@ -20,7 +20,7 @@ captured syntax, never dependencies, prose correctness, or runtime equivalence.
 | `collections.abc` | `Mapping` |
 | `hashlib` | `hashlib` |
 | `io` | `io` |
-| `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `compact_line_bytes` |
 | `math` | `math` |
 | `pathlib` | `PurePosixPath` |
 | `platform` | `platform` |
@@ -34,29 +34,77 @@ captured syntax, never dependencies, prose correctness, or runtime equivalence.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_cli/services/python_implementation.py"]
-    n0 --> n1
-    n1 --> n0
-    click n1 "../modules/python_implementation.md"
+    n0["src/llm_wiki_cli/extractors/python_extractor.py"]
+    n1["src/llm_wiki_cli/services/analysis_capture.py"]
+    n2["src/llm_wiki_cli/services/documentation_query_builder.py"]
+    n3["src/llm_wiki_cli/services/extraction_service.py"]
+    n4["src/llm_wiki_cli/services/implementation_evidence.py"]
+    n5["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n6["src/llm_wiki_cli/services/knowledge_reuse.py"]
+    n7["src/llm_wiki_cli/services/maintenance_service.py"]
+    n8["src/llm_wiki_cli/services/python_implementation.py"]
+    n9["src/llm_wiki_cli/services/task_context_v2.py"]
+    n10["src/llm_wiki_cli/services/task_implementation.py"]
+    n11["src/llm_wiki_engine/canonical_json.py"]
+    n0 --> n8
+    n2 --> n3
+    n2 --> n8
+    n3 --> n0
+    n3 --> n1
+    n3 --> n4
+    n3 --> n8
+    n4 --> n8
+    n5 --> n1
+    n5 --> n8
+    n6 --> n3
+    n6 --> n5
+    n6 --> n8
+    n7 --> n5
+    n7 --> n6
+    n7 --> n8
+    n8 --> n1
+    n8 --> n11
+    n9 --> n2
+    n9 --> n3
+    n9 --> n4
+    n9 --> n8
+    n9 --> n10
+    n10 --> n4
+    n10 --> n8
+    click n0 "../modules/python_extractor.md"
+    click n1 "../modules/analysis_capture.md"
+    click n2 "../modules/documentation_query_builder.md"
+    click n3 "../modules/extraction_service.md"
+    click n4 "../modules/implementation_evidence.md"
+    click n5 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_reuse.md"
+    click n7 "../modules/maintenance_service.md"
+    click n8 "../modules/python_implementation.md"
+    click n9 "../modules/task_context_v2.md"
+    click n10 "../modules/task_implementation.md"
+    click n11 "../modules/canonical_json.md"
 ```
-
-> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (13) |
-| Outbound | `src` (1) |
-
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+| Inbound | [python_extractor](../modules/python_extractor.md) |
+| Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
+| Inbound | [extraction_service](../modules/extraction_service.md) |
+| Inbound | [implementation_evidence](../modules/implementation_evidence.md) |
+| Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Inbound | [knowledge_reuse](../modules/knowledge_reuse.md) |
+| Inbound | [maintenance_service](../modules/maintenance_service.md) |
+| Inbound | [task_context_v2](../modules/task_context_v2.md) |
+| Inbound | [task_implementation](../modules/task_implementation.md) |
+| Outbound | [analysis_capture](../modules/analysis_capture.md) |
+| Outbound | [canonical_json](../modules/canonical_json.md) |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `canonical_bytes` | `(value: Any) -> bytes` | — | — |
 | `_digest` | `(value: Any) -> str` | — | — |
 | `analysis_identity` | `(captured: object) -> str \| None` | — | Bind only issuer-owned surrounding code/runtime and normalization config. |
 | `producer` | `(analysis_hash: str \| None, *, language = 'python') -> dict[str, str] \| None` | — | — |

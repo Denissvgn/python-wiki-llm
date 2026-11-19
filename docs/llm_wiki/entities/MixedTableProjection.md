@@ -1,6 +1,6 @@
 # MixedTableProjection
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:189`
+**Location:** `src/llm_wiki_engine/markdown_sections.py:189`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)
@@ -30,8 +30,8 @@ Separate structural and semantic commitments for one mixed section.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MixedTableProjection (src/llm_wiki_cli/services/markdown_sections.py)"]
-    n1["mixed_table_projection (src/llm_wiki_cli/services/markdown_sections.py)"]
+    n0["MixedTableProjection (src/llm_wiki_engine/markdown_sections.py)"]
+    n1["mixed_table_projection (src/llm_wiki_engine/markdown_sections.py)"]
     n1 --> n0
     click n0 "../modules/markdown_sections.md"
     click n1 "../modules/markdown_sections.md"

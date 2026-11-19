@@ -28,15 +28,15 @@ from llm_wiki_cli.services.ci_installer import (
     normalize_action_ref,
     render_managed_workflow,
 )
-from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import capture_source_selection_inputs
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 
 
 ACTION_REF = "A" * 40
@@ -248,8 +248,9 @@ def test_generated_workflow_evaluates_migrated_and_legacy_knowledge(
     tmp_path, monkeypatch, legacy
 ):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services import analysis_capture, analysis_compatibility, ci_report
-    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_cli.services import analysis_capture, ci_report
+    from llm_wiki_engine import analysis_compatibility
+    from llm_wiki_engine.knowledge_loader import load_knowledge_state
     from tests.test_knowledge_health_refresh import _version
 
     monkeypatch.chdir(tmp_path)
@@ -323,7 +324,7 @@ def test_generated_workflow_evaluates_migrated_and_legacy_knowledge(
 
 def test_sync_rejects_dangling_git_metadata_without_modifying_wiki(tmp_path, monkeypatch, capsys):
     from llm_wiki_cli import api
-    from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+    from llm_wiki_engine.maintenance_protocol import snapshot_wiki
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"

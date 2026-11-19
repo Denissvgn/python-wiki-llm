@@ -33,8 +33,8 @@ def main(argv=None):
     args.evidence.mkdir(parents=True, exist_ok=True)
     if args.operation == "prepare":
         from llm_wiki_cli import api
-        from llm_wiki_cli.services.sync_manifest import SyncManifest
-        from llm_wiki_cli.services.manifest_storage import current_manifest_format
+        from llm_wiki_engine.sync_manifest import SyncManifest
+        from llm_wiki_engine.manifest_storage import current_manifest_format
 
         if (
             (root / ".git").exists()

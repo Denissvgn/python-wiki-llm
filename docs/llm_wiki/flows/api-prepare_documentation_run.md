@@ -2,7 +2,7 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [documentation_run_prepare](../modules/documentation_run_prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 36 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 40 more
 
 **Complete modules touched:**
 
@@ -10,15 +10,19 @@
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [current_contracts](../modules/current_contracts.md)
 - [documentation_native](../modules/documentation_native.md)
 - [documentation_run_prepare](../modules/documentation_run_prepare.md)
 - [documentation_wiki_input](../modules/documentation_wiki_input.md)
+- [engine_events](../modules/engine_events.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_runtime](../modules/helper_runtime.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [host](../modules/host.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
+- [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -116,9 +120,9 @@ sequenceDiagram
     p0-->>p30: _RefreshArchiveTransaction
 ```
 
-> Call sequence diagram shows 30 of 1233 interactions; 1203 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1245 interactions; 1215 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 298 (297 omitted); unresolved 1 of 368 (367 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 302 (301 omitted); unresolved 1 of 372 (371 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -132,7 +136,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 63 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:pending_bootstrap` | 79 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 1 |
 | `src/llm_wiki_cli/services/bootstrap_recovery.py:_load_record` | 80 | [src/llm_wiki_cli/services/bootstrap_recovery.py](../modules/bootstrap_recovery.md) | internal | 5 |
-> Omission summary shows 8 of 323 groups; 315 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 332 groups; 324 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -145,9 +149,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 568; effect analysis evaluated: 372, partial: 32, unavailable: 164. Counts include steps omitted from the displayed trace.
+Source steps: 572; effect analysis evaluated: 376, partial: 32, unavailable: 164. Counts include steps omitted from the displayed trace.
 
-Collector observations for 404 source steps with known totals: observed: 2351, emitted: 2213, omitted: 138. Unavailable totals are excluded.
+Collector observations for 408 source steps with known totals: observed: 2359, emitted: 2221, omitted: 138. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

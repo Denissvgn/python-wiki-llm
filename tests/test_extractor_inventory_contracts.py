@@ -9,7 +9,7 @@ from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.extractors.go_extractor import GoExtractor
 from llm_wiki_cli.extractors.rust_extractor import RustExtractor
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
-from llm_wiki_cli.services import contracts
+from llm_wiki_engine import contracts
 
 
 HASKELL_MINIMUM_INVENTORY = {
@@ -413,7 +413,7 @@ def test_haskell_declaration_kind_values_are_contract_fields():
 def test_infrastructure_evidence_uses_its_own_observation_contract(tmp_path):
     from llm_wiki_cli.services.infrastructure_inventory import get_yaml_infrastructure_inventory, parse_github_actions_workflow
     from llm_wiki_cli.services.infrastructure_sync import _observation_hash
-    from llm_wiki_cli.services.knowledge_evidence import build_infrastructure_observation_basis, sha256_bytes
+    from llm_wiki_engine.knowledge_evidence import build_infrastructure_observation_basis, sha256_bytes
 
     source = tmp_path / '.github/workflows/build.yml'
     source.parent.mkdir(parents=True)
@@ -436,7 +436,7 @@ def test_infrastructure_evidence_uses_its_own_observation_contract(tmp_path):
 
 def test_python_producer_evidence_is_static_and_does_not_execute_target(tmp_path):
     from llm_wiki_cli.services.dependencies import build_dependency_graph
-    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation, normalize_entity_observation
+    from llm_wiki_engine.knowledge_evidence import normalize_module_observation, normalize_entity_observation
 
     source = tmp_path / 'model.py'
     source.write_text('raise RuntimeError("must not execute")\nfrom missing_backend import Service\n'

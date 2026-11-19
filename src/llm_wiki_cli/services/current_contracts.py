@@ -23,13 +23,13 @@ def current_contract_defaults() -> dict:
 def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, source_selection=None,
                               allow_external_src=False, _captured=None, _seed_legacy=None) -> dict:
     """Use existing guarded writers and recovery copies; never repair bad authority."""
-    from .knowledge_artifacts import current_knowledge_format
-    from .knowledge_storage_lifecycle import _committed_inputs, migrate_knowledge_storage
-    from .maintenance_protocol import load_adoption_marker, guard_maintenance_owner
+    from llm_wiki_engine.knowledge_artifacts import current_knowledge_format
+    from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs, migrate_knowledge_storage
+    from llm_wiki_engine.maintenance_protocol import load_adoption_marker, guard_maintenance_owner
     from .maintenance_service import adopt_maintenance_authority
-    from .manifest_storage import current_manifest_format
-    from .knowledge_storage_lifecycle import _absolute_path
-    from .filesystem_guard import ensure_guarded_directory
+    from llm_wiki_engine.manifest_storage import current_manifest_format
+    from llm_wiki_engine.knowledge_storage_lifecycle import _absolute_path
+    from llm_wiki_engine.filesystem_guard import ensure_guarded_directory
 
     wiki = _absolute_path(Path(wiki_dir))
     root = wiki / ".llm-wiki-knowledge.json"
@@ -57,8 +57,8 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
     _absolute_path(recovery)
     try:
         if not root.exists() and not adopted:
-            from .knowledge_consumption import load_knowledge_read_view
-            from .maintenance_protocol import snapshot_wiki, save_recovery_snapshot
+            from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
+            from llm_wiki_engine.maintenance_protocol import snapshot_wiki, save_recovery_snapshot
 
             # Only an independently valid uncommitted legacy surface can be seeded.
             # A newer commitment to missing native data is corruption, not legacy.

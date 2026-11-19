@@ -20,7 +20,7 @@ from llm_wiki_cli.services.api_contracts import (
     render_api_contracts_markdown,
     render_flow_api_contract_section,
 )
-from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_engine.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 

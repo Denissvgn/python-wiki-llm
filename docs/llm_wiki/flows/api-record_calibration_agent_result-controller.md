@@ -96,9 +96,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_validate_dispatch_receipt` | 13 | - | unresolved | 20 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_validate_dispatch_receipt` | 13 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 22 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_uuid` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_uuid` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_uuid` | 17 | - | external | 2 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_uuid` | 16 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_uuid` | 17 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_engine/validation.py:require_uuid` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_require_uuid` | 16 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
 > Omission summary shows 8 of 268 groups; 260 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

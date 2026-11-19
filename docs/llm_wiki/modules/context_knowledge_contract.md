@@ -1,6 +1,6 @@
 # context_knowledge_contract Module
 
-**Path:** `src/llm_wiki_cli/services/context_knowledge_contract.py`
+**Path:** `src/llm_wiki_engine/context_knowledge_contract.py`
 
 ## Description
 
@@ -34,24 +34,34 @@ knowledge projection or a managed reference.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/services/context_knowledge_contract.py"]
+    n1["src/llm_wiki_cli/services/context_response_format.py"]
     n2["src/llm_wiki_cli/services/context_service.py"]
-    n3["src/llm_wiki_cli/services/contracts.py"]
-    n4["src/llm_wiki_cli/services/mcp_server.py"]
-    n0 --> n1
+    n3["src/llm_wiki_cli/services/mcp_server.py"]
+    n4["src/llm_wiki_engine/context_knowledge_contract.py"]
+    n5["src/llm_wiki_engine/context_request_format.py"]
+    n6["src/llm_wiki_engine/contracts.py"]
     n0 --> n2
-    n0 --> n3
-    n1 --> n3
-    n2 --> n1
-    n2 --> n3
-    n4 --> n0
-    n4 --> n1
-    n4 --> n2
+    n0 --> n4
+    n0 --> n6
+    n1 --> n4
+    n1 --> n5
+    n1 --> n6
+    n2 --> n4
+    n2 --> n5
+    n2 --> n6
+    n3 --> n0
+    n3 --> n2
+    n3 --> n4
+    n4 --> n6
+    n5 --> n4
+    n5 --> n6
     click n0 "../modules/api.md"
-    click n1 "../modules/context_knowledge_contract.md"
+    click n1 "../modules/context_response_format.md"
     click n2 "../modules/context_service.md"
-    click n3 "../modules/services_contracts.md"
-    click n4 "../modules/mcp_server.md"
+    click n3 "../modules/mcp_server.md"
+    click n4 "../modules/context_knowledge_contract.md"
+    click n5 "../modules/context_request_format.md"
+    click n6 "../modules/llm_wiki_engine_contracts.md"
 ```
 
 ### Internal neighbors
@@ -59,9 +69,11 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
+| Inbound | [context_response_format](../modules/context_response_format.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
+| Inbound | [context_request_format](../modules/context_request_format.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Classes
 

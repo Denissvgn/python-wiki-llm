@@ -13,6 +13,7 @@ A bounded lexical discovery response. Ranked results include reasons and corpus 
 
 | Name | Type | Presence | Description |
 |------|------|----------|-------------|
+| `schema_version` | `str` | *required* | — |
 | `query` | `str` | *required* | — |
 | `mode` | `Literal['ranked', 'ranked-v1', 'ranked-v2', 'substring']` | *required* | — |
 | `total` | `int` | *required* | — |
@@ -45,7 +46,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api_types](../modules/api_types.md) | 0 | `bounds`, `count`, `mode`, `query`, `results`, `returned`, `total`, `truncated` |
+| [api_types](../modules/api_types.md) | 0 | `bounds`, `count`, `mode`, `query`, `results`, `returned`, `schema_version`, `total`, `truncated` |
 
 ### Structure
 

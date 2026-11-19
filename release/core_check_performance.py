@@ -315,7 +315,7 @@ def coverage_context(enabled: bool):
         return
     import coverage
 
-    trace = coverage.Coverage(source=["llm_wiki_cli"], data_file=None)
+    trace = coverage.Coverage(source=["llm_wiki_cli", "llm_wiki_engine"], data_file=None)
     trace.start()
     try:
         # Match an active core coverage tracer, without claiming a full-suite

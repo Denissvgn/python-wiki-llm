@@ -440,7 +440,7 @@ def _native_refresh_payload(
     changed_wiki_paths: Iterable[str],
     verification_evaluation: Mapping[str, Any],
 ) -> dict[str, Any]:
-    from ..knowledge_observability import knowledge_freshness_disclosure
+    from llm_wiki_engine.knowledge_observability import knowledge_freshness_disclosure
 
     if refresh.knowledge_view is None:
         raise DocumentationIntegrityError(
@@ -566,7 +566,7 @@ def _native_refresh_verification_evaluation(wiki_root: Path) -> dict[str, Any]:
             "limitation": None,
         }
     try:
-        from ..knowledge_consumption import load_knowledge_read_view
+        from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 
         view = load_knowledge_read_view(
             wiki_root,
@@ -1017,7 +1017,7 @@ def _refresh_continuation_candidate_paths(
 def _prior_generated_descriptions(wiki_root: Path) -> dict[str, str]:
     """Map generated module/entity descriptions from the prior manifest."""
 
-    from ..sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     manifest_path = wiki_root / ".llm-wiki-manifest.json"
     if not manifest_path.is_file() or manifest_path.is_symlink():
@@ -1171,7 +1171,7 @@ def _merge_refresh_semantic_page(
     imported = "imported_semantic_page" in reasons
 
     if relative == "index.md" and current:
-        from ..markdown_sections import preserve_index_custom_sections
+        from llm_wiki_engine.markdown_sections import preserve_index_custom_sections
 
         merged = preserve_index_custom_sections(prior, current)
         if merged == current:

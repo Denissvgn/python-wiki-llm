@@ -1,6 +1,6 @@
 # ExtractionJobsAction
 
-**Location:** `src/llm_wiki_cli/services/extraction_jobs.py:39`
+**Location:** `src/llm_wiki_cli/services/extraction_jobs.py:40`
 **Kind:** Class
 **Bases:** `argparse.Action`
 **Module:** [extraction_jobs](../modules/extraction_jobs.md)
@@ -26,11 +26,11 @@ Resolve ``--jobs`` while preserving whether automatic sizing was requested.
 flowchart LR
     n0["ExtractionJobsAction (src/llm_wiki_cli/services/extraction_jobs.py)"]
     n1["argparse.Action"]
-    n2["src/llm_wiki_cli/cli.py"]
+    n2["src/llm_wiki_cli/cli_declarations.py"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/extraction_jobs.md"
-    click n2 "../modules/cli.md"
+    click n2 "../modules/cli_declarations.md"
 ```
 
 ### Summary
@@ -49,4 +49,4 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `cli` | import | [cli](../modules/cli.md) | — |
+| `cli_declarations` | import | [cli_declarations](../modules/cli_declarations.md) | — |

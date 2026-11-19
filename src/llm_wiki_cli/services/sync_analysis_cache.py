@@ -6,16 +6,18 @@ from collections.abc import Mapping
 from pathlib import Path
 import json
 
-from ..config import EXTRACTOR_REGISTRY
+from .domain_pack import uses_default_pack
+from .extractor_registry import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
-from .io import first_unsafe_path_component, write_bytes_atomic
-from .knowledge_evidence import hash_json
+from llm_wiki_engine.io import first_unsafe_path_component, write_bytes_atomic
+from llm_wiki_engine.knowledge_evidence import hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
-from .knowledge_storage_io import read_guarded
-from .progress import observed_phase, record_counts
-from .runtime_output import warn
+from llm_wiki_engine.knowledge_storage_io import read_guarded
+from llm_wiki_engine.progress import observed_phase, record_counts
+from llm_wiki_engine.runtime_output import warn
 from . import sync_analysis_storage
+from llm_wiki_engine.host import emit
 
 SCHEMA = "llm-wiki-sync-analysis/v2"
 EXTENSION = "llm-wiki/sync-analysis-v2"
@@ -39,7 +41,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
 
     ordinary_owner = None
     if manifest.maintenance_state is not None:
-        from .maintenance_state import MaintenanceError, _identity
+        from llm_wiki_engine.maintenance_state import MaintenanceError, _identity
 
         state = manifest.maintenance_state
         ordinary_owner = state.get("adoption_id") if isinstance(state, Mapping) else None
@@ -56,6 +58,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         (any((root / ".llm-wiki/plugins.lock.json").exists()
              for root in (Path.cwd(), snapshot.root)), "plugin-lock-present"),
         ((options.wiki_dir / ".llm-wiki-governance.json").exists(), "governance-present"),
+        (not uses_default_pack(), "domain-pack"),
     ):
         if excluded:
             return skipped(reason)
@@ -69,7 +72,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
     if not active <= set(analysis):
         diagnostic = analysis_diagnostics(analysis)
         if diagnostic is not None:
-            print("Analysis input preflight: " + json.dumps(diagnostic, ensure_ascii=True, sort_keys=True), flush=True)
+            emit("Analysis input preflight: " + json.dumps(diagnostic, ensure_ascii=True, sort_keys=True), flush=True)
         return skipped("unqualified-analysis")
     if implementation is None:
         return skipped("unqualified-implementation")
@@ -136,7 +139,7 @@ def report_capture(options, status, reason, *, payload_bytes=None, over_budget=F
     size = "unavailable" if payload_bytes is None else str(payload_bytes)
     if over_budget:
         size = f">{MAX_CAPTURE_BYTES}"
-    print(f"Sync analysis capture: {status} ({reason}); destination={destination}; "
+    emit(f"Sync analysis capture: {status} ({reason}); destination={destination}; "
           f"payload_bytes={size}; limit_bytes={MAX_CAPTURE_BYTES}", flush=True)
 
 
@@ -184,7 +187,7 @@ def load(options, snapshot, manifest, generation_inputs, state):
                         or _payload_hash(candidate) != commitment.get("payload_hash")):
                     reason = "cache-content-mismatch"
                 else:
-                    from .knowledge_envelope import hash_inventory, INVENTORY_HASH_EXTENSION
+                    from llm_wiki_engine.knowledge_envelope import hash_inventory, INVENTORY_HASH_EXTENSION
                     assert artifacts is not None
                     if hash_inventory(candidate["inventory"]) != artifacts.knowledge.bundle.snapshot.extensions[INVENTORY_HASH_EXTENSION]:
                         reason = "inventory-commitment-mismatch"
@@ -197,7 +200,7 @@ def load(options, snapshot, manifest, generation_inputs, state):
             payload = None
             reason = "wiki-structure-changed"
     coverage = f"; coverage={payload['coverage']}" if payload is not None else ""
-    print(f"Sync analysis reuse: {'hit' if payload is not None else 'miss'} ({reason}){coverage}", flush=True)
+    emit(f"Sync analysis reuse: {'hit' if payload is not None else 'miss'} ({reason}){coverage}", flush=True)
     if payload is not None:
         record_counts(reused_source_files=len(payload["inventory"]), reused_graph_observations=int(payload["coverage"] == "full"))
     return payload
@@ -282,19 +285,19 @@ def commitment(payload):
 
 def generated_sections_match(root, artifacts):
     """Allow prose edits; changing generated structure requires the ordinary path."""
-    from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
-    from .section_ownership import observe_page_sections
+    from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+    from llm_wiki_engine.section_ownership import observe_page_sections
     prior = {row["page_locator"]: row for row in artifacts.knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]}
     for concept in artifacts.knowledge.concepts:
         path = root / concept.document.canonical_path
-        from .knowledge_storage import KnowledgeStorageError
+        from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
         try:
             content = read_guarded(path, MAX_PAGE_BYTES).content.decode("utf-8")
         except (OSError, ValueError) as exc:
             if isinstance(exc, KnowledgeStorageError) and exc.code == "storage-mutation":
                 raise SyncAnalysisMutationError("wiki changed during analysis reuse") from exc
             return False
-        from .knowledge_evidence import sha256_bytes
+        from llm_wiki_engine.knowledge_evidence import sha256_bytes
         if sha256_bytes(content.encode("utf-8")) == concept.facets.semantics.page_hash:
             continue
         kind = concept.document.page_kind

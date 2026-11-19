@@ -12,7 +12,7 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_exact_fields
-    participant p1 as isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields)
+    participant p1 as isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields)
     participant p2 as _validation_error
     participant p3 as str
     participant p4 as set
@@ -20,9 +20,9 @@ sequenceDiagram
     participant p6 as sorted
     participant p7 as invalid_error
     participant p8 as error_factory
-    participant p9 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p9 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p10 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields)(value, Mapping)
+    p0-->>p1: isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields)(value, Mapping)
     p0->>p2: _validation_error
     p0-->>p3: str(key)
     p0-->>p4: set(value)
@@ -34,7 +34,7 @@ sequenceDiagram
     p0-->>p6: sorted(..., key=str)
     p0-->>p7: invalid_error(missing, unknown)
     p0-->>p8: error_factory(fields)
-    p2-->>p9: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p9: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p2-->>p10: error(context)
 ```
 
@@ -60,9 +60,9 @@ Collector observations for 2 source steps with known totals: observed: 14, emitt
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `require_exact_fields` | `available` | `partial` | `available` | `11` | `9` | `2` |
-| `isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -75,9 +75,9 @@ Collector observations for 2 source steps with known totals: observed: 14, emitt
 ```mermaid
 flowchart LR
     s1["1. require_exact_fields"]
-    s2["2. isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields)"]
+    s2["2. isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields)"]
     s3["3. _validation_error"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s5["5. error"]
     s6["6. str"]
     s7["7. set"]
@@ -86,9 +86,9 @@ flowchart LR
     s10["10. tuple"]
     s11["11. sorted"]
     s12["12. tuple"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields)(value, Mapping)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields)(value, Mapping)" .-> s2
     s1 -->|"_validation_error(mapping_error, error_context)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s4
     s3 -. "error(context)" .-> s5
     s1 -. "str(key)" .-> s6
     s1 -. "set(value)" .-> s7
@@ -106,9 +106,9 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_exact_fields` | `value: object`, `allowed: Iterable[str]`, `required: Iterable[str]`, `mapping_error: _ValidationError`, `error_context: str`, `missing_error: _ErrorFactory`, `unknown_error: _ErrorFactory`, `invalid_error: Callable[[tuple[str, ...], tuple[str, ...]], Exception] \| None` | `Mapping` | - | - |
-| `isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `str` | - | - | - | - |
 | `set` | - | - | - | - |
@@ -122,9 +122,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_exact_fields | isinstance (src/llm_wiki_cli/services…on.py:require_exact_fields) | 1266 | `isinstance(value, Mapping)` |
+| require_exact_fields | isinstance (src/llm_wiki_engine/valid…on.py:require_exact_fields) | 1266 | `isinstance(value, Mapping)` |
 | require_exact_fields | _validation_error | 1267 | `_validation_error(mapping_error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_exact_fields | str | 1268 | `str(key)` |
 | require_exact_fields | set | 1268 | `set(value)` |

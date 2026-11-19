@@ -12,11 +12,11 @@ from typing import Any, Callable
 import pytest
 from jsonschema import Draft202012Validator, FormatChecker
 
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     KNOWLEDGE_SCHEMA_VERSION,
     SECTION_OWNERSHIP_EXTENSION_KEY,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     EVALUATED_REVISION_PATTERN,
     LIMITATION_CODE_PATTERN,
     PAGE_KIND_TO_CONCEPT_KIND,
@@ -41,11 +41,11 @@ from llm_wiki_cli.services.knowledge_model import (
     repository_identities_match,
     serialize_knowledge_index,
 )
-from llm_wiki_cli.services.section_ownership import (
+from llm_wiki_engine.section_ownership import (
     observe_page_sections,
     section_ownership_extension,
 )
-from llm_wiki_cli.services.wiki_surface import PageKind
+from llm_wiki_engine.wiki_surface import PageKind
 
 
 def _hash(character: str) -> str:

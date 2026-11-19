@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import context_packet as packets, context_service
-from llm_wiki_cli.services import packet_field_policy as policy
+from llm_wiki_engine import packet_field_policy as policy
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

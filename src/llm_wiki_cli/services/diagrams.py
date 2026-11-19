@@ -16,7 +16,7 @@ from typing import Any, Iterable, Mapping
 from urllib.parse import quote, unquote, urlsplit
 
 from .plugins import PluginError, diagram_style_components, load_entry_point
-from .validation import resolved_paths_equal
+from llm_wiki_engine.validation import resolved_paths_equal
 
 _FENCE = "```mermaid"
 _CLASS_SAFE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")

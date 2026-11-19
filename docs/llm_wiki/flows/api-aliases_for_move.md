@@ -36,9 +36,9 @@ sequenceDiagram
     participant p22 as _contains_coordinate_userinfo
     participant p23 as WikiSurfaceError
     participant p24 as is_safe_page_id
-    participant p25 as isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
+    participant p25 as isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)
     participant p26 as result.append
-    participant p27 as TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
+    participant p27 as TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)
     p0->>p1: identity_coordinate_key
     p0->>p2: _deduplicated_aliases
     p0->>p3: ConceptIdentityError
@@ -63,11 +63,11 @@ sequenceDiagram
     p9->>p22: _contains_coordinate_userinfo
     p11->>p23: WikiSurfaceError
     p13->>p24: is_safe_page_id
-    p0-->>p25: isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)(allocation, ConceptAllocation)
+    p0-->>p25: isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)(allocation, ConceptAllocation)
     p0-->>p26: result.append(IdentityAlias(...))
-    p0-->>p27: TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)('allocation must be a ConceptAllocation')
-    p0-->>p25: isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)(new_reference, ConceptReference)
-    p0-->>p27: TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)('new_reference must be a ConceptReference')
+    p0-->>p27: TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)('allocation must be a ConceptAllocation')
+    p0-->>p25: isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)(new_reference, ConceptReference)
+    p0-->>p27: TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)('new_reference must be a ConceptReference')
     p0-->>p26: result.append(IdentityAlias(...))
 ```
 
@@ -79,14 +79,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 7 | - | external | 7 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 16 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 16 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_value` | 20 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 23 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 23 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 23 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 38 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_typed_tuple` | 7 | - | external | 7 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_type` | 16 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_type` | 16 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_alias_value` | 20 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 23 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 23 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 23 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 38 | - | external | 1 |
 > Omission summary shows 8 of 35 groups; 27 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -111,42 +111,42 @@ Collector observations for 35 source steps with known totals: observed: 159, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `aliases_for_move` | `available` | `partial` | `available` | `16` | `14` | `2` |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `_typed_tuple` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. aliases_for_move"]
-    s2["2. isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)"]
-    s3["3. TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)"]
-    s5["5. TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)"]
+    s2["2. isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)"]
+    s3["3. TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)"]
+    s4["4. isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)"]
+    s5["5. TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)"]
     s6["6. ConceptIdentityError"]
     s7["7. _typed_tuple"]
-    s8["8. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s9["9. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s10["10. tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
-    s11["11. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s8["8. isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s9["9. TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s10["10. tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
+    s11["11. TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)"]
     s12["12. enumerate"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)(allocation, ConceptAllocation)" .-> s2
-    s1 -. "TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)('allocation must be a ConceptAllocation')" .-> s3
-    s1 -. "isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)(new_reference, ConceptReference)" .-> s4
-    s1 -. "TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)('new_reference must be a ConceptReference')" .-> s5
+    s1 -. "isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)(allocation, ConceptAllocation)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)('allocation must be a ConceptAllocation')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)(new_reference, ConceptReference)" .-> s4
+    s1 -. "TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)('new_reference must be a ConceptReference')" .-> s5
     s1 -->|"ConceptIdentityError('concept_kind', 'a move cannot change concept kind', code='concept-kind-change')"| s6
     s1 -->|"_typed_tuple(aliases, IdentityAlias, 'aliases')"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))" .-> s8
-    s7 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s9
-    s7 -. "tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values)" .-> s10
-    s7 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s11
+    s7 -. "isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values, (...))" .-> s8
+    s7 -. "TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(...)" .-> s9
+    s7 -. "tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(values)" .-> s10
+    s7 -. "TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)(...)" .-> s11
     s7 -. "enumerate(result)" .-> s12
     b0["mutation result.append"]
     s1 -. "mutation result.append" .-> b0
@@ -165,32 +165,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `aliases_for_move` | `allocation: ConceptAllocation`, `new_reference: ConceptReference`, `aliases: Iterable[IdentityAlias]` | `ConceptAllocation`, `ConceptReference`, `IdentityAlias`, `AliasType`, `AliasType`, `AliasType`, `AliasType`, `AliasType` | - | `_deduplicated_aliases(...)` |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 | `_typed_tuple` | `values: Iterable[_RecordT]`, `expected_type: type[_RecordT]`, `field: str` | - | - | `result` |
-| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple)` | - | - | - | - |
 | `enumerate` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| aliases_for_move | isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 787 | `isinstance(allocation, ConceptAllocation)` |
-| aliases_for_move | TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 788 | `TypeError('allocation must be a ConceptAllocation')` |
-| aliases_for_move | isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 789 | `isinstance(new_reference, ConceptReference)` |
-| aliases_for_move | TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 790 | `TypeError('new_reference must be a ConceptReference')` |
+| aliases_for_move | isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move) | 787 | `isinstance(allocation, ConceptAllocation)` |
+| aliases_for_move | TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move) | 788 | `TypeError('allocation must be a ConceptAllocation')` |
+| aliases_for_move | isinstance (src/llm_wiki_engine/conce…ntity.py:aliases_for_move) | 789 | `isinstance(new_reference, ConceptReference)` |
+| aliases_for_move | TypeError (src/llm_wiki_engine/conce…ntity.py:aliases_for_move) | 790 | `TypeError('new_reference must be a ConceptReference')` |
 | aliases_for_move | ConceptIdentityError | 792 | `ConceptIdentityError('concept_kind', 'a move cannot change concept kind', code='concept-kind-change')` |
 | aliases_for_move | _typed_tuple | 797 | `_typed_tuple(aliases, IdentityAlias, 'aliases')` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1014 | `TypeError(...)` |
-| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1018 | `TypeError(...)` |
+| _typed_tuple | isinstance (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
+| _typed_tuple | TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1014 | `TypeError(...)` |
+| _typed_tuple | tuple (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
+| _typed_tuple | TypeError (src/llm_wiki_engine/conce…_identity.py:_typed_tuple) | 1018 | `TypeError(...)` |
 | _typed_tuple | enumerate | 1021 | `enumerate(result)` |
 
 ### Boundary effects

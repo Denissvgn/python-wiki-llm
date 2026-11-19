@@ -21,13 +21,13 @@ and sole authored `Notes` surface as other infrastructure families.
 | Source | Symbols |
 |--------|---------|
 | `.infrastructure_inventory` | `infrastructure_page_name` |
-| `.knowledge_evidence` | `ConceptObservationBasis`, `build_infrastructure_observation_basis`, `hash_json`, `is_valid_sha256` |
 | `.source_snapshot` | `SourceSnapshot` |
-| `.validation` | `is_portable_relative_path` |
 | `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.infrastructure_state` | `INFRASTRUCTURE_DISCOVERY_ROOT`, `INFRASTRUCTURE_EXTRACTOR_REF`, `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `_prior_infrastructure_state`, `_record_mapping`, `_valid_page_path`, `_valid_repository_path`, `infrastructure_evidence_by_page`, `validate_infrastructure_generation_input` |
+| `llm_wiki_engine.knowledge_evidence` | `ConceptObservationBasis`, `build_infrastructure_observation_basis`, `hash_json`, `is_valid_sha256` |
 | `pathlib` | `PurePosixPath` |
 | `typing` | `Mapping` |
 
@@ -36,30 +36,84 @@ and sole authored `Notes` surface as other infrastructure families.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src"]
-    n1["src/llm_wiki_cli/services/infrastructure_sync.py"]
-    n0 --> n1
+    n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n1["src/llm_wiki_cli/services/canonical_pages.py"]
+    n2["src/llm_wiki_cli/services/infrastructure_inventory.py"]
+    n3["src/llm_wiki_cli/services/infrastructure_sync.py"]
+    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n5["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n6["src/llm_wiki_cli/services/lint_service.py"]
+    n7["src/llm_wiki_cli/services/source_snapshot.py"]
+    n8["src/llm_wiki_cli/services/sync_runtime.py"]
+    n9["src/llm_wiki_cli/services/yaml_syntax.py"]
+    n10["src/llm_wiki_engine/infrastructure_state.py"]
+    n11["src/llm_wiki_engine/knowledge_evidence.py"]
+    n0 --> n2
+    n0 --> n3
+    n0 --> n5
+    n0 --> n7
     n1 --> n0
-    click n1 "../modules/infrastructure_sync.md"
+    n1 --> n3
+    n2 --> n7
+    n2 --> n9
+    n3 --> n2
+    n3 --> n7
+    n3 --> n9
+    n3 --> n10
+    n3 --> n11
+    n4 --> n3
+    n4 --> n11
+    n5 --> n3
+    n5 --> n4
+    n5 --> n7
+    n5 --> n11
+    n6 --> n0
+    n6 --> n2
+    n6 --> n3
+    n6 --> n5
+    n6 --> n7
+    n8 --> n0
+    n8 --> n2
+    n8 --> n3
+    n8 --> n5
+    n8 --> n7
+    n8 --> n11
+    n10 --> n11
+    click n0 "../modules/bootstrap_runtime.md"
+    click n1 "../modules/canonical_pages.md"
+    click n2 "../modules/infrastructure_inventory.md"
+    click n3 "../modules/infrastructure_sync.md"
+    click n4 "../modules/knowledge_generation.md"
+    click n5 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/lint_service.md"
+    click n7 "../modules/source_snapshot.md"
+    click n8 "../modules/sync_runtime.md"
+    click n9 "../modules/yaml_syntax.md"
+    click n10 "../modules/infrastructure_state.md"
+    click n11 "../modules/knowledge_evidence.md"
 ```
-
-> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (7) |
-| Outbound | `src` (5) |
-
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+| Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Inbound | [canonical_pages](../modules/canonical_pages.md) |
+| Inbound | [knowledge_generation](../modules/knowledge_generation.md) |
+| Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Inbound | [lint_service](../modules/lint_service.md) |
+| Inbound | [sync_runtime](../modules/sync_runtime.md) |
+| Outbound | [infrastructure_inventory](../modules/infrastructure_inventory.md) |
+| Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [yaml_syntax](../modules/yaml_syntax.md) |
+| Outbound | [infrastructure_state](../modules/infrastructure_state.md) |
+| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [InfrastructureSyncError](../entities/InfrastructureSyncError.md) | 33 | `ValueError` | Persisted infrastructure state is unsafe or internally inconsistent. |
-| [InfrastructureSyncPlan](../entities/InfrastructureSyncPlan.md) | 551 | — | One immutable infrastructure regeneration plan. |
+| [InfrastructureSyncPlan](../entities/InfrastructureSyncPlan.md) | 367 | — | One immutable infrastructure regeneration plan. |
 
 ## Functions
 
@@ -69,12 +123,6 @@ flowchart LR
 | `_source_hash` | `(snapshot: SourceSnapshot, source_path: str) -> str` | — | — |
 | `_observation_hash` | `(info: Mapping[str, object]) -> str` | — | — |
 | `_source_record` | `(snapshot: SourceSnapshot, source_path: str, info: Mapping[str, object], *, page_path: str) -> dict[str, object]` | — | — |
-| `_prior_infrastructure_state` | `(generation_inputs: Mapping[str, object] \| None) -> dict[str, object]` | — | — |
-| `_valid_repository_path` | `(value: str) -> bool` | — | — |
-| `_valid_page_path` | `(value: object) -> bool` | — | — |
-| `_record_mapping` | `(value: object, *, field_name: str) -> dict[str, dict[str, object]]` | — | — |
-| `validate_infrastructure_generation_input` | `(generation_inputs: Mapping[str, object] \| None) -> None` | — | Reject an unsafe persisted v1 infrastructure mapping. |
-| `infrastructure_evidence_by_page` | `(generation_inputs: Mapping[str, object] \| None) -> dict[str, ConceptObservationBasis]` | — | Project persisted current/removal records into native concept evidence. |
 | `current_infrastructure_bases` | `(snapshot: SourceSnapshot, inventory: Mapping[str, Mapping[str, object]]) -> dict[str, ConceptObservationBasis]` | — | Build live bases keyed by source path from an evaluated inventory. |
 | `_yaml_candidates` | `(snapshot: SourceSnapshot) -> tuple[str, ...]` | — | — |
 | `_candidate_roots` | `(snapshot: SourceSnapshot, inventory: Mapping[str, Mapping[str, object]]) -> tuple[str, ...]` | — | — |

@@ -9,14 +9,14 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import maintenance_protocol as protocol
-from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+from llm_wiki_engine import maintenance_protocol as protocol
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
 from llm_wiki_cli.services.knowledge_orchestration import capture_committed_knowledge
-from llm_wiki_cli.services.knowledge_packs import index_path, index_page_path, pack_path
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes, digest, object_path
-from llm_wiki_cli.services.manifest_storage import object_path as manifest_object_path
+from llm_wiki_engine.knowledge_packs import index_path, index_page_path, pack_path
+from llm_wiki_engine.knowledge_storage import canonical_bytes, digest, object_path
+from llm_wiki_engine.manifest_storage import object_path as manifest_object_path
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 
 
 @pytest.fixture

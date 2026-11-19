@@ -2,7 +2,15 @@
 
 **Entry point:** `observe_page_sections` (`api`)
 **Source:** [section_ownership](../modules/section_ownership.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [markdown_sections](../modules/markdown_sections.md), and 2 more
+
+**Complete modules touched:**
+
+- [canonical_json](../modules/canonical_json.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [markdown_sections](../modules/markdown_sections.md)
+- [section_ownership](../modules/section_ownership.md)
+- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -19,13 +27,13 @@ sequenceDiagram
     participant p5 as _scoped_hashes
     participant p6 as SectionObservation
     participant p7 as PageSectionObservations
-    participant p8 as sha256_bytes
+    participant p8 as sha256_digest
     participant p9 as mixed_table_projection
     participant p10 as _iter_structural_headings
     participant p11 as hash_json
     participant p12 as _markdown_lines
     participant p13 as _frontmatter_extent
-    participant p14 as canonical_json_bytes
+    participant p14 as compact_bytes
     participant p15 as description_table_cells
     participant p16 as PageKind
     participant p17 as _top_level_policy
@@ -39,8 +47,8 @@ sequenceDiagram
     participant p25 as is_placeholder_description
     participant p26 as _atx_heading
     participant p27 as MixedTableProjection
-    participant p28 as canonical_json_text
-    participant p29 as len (src/llm_wiki_cli/services….py:observe_page_sections)
+    participant p28 as compact_text
+    participant p29 as len (src/llm_wiki_engine/secti….py:observe_page_sections)
     participant p30 as section.title.casefold
     p0->>p1: _coerce_page_kind
     p0->>p2: parse_markdown_document
@@ -49,13 +57,13 @@ sequenceDiagram
     p0->>p5: _scoped_hashes
     p0->>p6: SectionObservation
     p0->>p7: PageSectionObservations
-    p0->>p8: sha256_bytes
+    p0->>p8: sha256_digest
     p5->>p9: mixed_table_projection
     p2->>p10: _iter_structural_headings
     p2->>p11: hash_json
     p10->>p12: _markdown_lines
     p10->>p13: _frontmatter_extent
-    p11->>p14: canonical_json_bytes
+    p11->>p14: compact_bytes
     p9->>p15: description_table_cells
     p1->>p16: PageKind
     p4->>p17: _top_level_policy
@@ -69,8 +77,8 @@ sequenceDiagram
     p9->>p25: is_placeholder_description
     p10->>p26: _atx_heading
     p9->>p27: MixedTableProjection
-    p14->>p28: canonical_json_text
-    p0-->>p29: len (src/llm_wiki_cli/services….py:observe_page_sections)(document.normalized_markdown)
+    p14->>p28: compact_text
+    p0-->>p29: len (src/llm_wiki_engine/secti….py:observe_page_sections)(document.normalized_markdown)
     p0-->>p30: section.title.casefold
 ```
 
@@ -82,14 +90,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/section_ownership.py:_coerce_page_kind` | 2 | - | external | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:parse_markdown_document` | 6 | - | external | 15 |
-| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 11 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 16 | - | external | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 16 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 19 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 21 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 21 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/section_ownership.py:_coerce_page_kind` | 2 | - | external | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:parse_markdown_document` | 6 | - | external | 15 |
+| `src/llm_wiki_engine/markdown_sections.py:normalize_markdown` | 11 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 16 | - | external | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_markdown_lines` | 16 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:_frontmatter_extent` | 21 | - | unresolved | 3 |
+| `src/llm_wiki_engine/markdown_sections.py:_frontmatter_extent` | 21 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
 > Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -103,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 51; effect analysis evaluated: 41, partial: 1, unavailable: 9. Counts include steps omitted from the displayed trace.
 
-Collector observations for 42 source steps with known totals: observed: 274, emitted: 190, omitted: 84. Unavailable totals are excluded.
+Collector observations for 42 source steps with known totals: observed: 276, emitted: 192, omitted: 84. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -113,14 +121,14 @@ Collector observations for 42 source steps with known totals: observed: 274, emi
 |---|---|---|---|---:|---:|---:|
 | `observe_page_sections` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `_coerce_page_kind` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `PageKind` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `parse_markdown_document` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
-| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_engine/markd…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
@@ -128,25 +136,25 @@ Collector observations for 42 source steps with known totals: observed: 274, emi
 flowchart LR
     s1["1. observe_page_sections"]
     s2["2. _coerce_page_kind"]
-    s3["3. isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)"]
+    s3["3. isinstance (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)"]
     s4["4. PageKind"]
-    s5["5. ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)"]
+    s5["5. ValueError (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)"]
     s6["6. parse_markdown_document"]
-    s7["7. isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)"]
+    s7["7. isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)"]
     s8["8. TypeError"]
-    s9["9. isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)"]
-    s10["10. ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)"]
+    s9["9. isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)"]
+    s10["10. ValueError (src/llm_wiki_engine/markd…y:parse_markdown_document)"]
     s11["11. normalize_markdown"]
     s12["12. text.replace(…).replace"]
     s1 -->|"_coerce_page_kind(page_kind)"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)(page_kind, PageKind)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)(page_kind, PageKind)" .-> s3
     s2 -->|"PageKind(page_kind)"| s4
-    s2 -. "ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)(...)" .-> s5
+    s2 -. "ValueError (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)(...)" .-> s5
     s1 -->|"parse_markdown_document(markdown, page_locator)"| s6
-    s6 -. "isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)(markdown, str)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)(markdown, str)" .-> s7
     s6 -. "TypeError('markdown must be a string')" .-> s8
-    s6 -. "isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)(page_locator, str)" .-> s9
-    s6 -. "ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)('page_locator must be a non-empty string')" .-> s10
+    s6 -. "isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)(page_locator, str)" .-> s9
+    s6 -. "ValueError (src/llm_wiki_engine/markd…y:parse_markdown_document)('page_locator must be a non-empty string')" .-> s10
     s6 -->|"normalize_markdown(markdown)"| s11
     s11 -. "text.replace(…).replace('\r', '\n')" .-> s12
     b0["mutation observations.append"]
@@ -181,14 +189,14 @@ flowchart LR
 |---|---|---|---|---|
 | `observe_page_sections` | `markdown: str`, `page_locator: str`, `page_kind: PageKind \| str`, `index_preserved: bool` | - | `canonical_occurrences[...]`, `ownership_by_locator[...]` | `PageSectionObservations(...)` |
 | `_coerce_page_kind` | `page_kind: PageKind \| str` | `PageKind` | - | `page_kind`, `PageKind(...)` |
-| `isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)` | - | - | - | - |
 | `PageKind` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind)` | - | - | - | - |
 | `parse_markdown_document` | `markdown: str`, `page_locator: str` | `SECTION_ORDER_DOMAIN` | `occurrences[...]` | `MarkdownSectionDocument(...)` |
-| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document)` | - | - | - | - |
+| `ValueError (src/llm_wiki_engine/markd…y:parse_markdown_document)` | - | - | - | - |
 | `normalize_markdown` | `text: str` | - | - | `...` |
 | `text.replace(…).replace` | - | - | - | - |
 
@@ -197,14 +205,14 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | observe_page_sections | _coerce_page_kind | 546 | `_coerce_page_kind(page_kind)` |
-| _coerce_page_kind | isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 269 | `isinstance(page_kind, PageKind)` |
+| _coerce_page_kind | isinstance (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind) | 269 | `isinstance(page_kind, PageKind)` |
 | _coerce_page_kind | PageKind | 272 | `PageKind(page_kind)` |
-| _coerce_page_kind | ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 274 | `ValueError(...)` |
+| _coerce_page_kind | ValueError (src/llm_wiki_engine/secti…ship.py:_coerce_page_kind) | 274 | `ValueError(...)` |
 | observe_page_sections | parse_markdown_document | 547 | `parse_markdown_document(markdown, page_locator)` |
-| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 333 | `isinstance(markdown, str)` |
+| parse_markdown_document | isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document) | 333 | `isinstance(markdown, str)` |
 | parse_markdown_document | TypeError | 334 | `TypeError('markdown must be a string')` |
-| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 335 | `isinstance(page_locator, str)` |
-| parse_markdown_document | ValueError (src/llm_wiki_cli/services…y:parse_markdown_document) | 336 | `ValueError('page_locator must be a non-empty string')` |
+| parse_markdown_document | isinstance (src/llm_wiki_engine/markd…y:parse_markdown_document) | 335 | `isinstance(page_locator, str)` |
+| parse_markdown_document | ValueError (src/llm_wiki_engine/markd…y:parse_markdown_document) | 336 | `ValueError('page_locator must be a non-empty string')` |
 | parse_markdown_document | normalize_markdown | 338 | `normalize_markdown(markdown)` |
 | normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 

@@ -1,7 +1,7 @@
 # native_observation
 
 **Entry point:** `task_context_v2._native_observation`
-**Modules involved:** [knowledge_storage](../modules/knowledge_storage.md), [maintenance_status](../modules/maintenance_status.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md), [task_context_v2](../modules/task_context_v2.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [knowledge_storage](../modules/knowledge_storage.md), [maintenance_status](../modules/maintenance_status.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md), [task_context_v2](../modules/task_context_v2.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -10,13 +10,14 @@
 2. `maintenance_status.validate_maintenance_summary`
 3. `section_ownership.observe_page_sections`
 4. `markdown_sections.parse_markdown_document`
-5. `knowledge_storage.digest`
-6. `knowledge_storage.digest`
+5. `canonical_json.sha256_digest`
+6. `canonical_json.sha256_digest`
 7. `workflow_profile.WorkflowRequestError`
 8. `workflow_profile.content_id`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [markdown_sections](../modules/markdown_sections.md)

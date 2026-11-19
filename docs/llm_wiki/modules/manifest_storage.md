@@ -1,6 +1,6 @@
 # manifest_storage Module
 
-**Path:** `src/llm_wiki_cli/services/manifest_storage.py`
+**Path:** `src/llm_wiki_engine/manifest_storage.py`
 
 ## Description
 
@@ -10,8 +10,6 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 
 | Source | Symbols |
 |--------|---------|
-| `.canonical_json` | `canonical_chunks` |
-| `.immutable` | `freeze` |
 | `.knowledge_artifacts` | `_decode_json_object` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError`, `canonical_bytes`, `decode_bytes`, `digest`, `logical_digest`, `_hash` |
 | `.knowledge_storage_io` | `read_guarded` |
@@ -22,6 +20,8 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine.canonical_json` | `canonical_chunks` |
+| `llm_wiki_engine.immutable` | `freeze` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -32,7 +32,7 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/manifest_storage.py"]
+    n1["src/llm_wiki_engine/manifest_storage.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/manifest_storage.md"

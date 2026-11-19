@@ -83,8 +83,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 3 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 27 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 29 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 29 | - | external | 4 |
+| `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 29 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 7 |
 > Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

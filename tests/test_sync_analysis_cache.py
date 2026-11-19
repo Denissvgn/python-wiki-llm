@@ -16,7 +16,7 @@ import pytest
 from llm_wiki_cli.commands import sync_cmd, bootstrap_cmd
 from llm_wiki_cli import api
 from llm_wiki_cli.services import sync_analysis_cache, knowledge_generation
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.lint_service import build_report
 
 
@@ -420,7 +420,7 @@ def test_oversized_cache_rejected_before_content_read(primed, monkeypatch, read_
     with cache.open("wb") as handle:
         handle.truncate(sync_analysis_cache.MAX_BYTES + 1)
     edit(text="Oversized file requires ordinary generation.")
-    from llm_wiki_cli.services import knowledge_storage_io
+    from llm_wiki_engine import knowledge_storage_io
     import os
     identity = cache.stat()
     def is_oversized_cache(fd):

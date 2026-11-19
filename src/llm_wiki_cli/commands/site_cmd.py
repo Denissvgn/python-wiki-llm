@@ -5,16 +5,14 @@ from __future__ import annotations
 import sys
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
-from ..services.knowledge_consumption import load_knowledge_read_view
-from ..services.knowledge_model import KnowledgeProjectionProfile
+from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
+from llm_wiki_engine.knowledge_model import KnowledgeProjectionProfile
 from ..services.knowledge_projection import (
     KnowledgeProjection,
     project_knowledge,
 )
 from ..services.site_export import (
     SUPPORTED_KNOWLEDGE_METADATA,
-    SUPPORTED_SITE_PROFILES,
-    SUPPORTED_SITE_FORMATS,
     SiteExportError,
     check_site_hub,
     check_site_mirror,
@@ -24,16 +22,7 @@ from ..services.site_export import (
     render_report_text,
     resolve_site_hub_sources,
 )
-from ..services.site_html_check import SUPPORTED_LINK_MODES
-
-
-SITE_FORMAT_CHOICES = sorted(SUPPORTED_SITE_FORMATS)
-SITE_PROFILE_CHOICES = sorted(SUPPORTED_SITE_PROFILES)
-LINK_MODE_CHOICES = sorted(SUPPORTED_LINK_MODES)
-KNOWLEDGE_METADATA_CHOICES = sorted(SUPPORTED_KNOWLEDGE_METADATA)
-KNOWLEDGE_PROFILE_CHOICES = sorted(
-    profile.value for profile in KnowledgeProjectionProfile
-)
+from ..cli_declarations import KNOWLEDGE_METADATA_CHOICES
 
 
 def _print_report(report, output_format: str, *, action: str) -> None:

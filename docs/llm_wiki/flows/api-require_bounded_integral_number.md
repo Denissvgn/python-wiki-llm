@@ -12,24 +12,24 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_bounded_integral_number
-    participant p1 as isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)
+    participant p1 as isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)
     participant p2 as _validation_error
     participant p3 as math.isfinite
     participant p4 as value.is_integer
     participant p5 as int
-    participant p6 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p6 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p7 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)(value, bool)
+    p0-->>p1: isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)(value, bool)
     p0->>p2: _validation_error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)(value, int)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)(value, float)
+    p0-->>p1: isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)(value, int)
+    p0-->>p1: isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)(value, float)
     p0-->>p3: math.isfinite(value)
     p0-->>p4: value.is_integer
     p0-->>p5: int(value)
     p0->>p2: _validation_error
     p0->>p2: _validation_error
     p0->>p2: _validation_error
-    p2-->>p6: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p6: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p2-->>p7: error(context)
 ```
 
@@ -53,23 +53,23 @@ Collector observations for 5 source steps with known totals: observed: 20, emitt
 ```mermaid
 flowchart LR
     s1["1. require_bounded_integral_number"]
-    s2["2. isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)"]
+    s2["2. isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)"]
     s3["3. _validation_error"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s5["5. error"]
-    s6["6. isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)"]
-    s7["7. isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)"]
+    s6["6. isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)"]
+    s7["7. isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)"]
     s8["8. math.isfinite"]
     s9["9. value.is_integer"]
     s10["10. int"]
     s11["11. _validation_error"]
     s12["12. _validation_error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)(value, bool)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)(value, bool)" .-> s2
     s1 -->|"_validation_error(invalid_error, error_context)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s4
     s3 -. "error(context)" .-> s5
-    s1 -. "isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)(value, int)" .-> s6
-    s1 -. "isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)(value, float)" .-> s7
+    s1 -. "isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)(value, int)" .-> s6
+    s1 -. "isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)(value, float)" .-> s7
     s1 -. "math.isfinite(value)" .-> s8
     s1 -. "value.is_integer(data not statically known)" .-> s9
     s1 -. "int(value)" .-> s10
@@ -86,12 +86,12 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_bounded_integral_number` | `value: object`, `invalid_error: _ValidationError`, `error_context: str`, `minimum: int \| None`, `maximum: int \| None`, `bounds_error: _ValidationError \| None`, `zero_error: _ValidationError \| None` | - | - | `parsed` |
-| `isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…re_bounded_integral_number)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number)` | - | - | - | - |
 | `math.isfinite` | - | - | - | - |
 | `value.is_integer` | - | - | - | - |
 | `int` | - | - | - | - |
@@ -102,12 +102,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bounded_integral_number | isinstance (src/llm_wiki_cli/services…re_bounded_integral_number) | 915 | `isinstance(value, bool)` |
+| require_bounded_integral_number | isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number) | 915 | `isinstance(value, bool)` |
 | require_bounded_integral_number | _validation_error | 916 | `_validation_error(invalid_error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
-| require_bounded_integral_number | isinstance (src/llm_wiki_cli/services…re_bounded_integral_number) | 917 | `isinstance(value, int)` |
-| require_bounded_integral_number | isinstance (src/llm_wiki_cli/services…re_bounded_integral_number) | 919 | `isinstance(value, float)` |
+| require_bounded_integral_number | isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number) | 917 | `isinstance(value, int)` |
+| require_bounded_integral_number | isinstance (src/llm_wiki_engine/valid…re_bounded_integral_number) | 919 | `isinstance(value, float)` |
 | require_bounded_integral_number | math.isfinite | 919 | `math.isfinite(value)` |
 | require_bounded_integral_number | value.is_integer | 919 | `value.is_integer(data not statically known)` |
 | require_bounded_integral_number | int | 920 | `int(value)` |

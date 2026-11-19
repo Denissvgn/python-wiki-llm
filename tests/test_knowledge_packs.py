@@ -14,20 +14,20 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.cli import main
-from llm_wiki_cli.services import knowledge_packs as packs
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine import knowledge_packs as packs
+from llm_wiki_engine.knowledge_artifacts import (
     CommitStage, build_knowledge_commit_plan, commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError, canonical_bytes, digest
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
-from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report, review_storage
-from llm_wiki_cli.services.knowledge_storage_io import StorageReadSession
-from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError, canonical_bytes, digest
+from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_engine.knowledge_storage_diagnostics import storage_report, review_storage
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, recover_knowledge_storage, prune_knowledge_storage, export_knowledge_v1,
 )
 from llm_wiki_cli.services.task_contract import TASK_RESULT_SCHEMA_V2
-from llm_wiki_cli.services.workflow_profile import canonical_json, content_id
+from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_loader import _committed_state
 
@@ -310,7 +310,7 @@ def test_explicit_migration_cleanup_recovery_and_export_preserve_authority(tmp_p
 
 @pytest.mark.parametrize("stage", [CommitStage.KNOWLEDGE_OBJECTS_WRITTEN, CommitStage.KNOWLEDGE_INDEX_WRITTEN])
 def test_interrupted_pack_migration_recovers_exact_snapshot(tmp_path, monkeypatch, stage):
-    from llm_wiki_cli.services import knowledge_storage_lifecycle as lifecycle
+    from llm_wiki_engine import knowledge_storage_lifecycle as lifecycle
     wiki = tmp_path / "wiki"
     wiki.mkdir()
     _, old, _ = _committed_state(wiki)
@@ -398,9 +398,9 @@ def test_logical_review_is_format_independent_and_output_bounded(tmp_path):
     pytest.param({"items": [False]}, {"items": [0]}, id="nested-boolean-versus-number"),
 ])
 def test_logical_review_distinguishes_json_boolean_and_number(tmp_path, mode, before, after):
-    from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
-    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    from llm_wiki_engine.knowledge_index import serialize_knowledge_index
+    from llm_wiki_engine.knowledge_model import knowledge_index_to_payload
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     left = tmp_path / "before"
     left.mkdir()

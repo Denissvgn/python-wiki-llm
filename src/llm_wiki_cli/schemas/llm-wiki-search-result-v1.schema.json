@@ -1,0 +1,494 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-search-result-v1.schema.json",
+  "title": "Wiki search result",
+  "description": "The result of a wiki search from the CLI, MCP or the Python API, in each search mode. A result is valid only if it also passes checks a JSON Schema cannot express: returned, count and bounds.results.returned count the results, total and truncated match bounds.results, and truncated is true exactly when total exceeds returned. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-search-result/v1"
+    },
+    "query": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "mode": {
+      "enum": [
+        "ranked",
+        "ranked-v1",
+        "ranked-v2",
+        "substring"
+      ]
+    },
+    "total": {
+      "$ref": "#/$defs/count"
+    },
+    "returned": {
+      "$ref": "#/$defs/count"
+    },
+    "count": {
+      "$ref": "#/$defs/count"
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "$ref": "#/$defs/bound"
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "maxItems": 100
+    },
+    "ranking": {
+      "enum": [
+        "llm-wiki-search/lexical-v1",
+        "llm-wiki-search/lexical-v2"
+      ]
+    },
+    "corpus_id": {
+      "$ref": "#/$defs/text"
+    },
+    "scanned": {
+      "$ref": "#/$defs/usage"
+    },
+    "resource_limits": {
+      "$ref": "#/$defs/usage"
+    },
+    "experimental": {
+      "const": false
+    },
+    "definitive_answer": {
+      "const": false
+    },
+    "source_indexing": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-source-search-index/v1"
+        }
+      },
+      "required": [
+        "schema_version"
+      ]
+    },
+    "discovery": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-discovery/v1"
+        }
+      },
+      "required": [
+        "schema_version"
+      ]
+    }
+  },
+  "required": [
+    "bounds",
+    "count",
+    "mode",
+    "query",
+    "results",
+    "returned",
+    "schema_version",
+    "total",
+    "truncated"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "substring"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/$defs/substring_match"
+            }
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "corpus_id"
+              ]
+            },
+            {
+              "required": [
+                "ranking"
+              ]
+            },
+            {
+              "required": [
+                "resource_limits"
+              ]
+            },
+            {
+              "required": [
+                "scanned"
+              ]
+            },
+            {
+              "required": [
+                "definitive_answer"
+              ]
+            },
+            {
+              "required": [
+                "experimental"
+              ]
+            },
+            {
+              "required": [
+                "source_indexing"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "ranked-v1"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "corpus_id",
+          "ranking",
+          "resource_limits",
+          "scanned"
+        ],
+        "properties": {
+          "ranking": {
+            "const": "llm-wiki-search/lexical-v1"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/$defs/ranked_v1_match"
+            }
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "definitive_answer"
+              ]
+            },
+            {
+              "required": [
+                "experimental"
+              ]
+            },
+            {
+              "required": [
+                "source_indexing"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "enum": [
+              "ranked",
+              "ranked-v2"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "corpus_id",
+          "ranking",
+          "resource_limits",
+          "scanned",
+          "definitive_answer",
+          "experimental"
+        ],
+        "properties": {
+          "ranking": {
+            "const": "llm-wiki-search/lexical-v2"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/$defs/ranked_match"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "required": [
+            "source_indexing"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "results": {
+            "items": {
+              "not": {
+                "required": [
+                  "indexing"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "bound": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "returned": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "returned",
+        "total",
+        "truncated"
+      ],
+      "additionalProperties": false
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "bytes": {
+          "$ref": "#/$defs/count"
+        },
+        "pages": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "bytes",
+        "pages"
+      ],
+      "additionalProperties": false
+    },
+    "substring_match": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "api-contracts",
+            "dependencies",
+            "entities",
+            "flows",
+            "guides",
+            "index",
+            "infrastructure",
+            "load-order",
+            "log",
+            "modules",
+            "workflows"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "snippet",
+        "title",
+        "uri"
+      ],
+      "additionalProperties": false
+    },
+    "ranked_v1_match": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "api-contracts",
+            "dependencies",
+            "entities",
+            "flows",
+            "guides",
+            "index",
+            "infrastructure",
+            "load-order",
+            "log",
+            "modules",
+            "workflows"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "object"
+        },
+        "reasons": {
+          "$ref": "#/$defs/strings"
+        },
+        "score": {
+          "type": "number"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "provenance",
+        "reasons",
+        "score",
+        "snippet",
+        "title",
+        "uri"
+      ],
+      "additionalProperties": false
+    },
+    "ranked_match": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "indexing": {
+          "type": "object"
+        },
+        "kind": {
+          "enum": [
+            "api-contracts",
+            "dependencies",
+            "entities",
+            "flows",
+            "guides",
+            "index",
+            "infrastructure",
+            "load-order",
+            "log",
+            "modules",
+            "workflows"
+          ]
+        },
+        "matched_section_locations": {
+          "$ref": "#/$defs/objects"
+        },
+        "matched_sections": {
+          "type": "array"
+        },
+        "path": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "object"
+        },
+        "reasons": {
+          "$ref": "#/$defs/strings"
+        },
+        "score": {
+          "type": "number"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "matched_section_locations",
+        "matched_sections",
+        "path",
+        "provenance",
+        "reasons",
+        "score",
+        "snippet",
+        "title",
+        "uri"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

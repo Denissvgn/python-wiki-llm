@@ -27,7 +27,10 @@ s = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(s)
 q = s.q
 TIMEOUT = 5 * 60 * 60
-COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v2"
+COVERAGE_SCHEMA = "agent-wiki-core-shard-coverage/v3"
+# Coverage measures the CLI and the engine it pins, named under their parent.
+PROVIDER_PACKAGES = ("llm_wiki_cli", "llm_wiki_engine")
+PROVIDER_DISTRIBUTIONS = {"llm_wiki_cli": "agent-wiki-cli", "llm_wiki_engine": "llm-wiki-engine"}
 HARNESS_FILES = (
     "qualification.py",
     "core_shards.py",
@@ -390,30 +393,34 @@ def invoke(
     return {"exit_code": code, "seconds": time.monotonic() - started, "error": error}
 
 
-def source_manifest(package: Path) -> dict:
+def source_manifest(parent: Path) -> dict:
+    """Every provider source file, named relative to the packages' shared parent."""
     return {
-        path.relative_to(package).as_posix(): {
+        path.relative_to(parent).as_posix(): {
             "sha256": q.sha256_file(path),
             "line_count": len(path.read_bytes().splitlines()),
         }
-        for path in sorted(package.rglob("*.py"))
+        for package in PROVIDER_PACKAGES
+        if (parent / package).is_dir()
+        for path in sorted((parent / package).rglob("*.py"))
         if not path.is_symlink()
     }
 
 
 def package_root(root: Path) -> Path:
-    package = Path(
-        str(
-            importlib.metadata.distribution("agent-wiki-cli").locate_file(
-                "llm_wiki_cli"
-            )
-        )
-    ).resolve()
+    """The installed parent of both provider packages, byte-identical to the source."""
+    parents = {
+        Path(str(importlib.metadata.distribution(distribution).locate_file(package))).resolve().parent
+        for package, distribution in PROVIDER_DISTRIBUTIONS.items()
+    }
+    s.require(len(parents) == 1, "installed CLI and engine are not side by side")
+    (parent,) = parents
     s.require(
-        source_manifest(package) == source_manifest(root / "src/llm_wiki_cli"),
+        all((parent / package).is_dir() for package in PROVIDER_PACKAGES)
+        and source_manifest(parent) == source_manifest(root / "src"),
         "installed coverage source bytes differ",
     )
-    return package
+    return parent
 
 
 def coverage_rows(data_path: Path, source_roots: list[str], sources: dict) -> dict:
@@ -490,7 +497,7 @@ def export_coverage(root: Path, output: Path) -> None:
     package = package_root(root)
     sources = source_manifest(package)
     roots = list(dict.fromkeys([
-        package.as_posix(), (root / "src/llm_wiki_cli").resolve().as_posix(),
+        package.as_posix(), (root / "src").resolve().as_posix(),
     ]))
     rows = coverage_rows(output / "coverage.data", roots, sources)
     q.write_json(
@@ -579,7 +586,7 @@ def worker(args) -> int:
             if value["context"]["environment"]["profile"]["coverage"]:
                 os.environ["COVERAGE_FILE"] = str(output / "coverage.data")
                 flags += [
-                    "--cov=llm_wiki_cli",
+                    *(f"--cov={package}" for package in PROVIDER_PACKAGES),
                     "--cov-report=",
                     "--cov-fail-under=" + ("87" if args.index is None else "0"),
                 ]
@@ -691,7 +698,7 @@ def probe_coverage_transport(root: Path | None = None) -> None:
         os.chdir(root)
         # These are the source and branch options passed by pytest-cov for the
         # frozen worker flags. None retains the active candidate branch setting.
-        analyzer = Coverage(source=["llm_wiki_cli"], branch=None)
+        analyzer = Coverage(source=list(PROVIDER_PACKAGES), branch=None)
         s.require(analyzer.get_option("run:branch") is False,
                   "candidate coverage branch policy differs")
         s.require(analyzer.get_option("run:relative_files") is False,
@@ -703,12 +710,16 @@ def probe_coverage_transport(root: Path | None = None) -> None:
                   "candidate coverage plugins are outside the frozen coverage profile")
         # Explicit source package/directory settings are additive to --cov.
         # Older compatible coverage readers predate source_dirs/source_pkgs.
-        s.require(set(getattr(analyzer.config, "source_pkgs", ()) or ()) <= {"llm_wiki_cli"},
+        s.require(set(getattr(analyzer.config, "source_pkgs", ()) or ()) <= set(PROVIDER_PACKAGES),
                   "candidate coverage measures additional source packages")
         directories = getattr(analyzer.config, "source_dirs", ()) or ()
         if directories:
-            package = (root / "src/llm_wiki_cli").resolve()
-            allowed = {package, package_root(root)}
+            installed = package_root(root)
+            allowed = {
+                directory / package
+                for directory in ((root / "src").resolve(), installed)
+                for package in PROVIDER_PACKAGES
+            }
             s.require(all(Path(name).resolve() in allowed for name in directories),
                       "candidate coverage measures additional source directories")
 
@@ -716,8 +727,8 @@ def probe_coverage_transport(root: Path | None = None) -> None:
         # Seed line data without importing or executing candidate code. This
         # detects filters that would make the final XML disagree with the raw
         # union, while retaining supported exclusions and presentation options.
-        package = root / "src/llm_wiki_cli"
-        if package.is_dir():
+        package = root / "src"
+        if (package / PROVIDER_PACKAGES[0]).is_dir():
             with tempfile.TemporaryDirectory(prefix="coverage-report-") as temporary:
                 output = Path(temporary)
                 analyzer.set_option("run:source", [str(package)])
@@ -1074,7 +1085,7 @@ def combine_coverage(
             combined.setdefault(name, set()).update(observed)
     # The existing pytest pythonpath imports the byte-identical source checkout.
     # Rebase both verified copies to that canonical source for the same XML paths.
-    canonical = (root / "src/llm_wiki_cli").resolve()
+    canonical = (root / "src").resolve()
     output = output.resolve()
     xml = output / (
         "coverage-" + value["context"]["environment"]["profile"]["lane"] + ".xml"
@@ -1082,6 +1093,8 @@ def combine_coverage(
     previous = Path.cwd()
     try:
         os.chdir(root)
+        # One source directory, the packages' shared parent, keeps XML names
+        # unambiguous (both packages have an __init__.py).
         coverage = Coverage(data_file=str(output / "coverage.data"), source=[str(canonical)])
         coverage.get_data().add_lines(
             {str(canonical / name): lines for name, lines in combined.items()}

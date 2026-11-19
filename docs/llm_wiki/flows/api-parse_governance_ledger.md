@@ -2,12 +2,13 @@
 
 **Entry point:** `parse_governance_ledger` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [host](../modules/host.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [host](../modules/host.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [validation](../modules/validation.md)
@@ -50,7 +51,7 @@ sequenceDiagram
     participant p26 as authored_event_time
     participant p27 as _machine_code
     participant p28 as _identity_ownership_key
-    participant p29 as str (src/llm_wiki_cli/services…y:parse_governance_ledger)
+    participant p29 as str (src/llm_wiki_engine/knowl…y:parse_governance_ledger)
     participant p30 as concepts_raw.items
     p0->>p1: _object
     p0->>p2: _exact_fields
@@ -80,27 +81,27 @@ sequenceDiagram
     p7->>p26: authored_event_time
     p7->>p27: _machine_code
     p9->>p28: _identity_ownership_key
-    p0-->>p29: str (src/llm_wiki_cli/services…y:parse_governance_ledger)(record[...])
+    p0-->>p29: str (src/llm_wiki_engine/knowl…y:parse_governance_ledger)(record[...])
     p0-->>p30: concepts_raw.items
 ```
 
-> Call sequence diagram shows 30 of 454 interactions; 424 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 456 interactions; 426 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 94 (93 omitted); unresolved 1 of 88 (87 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 93 (92 omitted); unresolved 1 of 90 (89 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 5 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:_validation_error` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 16 | - | external | 9 |
-> Omission summary shows 8 of 125 groups; 117 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/validation.py:require_mapping` | 3 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 3 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 5 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:_validation_error` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_governance.py:_object` | 2 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
+| `src/llm_wiki_engine/knowledge_governance.py:_object` | 2 | - | external | 1 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 16 | - | external | 9 |
+> Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 273; effect analysis evaluated: 153, partial: 2, unavailable: 118. Counts include steps omitted from the displayed trace.
+Source steps: 274; effect analysis evaluated: 154, partial: 2, unavailable: 118. Counts include steps omitted from the displayed trace.
 
-Collector observations for 155 source steps with known totals: observed: 688, emitted: 680, omitted: 8. Unavailable totals are excluded.
+Collector observations for 156 source steps with known totals: observed: 687, emitted: 679, omitted: 8. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -126,11 +127,11 @@ Collector observations for 155 source steps with known totals: observed: 688, em
 | `parse_governance_ledger` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `require_mapping` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_validation_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -141,22 +142,22 @@ flowchart LR
     s1["1. parse_governance_ledger"]
     s2["2. _object"]
     s3["3. require_mapping"]
-    s4["4. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s5["5. _validation_error"]
-    s6["6. isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)"]
+    s6["6. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s7["7. error"]
-    s8["8. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s8["8. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s9["9. _validation_error"]
     s10["10. key.encode"]
     s11["11. _validation_error"]
     s12["12. GovernanceError"]
     s1 -->|"_object(payload, 'governance')"| s2
     s2 -->|"require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s4
     s3 -->|"_validation_error(error, error_context)"| s5
-    s5 -. "isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)(error, Exception)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s6
     s5 -. "error(context)" .-> s7
-    s3 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s8
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)" .-> s8
     s3 -->|"_validation_error(..., error_context)"| s9
     s3 -. "key.encode('utf-8')" .-> s10
     s3 -->|"_validation_error(..., error_context)"| s11
@@ -177,11 +178,11 @@ flowchart LR
 | `parse_governance_ledger` | `payload: object`, `expected_bundle_id: str \| None` | `GOVERNANCE_SCHEMA_VERSION`, `GOVERNANCE_SCHEMA_VERSION`, `ALIAS_NATURAL_KEY`, `ALIAS_LOCATOR` | `concepts[...]`, `aliases[...]` | `validate_governance_ledger(...)` |
 | `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -191,17 +192,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| parse_governance_ledger | _object | 422 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3290 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| parse_governance_ledger | _object | 423 | `_object(payload, 'governance')` |
+| _object | require_mapping | 3291 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…tion.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 787 | `isinstance(key, str)` |
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 | require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |
-| _object | GovernanceError | 3292 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3293 | `GovernanceError(path, 'must be an object')` |
 
 ### Boundary effects
 

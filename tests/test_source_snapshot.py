@@ -14,8 +14,8 @@ from llm_wiki_cli.extractors.common import (
     filter_bundled_source_inventory,
     is_bundled_helper_implementation_path,
 )
-from llm_wiki_cli.services.knowledge_envelope import ConsumedInputKind
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_envelope import ConsumedInputKind
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.source_snapshot import (
     SourceSnapshotError,
     build_source_snapshot,

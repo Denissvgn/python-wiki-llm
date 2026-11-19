@@ -1,6 +1,6 @@
 # BundleRecord
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:344`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:346`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `BundleRecord` in `src/llm_wiki_cli/services/knowledge_model.py`._
+_Auto-generated from `BundleRecord` in `src/llm_wiki_engine/knowledge_model.py`._
 
 ## Attributes
 
@@ -29,14 +29,14 @@ _Auto-generated from `BundleRecord` in `src/llm_wiki_cli/services/knowledge_mode
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["BundleRecord (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["_validated_bundle_payload (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["build_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n3["_validate_live_producer (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_index.py"]
-    n5["_bundle_to_payload (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n6["_parse_bundle (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n7["_validate_index_references (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["BundleRecord (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_validated_bundle_payload (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n2["build_evaluated_envelope (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n3["_validate_live_producer (src/llm_wiki_engine/knowledge_freshness.py)"]
+    n4["src/llm_wiki_engine/knowledge_index.py"]
+    n5["_bundle_to_payload (src/llm_wiki_engine/knowledge_model.py)"]
+    n6["_parse_bundle (src/llm_wiki_engine/knowledge_model.py)"]
+    n7["_validate_index_references (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

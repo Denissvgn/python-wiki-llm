@@ -1,6 +1,6 @@
 # ConceptReference
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:94`
+**Location:** `src/llm_wiki_engine/concept_identity.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)
@@ -30,11 +30,11 @@ One current, regenerable concept coordinate before UID allocation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptReference (src/llm_wiki_cli/services/concept_identity.py)"]
-    n1["aliases_for_move (src/llm_wiki_cli/services/concept_identity.py)"]
-    n2["allocate_concept (src/llm_wiki_cli/services/concept_identity.py)"]
-    n3["ConceptAllocation.reference (src/llm_wiki_cli/services/concept_identity.py)"]
-    n4["move_allocation (src/llm_wiki_cli/services/concept_identity.py)"]
+    n0["ConceptReference (src/llm_wiki_engine/concept_identity.py)"]
+    n1["aliases_for_move (src/llm_wiki_engine/concept_identity.py)"]
+    n2["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n3["ConceptAllocation.reference (src/llm_wiki_engine/concept_identity.py)"]
+    n4["move_allocation (src/llm_wiki_engine/concept_identity.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

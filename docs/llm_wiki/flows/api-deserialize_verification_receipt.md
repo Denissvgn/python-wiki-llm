@@ -2,7 +2,7 @@
 
 **Entry point:** `deserialize_verification_receipt` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md), [verification_contracts](../modules/verification_contracts.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md), [verification_contracts](../modules/verification_contracts.md)
 
 ## Call sequence
 
@@ -31,7 +31,7 @@ sequenceDiagram
     participant p17 as _checker_id
     participant p18 as require_exact_fields
     participant p19 as _normalized_anchor_mapping
-    participant p20 as canonical_json_bytes
+    participant p20 as compact_bytes
     participant p21 as _checker_version
     participant p22 as _array
     participant p23 as _parse_diagnostic
@@ -40,7 +40,7 @@ sequenceDiagram
     participant p26 as require_list
     participant p27 as _nonnegative_int
     participant p28 as require_nonnegative_int
-    participant p29 as isinstance (src/llm_wiki_cli/services…lize_verification_receipt)
+    participant p29 as isinstance (src/llm_wiki_engine/verif…lize_verification_receipt)
     participant p30 as content.decode
     p0->>p1: validate_verification_receipt
     p0->>p2: serialize_verification_receipt
@@ -61,7 +61,7 @@ sequenceDiagram
     p13->>p17: _checker_id
     p7->>p18: require_exact_fields
     p11->>p19: _normalized_anchor_mapping
-    p12->>p20: canonical_json_bytes
+    p12->>p20: compact_bytes
     p13->>p21: _checker_version
     p13->>p22: _array
     p13->>p23: _parse_diagnostic
@@ -70,7 +70,7 @@ sequenceDiagram
     p22->>p26: require_list
     p24->>p27: _nonnegative_int
     p27->>p28: require_nonnegative_int
-    p0-->>p29: isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)
+    p0-->>p29: isinstance (src/llm_wiki_engine/verif…lize_verification_receipt)(content, bytes)
     p0-->>p30: content.decode('utf-8')
 ```
 
@@ -82,14 +82,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 1 | - | external | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 1 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 10 | - | external | 7 |
-| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 10 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | external | 2 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:deserialize_verification_receipt` | 1 | - | external | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:deserialize_verification_receipt` | 1 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
+| `src/llm_wiki_engine/verification_contracts.py:validate_verification_receipt` | 10 | - | external | 7 |
+| `src/llm_wiki_engine/verification_contracts.py:validate_verification_receipt` | 10 | [src/llm_wiki_engine/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
+| `src/llm_wiki_engine/verification_contracts.py:_receipt_to_payload` | 12 | - | external | 2 |
+| `src/llm_wiki_engine/verification_contracts.py:_receipt_to_payload` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 17 | - | external | 2 |
+| `src/llm_wiki_engine/validation.py:require_mapping` | 17 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 > Omission summary shows 8 of 67 groups; 59 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 119; effect analysis evaluated: 73, partial: 1, unavailable: 45. Counts include steps omitted from the displayed trace.
 
-Collector observations for 74 source steps with known totals: observed: 281, emitted: 279, omitted: 2. Unavailable totals are excluded.
+Collector observations for 74 source steps with known totals: observed: 283, emitted: 281, omitted: 2. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -114,42 +114,42 @@ Collector observations for 74 source steps with known totals: observed: 281, emi
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `deserialize_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…lize_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…lize_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services…lize_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/verif…lize_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `VerificationReceiptError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `VerificationReceiptError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `VerificationReceiptError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/verif…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR
     s1["1. deserialize_verification_receipt"]
-    s2["2. isinstance (src/llm_wiki_cli/services…lize_verification_receipt)"]
+    s2["2. isinstance (src/llm_wiki_engine/verif…lize_verification_receipt)"]
     s3["3. TypeError"]
-    s4["4. len (src/llm_wiki_cli/services…lize_verification_receipt)"]
+    s4["4. len (src/llm_wiki_engine/verif…lize_verification_receipt)"]
     s5["5. VerificationReceiptError"]
     s6["6. content.decode"]
     s7["7. VerificationReceiptError"]
     s8["8. json.loads"]
     s9["9. VerificationReceiptError"]
     s10["10. validate_verification_receipt"]
-    s11["11. isinstance (src/llm_wiki_cli/services…date_verification_receipt)"]
+    s11["11. isinstance (src/llm_wiki_engine/verif…date_verification_receipt)"]
     s12["12. _receipt_to_payload"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/verif…lize_verification_receipt)(content, bytes)" .-> s2
     s1 -. "TypeError('content must be bytes')" .-> s3
-    s1 -. "len (src/llm_wiki_cli/services…lize_verification_receipt)(content)" .-> s4
+    s1 -. "len (src/llm_wiki_engine/verif…lize_verification_receipt)(content)" .-> s4
     s1 -->|"VerificationReceiptError('receipt', 'exceeds the byte limit')"| s5
     s1 -. "content.decode('utf-8')" .-> s6
     s1 -->|"VerificationReceiptError('receipt', 'must be valid UTF-8')"| s7
     s1 -. "json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)" .-> s8
     s1 -->|"VerificationReceiptError('receipt', ...)"| s9
     s1 -->|"validate_verification_receipt(payload)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_engine/verif…date_verification_receipt)(value, VerificationReceipt)" .-> s11
     s10 -->|"_receipt_to_payload(value)"| s12
     click s1 "../modules/verification_contracts.md"
     click s5 "../modules/verification_contracts.md"
@@ -164,32 +164,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `deserialize_verification_receipt` | `content: bytes` | `MAX_RECEIPT_BYTES`, `VerificationReceiptError` | - | `receipt` |
-| `isinstance (src/llm_wiki_cli/services…lize_verification_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…lize_verification_receipt)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…lize_verification_receipt)` | - | - | - | - |
+| `len (src/llm_wiki_engine/verif…lize_verification_receipt)` | - | - | - | - |
 | `VerificationReceiptError` | - | - | - | - |
 | `content.decode` | - | - | - | - |
 | `VerificationReceiptError` | - | - | - | - |
 | `json.loads` | - | - | - | - |
 | `VerificationReceiptError` | - | - | - | - |
 | `validate_verification_receipt` | `value: VerificationReceipt \| object` | `VerificationReceipt`, `VERIFICATION_RECEIPT_SCHEMA_VERSION`, `VERIFICATION_RECEIPT_SCHEMA_VERSION`, `VerificationContractError`, `MAX_CHECKS_PER_RECEIPT` | - | `VerificationReceipt(...)` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/verif…date_verification_receipt)` | - | - | - | - |
 | `_receipt_to_payload` | `receipt: VerificationReceipt` | - | - | `{...}` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| deserialize_verification_receipt | isinstance (src/llm_wiki_cli/services…lize_verification_receipt) | 923 | `isinstance(content, bytes)` |
+| deserialize_verification_receipt | isinstance (src/llm_wiki_engine/verif…lize_verification_receipt) | 923 | `isinstance(content, bytes)` |
 | deserialize_verification_receipt | TypeError | 924 | `TypeError('content must be bytes')` |
-| deserialize_verification_receipt | len (src/llm_wiki_cli/services…lize_verification_receipt) | 925 | `len(content)` |
+| deserialize_verification_receipt | len (src/llm_wiki_engine/verif…lize_verification_receipt) | 925 | `len(content)` |
 | deserialize_verification_receipt | VerificationReceiptError | 926 | `VerificationReceiptError('receipt', 'exceeds the byte limit')` |
 | deserialize_verification_receipt | content.decode | 928 | `content.decode('utf-8')` |
 | deserialize_verification_receipt | VerificationReceiptError | 930 | `VerificationReceiptError('receipt', 'must be valid UTF-8')` |
 | deserialize_verification_receipt | json.loads | 950 | `json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)` |
 | deserialize_verification_receipt | VerificationReceiptError | 958 | `VerificationReceiptError('receipt', ...)` |
 | deserialize_verification_receipt | validate_verification_receipt | 962 | `validate_verification_receipt(payload)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
 | validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
 
 ### Boundary effects

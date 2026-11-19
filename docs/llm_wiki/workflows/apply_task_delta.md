@@ -1,7 +1,7 @@
 # apply_task_delta
 
 **Entry point:** `context_session.apply_task_delta`
-**Modules involved:** [context_session](../modules/context_session.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_session](../modules/context_session.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -12,13 +12,14 @@
 4. `workflow_profile.WorkflowRequestError`
 5. `workflow_profile.exact_fields`
 6. `workflow_profile.WorkflowRequestError`
-7. `workflow_profile.canonical_json`
+7. `canonical_json.compact_line_bytes`
 8. `task_context.validate_task_context`
 9. `workflow_profile.WorkflowRequestError`
 10. `task_contract.TaskContext`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [context_session](../modules/context_session.md)
 - [task_context](../modules/task_context.md)
 - [task_contract](../modules/task_contract.md)

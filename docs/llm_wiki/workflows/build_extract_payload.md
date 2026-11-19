@@ -1,15 +1,15 @@
 # build_extract_payload
 
 **Entry point:** `extraction_service.build_extract_payload`
-**Modules involved:** [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [plugins](../modules/plugins.md), [services_dependencies](../modules/services_dependencies.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
+**Modules involved:** [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [path_policy](../modules/path_policy.md), [plugins](../modules/plugins.md), [services_dependencies](../modules/services_dependencies.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
 
 > Build the stable extract JSON payload without printing or exiting.
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `config.validate_source_root`
-2. `config.validate_source_paths`
+1. `path_policy.validate_source_root`
+2. `path_policy.validate_source_paths`
 3. `source_selection.resolve_source_selection`
 4. `common.normalize_include_tests`
 5. `services_dependencies.analyze_dependencies`
@@ -33,10 +33,10 @@
 
 - [api_contracts](../modules/api_contracts.md)
 - [common](../modules/common.md)
-- [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
+- [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)

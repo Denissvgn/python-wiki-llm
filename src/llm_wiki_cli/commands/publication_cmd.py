@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import json
-import argparse
 from os import sep
 from pathlib import Path
 import sys
 
-from ..services.filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
 )
-from ..services.knowledge_storage_io import StorageReadSession, _absolute_path
-from ..services.knowledge_storage import KnowledgeStorageError
+from llm_wiki_engine.knowledge_storage_io import StorageReadSession, _absolute_path
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from ..services.publication_config import (
     load_publication_config,
     publication_control_overlap,
@@ -29,7 +28,7 @@ from ..services.publication_impact import (
     render_publication_impact,
     resolve_publication_finding,
 )
-from ..services.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_evidence import hash_json
 from ..services.source_snapshot import _is_package_marker
 
 
@@ -39,62 +38,6 @@ def _normalize_consumer_paths(args):
         value = getattr(args, name, None)
         if isinstance(value, str):
             setattr(args, name, value.replace(sep, "/"))
-
-
-def _common(parser, *, child=False):
-    parser.add_argument(
-        "--config", default=argparse.SUPPRESS if child else ".llm-wiki/publication.json"
-    )
-    parser.add_argument("--consumer-root", default=argparse.SUPPRESS if child else ".")
-    parser.add_argument(
-        "--target-dir",
-        default=argparse.SUPPRESS if child else None,
-        help="Consumer-relative local sibling wiki checkout or pinned copy",
-    )
-    parser.add_argument(
-        "--baseline",
-        default=argparse.SUPPRESS if child else None,
-        help="Explicit accepted publication basis JSON",
-    )
-
-
-def add_impact_command(docs_sub):
-    parser = docs_sub.add_parser(
-        "impact", help="Report architecture changes affecting sibling wiki topics"
-    )
-    _common(parser)
-    parser.add_argument(
-        "--reviews",
-        help="Accepted review ledger supplied under repository review policy",
-    )
-    parser.add_argument("--output", help="Write machine-readable impact JSON")
-    parser.add_argument("--format", choices=("json", "markdown"), default="json")
-    actions = parser.add_subparsers(dest="impact_action")
-    snapshot = actions.add_parser(
-        "snapshot", help="Capture a publication basis without advancing review state"
-    )
-    _common(snapshot, child=True)
-    snapshot.add_argument("--output", required=True)
-    snapshot.add_argument(
-        "--replace",
-        action="store_true",
-        help="Explicitly replace a checkpoint after review",
-    )
-    resolve = actions.add_parser(
-        "resolve", help="Prepare a still-current decision for repository review"
-    )
-    _common(resolve, child=True)
-    resolve.add_argument("--report", required=True)
-    resolve.add_argument("--finding", required=True)
-    resolve.add_argument(
-        "--decision", choices=("still-current", "retired"), required=True
-    )
-    resolve.add_argument("--reviewer", required=True)
-    resolve.add_argument("--reason", required=True)
-    resolve.add_argument("--reviews", default=argparse.SUPPRESS)
-    resolve.add_argument(
-        "--output", required=True, help="Proposed review ledger output"
-    )
 
 
 def _artifact_path(args, value):
@@ -118,7 +61,7 @@ def _declared_files(config):
     for asset in config.get("content", {}).get("assets", []):
         yield asset["source_document"]
     for provider in config.get("reference_providers", {}).values():
-        if provider["kind"] == "contract-file":
+        if "path" in provider:
             yield provider["path"]
     for topic in config["topics"]:
         if topic.get("source_document"):
@@ -218,7 +161,7 @@ def _write(
             file_inputs.update(
                 reference["configuration"]["path"]
                 for reference in basis.get("references", {}).values()
-                if reference["configuration"]["kind"] == "contract-file"
+                if "path" in reference["configuration"]
             )
     if any(
         publication_control_overlap(destination, root / source)

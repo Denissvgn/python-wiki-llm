@@ -22,18 +22,18 @@ does not establish compatibility with the captured native basis.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility` |
-| `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `CI_CHECK_V3_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.doctor_service` | `compose_doctor_report` |
 | `.health_contract` | `HealthDetailsError`, `validate_health_details` |
 | `.health_summary` | `ASSURANCE_DISCLOSURE`, `FRESHNESS_DISCLOSURE`, `assurance_rows`, `captured_analysis_diagnostic`, `detailed_health_rows`, `diagnostic_groups`, `freshness_counts`, `reason_list`, `render_validation_markdown`, `summary_cell` |
-| `.knowledge_observability` | `KnowledgeAggregateSummary`, `knowledge_freshness_hint` |
 | `.lint_service` | `LintReport`, `report_to_dict` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility` |
+| `llm_wiki_engine.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `CI_CHECK_V3_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
+| `llm_wiki_engine.knowledge_observability` | `KnowledgeAggregateSummary`, `knowledge_freshness_hint` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -45,56 +45,56 @@ does not establish compatibility with the captured native basis.
 flowchart LR
     n0["integrations/github-action/render_summary.py"]
     n1["src/llm_wiki_cli/commands/ci_check_cmd.py"]
-    n2["src/llm_wiki_cli/services/analysis_compatibility.py"]
-    n3["src/llm_wiki_cli/services/ci_report.py"]
-    n4["src/llm_wiki_cli/services/contracts.py"]
-    n5["src/llm_wiki_cli/services/doctor_service.py"]
-    n6["src/llm_wiki_cli/services/health_contract.py"]
-    n7["src/llm_wiki_cli/services/health_policy.py"]
-    n8["src/llm_wiki_cli/services/health_summary.py"]
-    n9["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n10["src/llm_wiki_cli/services/lint_service.py"]
-    n0 --> n3
-    n0 --> n4
-    n0 --> n8
+    n2["src/llm_wiki_cli/services/ci_report.py"]
+    n3["src/llm_wiki_cli/services/doctor_service.py"]
+    n4["src/llm_wiki_cli/services/health_contract.py"]
+    n5["src/llm_wiki_cli/services/health_policy.py"]
+    n6["src/llm_wiki_cli/services/health_summary.py"]
+    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n8["src/llm_wiki_engine/analysis_compatibility.py"]
+    n9["src/llm_wiki_engine/contracts.py"]
+    n10["src/llm_wiki_engine/knowledge_observability.py"]
+    n0 --> n2
+    n0 --> n6
+    n0 --> n9
+    n1 --> n2
     n1 --> n3
-    n1 --> n5
-    n1 --> n8
-    n1 --> n10
-    n3 --> n2
+    n1 --> n6
+    n1 --> n7
+    n2 --> n3
+    n2 --> n4
+    n2 --> n6
+    n2 --> n7
+    n2 --> n8
+    n2 --> n9
+    n2 --> n10
     n3 --> n4
     n3 --> n5
     n3 --> n6
+    n3 --> n7
     n3 --> n8
     n3 --> n9
     n3 --> n10
+    n4 --> n8
+    n4 --> n9
     n5 --> n2
-    n5 --> n4
-    n5 --> n6
-    n5 --> n7
     n5 --> n8
-    n5 --> n9
-    n5 --> n10
-    n6 --> n2
-    n6 --> n4
-    n7 --> n2
-    n7 --> n3
-    n8 --> n2
-    n8 --> n9
-    n10 --> n2
-    n10 --> n8
-    n10 --> n9
+    n6 --> n8
+    n6 --> n10
+    n7 --> n6
+    n7 --> n8
+    n7 --> n10
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_check_cmd.md"
-    click n2 "../modules/analysis_compatibility.md"
-    click n3 "../modules/ci_report.md"
-    click n4 "../modules/services_contracts.md"
-    click n5 "../modules/doctor_service.md"
-    click n6 "../modules/health_contract.md"
-    click n7 "../modules/health_policy.md"
-    click n8 "../modules/health_summary.md"
-    click n9 "../modules/knowledge_observability.md"
-    click n10 "../modules/lint_service.md"
+    click n2 "../modules/ci_report.md"
+    click n3 "../modules/doctor_service.md"
+    click n4 "../modules/health_contract.md"
+    click n5 "../modules/health_policy.md"
+    click n6 "../modules/health_summary.md"
+    click n7 "../modules/lint_service.md"
+    click n8 "../modules/analysis_compatibility.md"
+    click n9 "../modules/llm_wiki_engine_contracts.md"
+    click n10 "../modules/knowledge_observability.md"
 ```
 
 ### Internal neighbors
@@ -104,13 +104,13 @@ flowchart LR
 | Inbound | [render_summary](../modules/render_summary.md) |
 | Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
 | Inbound | [health_policy](../modules/health_policy.md) |
-| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [doctor_service](../modules/doctor_service.md) |
 | Outbound | [health_contract](../modules/health_contract.md) |
 | Outbound | [health_summary](../modules/health_summary.md) |
-| Outbound | [knowledge_observability](../modules/knowledge_observability.md) |
 | Outbound | [lint_service](../modules/lint_service.md) |
+| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
+| Outbound | [knowledge_observability](../modules/knowledge_observability.md) |
 
 ## Classes
 

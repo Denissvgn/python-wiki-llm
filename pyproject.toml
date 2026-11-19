@@ -23,6 +23,7 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
 ]
 dependencies = [
+    "llm-wiki-engine==4.1.1",
     "PyYAML>=6",
 ]
 
@@ -69,6 +70,7 @@ llm-wiki = "llm_wiki_cli.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["llm_wiki_cli*"]
 
 [tool.setuptools.package-data]
 "llm_wiki_cli" = [
@@ -97,6 +99,21 @@ where = ["src"]
     "schemas/llm-wiki-knowledge-pack-index-v1.schema.json",
     "schemas/llm-wiki-knowledge-pack-index-v2.schema.json",
     "schemas/llm-wiki-knowledge-object-v1.schema.json",
+    "schemas/llm-wiki-engine-event-v1.schema.json",
+    "schemas/llm-wiki-engine-capabilities-v1.schema.json",
+    "schemas/llm-wiki-conformance-cases-v1.schema.json",
+    "schemas/llm-wiki-qualified-context-packet-v1.schema.json",
+    "schemas/llm-wiki-qualified-context-packet-v2.schema.json",
+    "schemas/llm-wiki-context-response-v1.schema.json",
+    "schemas/llm-wiki-context-response-v2.schema.json",
+    "schemas/llm-wiki-documentation-query-v1.schema.json",
+    "schemas/llm-wiki-search-result-v1.schema.json",
+    "schemas/llm-wiki-surface-index-v1.schema.json",
+    "schemas/llm-wiki-extract-v1.schema.json",
+    "schemas/llm-wiki-maintenance-status-v1.schema.json",
+    "schemas/llm-wiki-maintenance-queue-v1.schema.json",
+    "schemas/llm-wiki-context-response-v3.schema.json",
+    "schemas/conformance/*.cases.json",
     "extractors/ts_scripts/package.json",
     "extractors/ts_scripts/package-lock.json",
     "extractors/ts_scripts/extract.js",

@@ -12,18 +12,18 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_mapping
-    participant p1 as isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
+    participant p1 as isinstance (src/llm_wiki_engine/validation.py:require_mapping)
     participant p2 as _validation_error
     participant p3 as key.encode
-    participant p4 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p4 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p5 as error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(value, Mapping)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)
     p0->>p2: _validation_error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(key, str)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)
     p0->>p2: _validation_error
     p0-->>p3: key.encode('utf-8')
     p0->>p2: _validation_error
-    p2-->>p4: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p4: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p2-->>p5: error(context)
 ```
 
@@ -47,19 +47,19 @@ Collector observations for 4 source steps with known totals: observed: 18, emitt
 ```mermaid
 flowchart LR
     s1["1. require_mapping"]
-    s2["2. isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)"]
+    s2["2. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s3["3. _validation_error"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s5["5. error"]
-    s6["6. isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)"]
+    s6["6. isinstance (src/llm_wiki_engine/validation.py:require_mapping)"]
     s7["7. _validation_error"]
     s8["8. key.encode"]
     s9["9. _validation_error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(value, Mapping)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(value, Mapping)" .-> s2
     s1 -->|"_validation_error(error, error_context)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s4
     s3 -. "error(context)" .-> s5
-    s1 -. "isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(key, str)" .-> s6
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_mapping)(key, str)" .-> s6
     s1 -->|"_validation_error(..., error_context)"| s7
     s1 -. "key.encode('utf-8')" .-> s8
     s1 -->|"_validation_error(..., error_context)"| s9
@@ -74,11 +74,11 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_mapping` | `value: object`, `error: _ValidationError`, `error_context: str`, `require_string_keys: bool`, `key_error: _ValidationError \| None`, `require_utf8_keys: bool`, `utf8_key_error: _ValidationError \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_mapping)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `key.encode` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -87,11 +87,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 787 | `isinstance(key, str)` |
+| require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 787 | `isinstance(key, str)` |
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 | require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |

@@ -1,6 +1,6 @@
 # WindowsDurabilityError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:60`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:60`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -22,10 +22,10 @@ Raised when Windows cannot confirm durable filesystem metadata.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WindowsDurabilityError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["WindowsDurabilityError (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["OSError"]
-    n2["move_windows_path_write_through (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n3["src/llm_wiki_cli/services/protected_artifacts.py"]
+    n2["move_windows_path_write_through (src/llm_wiki_engine/filesystem_guard.py)"]
+    n3["src/llm_wiki_engine/protected_artifacts.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

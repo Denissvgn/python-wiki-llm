@@ -1,6 +1,6 @@
 # KnowledgeLinkError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_links.py:53`
+**Location:** `src/llm_wiki_engine/knowledge_links.py:53`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_links](../modules/knowledge_links.md)
@@ -24,16 +24,16 @@ Field-specific invalid input at the pure link-collection boundary.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeLinkError (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n0["KnowledgeLinkError (src/llm_wiki_engine/knowledge_links.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n3["_build_observation (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n4["_build_page_registry (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n5["_canonical_relative_path (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n6["_expected_page_coordinates (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n7["_page_locator (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n8["_validate_asset_paths (src/llm_wiki_cli/services/knowledge_links.py)"]
-    n9["_validate_page_content (src/llm_wiki_cli/services/knowledge_links.py)"]
+    n3["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
+    n4["_build_page_registry (src/llm_wiki_engine/knowledge_links.py)"]
+    n5["_canonical_relative_path (src/llm_wiki_engine/knowledge_links.py)"]
+    n6["_expected_page_coordinates (src/llm_wiki_engine/knowledge_links.py)"]
+    n7["_page_locator (src/llm_wiki_engine/knowledge_links.py)"]
+    n8["_validate_asset_paths (src/llm_wiki_engine/knowledge_links.py)"]
+    n9["_validate_page_content (src/llm_wiki_engine/knowledge_links.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

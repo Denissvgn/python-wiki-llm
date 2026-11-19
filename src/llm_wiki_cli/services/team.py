@@ -13,9 +13,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..config import DEFAULT_WIKI_DIR
-from .io import decode_markdown_bytes, read_md, write_json_atomic
+from llm_wiki_engine.io import decode_markdown_bytes, read_md, write_json_atomic
 from .plugins import PluginError, iter_components
-from .validation import (
+from llm_wiki_engine.validation import (
     require_exact_fields,
     require_portable_relative_path,
     require_string_list,
@@ -24,7 +24,7 @@ from .validation import (
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
 TEAM_CONFIG_PATH = Path(".llm-wiki") / "team.json"
 TEAM_CONFIG_VERSION = 1
@@ -261,7 +261,7 @@ def resolve_team_policy(
             raise TeamConfigError(
                 f"Could not resolve team wiki identity: {exc}"
             ) from exc
-    from .immutable import freeze
+    from llm_wiki_engine.immutable import freeze
 
     return TeamPolicyContext(freeze(config), selected, project_root)
 
@@ -393,7 +393,7 @@ def check_team_conventions(
     from .canonical_pages import canonical_generated_pages
     from .extraction_service import get_docker_inventory
     from .infrastructure_inventory import get_yaml_infrastructure_inventory
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     wiki_path = request.wiki_path
     try:
@@ -640,13 +640,13 @@ def _manifest_content(
         build_entity_page_map,
         build_module_page_map,
     )
-    from .sync_manifest import (
+    from llm_wiki_engine.sync_manifest import (
         MANIFEST_STATE_UNAVAILABLE,
         SyncManifest,
         prune_manifest_for_source_selection,
         retained_concept_page_paths,
     )
-    from .source_selection import with_source_selection_generation_input
+    from llm_wiki_engine.source_selection import with_source_selection_generation_input
 
     module_page_map = build_module_page_map(inventory)
     effective_generation_inputs = generation_inputs
@@ -728,7 +728,7 @@ def _manifest_resolution_state_from_conflict(
     SyncManifest | None,
     str,
 ]:
-    from .sync_manifest import MANIFEST_VERSION, SyncManifest, SyncManifestError
+    from llm_wiki_engine.sync_manifest import MANIFEST_VERSION, SyncManifest, SyncManifestError
 
     variants = _conflict_variants(text)
     parsed: list[dict] = []
@@ -890,7 +890,7 @@ def _infrastructure_content(
     *,
     source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[str | None, str]:
-    from .bootstrap_runtime import _generate_docker_md, build_module_page_map
+    from .bootstrap_runtime import _generate_infrastructure_md, build_module_page_map
     from .extraction_service import get_docker_inventory
 
     docker_inventory = get_docker_inventory(
@@ -909,8 +909,11 @@ def _infrastructure_content(
             "infrastructure page does not map unambiguously to a live Docker/Compose file",
         )
     docker_file, docker_info = matches[0]
-    return _generate_docker_md(
-        docker_file, docker_info, build_module_page_map(inventory)
+    return _generate_infrastructure_md(
+        docker_file,
+        docker_info,
+        build_module_page_map(inventory),
+        notes_placeholder=False,
     ), "regenerated infrastructure page"
 
 
@@ -1034,7 +1037,7 @@ def resolve_conflicts(
     source_selection: str | Path | None = None,
 ) -> dict[str, Any]:
     from .extraction_service import ExtractorFailureError, get_inventory_result
-    from .source_selection import (
+    from llm_wiki_engine.source_selection import (
         SourceSelectionError,
         resolve_source_selection,
         validate_persisted_source_selection_identity,
@@ -1043,7 +1046,7 @@ def resolve_conflicts(
         build_source_snapshot,
         capture_source_selection_inputs,
     )
-    from .sync_manifest import SyncManifest
+    from llm_wiki_engine.sync_manifest import SyncManifest
 
     wiki_path = Path(wiki_dir)
     policy = resolve_source_selection(src_dir, source_selection)
@@ -1108,7 +1111,7 @@ def resolve_conflicts(
     resolved: list[dict[str, str]] = []
     unresolved: list[dict[str, str]] = []
 
-    from .knowledge_storage_lifecycle import is_storage_path
+    from llm_wiki_engine.knowledge_storage_lifecycle import is_storage_path
 
     conflicts = []
     for path in sorted(p for p in wiki_path.rglob("*") if p.is_file()):
@@ -1154,8 +1157,8 @@ def resolve_conflicts(
             unresolved.append({"path": rel_path, "reason": reason})
             continue
         if write:
-            from .filesystem_guard import atomic_write_guarded_bytes
-            from .knowledge_storage_io import _absolute_path
+            from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
+            from llm_wiki_engine.knowledge_storage_io import _absolute_path
 
             normalized = new_content.replace("\r\n", "\n").replace("\r", "\n")
             atomic_write_guarded_bytes(_absolute_path(path), normalized.encode(), expected_existing=captured)

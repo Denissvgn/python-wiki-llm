@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from llm_wiki_cli.services import knowledge_graph, knowledge_model, validation
+from llm_wiki_engine import knowledge_graph, knowledge_model, validation
 
 
 def test_valid_knowledge_primitives_do_not_construct_domain_errors(monkeypatch):

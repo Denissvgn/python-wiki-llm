@@ -1,6 +1,6 @@
 # UnknownVerificationCheckerError
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:79`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:79`
 **Kind:** Class
 **Bases:** `VerificationContractError`
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -24,10 +24,10 @@ Raised before execution when a requested checker is not registered.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["UnknownVerificationCheckerError (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n1["VerificationContractError (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n2["_selected_contracts (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n3["checker_contract (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["UnknownVerificationCheckerError (src/llm_wiki_engine/verification_contracts.py)"]
+    n1["VerificationContractError (src/llm_wiki_engine/verification_contracts.py)"]
+    n2["_selected_contracts (src/llm_wiki_engine/verification_contracts.py)"]
+    n3["checker_contract (src/llm_wiki_engine/verification_contracts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

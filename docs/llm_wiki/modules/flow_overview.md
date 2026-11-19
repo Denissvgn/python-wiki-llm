@@ -23,11 +23,11 @@ call do not establish runtime execution or consumption.
 
 | Source | Symbols |
 |--------|---------|
-| `.immutable` | `freeze` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass` |
+| `llm_wiki_engine.immutable` | `freeze` |
 | `typing` | `Any` |
 
 ## Local dependency map
@@ -37,7 +37,7 @@ call do not establish runtime execution or consumption.
 flowchart LR
     n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n1["src/llm_wiki_cli/services/flow_overview.py"]
-    n2["src/llm_wiki_cli/services/immutable.py"]
+    n2["src/llm_wiki_engine/immutable.py"]
     n0 --> n1
     n1 --> n2
     click n0 "../modules/bootstrap_runtime.md"

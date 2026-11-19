@@ -1,7 +1,7 @@
 # search_prevalidated_roots
 
 **Entry point:** `search_service.search_prevalidated_roots`
-**Modules involved:** [documentation_query_builder](../modules/documentation_query_builder.md), [io](../modules/io.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [search_discovery](../modules/search_discovery.md), [search_discovery_capture](../modules/search_discovery_capture.md), [search_service](../modules/search_service.md), [search_source](../modules/search_source.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [documentation_query_builder](../modules/documentation_query_builder.md), [io](../modules/io.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [search_discovery](../modules/search_discovery.md), [search_discovery_capture](../modules/search_discovery_capture.md), [search_service](../modules/search_service.md), [search_source](../modules/search_source.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md)
 
 > Share capture/ranking while preserving trusted MCP configured-root boundaries.
 
@@ -21,9 +21,9 @@
 11. `search_source.capture_source_index`
 12. `search_discovery_capture.capture_discovery`
 13. `search_discovery.enrich_search`
-14. `workflow_profile.canonical_json`
+14. `canonical_json.compact_line_bytes`
 15. `search_discovery.DiscoveryError`
-16. `workflow_profile.canonical_json`
+16. `canonical_json.compact_line_bytes`
 17. `knowledge_storage_io.StorageReadSession.recheck`
 18. `knowledge_storage_io.StorageReadSession.recheck`
 19. `source_snapshot.source_snapshot_matches_current_files`
@@ -31,6 +31,7 @@
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [io](../modules/io.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -40,7 +41,6 @@
 - [search_source](../modules/search_source.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
-- [workflow_profile](../modules/workflow_profile.md)
 
 ## Behavior
 

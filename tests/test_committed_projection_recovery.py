@@ -8,11 +8,11 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import canonical_bytes, digest
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME, MaintenanceProtocolError, snapshot_wiki
+from llm_wiki_engine.knowledge_loader import load_knowledge_state
+from llm_wiki_engine.knowledge_storage import canonical_bytes, digest
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME, MaintenanceProtocolError, snapshot_wiki
 from llm_wiki_cli.services.maintenance_service import load_recovery_snapshot, recover_maintenance_authority
-from llm_wiki_cli.services.sync_manifest import SyncManifest, MANIFEST_FILENAME
+from llm_wiki_engine.sync_manifest import SyncManifest, MANIFEST_FILENAME
 from tests.test_owned_packet_recovery import FORMATS, owned_project
 
 ROOTS = {".llm-wiki-knowledge.json", ".llm-wiki-surface.json"}

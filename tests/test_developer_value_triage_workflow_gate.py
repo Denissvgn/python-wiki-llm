@@ -13,11 +13,11 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import analysis_capture
-from llm_wiki_cli.services.context_packet import capture_context_read
-from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
+from llm_wiki_cli.services.context_packet_builder import capture_context_read
+from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
 from llm_wiki_cli.services.maintenance_queue import build_maintenance_queue
-from llm_wiki_cli.services.maintenance_status import compact_maintenance_summary
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.maintenance_status import compact_maintenance_summary
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.developer_value.fixtures import POLICY_SOURCE
 from tests.test_knowledge_commands import _write_reviewed_description
 from tests.test_maintenance_read_projections import _context
@@ -424,10 +424,10 @@ def test_missing_or_incompatible_inputs_never_reuse_old_review(
     else:
         original = analysis_capture.implementation_hash
 
-        def incompatible(root, paths):
+        def incompatible(root, paths, engine_paths=()):
             return (
                 "sha256:"
-                + sha256(("new-producer:" + original(root, paths)).encode()).hexdigest()
+                + sha256(("new-producer:" + original(root, paths, engine_paths)).encode()).hexdigest()
             )
 
         monkeypatch.setattr(analysis_capture, "implementation_hash", incompatible)
@@ -471,7 +471,7 @@ def test_snapshot_reads_disclose_noncurrent_review_without_source_analysis(
     _acknowledge_all()
     before = _files(owned)
     monkeypatch.setattr(
-        "llm_wiki_cli.services.context_packet.capture_context_read",
+        "llm_wiki_cli.services.context_packet_builder.capture_context_read",
         lambda *args, **kwargs: pytest.fail("snapshot performed live source analysis"),
     )
     status = api.get_maintenance_status("src", "wiki", live=False)

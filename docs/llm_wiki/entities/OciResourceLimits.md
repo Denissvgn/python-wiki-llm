@@ -1,6 +1,6 @@
 # OciResourceLimits
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:209`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:210`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

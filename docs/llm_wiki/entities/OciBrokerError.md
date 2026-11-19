@@ -1,6 +1,6 @@
 # OciBrokerError
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:133`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:134`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [broker](../modules/broker.md)

@@ -3,7 +3,7 @@
 import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ProducerComponentInput,
     build_producer_record,
 )

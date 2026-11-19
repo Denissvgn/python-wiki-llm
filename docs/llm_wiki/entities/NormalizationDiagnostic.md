@@ -1,6 +1,6 @@
 # NormalizationDiagnostic
 
-**Location:** `src/llm_wiki_cli/services/normalization_diagnostics.py:41`
+**Location:** `src/llm_wiki_engine/normalization_diagnostics.py:41`
 **Kind:** Class
 **Bases:** —
 **Module:** [normalization_diagnostics](../modules/normalization_diagnostics.md)
@@ -50,13 +50,13 @@ the old rejected record or treat a fresh observation as a committed repair.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["NormalizationDiagnostic (src/llm_wiki_cli/services/normalization_diagnostics.py)"]
-    n1["_InventoryNormalizationError.diagnostic (src/llm_wiki_cli/services/knowledge_evidence.py)"]
-    n2["_unknown_basis (src/llm_wiki_cli/services/knowledge_evidence.py)"]
-    n3["build_entity_observation_basis (src/llm_wiki_cli/services/knowledge_evidence.py)"]
-    n4["build_module_observation_basis (src/llm_wiki_cli/services/knowledge_evidence.py)"]
-    n5["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n6["NormalizationDiagnostic.rejection (src/llm_wiki_cli/services/normalization_diagnostics.py)"]
+    n0["NormalizationDiagnostic (src/llm_wiki_engine/normalization_diagnostics.py)"]
+    n1["_InventoryNormalizationError.diagnostic (src/llm_wiki_engine/knowledge_evidence.py)"]
+    n2["_unknown_basis (src/llm_wiki_engine/knowledge_evidence.py)"]
+    n3["build_entity_observation_basis (src/llm_wiki_engine/knowledge_evidence.py)"]
+    n4["build_module_observation_basis (src/llm_wiki_engine/knowledge_evidence.py)"]
+    n5["src/llm_wiki_engine/knowledge_freshness.py"]
+    n6["NormalizationDiagnostic.rejection (src/llm_wiki_engine/normalization_diagnostics.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

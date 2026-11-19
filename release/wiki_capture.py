@@ -285,7 +285,7 @@ def _materialized_records(records: dict) -> dict:
 
 
 def _wiki_state(root: Path) -> tuple[dict[str, bytes], dict[str, dict]]:
-    from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
+    from llm_wiki_engine.maintenance_protocol import snapshot_wiki
 
     files = snapshot_wiki(manual.safe(root / WIKI))
     require(len(files) <= LIMITS["files"] and sum(map(len, files.values())) <= LIMITS["content_bytes"], "wiki preimage exceeds bound")
@@ -294,7 +294,7 @@ def _wiki_state(root: Path) -> tuple[dict[str, bytes], dict[str, dict]]:
 
 
 def _outside_source(root: Path) -> dict:
-    from llm_wiki_cli.services.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     names = _git_bytes(root, "ls-files", "--cached", "--others", "--exclude-standard", "-z").decode().split("\0")
     require(len(names) <= 50001, "source inventory exceeds bound")
@@ -348,7 +348,7 @@ def storage_audit(files: dict[str, bytes], records: dict[str, dict]) -> dict:
 
 
 def audit_wiki(wiki: Path) -> dict:
-    from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
+    from llm_wiki_engine.knowledge_storage_diagnostics import storage_report
 
     report = storage_report(wiki, full=True, require_referenced=True)
     require(report.get("ok") is True, "captured wiki failed the full read-only storage audit")
@@ -423,8 +423,8 @@ def _validate_plan(root: Path, plan: dict, approved: str) -> None:
 
 def load_preimage(directory: Path, metadata: dict) -> dict[str, bytes]:
     """Read supported recovery bytes without claiming maintenance adoption."""
-    from llm_wiki_cli.services.maintenance_recovery import CATALOG_SCHEMA, load_recovery_catalog
-    from llm_wiki_cli.services.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.maintenance_recovery import CATALOG_SCHEMA, load_recovery_catalog
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
 
     if metadata.get("schema_version") == CATALOG_SCHEMA:
         return load_recovery_catalog(directory, metadata)
@@ -439,9 +439,9 @@ def load_preimage(directory: Path, metadata: dict) -> dict[str, bytes]:
 
 
 def apply_import(root: Path, plan: dict, approved: str, recovery: Path, *, client) -> dict:
-    from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, unlink_guarded_bytes
-    from llm_wiki_cli.services.knowledge_storage_io import read_guarded
-    from llm_wiki_cli.services.maintenance_protocol import (
+    from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory, unlink_guarded_bytes
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.maintenance_protocol import (
         governance_writer_lock, storage_writer_lock, save_recovery_snapshot, load_adoption_marker,
     )
 

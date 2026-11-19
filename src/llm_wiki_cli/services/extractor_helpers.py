@@ -15,10 +15,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from llm_wiki_engine.host import HostCapabilityError, current_host
 from .inventory_cache import ENV_CACHE_DIR
-from .paths import render_shell_command
+from llm_wiki_engine.paths import render_shell_command
 from . import typescript_helper_identity as ts_identity
-from .io import first_unsafe_path_component
+from llm_wiki_engine.io import first_unsafe_path_component
 
 ENV_GO_BINARY = "LLM_WIKI_GO"
 ENV_GHC_BINARY = "LLM_WIKI_GHC"
@@ -186,7 +187,7 @@ def command_output(
     cmd: list[str], *, cwd: Path | None = None, timeout: int = 15
 ) -> str | None:
     try:
-        result = subprocess.run(
+        result = current_host().run(
             cmd,
             input="",
             capture_output=True,
@@ -199,6 +200,7 @@ def command_output(
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
         FileNotFoundError,
+        HostCapabilityError,
     ):
         return None
     return (result.stdout or result.stderr).strip()
@@ -227,13 +229,15 @@ def _resolve_ghc_executable(env: dict[str, str] | None = None) -> str | None:
 
 def _go_version(go_executable: str, *, timeout: int = 15) -> tuple[str | None, str]:
     try:
-        result = subprocess.run(
+        result = current_host().run(
             [go_executable, "version"],
             input="",
             capture_output=True,
             text=True,
             timeout=timeout,
         )
+    except HostCapabilityError:
+        return None, "the host does not grant subprocesses"
     except FileNotFoundError:
         return None, "executable not found"
     except subprocess.TimeoutExpired:
@@ -250,13 +254,15 @@ def _go_version(go_executable: str, *, timeout: int = 15) -> tuple[str | None, s
 
 def _ghc_version(ghc_executable: str, *, timeout: int = 15) -> tuple[str | None, str]:
     try:
-        result = subprocess.run(
+        result = current_host().run(
             [ghc_executable, "--numeric-version"],
             input="",
             capture_output=True,
             text=True,
             timeout=timeout,
         )
+    except HostCapabilityError:
+        return None, "the host does not grant subprocesses"
     except FileNotFoundError:
         return None, "executable not found"
     except subprocess.TimeoutExpired:
@@ -655,7 +661,7 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
         shutil.copyfile(source_path, destination)
 
     try:
-        subprocess.run(
+        current_host().run(
             [
                 npm_executable,
                 "ci",
@@ -673,6 +679,8 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
             cwd=str(build_root),
             text=True,
         )
+    except HostCapabilityError:
+        return HelperPrepareResult("typescript", "failed", "npm ci failed: the host does not grant subprocesses")
     except subprocess.CalledProcessError as exc:
         return HelperPrepareResult(
             "typescript", "failed", f"npm ci failed: {exc.stderr.strip()}"
@@ -780,7 +788,7 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
     with tempfile.TemporaryDirectory(prefix=".build-", dir=out_dir) as temporary:
         output = Path(temporary) / binary_path.name
         try:
-            subprocess.run(
+            current_host().run(
                 [go_executable, "build", *GO_BUILD_FLAGS, "-o", str(output), "."],
                 capture_output=True,
                 text=True,
@@ -789,6 +797,8 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
                 cwd=str(GO_SCRIPTS_DIR),
                 env=build_env,
             )
+        except HostCapabilityError:
+            return HelperPrepareResult("go", "failed", "go build failed: the host does not grant subprocesses")
         except subprocess.CalledProcessError as exc:
             return HelperPrepareResult(
                 "go", "failed", f"go build failed: {exc.stderr.strip()}"
@@ -835,11 +845,13 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
         stage = Path(temporary)
         target_dir = stage / "target"
         try:
-            subprocess.run(
+            current_host().run(
                 ["cargo", "build", "--locked", "--release", "--target-dir", str(target_dir)],
                 capture_output=True, text=True, check=True, timeout=180,
                 cwd=str(RUST_SCRIPTS_DIR),
             )
+        except HostCapabilityError:
+            return HelperPrepareResult("rust", "failed", "cargo build failed: the host does not grant subprocesses")
         except subprocess.CalledProcessError as exc:
             return HelperPrepareResult("rust", "failed", f"cargo build failed: {exc.stderr.strip()}")
         except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -893,7 +905,7 @@ def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
     out_dir.mkdir(parents=True, exist_ok=True)
     build_dir.mkdir(parents=True, exist_ok=True)
     try:
-        subprocess.run(
+        current_host().run(
             [
                 ghc_executable,
                 "-Wall",
@@ -912,6 +924,8 @@ def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
             timeout=180,
             cwd=str(HASKELL_SCRIPTS_DIR),
         )
+    except HostCapabilityError:
+        return HelperPrepareResult("haskell", "failed", "ghc build failed: the host does not grant subprocesses")
     except subprocess.CalledProcessError as exc:
         return HelperPrepareResult(
             "haskell", "failed", f"ghc build failed: {exc.stderr.strip()}"

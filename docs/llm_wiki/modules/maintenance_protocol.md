@@ -1,6 +1,6 @@
 # maintenance_protocol Module
 
-**Path:** `src/llm_wiki_cli/services/maintenance_protocol.py`
+**Path:** `src/llm_wiki_engine/maintenance_protocol.py`
 
 ## Description
 
@@ -10,23 +10,15 @@ Immutable adoption detection and guarded maintenance publication basis.
 
 | Source | Symbols |
 |--------|---------|
-| `.bootstrap_recovery` | `guard_incomplete_bootstrap` |
-| `.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
-| `.io` | `first_unsafe_path_component` |
 | `.knowledge_governance` | `governance_lock`, `governance_lock` |
-| `.knowledge_orchestration` | `CommittedKnowledgeState`, `CommittedKnowledgeState` |
 | `.knowledge_packs` | `PACK_NAME`, `index_path`, `index_page_path` |
 | `.knowledge_storage` | `canonical_bytes`, `digest`, `MAX_EXPANDED_BYTES`, `object_path` |
 | `.knowledge_storage_io` | `read_guarded`, `_absolute_path` |
 | `.maintenance_recovery` | `save_recovery_catalog`, `recovery_catalog_key`, `mark_recovery_complete`, `retain_recovery_catalogs` |
 | `.maintenance_state` | `validate_maintenance_adoption`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.manifest_storage` | `object_path` |
-| `.progress` | `observed_phase` |
-| `.request_json` | `_pairs`, `_constant` |
-| `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files` |
 | `.storage_spool` | `ByteSpool` |
 | `.sync_manifest` | `SyncManifest` |
-| `.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `asyncio` | `asyncio` |
 | `collections.abc` | `Iterator`, `Mapping`, `MutableMapping` |
@@ -34,10 +26,16 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.progress` | `observed_phase` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `threading` | `threading` |
-| `typing` | `TYPE_CHECKING` |
+| `typing` | `Any` |
 
 ## Local dependency map
 
@@ -45,7 +43,7 @@ Immutable adoption detection and guarded maintenance publication basis.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/maintenance_protocol.py"]
+    n1["src/llm_wiki_engine/maintenance_protocol.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/maintenance_protocol.md"
@@ -58,7 +56,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (21) |
-| Outbound | `src` (17) |
+| Outbound | `src` (15) |
 
 > All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
@@ -66,9 +64,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceProtocolError](../entities/MaintenanceProtocolError.md) | 37 | `ValueError` | — |
-| [_StorageStagingAuthority](../entities/StorageStagingAuthority.md) | 178 | — | — |
-| [WikiWriteBasis](../entities/WikiWriteBasis.md) | 200 | — | — |
+| [MaintenanceProtocolError](../entities/MaintenanceProtocolError.md) | 38 | `ValueError` | — |
+| [_StorageStagingAuthority](../entities/StorageStagingAuthority.md) | 179 | — | — |
+| [WikiWriteBasis](../entities/WikiWriteBasis.md) | 201 | — | — |
 
 ## Functions
 

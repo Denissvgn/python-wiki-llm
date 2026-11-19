@@ -6,10 +6,10 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_service, lint_service
-from llm_wiki_cli.services.context_packet import capture_context_read
+from llm_wiki_cli.services.context_packet_builder import capture_context_read
 from llm_wiki_cli.services.maintenance_queue import build_maintenance_queue
 from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from tests.developer_value.fixtures import POLICY_SOURCE
 
 
@@ -106,7 +106,7 @@ def test_snapshot_inspection_never_claims_current_acknowledgment(owned):
 @pytest.mark.parametrize("live", [False, True])
 def test_uid_and_alias_inspection_preserve_resolved_maintenance_status(owned, live):
     from tests.test_knowledge_cmd import _run
-    from llm_wiki_cli.services.knowledge_governance import load_governance
+    from llm_wiki_engine.knowledge_governance import load_governance
 
     route = "llm-wiki://entities/Batch"
     alias = "llm-wiki://entities/FormerBatch"
@@ -158,7 +158,7 @@ def test_selected_v8_task_discloses_partial_ledger_and_no_ack_inference(owned):
 
 
 def _context(captured):
-    from llm_wiki_cli.services.context_packet import (
+    from llm_wiki_cli.services.context_packet_builder import (
         build_context_from_captured_read,
         _normalized_request,
         packet_from_captured_response,
@@ -184,7 +184,7 @@ def test_actual_prose_drift_status_queue_context_and_inspection_are_consistent(o
     from llm_wiki_cli.services.maintenance_service import (
         get_maintenance_status_authority,
     )
-    from llm_wiki_cli.services.maintenance_status import compact_maintenance_summary
+    from llm_wiki_engine.maintenance_status import compact_maintenance_summary
 
     path = Path("wiki/entities/Batch.md")
     path.write_text(
@@ -216,7 +216,7 @@ def test_ambiguous_candidate_targets_remain_pending_across_all_read_surfaces(
     owned, monkeypatch
 ):
     from llm_wiki_cli import cli
-    from llm_wiki_cli.services.maintenance_status import compact_maintenance_summary
+    from llm_wiki_engine.maintenance_status import compact_maintenance_summary
     from llm_wiki_cli.services.maintenance_service import (
         get_maintenance_status_authority,
     )
@@ -262,7 +262,7 @@ def test_source_deletion_retains_exact_old_targets_in_all_read_views(
     owned, monkeypatch
 ):
     from llm_wiki_cli import cli
-    from llm_wiki_cli.services.maintenance_status import compact_maintenance_summary
+    from llm_wiki_engine.maintenance_status import compact_maintenance_summary
     from llm_wiki_cli.services.maintenance_service import (
         get_maintenance_status_authority,
     )

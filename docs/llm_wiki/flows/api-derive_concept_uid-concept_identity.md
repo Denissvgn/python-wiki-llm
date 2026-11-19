@@ -81,14 +81,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 3 | - | external | 6 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 3 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 3 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 20 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 2 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_concept_kind` | 26 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_natural_key` | 30 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 13 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 3 | - | external | 6 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 3 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_engine/concept_identity.py:_machine_text` | 3 | - | unresolved | 3 |
+| `src/llm_wiki_engine/concept_identity.py:_looks_absolute_path` | 20 | - | unresolved | 2 |
+| `src/llm_wiki_engine/concept_identity.py:_contains_uri_userinfo` | 23 | - | external | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_bundle_id` | 2 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_concept_kind` | 26 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_engine/concept_identity.py:validate_natural_key` | 30 | [src/llm_wiki_engine/concept_identity.py](../modules/concept_identity.md) | internal | 13 |
 > Omission summary shows 8 of 15 groups; 7 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -117,10 +117,10 @@ Collector observations for 14 source steps with known totals: observed: 47, emit
 | `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -132,10 +132,10 @@ flowchart LR
     s6["6. len"]
     s7["7. ConceptIdentityError"]
     s8["8. value.strip"]
-    s9["9. any (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
-    s10["10. character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
+    s9["9. any (src/llm_wiki_engine/conce…_identity.py:_machine_text)"]
+    s10["10. character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)"]
     s11["11. ConceptIdentityError"]
-    s12["12. unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
+    s12["12. unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)"]
     s1 -->|"validate_bundle_id(bundle_id)"| s2
     s2 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s3
     s3 -. "isinstance(value, str)" .-> s4
@@ -143,10 +143,10 @@ flowchart LR
     s3 -. "len(value)" .-> s6
     s3 -->|"ConceptIdentityError(field, ...)"| s7
     s3 -. "value.strip(data not statically known)" .-> s8
-    s3 -. "any (src/llm_wiki_cli/services…_identity.py:_machine_text)(...)" .-> s9
-    s3 -. "character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)(data not statically known)" .-> s10
+    s3 -. "any (src/llm_wiki_engine/conce…_identity.py:_machine_text)(...)" .-> s9
+    s3 -. "character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)(data not statically known)" .-> s10
     s3 -->|"ConceptIdentityError(field, 'must not contain whitespace')"| s11
-    s3 -. "unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)('NFC', value)" .-> s12
+    s3 -. "unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)('NFC', value)" .-> s12
     click s1 "../modules/concept_identity.md"
     click s2 "../modules/concept_identity.md"
     click s3 "../modules/concept_identity.md"
@@ -167,10 +167,10 @@ flowchart LR
 | `len` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
-| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
+| `any (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | - | - | - | - |
+| `character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
+| `unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text)` | - | - | - | - |
 
 ### Call data
 
@@ -183,10 +183,10 @@ flowchart LR
 | _machine_text | len | 944 | `len(value)` |
 | _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
 | _machine_text | value.strip | 946 | `value.strip(data not statically known)` |
-| _machine_text | any (src/llm_wiki_cli/services…_identity.py:_machine_text) | 946 | `any(...)` |
-| _machine_text | character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text) | 946 | `character.isspace(data not statically known)` |
+| _machine_text | any (src/llm_wiki_engine/conce…_identity.py:_machine_text) | 946 | `any(...)` |
+| _machine_text | character.isspace (src/llm_wiki_engine/conce…_identity.py:_machine_text) | 946 | `character.isspace(data not statically known)` |
 | _machine_text | ConceptIdentityError | 947 | `ConceptIdentityError(field, 'must not contain whitespace')` |
-| _machine_text | unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text) | 948 | `unicodedata.normalize('NFC', value)` |
+| _machine_text | unicodedata.normalize (src/llm_wiki_engine/conce…_identity.py:_machine_text) | 948 | `unicodedata.normalize('NFC', value)` |
 
 ### Boundary effects
 

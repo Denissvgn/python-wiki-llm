@@ -264,7 +264,7 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
         {"_validate_portable_component", "validate_portable_relative_path"}
     ),
     "relationships": frozenset({"_detail_line"}),
-    "infrastructure_sync": frozenset({"_valid_repository_path"}),
+    "infrastructure_state": frozenset({"_valid_repository_path"}),
     "imports": frozenset({"_path_under", "_path_under_scope"}),
     "mcp_server": frozenset({"_normalise_source_path", "_posix_string"}),
     "obsidian": frozenset(
@@ -293,7 +293,6 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
     "sync_manifest": frozenset(
         {
             "_mapping_value",
-            "_safe_page_component",
             "_validate_exact_keys",
             "_validate_repository_path",
         }
@@ -1117,6 +1116,57 @@ def test_command_import_guard_allows_service_relative_imports(tmp_path: Path) ->
     )
 
     assert _command_imports(path, services_root=services_root) == []
+
+
+# Services that still reach the CLI parser or the public facade. Entries may
+# only be removed; reusable services must not depend on entry adapters.
+ENTRY_ADAPTER_IMPORT_ALLOWLIST = {
+    "mcp_server.py": ["llm_wiki_cli", "llm_wiki_cli.api"],
+}
+
+
+def test_services_do_not_import_cli_or_public_api() -> None:
+    violations = {
+        path.relative_to(SERVICES_ROOT).as_posix(): sorted(
+            {name for _line, name in imports}
+        )
+        for path in sorted(SERVICES_ROOT.rglob("*.py"))
+        if (imports := _entry_adapter_imports(path))
+    }
+
+    assert violations == ENTRY_ADAPTER_IMPORT_ALLOWLIST
+
+
+def test_entry_adapter_guard_covers_cli_and_api_import_forms(tmp_path: Path) -> None:
+    services_root = tmp_path / "llm_wiki_cli" / "services"
+    cases = {
+        "parser.py": "def f():\n    from ..cli import build_cli_parser\n",
+        "facade.py": "from .. import api\n",
+        "absolute.py": "from llm_wiki_cli.api import query_documentation\n",
+        "plain.py": "import llm_wiki_cli.cli\n",
+        "nested/parent.py": "from ... import cli\n",
+        "dynamic.py": "import importlib\nimportlib.import_module('llm_wiki_cli.cli')\n",
+    }
+    for relative, source in cases.items():
+        path = services_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(source, encoding="utf-8")
+        assert _entry_adapter_imports(path, services_root=services_root), relative
+
+
+def test_entry_adapter_guard_allows_types_and_service_modules(tmp_path: Path) -> None:
+    services_root = tmp_path / "llm_wiki_cli" / "services"
+    path = services_root / "service.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "from .. import api_types, config\n"
+        "from ..api_types import KnowledgeMode\n"
+        "from . import client\n"
+        "argv = ['python', '-m', 'llm_wiki_cli.cli']\n",
+        encoding="utf-8",
+    )
+
+    assert _entry_adapter_imports(path, services_root=services_root) == []
 
 
 def test_shared_validation_adapters_remain_thin() -> None:

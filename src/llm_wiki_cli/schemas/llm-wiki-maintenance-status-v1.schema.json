@@ -1,0 +1,737 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-maintenance-status-v1.schema.json",
+  "title": "Maintenance status",
+  "description": "One bounded read of ordinary review: each maintenance record's recorded state and, when source was captured, its current effective state. maintenance status prints it, and documentation queries embed the per-page form, which adds a summary. Record shapes match llm-wiki-maintenance-state/v1. A payload is valid only if it also passes checks a JSON Schema cannot express: an unadopted wiki has no adoption, state hash or records; an adopted read is partial for a selected header and ready otherwise; snapshot reads evaluate nothing; requires_sync is the negation of native_prose_coherent; every bound counts what it bounds; records are unique and ordered by record_id; each record's bases describe its coordinate and target, its acknowledgment is present exactly when it is acknowledged, and its qualification follows from what was evaluated; source locations are captured exactly when a line is known; a summary agrees with the payload and, when nothing was truncated, counts the listed records; and the canonical payload fits in max_bytes. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-maintenance-status/v1"
+    },
+    "availability": {
+      "enum": [
+        "ready",
+        "partial",
+        "unadopted"
+      ]
+    },
+    "adoption_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "state_hash": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "analysis_scope": {
+      "enum": [
+        "full-inventory",
+        "selected-header",
+        "selected-source",
+        "snapshot"
+      ]
+    },
+    "live_evaluation_performed": {
+      "type": "boolean"
+    },
+    "native_prose_coherent": {
+      "type": "boolean"
+    },
+    "requires_sync": {
+      "type": "boolean"
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "source_backed_semantic_total": {
+          "$ref": "#/$defs/count"
+        },
+        "tracked_semantic_total": {
+          "$ref": "#/$defs/count"
+        },
+        "untracked_semantic_total": {
+          "$ref": "#/$defs/count"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/issue"
+          },
+          "maxItems": 128
+        },
+        "untracked_targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/target"
+          },
+          "maxItems": 128
+        },
+        "issue_bounds": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "total",
+            "returned",
+            "truncated"
+          ],
+          "additionalProperties": false
+        },
+        "untracked_target_bounds": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "total",
+            "returned",
+            "truncated"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source_backed_semantic_total",
+        "tracked_semantic_total",
+        "untracked_semantic_total",
+        "issues",
+        "untracked_targets",
+        "issue_bounds",
+        "untracked_target_bounds"
+      ],
+      "additionalProperties": false
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "returned": {
+          "$ref": "#/$defs/count"
+        },
+        "omitted": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_records": {
+          "const": 128
+        },
+        "max_bytes": {
+          "const": 65536
+        }
+      },
+      "required": [
+        "total",
+        "returned",
+        "omitted",
+        "truncated",
+        "limit",
+        "max_records",
+        "max_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      },
+      "maxItems": 128
+    },
+    "limitations": {
+      "const": [
+        "ordinary-acknowledgment-is-not-human-governance-review",
+        "captured-syntax-is-not-runtime-equivalence",
+        "captured-prose-is-not-a-correctness-verdict",
+        "snapshot-status-does-not-establish-current-acknowledgment"
+      ]
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    }
+  },
+  "required": [
+    "schema_version",
+    "availability",
+    "adoption_id",
+    "state_hash",
+    "analysis_scope",
+    "live_evaluation_performed",
+    "native_prose_coherent",
+    "requires_sync",
+    "coverage",
+    "bounds",
+    "records",
+    "limitations"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "coordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "occurrence": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "qualified_owner": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_path",
+        "qualified_owner",
+        "occurrence"
+      ],
+      "type": "object"
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ownership": {
+          "const": "semantic"
+        },
+        "section_locator": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "canonical_path",
+        "section_locator",
+        "ownership"
+      ],
+      "type": "object"
+    },
+    "basis": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison_id": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/coordinate"
+        },
+        "documentation_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executable_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "producer_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "prose_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "enum": [
+            "module",
+            "class",
+            "callable"
+          ]
+        },
+        "source_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        }
+      },
+      "required": [
+        "coordinate",
+        "source_hash",
+        "executable_hash",
+        "documentation_hash",
+        "prose_hash",
+        "comparison_id",
+        "producer_hash",
+        "target",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "mapping": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "type": "object",
+            "properties": {
+              "coordinate": {
+                "$ref": "#/$defs/coordinate"
+              },
+              "target": {
+                "$ref": "#/$defs/target"
+              }
+            },
+            "required": [
+              "coordinate",
+              "target"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 8,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "previous_coordinate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/coordinate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previous_target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/target"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "resolved",
+            "deleted",
+            "ambiguous"
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "previous_coordinate",
+        "candidates",
+        "previous_target"
+      ],
+      "type": "object"
+    },
+    "acknowledgment": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledgment_id": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "actor": {
+          "additionalProperties": false,
+          "properties": {
+            "actor_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "authority": {
+              "const": "ordinary-maintenance"
+            },
+            "kind": {
+              "enum": [
+                "agent",
+                "human"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "actor_id",
+            "authority"
+          ],
+          "type": "object"
+        },
+        "basis": {
+          "$ref": "#/$defs/basis"
+        },
+        "basis_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governance_effect": {
+          "const": "none"
+        },
+        "record_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "acknowledgment_id",
+        "record_id",
+        "basis",
+        "basis_hash",
+        "actor",
+        "governance_effect"
+      ],
+      "type": "object"
+    },
+    "issue": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "canonical_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/coordinate"
+        },
+        "scope": {
+          "enum": [
+            "module",
+            "class",
+            "callable",
+            null
+          ]
+        },
+        "record_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false,
+      "description": "Why a source-backed target could not be captured."
+    },
+    "record": {
+      "type": "object",
+      "properties": {
+        "record_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+          "type": "string"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/coordinate"
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "mapping": {
+          "$ref": "#/$defs/mapping"
+        },
+        "recorded_status": {
+          "enum": [
+            "pending",
+            "acknowledged"
+          ]
+        },
+        "effective_status": {
+          "enum": [
+            "pending",
+            "acknowledged",
+            null
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "recorded_basis": {
+          "$ref": "#/$defs/basis"
+        },
+        "expected_basis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/basis"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "basis_available": {
+          "type": "boolean"
+        },
+        "acknowledgment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/acknowledgment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "acknowledgment_history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/acknowledgment"
+          },
+          "maxItems": 5
+        },
+        "history_bounds": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted": {
+              "$ref": "#/$defs/count"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "total",
+            "returned",
+            "omitted",
+            "truncated"
+          ],
+          "additionalProperties": false
+        },
+        "source_location": {
+          "type": "object",
+          "properties": {
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "line": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            },
+            "qualification": {
+              "enum": [
+                "captured",
+                "not-observed"
+              ]
+            }
+          },
+          "required": [
+            "source_path",
+            "line",
+            "qualification"
+          ],
+          "additionalProperties": false
+        },
+        "qualification": {
+          "enum": [
+            "snapshot",
+            "current-capture",
+            "current-basis-unavailable"
+          ]
+        },
+        "governance_effect": {
+          "const": "none"
+        }
+      },
+      "required": [
+        "record_id",
+        "coordinate",
+        "target",
+        "mapping",
+        "recorded_status",
+        "effective_status",
+        "reasons",
+        "recorded_basis",
+        "expected_basis",
+        "basis_available",
+        "acknowledgment",
+        "acknowledgment_history",
+        "history_bounds",
+        "source_location",
+        "qualification",
+        "governance_effect"
+      ],
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "availability": {
+          "enum": [
+            "ready",
+            "partial",
+            "unadopted",
+            "unavailable"
+          ]
+        },
+        "analysis_scope": {
+          "enum": [
+            "full-inventory",
+            "selected-header",
+            "selected-source",
+            "snapshot"
+          ]
+        },
+        "live_evaluation_performed": {
+          "type": "boolean"
+        },
+        "native_prose_coherent": {
+          "type": "boolean"
+        },
+        "requires_sync": {
+          "type": "boolean"
+        },
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "pending": {
+          "$ref": "#/$defs/count"
+        },
+        "acknowledged": {
+          "$ref": "#/$defs/count"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/count"
+        },
+        "ambiguous": {
+          "$ref": "#/$defs/count"
+        },
+        "deleted": {
+          "$ref": "#/$defs/count"
+        },
+        "untracked": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "limitations": {
+          "const": [
+            "ordinary-acknowledgment-is-not-human-governance-review",
+            "captured-syntax-is-not-runtime-equivalence",
+            "captured-prose-is-not-a-correctness-verdict",
+            "snapshot-status-does-not-establish-current-acknowledgment"
+          ]
+        }
+      },
+      "required": [
+        "availability",
+        "analysis_scope",
+        "live_evaluation_performed",
+        "native_prose_coherent",
+        "requires_sync",
+        "total",
+        "pending",
+        "acknowledged",
+        "unavailable",
+        "ambiguous",
+        "deleted",
+        "untracked",
+        "truncated",
+        "limitations"
+      ],
+      "additionalProperties": false,
+      "description": "Counts over every record for one page, present on per-page reads."
+    }
+  }
+}

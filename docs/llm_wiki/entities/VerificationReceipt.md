@@ -1,6 +1,6 @@
 # VerificationReceipt
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:482`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:482`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -38,17 +38,17 @@ Deterministic recorded evidence from one explicit verification run.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["VerificationReceipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n1["machine_verification_summary (src/llm_wiki_cli/services/knowledge_verification.py)"]
-    n2["_receipt_to_payload (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n3["build_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n4["deserialize_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n5["evaluate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n6["load_and_evaluate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n7["load_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n8["serialize_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n9["validate_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n10["verification_receipt_to_payload (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["VerificationReceipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n1["machine_verification_summary (src/llm_wiki_engine/knowledge_verification.py)"]
+    n2["_receipt_to_payload (src/llm_wiki_engine/verification_contracts.py)"]
+    n3["build_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n4["deserialize_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n5["evaluate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n6["load_and_evaluate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n7["load_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n8["serialize_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n9["validate_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n10["verification_receipt_to_payload (src/llm_wiki_engine/verification_contracts.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

@@ -19,12 +19,12 @@ different order must not reset its occurrence counter.
 
 | Source | Symbols |
 |--------|---------|
-| `.validation` | `coerce_nonnegative_int`, `coerce_positive_int`, `coerce_trimmed_text`, `normalize_observational_posix_path`, `require_bool`, `require_choice`, `require_exact_fields`, `require_mapping`, `require_nonempty_text`, `require_nonnegative_int`, `require_positive_int`, `require_string`, `require_trimmed_text_list` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable` |
 | `dataclasses` | `asdict`, `dataclass`, `is_dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine.validation` | `coerce_nonnegative_int`, `coerce_positive_int`, `coerce_trimmed_text`, `normalize_observational_posix_path`, `require_bool`, `require_choice`, `require_exact_fields`, `require_mapping`, `require_nonempty_text`, `require_nonnegative_int`, `require_positive_int`, `require_string`, `require_trimmed_text_list` |
 | `re` | `re` |
 | `typing` | `Any`, `Iterable`, `Mapping`, `Sequence` |
 
@@ -36,7 +36,7 @@ flowchart LR
     n0["src/llm_wiki_cli/services/documentation_review.py"]
     n1["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n2["src/llm_wiki_cli/services/documentation_run/publication.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_engine/validation.py"]
     n0 --> n3
     n1 --> n0
     n1 --> n3

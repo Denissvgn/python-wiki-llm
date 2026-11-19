@@ -1,6 +1,6 @@
 # OciOutputLimits
 
-**Location:** `src/llm_wiki_cli/services/calibration/broker.py:257`
+**Location:** `src/llm_wiki_cli/services/calibration/broker.py:258`
 **Kind:** Class
 **Bases:** —
 **Module:** [broker](../modules/broker.md)

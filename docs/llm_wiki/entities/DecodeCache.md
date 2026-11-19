@@ -1,6 +1,6 @@
 # DecodeCache
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:162`
+**Location:** `src/llm_wiki_engine/storage_spool.py:162`
 **Kind:** Class
 **Bases:** `MutableMapping`
 **Module:** [storage_spool](../modules/storage_spool.md)
@@ -29,9 +29,9 @@ Bound encoded cache weight; never reuse this cache across captures.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["DecodeCache (src/llm_wiki_cli/services/storage_spool.py)"]
+    n0["DecodeCache (src/llm_wiki_engine/storage_spool.py)"]
     n1["MutableMapping"]
-    n2["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
+    n2["audit_knowledge_stream (src/llm_wiki_engine/knowledge_stream_audit.py)"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/storage_spool.md"

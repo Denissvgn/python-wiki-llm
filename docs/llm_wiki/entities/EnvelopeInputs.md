@@ -1,6 +1,6 @@
 # EnvelopeInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:247`
+**Location:** `src/llm_wiki_engine/knowledge_envelope.py:248`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -39,14 +39,14 @@ Complete in-memory inputs for one evaluated envelope.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["EnvelopeInputs (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n1["build_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n0["EnvelopeInputs (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n1["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n2["build_evaluated_envelope (src/llm_wiki_engine/knowledge_envelope.py)"]
     n1 --> n0
     n2 --> n0
     click n0 "../modules/knowledge_envelope.md"
-    click n1 "../modules/knowledge_envelope.md"
-    click n2 "../modules/knowledge_generation.md"
+    click n1 "../modules/knowledge_generation.md"
+    click n2 "../modules/knowledge_envelope.md"
 ```
 
 ### Summary
@@ -59,5 +59,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
+| `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |

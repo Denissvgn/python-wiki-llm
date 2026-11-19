@@ -5,7 +5,7 @@ import pytest
 from llm_wiki_cli.services.bootstrap_runtime import build_module_page_map
 from llm_wiki_cli.services.extraction_service import get_inventory_result
 from llm_wiki_cli.services.impact import build_impact, render_github, render_summary
-from llm_wiki_cli.services.wiki_surface_index import (
+from llm_wiki_engine.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )

@@ -35,25 +35,28 @@ Detached artifact and receipt selected once by the preparation owner.
 ```mermaid
 flowchart LR
     n0["PreparedHelperHandle (src/llm_wiki_cli/services/helper_runtime.py)"]
-    n1["_handle (src/llm_wiki_cli/services/helper_cache.py)"]
-    n2["src/llm_wiki_cli/services/helper_preparation.py"]
-    n3["bind_helper (src/llm_wiki_cli/services/helper_runtime.py)"]
-    n4["HelperOperation.bind (src/llm_wiki_cli/services/helper_runtime.py)"]
-    n5["HelperOperation.handles (src/llm_wiki_cli/services/helper_runtime.py)"]
-    n6["pinned_helper (src/llm_wiki_cli/services/helper_runtime.py)"]
+    n1["src/llm_wiki_cli/services/domain_pack.py"]
+    n2["_handle (src/llm_wiki_cli/services/helper_cache.py)"]
+    n3["src/llm_wiki_cli/services/helper_preparation.py"]
+    n4["bind_helper (src/llm_wiki_cli/services/helper_runtime.py)"]
+    n5["HelperOperation.bind (src/llm_wiki_cli/services/helper_runtime.py)"]
+    n6["HelperOperation.handles (src/llm_wiki_cli/services/helper_runtime.py)"]
+    n7["pinned_helper (src/llm_wiki_cli/services/helper_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/helper_runtime.md"
-    click n1 "../modules/helper_cache.md"
-    click n2 "../modules/helper_preparation.md"
-    click n3 "../modules/helper_runtime.md"
+    click n1 "../modules/domain_pack.md"
+    click n2 "../modules/helper_cache.md"
+    click n3 "../modules/helper_preparation.md"
     click n4 "../modules/helper_runtime.md"
     click n5 "../modules/helper_runtime.md"
     click n6 "../modules/helper_runtime.md"
+    click n7 "../modules/helper_runtime.md"
 ```
 
 ### Summary
@@ -66,6 +69,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |
 | `_handle` | call | [helper_cache](../modules/helper_cache.md) | 1 |
 | `helper_preparation` | import | [helper_preparation](../modules/helper_preparation.md) | — |
 | `bind_helper` | type_reference | [helper_runtime](../modules/helper_runtime.md) | — |

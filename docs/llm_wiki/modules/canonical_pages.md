@@ -12,9 +12,9 @@ Canonical generated page names and explicitly retained removal history.
 |--------|---------|
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.infrastructure_sync` | `build_infrastructure_page_map`, `infrastructure_evidence_by_page` |
-| `.sync_manifest` | `SyncManifest`, `TOMBSTONE_SOURCE_MISSING` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `TOMBSTONE_SOURCE_MISSING` |
 
 ## Local dependency map
 
@@ -24,21 +24,21 @@ flowchart LR
     n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n1["src/llm_wiki_cli/services/canonical_pages.py"]
     n2["src/llm_wiki_cli/services/infrastructure_sync.py"]
-    n3["src/llm_wiki_cli/services/sync_manifest.py"]
-    n4["src/llm_wiki_cli/services/team.py"]
+    n3["src/llm_wiki_cli/services/team.py"]
+    n4["src/llm_wiki_engine/sync_manifest.py"]
     n0 --> n2
-    n0 --> n3
+    n0 --> n4
     n1 --> n0
     n1 --> n2
-    n1 --> n3
-    n4 --> n0
-    n4 --> n1
-    n4 --> n3
+    n1 --> n4
+    n3 --> n0
+    n3 --> n1
+    n3 --> n4
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/canonical_pages.md"
     click n2 "../modules/infrastructure_sync.md"
-    click n3 "../modules/sync_manifest.md"
-    click n4 "../modules/team.md"
+    click n3 "../modules/team.md"
+    click n4 "../modules/sync_manifest.md"
 ```
 
 ### Internal neighbors

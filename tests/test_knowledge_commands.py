@@ -16,24 +16,25 @@ import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services import knowledge_orchestration, lint_service
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.host import Host
+from llm_wiki_engine.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
 )
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     collect_git_repository_evidence,
 )
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from llm_wiki_cli.services.knowledge_loader import (
+from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_model import (
     KnowledgeLoadState,
     RelationshipRecord,
     WorkingTreeState,
@@ -42,14 +43,14 @@ from llm_wiki_cli.services.knowledge_orchestration import (
     RUNTIME_GENERATION_INPUT_KEY,
     build_runtime_knowledge_plan,
 )
-from llm_wiki_cli.services.sync_manifest import (
+from llm_wiki_engine.sync_manifest import (
     LEGACY_EVIDENCE_UNAVAILABLE,
     MANIFEST_FILENAME,
     MANIFEST_REPAIR_UNAVAILABLE,
     MANIFEST_STATE_UNAVAILABLE,
     SyncManifest,
 )
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
 # Golden bytes were captured from the v1.4.0 release:
@@ -373,13 +374,8 @@ def test_bootstrap_matches_v1_4_0_markdown_and_surface_v1_goldens(
     wiki_dir = project / "wiki"
     expected_wiki = _LEGACY_BOOTSTRAP_FIXTURE / "wiki"
 
-    class FrozenDate(date):
-        @classmethod
-        def today(cls):
-            return _LEGACY_BOOTSTRAP_DATE
-
     monkeypatch.chdir(project)
-    monkeypatch.setattr(bootstrap_cmd, "date", FrozenDate)
+    monkeypatch.setattr(Host, "today", lambda self: _LEGACY_BOOTSTRAP_DATE)
     source_snapshot = bootstrap_cmd.build_source_snapshot(project)
     bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 

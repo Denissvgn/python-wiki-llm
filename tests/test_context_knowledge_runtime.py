@@ -14,15 +14,15 @@ from llm_wiki_cli.services import context_service
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
 )
-from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadIssue
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness
+from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadIssue
+from llm_wiki_engine.knowledge_model import ComputedFreshness
 from llm_wiki_cli.services.mcp_server import McpWikiService
-from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.test_knowledge_cmd import _committed_wiki
 from tests.test_knowledge_cmd import _run as _run_knowledge
 from tests.test_knowledge_queries import _ready_view
@@ -647,7 +647,7 @@ def test_invalid_projection_surface_has_consistent_read_only_fallbacks(
         _materialize_ready_project,
         _request,
     )
-    from llm_wiki_cli.services.context_packet import build_qualified_context
+    from llm_wiki_cli.services.context_packet_builder import build_qualified_context
 
     tree, _fixture = _materialize_ready_project(tmp_path, monkeypatch)
     rejected_payload_sentinel = "projection-only-untrusted-detail"

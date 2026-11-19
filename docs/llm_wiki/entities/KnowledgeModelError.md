@@ -1,6 +1,6 @@
 # KnowledgeModelError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_model.py:78`
+**Location:** `src/llm_wiki_engine/knowledge_model.py:80`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_model](../modules/knowledge_model.md)
@@ -24,20 +24,20 @@ Raised when a knowledge payload violates the v1 contract.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeModelError (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n0["KnowledgeModelError (src/llm_wiki_engine/knowledge_model.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/knowledge_envelope.py"]
-    n3["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n5["_model_to_payload (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n6["_require_structure_state (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n7["_serialize_payload (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n8["_validate_builder_derived (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n9["_validate_builder_link (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n10["_validate_builder_model (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n11["_enum_value (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n12["_evaluated_revision (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n13["_external_uri (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n2["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n3["src/llm_wiki_engine/knowledge_envelope.py"]
+    n4["src/llm_wiki_engine/knowledge_freshness.py"]
+    n5["_model_to_payload (src/llm_wiki_engine/knowledge_index.py)"]
+    n6["_require_structure_state (src/llm_wiki_engine/knowledge_index.py)"]
+    n7["_serialize_payload (src/llm_wiki_engine/knowledge_index.py)"]
+    n8["_validate_builder_derived (src/llm_wiki_engine/knowledge_index.py)"]
+    n9["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
+    n10["_validate_builder_model (src/llm_wiki_engine/knowledge_index.py)"]
+    n11["KindRegistry._check_concept (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n12["KindRegistry._require_declared (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n13["_enum_value (src/llm_wiki_engine/knowledge_model.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -52,17 +52,17 @@ flowchart LR
     n12 --> n0
     n13 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n2 "../modules/knowledge_envelope.md"
-    click n3 "../modules/knowledge_freshness.md"
-    click n4 "../modules/knowledge_generation.md"
+    click n2 "../modules/knowledge_generation.md"
+    click n3 "../modules/knowledge_envelope.md"
+    click n4 "../modules/knowledge_freshness.md"
     click n5 "../modules/knowledge_index.md"
     click n6 "../modules/knowledge_index.md"
     click n7 "../modules/knowledge_index.md"
     click n8 "../modules/knowledge_index.md"
     click n9 "../modules/knowledge_index.md"
     click n10 "../modules/knowledge_index.md"
-    click n11 "../modules/knowledge_model.md"
-    click n12 "../modules/knowledge_model.md"
+    click n11 "../modules/knowledge_kinds.md"
+    click n12 "../modules/knowledge_kinds.md"
     click n13 "../modules/knowledge_model.md"
 ```
 
@@ -82,17 +82,17 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `knowledge_envelope` | import | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `knowledge_freshness` | import | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
-| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_model_to_payload` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
 | `_require_structure_state` | call | [knowledge_index](../modules/knowledge_index.md) | 3 |
 | `_serialize_payload` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
 | `_validate_builder_derived` | call | [knowledge_index](../modules/knowledge_index.md) | 9 |
 | `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) | 17 |
 | `_validate_builder_model` | call | [knowledge_index](../modules/knowledge_index.md) | 11 |
+| `KindRegistry._check_concept` | call | [knowledge_kinds](../modules/knowledge_kinds.md) | 2 |
+| `KindRegistry._require_declared` | call | [knowledge_kinds](../modules/knowledge_kinds.md) | 1 |
 | `_enum_value` | call | [knowledge_model](../modules/knowledge_model.md) | 2 |
-| `_evaluated_revision` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
-| `_external_uri` | call | [knowledge_model](../modules/knowledge_model.md) | 6 |
 
-> References: showing 12 of 39 logical references; 27 omitted by the 12-row generated summary limit.
+> References: showing 12 of 45 logical references; 33 omitted by the 12-row generated summary limit.

@@ -21,34 +21,34 @@ from enum import Enum
 from types import MappingProxyType
 from typing import Any, NoReturn
 
-from .concept_identity import (
+from llm_wiki_engine.concept_identity import (
     ConceptIdentityError,
     validate_bundle_id,
     validate_concept_uid,
 )
-from .contracts import (
+from llm_wiki_engine.contracts import (
     GOVERNANCE_EXTENSION_KEY,
     GOVERNANCE_HASH_EXTENSION_KEY,
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from .knowledge_artifacts import validate_knowledge_artifacts
-from .knowledge_consumption import (
+from llm_wiki_engine.knowledge_artifacts import validate_knowledge_artifacts
+from llm_wiki_engine.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     MachineVerificationAvailability,
 )
-from .knowledge_evidence import sha256_bytes
-from .knowledge_envelope import (
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_envelope import (
     KnowledgeEnvelopeError,
     validate_configured_public_identity,
 )
-from .knowledge_freshness import (
+from llm_wiki_engine.knowledge_freshness import (
     KNOWN_FRESHNESS_REASON_CODES,
     REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION,
 )
-from .knowledge_governance import validate_governance_projection
-from .knowledge_graph import (
+from llm_wiki_engine.knowledge_governance import validate_governance_projection
+from llm_wiki_engine.knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
     ENDPOINT_KINDS,
     GRAPH_EVIDENCE_STATES,
@@ -56,7 +56,7 @@ from .knowledge_graph import (
     GRAPH_RESOLUTIONS,
     typed_graph_from_knowledge_extensions,
 )
-from .knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ActorKind,
     ConceptKind,
     ConceptRecord,
@@ -75,17 +75,17 @@ from .knowledge_model import (
     WorkingTreeState,
     serialize_knowledge_index,
 )
-from .knowledge_observability import (
+from llm_wiki_engine.knowledge_observability import (
     UNEVALUATED_FRESHNESS_DISCLOSURE,
     knowledge_freshness_disclosure,
     knowledge_freshness_hint,
 )
-from .redaction import (
+from llm_wiki_engine.redaction import (
     CREDENTIAL_VALUE_RE as _CREDENTIAL_VALUE_RE,
     PROJECTION_URI_USERINFO_RE as _URI_USERINFO_RE,
     SENSITIVE_KEY_RE as _SENSITIVE_KEY_RE,
 )
-from .validation import (
+from llm_wiki_engine.validation import (
     require_bool as require_shared_bool,
     require_choice as require_shared_choice,
     require_exact_fields as require_shared_exact_fields,
@@ -96,7 +96,7 @@ from .validation import (
     require_sequence as require_shared_sequence,
     require_sha256 as require_shared_sha256,
 )
-from .wiki_surface import PageKind, SurfaceRole
+from llm_wiki_engine.wiki_surface import PageKind, SurfaceRole
 
 PROJECTION_SCHEMA_VERSION = "llm-wiki-knowledge-projection/v1"
 DEFAULT_RELATIONSHIP_LIMIT = 20
@@ -2290,7 +2290,7 @@ def _validated_source(
             "requires exact committed artifact hashes",
         )
     if view.validated_artifacts is not None:
-        from .knowledge_artifacts import require_validated_artifacts
+        from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
         try:
             captured = require_validated_artifacts(view.validated_artifacts)
         except TypeError as exc:

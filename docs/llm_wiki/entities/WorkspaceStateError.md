@@ -1,6 +1,6 @@
 # WorkspaceStateError
 
-**Location:** `src/llm_wiki_cli/api.py:383`
+**Location:** `src/llm_wiki_cli/api.py:388`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -33,6 +33,8 @@ flowchart LR
     n8["build_documentation_query_service (src/llm_wiki_cli/api.py)"]
     n9["extract_source (src/llm_wiki_cli/api.py)"]
     n10["list_wiki_pages (src/llm_wiki_cli/api.py)"]
+    n11["migrate_wiki (src/llm_wiki_cli/api.py)"]
+    n12["sync_wiki (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +45,8 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
+    n12 --> n0
     click n0 "../modules/api.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
@@ -54,6 +58,8 @@ flowchart LR
     click n8 "../modules/api.md"
     click n9 "../modules/api.md"
     click n10 "../modules/api.md"
+    click n11 "../modules/api.md"
+    click n12 "../modules/api.md"
 ```
 
 ### Summary
@@ -81,3 +87,5 @@ flowchart LR
 | `build_documentation_query_service` | call | [api](../modules/api.md) | 4 |
 | `extract_source` | call | [api](../modules/api.md) | 2 |
 | `list_wiki_pages` | call | [api](../modules/api.md) | 1 |
+| `migrate_wiki` | call | [api](../modules/api.md) | 1 |
+| `sync_wiki` | call | [api](../modules/api.md) | 1 |

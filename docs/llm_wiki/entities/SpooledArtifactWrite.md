@@ -1,6 +1,6 @@
 # SpooledArtifactWrite
 
-**Location:** `src/llm_wiki_cli/services/storage_spool.py:103`
+**Location:** `src/llm_wiki_engine/storage_spool.py:103`
 **Kind:** Class
 **Bases:** —
 **Module:** [storage_spool](../modules/storage_spool.md)
@@ -36,11 +36,11 @@ Exposes the content and previous-content byte interface of a planned artifact th
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SpooledArtifactWrite (src/llm_wiki_cli/services/storage_spool.py)"]
-    n1["_apply_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n2["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n3["_verify_persisted (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n4["spool_write (src/llm_wiki_cli/services/storage_spool.py)"]
+    n0["SpooledArtifactWrite (src/llm_wiki_engine/storage_spool.py)"]
+    n1["_apply_write (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n2["_planned_write (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n3["_verify_persisted (src/llm_wiki_engine/knowledge_artifacts.py)"]
+    n4["spool_write (src/llm_wiki_engine/storage_spool.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

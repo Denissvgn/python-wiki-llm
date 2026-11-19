@@ -52,8 +52,8 @@ If a repair edits Markdown, re-anchor with the same sync before validating again
 A failed or unfinished gate leaves maintenance incomplete. Repository rules
 still determine whether the wiki may be committed or published.
 
-The [sync adapter](../modules/sync_cmd.md), at
-`src/llm_wiki_cli/commands/sync_cmd.py:run`, owns the refresh. The
+The [sync runtime](../modules/sync_runtime.md), at
+`src/llm_wiki_cli/services/sync_runtime.py:run`, owns the refresh. The
 [semantic worklist](../modules/documentation_worklist.md), at
 `src/llm_wiki_cli/services/documentation_worklist.py:build_documentation_worklist`,
 prioritizes evidence-backed documentation needs; deferred items remain visible.

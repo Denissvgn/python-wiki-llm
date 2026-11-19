@@ -1,6 +1,6 @@
 # VerificationContractError
 
-**Location:** `src/llm_wiki_cli/services/verification_contracts.py:75`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:75`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [verification_contracts](../modules/verification_contracts.md)
@@ -22,22 +22,22 @@ Base error for verification inputs, checkers, and receipts.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["VerificationContractError (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n0["VerificationContractError (src/llm_wiki_engine/verification_contracts.py)"]
     n1["ValueError"]
-    n2["UnknownVerificationCheckerError (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n3["VerificationReceiptError (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n4["_checker_id (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n5["_checker_version (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n6["_diagnostic_subject (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n7["_machine_code (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n8["_normalized_anchor_mapping (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n9["_portable_text (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n10["_scope_uid (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n11["_selected_contracts (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n12["_sha256 (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n13["build_artifact_verification_context (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n14["build_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
-    n15["CheckerContract.__post_init__ (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n2["UnknownVerificationCheckerError (src/llm_wiki_engine/verification_contracts.py)"]
+    n3["VerificationReceiptError (src/llm_wiki_engine/verification_contracts.py)"]
+    n4["_checker_id (src/llm_wiki_engine/verification_contracts.py)"]
+    n5["_checker_version (src/llm_wiki_engine/verification_contracts.py)"]
+    n6["_diagnostic_subject (src/llm_wiki_engine/verification_contracts.py)"]
+    n7["_machine_code (src/llm_wiki_engine/verification_contracts.py)"]
+    n8["_normalized_anchor_mapping (src/llm_wiki_engine/verification_contracts.py)"]
+    n9["_portable_text (src/llm_wiki_engine/verification_contracts.py)"]
+    n10["_scope_uid (src/llm_wiki_engine/verification_contracts.py)"]
+    n11["_selected_contracts (src/llm_wiki_engine/verification_contracts.py)"]
+    n12["_sha256 (src/llm_wiki_engine/verification_contracts.py)"]
+    n13["build_artifact_verification_context (src/llm_wiki_engine/verification_contracts.py)"]
+    n14["build_verification_receipt (src/llm_wiki_engine/verification_contracts.py)"]
+    n15["CheckerContract.__post_init__ (src/llm_wiki_engine/verification_contracts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

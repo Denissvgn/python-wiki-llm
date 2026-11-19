@@ -1,6 +1,6 @@
 # SourceRetirementError
 
-**Location:** `src/llm_wiki_cli/services/source_retirement.py:27`
+**Location:** `src/llm_wiki_engine/source_retirement.py:29`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_retirement](../modules/source_retirement.md)
@@ -22,20 +22,20 @@ A retirement record cannot be reconciled with authoritative ownership.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["SourceRetirementError (src/llm_wiki_cli/services/source_retirement.py)"]
+    n0["SourceRetirementError (src/llm_wiki_engine/source_retirement.py)"]
     n1["ValueError"]
-    n2["_plan_source_page_transitions (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n4["_qualify_surviving_module_inventory (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n5["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n6["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n7["src/llm_wiki_cli/services/lint_service.py"]
-    n8["_check_duplicate_removal_custody (src/llm_wiki_cli/services/source_retirement.py)"]
-    n9["discover_retired_entities (src/llm_wiki_cli/services/source_retirement.py)"]
-    n10["entity_owner_present (src/llm_wiki_cli/services/source_retirement.py)"]
-    n11["qualified_retired_entity_locators (src/llm_wiki_cli/services/source_retirement.py)"]
-    n12["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
-    n13["retained_empty_module_paths (src/llm_wiki_cli/services/source_retirement.py)"]
+    n2["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n3["src/llm_wiki_cli/services/lint_service.py"]
+    n4["_plan_source_page_transitions (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n5["_prepare_sync_run (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n6["_qualify_surviving_module_inventory (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n7["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n8["_check_duplicate_removal_custody (src/llm_wiki_engine/source_retirement.py)"]
+    n9["discover_retired_entities (src/llm_wiki_engine/source_retirement.py)"]
+    n10["entity_owner_present (src/llm_wiki_engine/source_retirement.py)"]
+    n11["qualified_retired_entity_locators (src/llm_wiki_engine/source_retirement.py)"]
+    n12["read_entity_retirement_state (src/llm_wiki_engine/source_retirement.py)"]
+    n13["retained_empty_module_paths (src/llm_wiki_engine/source_retirement.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -50,12 +50,12 @@ flowchart LR
     n12 --> n0
     n13 --> n0
     click n0 "../modules/source_retirement.md"
-    click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/sync_cmd.md"
-    click n4 "../modules/sync_cmd.md"
-    click n5 "../modules/knowledge_artifacts.md"
-    click n6 "../modules/knowledge_generation.md"
-    click n7 "../modules/lint_service.md"
+    click n2 "../modules/knowledge_generation.md"
+    click n3 "../modules/lint_service.md"
+    click n4 "../modules/sync_runtime.md"
+    click n5 "../modules/sync_runtime.md"
+    click n6 "../modules/sync_runtime.md"
+    click n7 "../modules/knowledge_artifacts.md"
     click n8 "../modules/source_retirement.md"
     click n9 "../modules/source_retirement.md"
     click n10 "../modules/source_retirement.md"
@@ -80,12 +80,12 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_plan_source_page_transitions` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
-| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
-| `_qualify_surviving_module_inventory` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `_plan_source_page_transitions` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `_prepare_sync_run` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `_qualify_surviving_module_inventory` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_check_duplicate_removal_custody` | call | [source_retirement](../modules/source_retirement.md) | 2 |
 | `discover_retired_entities` | call | [source_retirement](../modules/source_retirement.md) | 4 |
 | `entity_owner_present` | call | [source_retirement](../modules/source_retirement.md) | 1 |

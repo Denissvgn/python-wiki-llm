@@ -1,6 +1,6 @@
 # InventoryRequest
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:153`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:156`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -53,17 +53,17 @@ inputs so the extraction planner receives a stable request.
 ```mermaid
 flowchart LR
     n0["InventoryRequest (src/llm_wiki_cli/services/extraction_service.py)"]
-    n1["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n2["_preflight_bootstrap_analysis (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n3["_collect_runtime (src/llm_wiki_cli/services/documentation_native.py)"]
-    n4["_build_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
-    n5["_coerce_inventory_request (src/llm_wiki_cli/services/extraction_service.py)"]
-    n6["_inventory_helper_cache_dir (src/llm_wiki_cli/services/extraction_service.py)"]
-    n7["_inventory_or_exit (src/llm_wiki_cli/services/extraction_service.py)"]
-    n8["_load_inventory_cache_state (src/llm_wiki_cli/services/extraction_service.py)"]
-    n9["_prepare_inventory_build_context (src/llm_wiki_cli/services/extraction_service.py)"]
-    n10["_source_snapshot_for_inventory_request (src/llm_wiki_cli/services/extraction_service.py)"]
-    n11["build_extract_payload (src/llm_wiki_cli/services/extraction_service.py)"]
+    n1["_preflight_bootstrap_analysis (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n2["_collect_runtime (src/llm_wiki_cli/services/documentation_native.py)"]
+    n3["_build_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n4["_coerce_inventory_request (src/llm_wiki_cli/services/extraction_service.py)"]
+    n5["_inventory_helper_cache_dir (src/llm_wiki_cli/services/extraction_service.py)"]
+    n6["_inventory_or_exit (src/llm_wiki_cli/services/extraction_service.py)"]
+    n7["_load_inventory_cache_state (src/llm_wiki_cli/services/extraction_service.py)"]
+    n8["_prepare_inventory_build_context (src/llm_wiki_cli/services/extraction_service.py)"]
+    n9["_source_snapshot_for_inventory_request (src/llm_wiki_cli/services/extraction_service.py)"]
+    n10["build_extract_payload (src/llm_wiki_cli/services/extraction_service.py)"]
+    n11["get_inventory (src/llm_wiki_cli/services/extraction_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -76,9 +76,9 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     click n0 "../modules/extraction_service.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/bootstrap_runtime.md"
-    click n3 "../modules/documentation_native.md"
+    click n1 "../modules/bootstrap_runtime.md"
+    click n2 "../modules/documentation_native.md"
+    click n3 "../modules/extraction_service.md"
     click n4 "../modules/extraction_service.md"
     click n5 "../modules/extraction_service.md"
     click n6 "../modules/extraction_service.md"
@@ -99,7 +99,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_preflight_bootstrap_analysis` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 | `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
@@ -111,5 +110,6 @@ flowchart LR
 | `_prepare_inventory_build_context` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_source_snapshot_for_inventory_request` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) | 2 |
+| `get_inventory` | call | [extraction_service](../modules/extraction_service.md) | 1 |
 
 > References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

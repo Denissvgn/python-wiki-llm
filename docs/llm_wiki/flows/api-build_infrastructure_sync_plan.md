@@ -2,11 +2,13 @@
 
 **Entry point:** `build_infrastructure_sync_plan` (`api`)
 **Source:** [infrastructure_sync](../modules/infrastructure_sync.md)
-**Modules touched:** [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 2 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_state](../modules/infrastructure_state.md), and 4 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [validation](../modules/validation.md)
@@ -39,7 +41,7 @@ sequenceDiagram
     participant p17 as _valid_repository_path
     participant p18 as _pruned_prior_discovery
     participant p19 as hash_json
-    participant p20 as canonical_json_bytes
+    participant p20 as compact_bytes
     participant p21 as is_portable_relative_path
     participant p22 as _check_events
     participant p23 as _convert_node
@@ -69,7 +71,7 @@ sequenceDiagram
     p3->>p17: _valid_repository_path
     p4->>p18: _pruned_prior_discovery
     p1->>p19: hash_json
-    p19->>p20: canonical_json_bytes
+    p19->>p20: compact_bytes
     p17->>p21: is_portable_relative_path
     p16->>p22: _check_events
     p16->>p23: _convert_node
@@ -95,10 +97,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | [src/llm_wiki_cli/services/infrastructure_inventory.py](../modules/infrastructure_inventory.md) | internal | 1 |
 | `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:hash_json` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 19 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 19 | - | external | 1 |
-> Omission summary shows 8 of 76 groups; 68 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/knowledge_evidence.py:hash_json` | 18 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 19 | - | external | 1 |
+> Omission summary shows 8 of 77 groups; 69 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 99; effect analysis evaluated: 53, partial: 8, unavailable: 38. Counts include steps omitted from the displayed trace.
 
-Collector observations for 61 source steps with known totals: observed: 385, emitted: 362, omitted: 23. Unavailable totals are excluded.
+Collector observations for 61 source steps with known totals: observed: 387, emitted: 364, omitted: 23. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -192,37 +194,37 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_infrastructure_sync_plan | deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 636 | `deepcopy(dict(...))` |
-| build_infrastructure_sync_plan | dict (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 636 | `dict(info)` |
-| build_infrastructure_sync_plan | sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 637 | `sorted(inventory.items(...))` |
-| build_infrastructure_sync_plan | inventory.items | 637 | `inventory.items(data not statically known)` |
-| build_infrastructure_sync_plan | build_infrastructure_page_map | 639 | `build_infrastructure_page_map(normalized_inventory)` |
-| build_infrastructure_page_map | sorted (src/llm_wiki_cli/services…d_infrastructure_page_map) | 42 | `sorted(source_paths)` |
-| build_infrastructure_page_map | infrastructure_page_name | 45 | `infrastructure_page_name(source_path)` |
+| build_infrastructure_sync_plan | deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 452 | `deepcopy(dict(...))` |
+| build_infrastructure_sync_plan | dict (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 452 | `dict(info)` |
+| build_infrastructure_sync_plan | sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 453 | `sorted(inventory.items(...))` |
+| build_infrastructure_sync_plan | inventory.items | 453 | `inventory.items(data not statically known)` |
+| build_infrastructure_sync_plan | build_infrastructure_page_map | 455 | `build_infrastructure_page_map(normalized_inventory)` |
+| build_infrastructure_page_map | sorted (src/llm_wiki_cli/services…d_infrastructure_page_map) | 44 | `sorted(source_paths)` |
+| build_infrastructure_page_map | infrastructure_page_name | 47 | `infrastructure_page_name(source_path)` |
 | infrastructure_page_name | source_path.replace(…).replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
 | infrastructure_page_name | source_path.replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_')` |
 | infrastructure_page_name | source_path.replace | 31 | `source_path.replace('\\', '/')` |
-| build_infrastructure_page_map | by_stem.setdefault(…).append | 46 | `by_stem.setdefault(stem, []).append(source_path)` |
+| build_infrastructure_page_map | by_stem.setdefault(…).append | 48 | `by_stem.setdefault(stem, []).append(source_path)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `deselected_records.update` | `build_infrastructure_sync_plan` | 663 |
-| mutation | `tombstones.pop` | `build_infrastructure_sync_plan` | 705 |
+| mutation | `deselected_records.update` | `build_infrastructure_sync_plan` | 479 |
+| mutation | `tombstones.pop` | `build_infrastructure_sync_plan` | 521 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_infrastructure_sync_plan` | `deepcopy` | 636 |
-| external_call | `build_infrastructure_sync_plan` | `sorted` | 637 |
-| unresolved_call | `build_infrastructure_sync_plan` | `inventory.items` | 637 |
-| external_call | `build_infrastructure_page_map` | `sorted` | 42 |
+| external_call | `build_infrastructure_sync_plan` | `deepcopy` | 452 |
+| external_call | `build_infrastructure_sync_plan` | `sorted` | 453 |
+| unresolved_call | `build_infrastructure_sync_plan` | `inventory.items` | 453 |
+| external_call | `build_infrastructure_page_map` | `sorted` | 44 |
 | unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 31 |
 | unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 31 |
 | unresolved_call | `infrastructure_page_name` | `source_path.replace` | 31 |
-| unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 46 |
+| unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 48 |
 | step_limit | `build_infrastructure_sync_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_infrastructure_sync_plan` | `depth limit` | 0 |
 

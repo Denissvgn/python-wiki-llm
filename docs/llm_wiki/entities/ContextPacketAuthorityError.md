@@ -1,9 +1,9 @@
 # ContextPacketAuthorityError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:267`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:152`
 **Kind:** Class
 **Bases:** `ContextPacketError`
-**Module:** [context_packet](../modules/context_packet.md)
+**Module:** [context_packet_builder](../modules/context_packet_builder.md)
 
 ## Description
 
@@ -26,16 +26,16 @@ Carries the bounded `maintenance-authority-unavailable` diagnostic shared by pac
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextPacketAuthorityError (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextPacketAuthorityError (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
+    n2["capture_context_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n3["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
-    click n0 "../modules/context_packet.md"
+    click n0 "../modules/context_packet_builder.md"
     click n1 "../modules/context_packet.md"
-    click n2 "../modules/context_packet.md"
+    click n2 "../modules/context_packet_builder.md"
     click n3 "../modules/context_service.md"
 ```
 
@@ -43,7 +43,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 1 | — |
+| [context_packet_builder](../modules/context_packet_builder.md) | 1 | — |
 
 ### Structure
 
@@ -55,5 +55,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `capture_context_read` | call | [context_packet_builder](../modules/context_packet_builder.md) | 1 |
 | `_build_context_knowledge_view` | call | [context_service](../modules/context_service.md) | 1 |

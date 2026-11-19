@@ -12,6 +12,7 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_budget as budget
 from llm_wiki_cli.services import context_packet as packets
+from llm_wiki_cli.services import context_packet_builder as packet_builder
 from llm_wiki_cli.services import context_service as context
 from llm_wiki_cli.services.token_counting import EstimatedCounter
 from tests.test_context_budget import ByteCounter
@@ -48,7 +49,7 @@ def native_heavy(tmp_path, monkeypatch):
         skip_dependencies=True,
         skip_data_flow=True,
     )
-    captured = packets.capture_context_read(
+    captured = packet_builder.capture_context_read(
         "src",
         "wiki",
         read_only=True,
@@ -79,7 +80,7 @@ def native_heavy(tmp_path, monkeypatch):
         budget_tokens=2**63 - 1,
     )
     ranks = {}
-    payload, warnings = packets.build_context_from_captured_read(
+    payload, warnings = packet_builder.build_context_from_captured_read(
         captured, legacy, freshness_ranking_out=ranks
     )
     return captured, request, payload, warnings, ranks
@@ -87,10 +88,10 @@ def native_heavy(tmp_path, monkeypatch):
 
 def renderer(captured):
     def render(request, response):
-        contract = packets._packet_contract_for_request(request)
+        contract = packet_builder._packet_contract_for_request(request)
         body = {
             "schema_version": contract.schema_version,
-            **packets._packet_body(captured, request, response, contract),
+            **packet_builder._packet_body(captured, request, response, contract),
         }
         return {**body, "packet_id": packets._packet_id(body)}
 
@@ -136,8 +137,8 @@ def test_source_only_baseline_preserves_correct_refusal_and_larger_request(
     budget.validate_budgeted_context(
         larger.rendered, larger_request, counter=EstimatedCounter()
     )
-    packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
-    packets._assert_wiki_unchanged(
+    packet_builder._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
+    packet_builder._assert_wiki_unchanged(
         captured.wiki_root,
         captured.wiki_anchor,
         reject_all_symlinks=True,
@@ -254,7 +255,7 @@ def test_explicit_target_evidence_is_not_discarded_to_obtain_a_fit(native_heavy)
         format="json",
         budget_tokens=2**63 - 1,
     )
-    payload, warnings = packets.build_context_from_captured_read(captured, legacy)
+    payload, warnings = packet_builder.build_context_from_captured_read(captured, legacy)
     graph_before = copy.deepcopy(payload["graphs"])
     full = fit(
         captured,
@@ -293,7 +294,7 @@ def test_joint_currentness_stays_inside_changed_source_relevance(native_heavy):
     for name in ("file_00.py", "z_changed.py"):
         path = captured.source_root / name
         path.write_text(path.read_text().replace("value: str", "value: int"))
-    fresh_capture = packets.capture_context_read(
+    fresh_capture = packet_builder.capture_context_read(
         "src",
         "wiki",
         read_only=True,
@@ -314,7 +315,7 @@ def test_joint_currentness_stays_inside_changed_source_relevance(native_heavy):
         budget_tokens=2**63 - 1,
     )
     ranks = {}
-    payload, warnings = packets.build_context_from_captured_read(
+    payload, warnings = packet_builder.build_context_from_captured_read(
         fresh_capture, legacy, freshness_ranking_out=ranks
     )
     assert ranks["file_00.py"] > ranks["file_01.py"]
@@ -338,7 +339,7 @@ def test_joint_fitting_keeps_mutation_guards_after_reductions(
     native_heavy, monkeypatch, facet
 ):
     captured, request, _payload, _warnings, _ranks = native_heavy
-    monkeypatch.setattr(packets, "capture_context_read", lambda *a, **k: captured)
+    monkeypatch.setattr(packet_builder, "capture_context_read", lambda *a, **k: captured)
     mutated = []
 
     class MutatingCounter(EstimatedCounter):
@@ -371,7 +372,7 @@ def test_joint_fitting_keeps_mutation_guards_after_reductions(
                 mutated.append(path)
             return super().count(text)
 
-    with pytest.raises(packets.ContextPacketSourceMutationError):
+    with pytest.raises(packet_builder.ContextPacketSourceMutationError):
         budget.build_budgeted_context("src", "wiki", request, counter=MutatingCounter())
     assert len(mutated) == 1
 
@@ -404,7 +405,7 @@ def test_broad_fitting_captures_and_builds_selection_once(native_heavy, monkeypa
     captured, request, _payload, _warnings, _ranks = native_heavy
     captures = []
     builds = []
-    original = packets.build_context_from_captured_read
+    original = packet_builder.build_context_from_captured_read
 
     def capture(*args, **kwargs):
         captures.append(1)
@@ -414,8 +415,8 @@ def test_broad_fitting_captures_and_builds_selection_once(native_heavy, monkeypa
         builds.append(1)
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(packets, "capture_context_read", capture)
-    monkeypatch.setattr(packets, "build_context_from_captured_read", build)
+    monkeypatch.setattr(packet_builder, "capture_context_read", capture)
+    monkeypatch.setattr(packet_builder, "build_context_from_captured_read", build)
     result = budget.build_budgeted_context("src", "wiki", request)
     assert result.ok
     assert captures == builds == [1]

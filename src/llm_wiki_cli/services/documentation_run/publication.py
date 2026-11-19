@@ -11,13 +11,13 @@ import unicodedata
 
 from ..documentation_policy import capture_tree_baseline, hash_bytes
 from ..documentation_review import DocumentationReviewLedger
-from ..filesystem_guard import (
+from llm_wiki_engine.filesystem_guard import (
     atomic_write_private_bytes,
     ensure_guarded_directory,
     unlink_guarded_bytes,
 )
-from ..knowledge_evidence import hash_json
-from ..knowledge_governance import governance_lock
+from llm_wiki_engine.knowledge_evidence import hash_json
+from llm_wiki_engine.knowledge_governance import governance_lock
 from ..publication_candidate import _read_tree
 from .contracts import (
     DocumentationAgentResult,

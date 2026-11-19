@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services import maintenance_protocol as protocol
-from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes
-from llm_wiki_cli.services.storage_spool import ByteSpool
-from llm_wiki_cli.services.wiki_write_basis import ACTIVE_WRITE_BASIS
+from llm_wiki_engine import maintenance_protocol as protocol
+from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
+from llm_wiki_engine.storage_spool import ByteSpool
+from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
 
 def test_spool_fork_retains_original_bytes_and_owner_lifetime():
@@ -21,7 +21,7 @@ def test_spool_fork_retains_original_bytes_and_owner_lifetime():
 
 
 def test_spool_forks_share_the_physical_byte_quota():
-    from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
     with ByteSpool(max_bytes=8) as original:
         original["first"] = b"1234"
         fork = original.fork()
@@ -103,7 +103,7 @@ def test_noop_uses_spooled_basis_and_never_persists_recovery(tmp_path, monkeypat
 
 
 def test_cache_writer_lock_is_transient_inside_adopted_wiki(tmp_path, monkeypatch):
-    from llm_wiki_cli.services.knowledge_governance import governance_lock
+    from llm_wiki_engine.knowledge_governance import governance_lock
     wiki = _adopted(tmp_path, monkeypatch)
     cache = wiki / "cache"
     cache.mkdir()

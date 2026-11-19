@@ -1,15 +1,16 @@
 # lockfile Module
 
-**Path:** `src/llm_wiki_cli/services/lockfile.py`
+**Path:** `src/llm_wiki_engine/lockfile.py`
 
 ## Description
 
-_Auto-generated from `src/llm_wiki_cli/services/lockfile.py`._
+_Auto-generated from `src/llm_wiki_engine/lockfile.py`._
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
+| `.host` | `emit` |
 | `errno` | `errno` |
 | `fcntl` | `fcntl`, `fcntl` |
 | `math` | `math` |
@@ -25,10 +26,13 @@ _Auto-generated from `src/llm_wiki_cli/services/lockfile.py`._
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/trigger_cmd.py"]
-    n1["src/llm_wiki_cli/services/lockfile.py"]
-    n0 --> n1
+    n1["src/llm_wiki_engine/host.py"]
+    n2["src/llm_wiki_engine/lockfile.py"]
+    n0 --> n2
+    n2 --> n1
     click n0 "../modules/trigger_cmd.md"
-    click n1 "../modules/lockfile.md"
+    click n1 "../modules/host.md"
+    click n2 "../modules/lockfile.md"
 ```
 
 ### Internal neighbors
@@ -36,13 +40,14 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [trigger_cmd](../modules/trigger_cmd.md) |
+| Outbound | [host](../modules/host.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [LockAcquisitionError](../entities/LockAcquisitionError.md) | 22 | `Exception` | Raised when the wiki lock cannot be acquired (another sync is running). |
-| [WikiLock](../entities/WikiLock.md) | 26 | — | Exclusive file lock to prevent concurrent wiki syncs. |
+| [LockAcquisitionError](../entities/LockAcquisitionError.md) | 24 | `Exception` | Raised when the wiki lock cannot be acquired (another sync is running). |
+| [WikiLock](../entities/WikiLock.md) | 28 | — | Exclusive file lock to prevent concurrent wiki syncs. |
 
 ## Functions
 

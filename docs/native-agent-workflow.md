@@ -45,7 +45,7 @@ install that checkout instead. Replace the quoted path with its absolute
 location; keep running commands from the target project:
 
 ```bash
-.venv/bin/pip install "/absolute/path/python-wiki-llm"
+.venv/bin/pip install "/absolute/path/python-wiki-llm/src" "/absolute/path/python-wiki-llm"
 .venv/bin/llm-wiki init --agent generic
 ```
 
@@ -110,7 +110,8 @@ managed instructions from that project's root:
 ```
 
 For a source checkout, replace the package update command with
-`.venv/bin/pip install --upgrade "/absolute/path/python-wiki-llm"`. Package
+`.venv/bin/pip install --upgrade "/absolute/path/python-wiki-llm/src" "/absolute/path/python-wiki-llm"`.
+The first path is the `llm-wiki-engine` distribution that the CLI pins. Package
 updates alone do not refresh project instructions or migrate project data. For a custom wiki location,
 use `.venv/bin/llm-wiki upgrade --wiki-dir .wiki`.
 

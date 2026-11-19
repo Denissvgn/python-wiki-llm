@@ -28,8 +28,9 @@ from typing import Callable, TYPE_CHECKING
 import uuid
 
 from . import extractor_helpers as helpers
-from .io import first_unsafe_path_component, write_json_atomic
-from .knowledge_storage_io import read_guarded
+from llm_wiki_engine.host import current_host
+from llm_wiki_engine.io import first_unsafe_path_component, write_json_atomic
+from llm_wiki_engine.knowledge_storage_io import read_guarded
 
 if TYPE_CHECKING:
     from .helper_runtime import PreparedHelperHandle
@@ -569,15 +570,15 @@ def _profile(language: str, cache_root: Path, cwd: Path) -> _Profile:
 
 def _run(command: list[str], *, cwd: Path, env: dict[str, str], timeout: float) -> str:
     with tempfile.TemporaryFile() as log:
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                                   stdout=log, stderr=log, start_new_session=os.name != "nt")
+        process = current_host().popen(command, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+                                       stdout=log, stderr=log, start_new_session=os.name != "nt")
         try:
             code = process.wait(timeout=timeout)
         except BaseException:
             if os.name == "nt":
-                subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                               stdin=subprocess.DEVNULL, stdout=log, stderr=log,
-                               timeout=10, check=False)
+                current_host().run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                                   stdin=subprocess.DEVNULL, stdout=log, stderr=log,
+                                   timeout=10, check=False)
             else:
                 try:
                     os.killpg(process.pid, signal.SIGKILL)

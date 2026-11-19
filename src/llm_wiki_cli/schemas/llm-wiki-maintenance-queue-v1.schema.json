@@ -1,0 +1,729 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-wiki.invalid/schemas/llm-wiki-maintenance-queue-v1.schema.json",
+  "title": "Maintenance queue",
+  "description": "The advisory report queue prints: wiki pages ranked by the evidence that they may need maintenance. The format is additive, so consumers must accept fields this schema does not list; the maintenance summary and the coordinates and targets it embeds keep the closed shapes of llm-wiki-maintenance-status/v1. A report is valid only if it also passes checks a JSON Schema cannot express: returned counts the items up to the limit and total is returned plus omitted; items are unique and ranked by descending score, then path; each score is the sum of its reason weights; an item's category is its freshness state unless it is an ordinary-review item, whose freshness is unknown; lint findings, source changes and ordinary review are actionable; coverage gaps, record ids and semantic targets are bounded by counts that match them, name this page and, for targets, a listed record; review custody agrees with its evidence; an incompatible source selection marks every item; and queue_id is the sha256 of the report without queue_id, serialized with sorted keys. Conformance cases with schema_valid true and valid false exercise those checks.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-maintenance-queue/v1"
+    },
+    "advisory": {
+      "const": true
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "total": {
+      "$ref": "#/$defs/count"
+    },
+    "returned": {
+      "$ref": "#/$defs/count"
+    },
+    "omitted": {
+      "$ref": "#/$defs/count"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "qualification": {
+      "type": "object",
+      "properties": {
+        "ordinary_review_custody": {
+          "type": "object",
+          "properties": {
+            "availability": {
+              "enum": [
+                "ready",
+                "partial",
+                "unadopted",
+                "unavailable"
+              ]
+            },
+            "durable_owner_available": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "enum": [
+                "captured-maintenance-status",
+                "validated-native-manifest",
+                "no-validated-native-manifest"
+              ]
+            },
+            "live_evaluation_performed": {
+              "type": "boolean"
+            },
+            "source_prose_correctness": {
+              "const": "not-established"
+            },
+            "review_route": {
+              "type": "object",
+              "properties": {
+                "interface": {
+                  "$ref": "#/$defs/text"
+                },
+                "instruction": {
+                  "$ref": "#/$defs/text"
+                }
+              },
+              "required": [
+                "interface",
+                "instruction"
+              ]
+            },
+            "limitation": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "availability",
+            "durable_owner_available",
+            "evidence",
+            "live_evaluation_performed",
+            "source_prose_correctness",
+            "review_route",
+            "limitation"
+          ]
+        },
+        "freshness_states": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "current",
+              "source-changed",
+              "source-missing",
+              "basis-incompatible",
+              "nonsemantic-source-change",
+              "unknown"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/count"
+          }
+        },
+        "authoring_hint_pages": {
+          "$ref": "#/$defs/count"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      },
+      "required": [
+        "ordinary_review_custody",
+        "freshness_states",
+        "authoring_hint_pages",
+        "scope",
+        "limitations"
+      ]
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/text"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "$ref": "#/$defs/text"
+          },
+          "severity": {
+            "$ref": "#/$defs/text"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/text"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "category",
+          "severity",
+          "message"
+        ]
+      }
+    },
+    "basis": {
+      "type": "object",
+      "properties": {
+        "source_identity": {
+          "$ref": "#/$defs/sha256"
+        },
+        "wiki_identity": {
+          "$ref": "#/$defs/sha256"
+        },
+        "knowledge_reason": {
+          "$ref": "#/$defs/text"
+        },
+        "source_selection_compatible": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source_identity",
+        "wiki_identity",
+        "knowledge_reason",
+        "source_selection_compatible"
+      ]
+    },
+    "queue_id": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "required": [
+    "schema_version",
+    "advisory",
+    "limit",
+    "total",
+    "returned",
+    "omitted",
+    "items",
+    "qualification",
+    "limitations",
+    "diagnostics",
+    "basis",
+    "queue_id"
+  ],
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "coordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "occurrence": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "qualified_owner": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_path",
+        "qualified_owner",
+        "occurrence"
+      ],
+      "type": "object"
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ownership": {
+          "const": "semantic"
+        },
+        "section_locator": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "canonical_path",
+        "section_locator",
+        "ownership"
+      ],
+      "type": "object"
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "availability": {
+          "enum": [
+            "ready",
+            "partial",
+            "unadopted",
+            "unavailable"
+          ]
+        },
+        "analysis_scope": {
+          "enum": [
+            "full-inventory",
+            "selected-header",
+            "selected-source",
+            "snapshot"
+          ]
+        },
+        "live_evaluation_performed": {
+          "type": "boolean"
+        },
+        "native_prose_coherent": {
+          "type": "boolean"
+        },
+        "requires_sync": {
+          "type": "boolean"
+        },
+        "total": {
+          "$ref": "#/$defs/count"
+        },
+        "pending": {
+          "$ref": "#/$defs/count"
+        },
+        "acknowledged": {
+          "$ref": "#/$defs/count"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/count"
+        },
+        "ambiguous": {
+          "$ref": "#/$defs/count"
+        },
+        "deleted": {
+          "$ref": "#/$defs/count"
+        },
+        "untracked": {
+          "$ref": "#/$defs/count"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "limitations": {
+          "const": [
+            "ordinary-acknowledgment-is-not-human-governance-review",
+            "captured-syntax-is-not-runtime-equivalence",
+            "captured-prose-is-not-a-correctness-verdict",
+            "snapshot-status-does-not-establish-current-acknowledgment"
+          ]
+        }
+      },
+      "required": [
+        "availability",
+        "analysis_scope",
+        "live_evaluation_performed",
+        "native_prose_coherent",
+        "requires_sync",
+        "total",
+        "pending",
+        "acknowledged",
+        "unavailable",
+        "ambiguous",
+        "deleted",
+        "untracked",
+        "truncated",
+        "limitations"
+      ],
+      "additionalProperties": false,
+      "description": "The compact maintenance status summary for the page's records."
+    },
+    "reason": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/text"
+        },
+        "message": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "weight"
+      ]
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/text"
+        },
+        "kind": {
+          "$ref": "#/$defs/text"
+        },
+        "source_path": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/text"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "classification": {
+          "enum": [
+            "actionable",
+            "informational"
+          ]
+        },
+        "observed_change_category": {
+          "enum": [
+            "current",
+            "source-changed",
+            "source-missing",
+            "basis-incompatible",
+            "nonsemantic-source-change",
+            "unknown",
+            "ordinary-maintenance",
+            "ordinary-coverage-gap"
+          ]
+        },
+        "freshness": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "enum": [
+                "current",
+                "source-changed",
+                "source-missing",
+                "basis-incompatible",
+                "nonsemantic-source-change",
+                "unknown"
+              ]
+            },
+            "reason": {
+              "$ref": "#/$defs/text"
+            },
+            "description": {
+              "type": "string"
+            },
+            "live_comparison_performed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "state",
+            "reason",
+            "description",
+            "live_comparison_performed"
+          ]
+        },
+        "ownership": {
+          "type": "object",
+          "properties": {
+            "surface_role": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/text"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "semantic_section": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/text"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "instruction": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "surface_role",
+            "semantic_section",
+            "instruction"
+          ]
+        },
+        "placeholder_signals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          }
+        },
+        "work_status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/text"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lint_severity": {
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            null
+          ]
+        },
+        "reachable_from_index": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "source_fan_in": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "score": {
+          "type": "integer"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reason"
+          },
+          "minItems": 1
+        },
+        "coverage_gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "$ref": "#/$defs/text"
+              },
+              "target": {
+                "$ref": "#/$defs/target"
+              }
+            },
+            "required": [
+              "reason"
+            ]
+          },
+          "maxItems": 128
+        },
+        "coverage_gap_bounds": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted": {
+              "$ref": "#/$defs/count"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "total",
+            "returned",
+            "omitted",
+            "truncated"
+          ]
+        },
+        "maintenance": {
+          "$ref": "#/$defs/summary"
+        },
+        "record_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          },
+          "uniqueItems": true,
+          "maxItems": 128
+        },
+        "record_bounds": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted": {
+              "$ref": "#/$defs/count"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "max_records": {
+              "const": 128
+            },
+            "max_bytes": {
+              "const": 65536
+            }
+          },
+          "required": [
+            "total",
+            "returned",
+            "omitted",
+            "truncated",
+            "limit",
+            "max_records",
+            "max_bytes"
+          ]
+        },
+        "semantic_targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "record_id": {
+                "$ref": "#/$defs/text"
+              },
+              "coordinate": {
+                "$ref": "#/$defs/coordinate"
+              },
+              "target": {
+                "$ref": "#/$defs/target"
+              },
+              "attribution": {
+                "enum": [
+                  "retained",
+                  "candidate"
+                ]
+              }
+            },
+            "required": [
+              "record_id",
+              "coordinate",
+              "target",
+              "attribution"
+            ]
+          },
+          "maxItems": 128
+        },
+        "semantic_target_bounds": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/$defs/count"
+            },
+            "returned": {
+              "$ref": "#/$defs/count"
+            },
+            "omitted": {
+              "$ref": "#/$defs/count"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "max_records": {
+              "const": 128
+            },
+            "max_bytes": {
+              "const": 65536
+            }
+          },
+          "required": [
+            "total",
+            "returned",
+            "omitted",
+            "truncated",
+            "max_records",
+            "max_bytes"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "kind",
+        "source_path",
+        "classification",
+        "observed_change_category",
+        "freshness",
+        "ownership",
+        "placeholder_signals",
+        "work_status",
+        "lint_severity",
+        "reachable_from_index",
+        "source_fan_in",
+        "score",
+        "reasons"
+      ],
+      "dependentRequired": {
+        "coverage_gaps": [
+          "coverage_gap_bounds"
+        ],
+        "coverage_gap_bounds": [
+          "coverage_gaps"
+        ],
+        "maintenance": [
+          "record_ids",
+          "record_bounds",
+          "semantic_targets",
+          "semantic_target_bounds"
+        ],
+        "record_ids": [
+          "maintenance",
+          "record_bounds",
+          "semantic_targets",
+          "semantic_target_bounds"
+        ],
+        "record_bounds": [
+          "maintenance",
+          "record_ids",
+          "semantic_targets",
+          "semantic_target_bounds"
+        ],
+        "semantic_targets": [
+          "maintenance",
+          "record_ids",
+          "record_bounds",
+          "semantic_target_bounds"
+        ],
+        "semantic_target_bounds": [
+          "maintenance",
+          "record_ids",
+          "record_bounds",
+          "semantic_targets"
+        ]
+      },
+      "description": "One page that may need maintenance, with the reasons behind its score. Ordinary-review details and coverage gaps appear when they apply."
+    }
+  }
+}

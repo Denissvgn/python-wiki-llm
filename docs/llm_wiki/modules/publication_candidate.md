@@ -4,27 +4,33 @@
 
 ## Description
 
-Portable, review-bound GitHub wiki candidates without remote mutation.
+Portable, review-bound publication candidates without remote mutation.
+
+The policy's :mod:`publication target <.publication_targets>` prepares each
+owned page and checks the composed tree; GitHub wiki is the built-in target.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
-| `.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
-| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
-| `.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
+| `.analysis_capture` | `ENGINE_PACKAGE`, `engine_package_root` |
+| `.domain_pack` | `current_pack` |
 | `.publication_config` | `DELIVERY_CHECKPOINT_PATH`, `load_publication_config`, `publication_control_overlap`, `publication_input_controls`, `publication_path` |
 | `.publication_contracts` | `_json_tree`, `validate_publication_basis`, `validate_publication_report` |
 | `.publication_delivery` | `split_delivery_tree` |
 | `.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `project_publication_targets`, `project_publication_targets`, `publication_target_observation` |
-| `.publication_links` | `check_github_wiki`, `prepare_wiki_markdown`, `check_github_wiki` |
 | `.publication_snapshot` | `assert_bootstrap_output_excluded` |
-| `.validation` | `portable_path_key`, `require_portable_relative_path` |
+| `.publication_targets` | `current_publication_targets`, `publication_target` |
+| `.reference_providers` | `reference_providers_identity` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `importlib` | `metadata` |
 | `json` | `json` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
+| `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `stat` | `stat` |
@@ -52,9 +58,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (4) |
 | Inbound | `src` (5) |
-| Outbound | `src` (11) |
+| Outbound | `src` (14) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

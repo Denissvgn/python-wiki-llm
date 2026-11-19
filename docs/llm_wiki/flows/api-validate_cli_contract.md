@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_cli_contract` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [cli_reference](../modules/cli_reference.md), [knowledge_evidence](../modules/knowledge_evidence.md)
 
 ## Call sequence
 
@@ -17,12 +17,12 @@ sequenceDiagram
     participant p3 as _validate_schema
     participant p4 as _validate_command
     participant p5 as hash_json
-    participant p6 as canonical_json_bytes
+    participant p6 as compact_bytes
     participant p7 as CLIReferenceError
     participant p8 as _schema
-    participant p9 as sha256_bytes
+    participant p9 as sha256_digest
     participant p10 as _matches_type
-    participant p11 as canonical_json_text
+    participant p11 as compact_text
     participant p12 as isinstance (src/llm_wiki_cli/api.py:validate_cli_contract)
     participant p13 as json.dumps(…).encode
     participant p14 as ValueError
@@ -44,12 +44,12 @@ sequenceDiagram
     p1->>p3: _validate_schema
     p1->>p4: _validate_command
     p1->>p5: hash_json
-    p5->>p6: canonical_json_bytes
+    p5->>p6: compact_bytes
     p1->>p7: CLIReferenceError
     p1->>p8: _schema
-    p5->>p9: sha256_bytes
+    p5->>p9: sha256_digest
     p3->>p10: _matches_type
-    p6->>p11: canonical_json_text
+    p6->>p11: compact_text
     p0-->>p12: isinstance (src/llm_wiki_cli/api.py:validate_cli_contract)(contract, Mapping)
     p1-->>p13: json.dumps(…).encode('utf-8')
     p0-->>p14: ValueError('CLI contract must be a mapping')
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 45; effect analysis evaluated: 18, partial: 0, unavailable: 27. Counts include steps omitted from the displayed trace.
 
-Collector observations for 18 source steps with known totals: observed: 92, emitted: 92, omitted: 0. Unavailable totals are excluded.
+Collector observations for 18 source steps with known totals: observed: 94, emitted: 94, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
@@ -173,9 +173,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_cli_contract (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_cli_contract) | 3583 | `isinstance(contract, Mapping)` |
-| validate_cli_contract (src/llm_wiki_cli/api.py) | ValueError | 3584 | `ValueError('CLI contract must be a mapping')` |
-| validate_cli_contract (src/llm_wiki_cli/api.py) | validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3585 | `validate(dict(...))` |
+| validate_cli_contract (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_cli_contract) | 3735 | `isinstance(contract, Mapping)` |
+| validate_cli_contract (src/llm_wiki_cli/api.py) | ValueError | 3736 | `ValueError('CLI contract must be a mapping')` |
+| validate_cli_contract (src/llm_wiki_cli/api.py) | validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3737 | `validate(dict(...))` |
 | validate_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | _json_tree | 456 | `_json_tree(contract)` |
 | _json_tree | CLIReferenceError | 291 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
 | _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 292 | `type(value)` |
@@ -193,8 +193,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_cli_contract` | `isinstance` | 3583 |
-| external_call | `validate_cli_contract` | `ValueError` | 3584 |
+| external_call | `validate_cli_contract` | `isinstance` | 3735 |
+| external_call | `validate_cli_contract` | `ValueError` | 3736 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |
 | external_call | `_json_tree` | `math.isfinite` | 294 |

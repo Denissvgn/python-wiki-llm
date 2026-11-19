@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage
+from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from tests.developer_value.workflow_fixtures import WorkflowProject, sync_workflow, task_request, write_description
 from tests.developer_value.triage_oracle import commitment, occurrence_id
 

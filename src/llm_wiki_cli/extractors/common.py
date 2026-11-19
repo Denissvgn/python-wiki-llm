@@ -9,12 +9,8 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from ..config import (
-    EXCLUDED_DIRS,
-    GitIgnoreMatcher,
-    build_gitignore_matcher,
-    is_agent_worktree_path,
-)
+from llm_wiki_engine.gitignore import GitIgnoreMatcher, build_gitignore_matcher
+from llm_wiki_engine.path_policy import EXCLUDED_DIRS, is_agent_worktree_path
 
 JAVASCRIPT_EXTENSIONS = (".js", ".jsx", ".mjs", ".cjs")
 TYPESCRIPT_FAMILY_EXTENSIONS = (".ts", ".tsx", *JAVASCRIPT_EXTENSIONS)

@@ -14,11 +14,11 @@ Commands for deterministic standalone documentation workspaces.
 | `..config` | `PathValidationError`, `validate_source_root` |
 | `..services.calibration` | `controller` |
 | `..services.calibration.controller` | `P0CalibrationError` |
-| `..services.contracts` | `CALIBRATION_CONTROLLER_MAX_PACKET_BYTES` |
-| `..services.documentation_run` | `DocumentationAgentResult`, `DocumentationRunError`, `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `load_documentation_run`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
-| `..services.filesystem_guard` | `atomic_write_private_bytes` |
+| `..services.documentation_run` | `DocumentationAgentResult`, `DocumentationRunError`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `load_documentation_run`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine.contracts` | `CALIBRATION_CONTROLLER_MAX_PACKET_BYTES` |
+| `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
 | `typing` | `Any`, `Mapping` |
@@ -35,13 +35,12 @@ flowchart LR
     n4["src/llm_wiki_cli/commands/publication_cmd.py"]
     n5["src/llm_wiki_cli/config.py"]
     n6["src/llm_wiki_cli/services/calibration/controller.py"]
-    n7["src/llm_wiki_cli/services/contracts.py"]
-    n8["src/llm_wiki_cli/services/documentation_run/__init__.py"]
-    n9["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n7["src/llm_wiki_cli/services/documentation_run/__init__.py"]
+    n8["src/llm_wiki_engine/contracts.py"]
+    n9["src/llm_wiki_engine/filesystem_guard.py"]
+    n0 --> n1
     n0 --> n2
-    n0 --> n4
     n0 --> n5
-    n0 --> n7
     n1 --> n2
     n2 --> n3
     n2 --> n4
@@ -64,8 +63,8 @@ flowchart LR
     click n4 "../modules/publication_cmd.md"
     click n5 "../modules/config.md"
     click n6 "../modules/controller.md"
-    click n7 "../modules/services_contracts.md"
-    click n8 "../modules/documentation_run___init__.md"
+    click n7 "../modules/documentation_run___init__.md"
+    click n8 "../modules/llm_wiki_engine_contracts.md"
     click n9 "../modules/filesystem_guard.md"
 ```
 
@@ -79,15 +78,14 @@ flowchart LR
 | Outbound | [publication_cmd](../modules/publication_cmd.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [controller](../modules/controller.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [documentation_run___init__](../modules/documentation_run___init__.md) |
+| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `add_publication_candidate_commands` | `(docs_sub)` | — | — |
 | `_read_bounded_text` | `(path: str, *, label: str) -> str` | — | — |
 | `_read_json_object` | `(path: str, *, label: str) -> dict[str, Any]` | — | — |
 | `_read_calibration_json_object` | `(path: str, *, label: str) -> dict[str, Any]` | — | — |

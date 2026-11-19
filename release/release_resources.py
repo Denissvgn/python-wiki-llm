@@ -40,7 +40,7 @@ def _identity(path: Path) -> list[int]:
 
 
 def _write(path: Path, value: dict) -> None:
-    from llm_wiki_cli.services.filesystem_guard import atomic_write_guarded_bytes
+    from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes
 
     raw = manual.canonical(value)
     before = preflight._read(path) if path.exists() else None
@@ -287,7 +287,7 @@ def _allocated_roots(roots: list[Path]) -> int:
 
 
 def preview(store: manual.Store, *, scanner=scan_consumers, max_resources: int = 8) -> dict:
-    from llm_wiki_cli.services.filesystem_guard import guarded_tree_manifest
+    from llm_wiki_engine.filesystem_guard import guarded_tree_manifest
 
     state = store.load()
     require(type(max_resources) is int and 1 <= max_resources <= MAX_RESOURCES, "Invalid cleanup batch limit")
@@ -372,7 +372,7 @@ def preview(store: manual.Store, *, scanner=scan_consumers, max_resources: int =
 
 
 def apply(store: manual.Store, plan: dict, approved: str, *, scanner=scan_consumers) -> dict:
-    from llm_wiki_cli.services.filesystem_guard import guarded_tree_manifest, remove_guarded_tree
+    from llm_wiki_engine.filesystem_guard import guarded_tree_manifest, remove_guarded_tree
 
     require(plan.get("schema_version") == PLAN_SCHEMA and plan.get("root") == str(store.root) and plan.get("work") == str(store.work)
             and approved == plan.get("plan_sha256") == hosted.sha256(manual.canonical({k: v for k, v in plan.items() if k != "plan_sha256"})),

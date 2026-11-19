@@ -83,13 +83,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/documentation_policy.py:_hash_file` | 2 | - | external | 14 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_engine/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
+| `src/llm_wiki_engine/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
+| `src/llm_wiki_engine/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
+| `src/llm_wiki_engine/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
 > Omission summary shows 8 of 56 groups; 48 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -120,11 +120,11 @@ Collector observations for 70 source steps with known totals: observed: 405, emi
 | `os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_windows_directory_chain` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -135,22 +135,22 @@ flowchart LR
     s5["5. os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)"]
     s6["6. guard_windows_directory_chain"]
     s7["7. WindowsDirectoryGuardError"]
-    s8["8. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
-    s9["9. os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
-    s10["10. os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s8["8. Path (src/llm_wiki_engine/files…d_windows_directory_chain)"]
+    s9["9. os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)"]
+    s10["10. os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)"]
     s11["11. WindowsDirectoryGuardError"]
-    s12["12. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s12["12. Path (src/llm_wiki_engine/files…d_windows_directory_chain)"]
     s1 -->|"_hash_file(Path(...))"| s2
     s2 -. "Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os.path.abspath(...))" .-> s3
     s2 -. "os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os.fspath(...))" .-> s4
     s2 -. "os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(path)" .-> s5
     s2 -->|"guard_windows_directory_chain(absolute_path.parent, (...))"| s6
     s6 -->|"WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')"| s7
-    s6 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(os.path.abspath(...))" .-> s8
-    s6 -. "os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)(os.fspath(...))" .-> s9
-    s6 -. "os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)(root)" .-> s10
+    s6 -. "Path (src/llm_wiki_engine/files…d_windows_directory_chain)(os.path.abspath(...))" .-> s8
+    s6 -. "os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)(os.fspath(...))" .-> s9
+    s6 -. "os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)(root)" .-> s10
     s6 -->|"WindowsDirectoryGuardError(...)"| s11
-    s6 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(root_path.anchor)" .-> s12
+    s6 -. "Path (src/llm_wiki_engine/files…d_windows_directory_chain)(root_path.anchor)" .-> s12
     b0["mutation digest.update"]
     s2 -. "mutation digest.update" .-> b0
     b1["mutation handles.append"]
@@ -182,11 +182,11 @@ flowchart LR
 | `os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)` | - | - | - | - |
 | `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
-| `os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `Path (src/llm_wiki_engine/files…d_windows_directory_chain)` | - | - | - | - |
 
 ### Call data
 
@@ -198,11 +198,11 @@ flowchart LR
 | _hash_file | os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file) | 626 | `os.fspath(path)` |
 | _hash_file | guard_windows_directory_chain | 628 | `guard_windows_directory_chain(absolute_path.parent, (...))` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
-| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
-| guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
-| guard_windows_directory_chain | os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.fspath(root)` |
+| guard_windows_directory_chain | Path (src/llm_wiki_engine/files…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
+| guard_windows_directory_chain | os.path.abspath (src/llm_wiki_engine/files…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
+| guard_windows_directory_chain | os.fspath (src/llm_wiki_engine/files…d_windows_directory_chain) | 174 | `os.fspath(root)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 176 | `WindowsDirectoryGuardError(...)` |
-| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 179 | `Path(root_path.anchor)` |
+| guard_windows_directory_chain | Path (src/llm_wiki_engine/files…d_windows_directory_chain) | 179 | `Path(root_path.anchor)` |
 
 ### Boundary effects
 

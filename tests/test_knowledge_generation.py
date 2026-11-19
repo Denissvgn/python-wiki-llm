@@ -10,30 +10,30 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from llm_wiki_cli.services import sync_manifest
-from llm_wiki_cli.services.contracts import (
+from llm_wiki_engine import sync_manifest
+from llm_wiki_engine.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     ArtifactWriteState,
     commit_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_envelope import (
+from llm_wiki_engine.knowledge_envelope import (
     ConsumedInput,
     ConsumedInputKind,
     ProducerComponentInput,
     RepositoryEvidence,
     hash_generation_options,
 )
-from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
-from llm_wiki_cli.services.knowledge_freshness import evaluate_knowledge_freshness
+from llm_wiki_engine.knowledge_evidence import sha256_bytes
+from llm_wiki_engine.knowledge_freshness import evaluate_knowledge_freshness
 from llm_wiki_cli.services.knowledge_generation import (
     KnowledgeGenerationError,
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_model import (
     ComputedFreshness,
     RelationshipKind,
     WorkingTreeState,
@@ -50,14 +50,14 @@ from llm_wiki_cli.services.knowledge_orchestration import (
     prepare_runtime_generation_options,
     runtime_generation_options,
 )
-from llm_wiki_cli.services.source_selection import (
+from llm_wiki_engine.source_selection import (
     SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
     SOURCE_SELECTION_SCHEMA_VERSION,
     SourceSelectionPolicy,
 )
 from llm_wiki_cli.services.source_snapshot import SourceSnapshot
-from llm_wiki_cli.services.sync_manifest import TOMBSTONE_SOURCE_MISSING
-from llm_wiki_cli.services.wiki_surface_index import SurfaceIndexEvaluation
+from llm_wiki_engine.sync_manifest import TOMBSTONE_SOURCE_MISSING
+from llm_wiki_engine.wiki_surface_index import SurfaceIndexEvaluation
 from tests.knowledge_fixtures import (
     FIXTURE_REPOSITORY_IDENTITY,
     EvaluatedKnowledgeFixture,

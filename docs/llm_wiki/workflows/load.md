@@ -1,7 +1,7 @@
 # load
 
 **Entry point:** `sync_analysis_cache.load`
-**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [progress](../modules/progress.md), [sync_analysis_cache](../modules/sync_analysis_cache.md), [sync_analysis_storage](../modules/sync_analysis_storage.md)
+**Modules involved:** [host](../modules/host.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [progress](../modules/progress.md), [sync_analysis_cache](../modules/sync_analysis_cache.md), [sync_analysis_storage](../modules/sync_analysis_storage.md)
 
 > A cache is advisory; only exact prior committed content authorizes reuse.
 
@@ -11,10 +11,12 @@
 1. `knowledge_evidence.hash_json`
 2. `sync_analysis_storage.load`
 3. `knowledge_envelope.hash_inventory`
-4. `progress.record_counts`
+4. `host.emit`
+5. `progress.record_counts`
 
 ## Touches
 
+- [host](../modules/host.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [progress](../modules/progress.md)

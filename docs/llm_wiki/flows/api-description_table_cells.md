@@ -21,10 +21,10 @@ sequenceDiagram
     participant p7 as _line_content
     participant p8 as enumerate
     participant p9 as headers.index
-    participant p10 as len (src/llm_wiki_cli/services…py:description_table_cells)
+    participant p10 as len (src/llm_wiki_engine/markd…py:description_table_cells)
     participant p11 as defaultdict
     participant p12 as range
-    participant p13 as cells.append (src/llm_wiki_cli/services…py:description_table_cells)
+    participant p13 as cells.append (src/llm_wiki_engine/markd…py:description_table_cells)
     participant p14 as row[…].strip
     participant p15 as tuple
     participant p16 as re.findall
@@ -37,7 +37,7 @@ sequenceDiagram
     participant p23 as stripped.endswith
     participant p24 as cell.replace
     participant p25 as key.replace(…).replace
-    participant p26 as len (src/llm_wiki_cli/services…ections.py:split_table_row)
+    participant p26 as len (src/llm_wiki_engine/markd…ections.py:split_table_row)
     participant p27 as key.replace
     p0->>p1: _markdown_lines
     p0->>p2: split_table_row
@@ -48,12 +48,12 @@ sequenceDiagram
     p1->>p7: _line_content
     p0-->>p8: enumerate(lines)
     p0-->>p9: headers.index('Description')
-    p0-->>p10: len (src/llm_wiki_cli/services…py:description_table_cells)(lines)
+    p0-->>p10: len (src/llm_wiki_engine/markd…py:description_table_cells)(lines)
     p0-->>p11: defaultdict(int)
     p0-->>p12: range(row_start, len(...))
-    p0-->>p10: len (src/llm_wiki_cli/services…py:description_table_cells)(lines)
-    p0-->>p10: len (src/llm_wiki_cli/services…py:description_table_cells)(row)
-    p0-->>p13: cells.append (src/llm_wiki_cli/services…py:description_table_cells)(TableDescriptionCell(...))
+    p0-->>p10: len (src/llm_wiki_engine/markd…py:description_table_cells)(lines)
+    p0-->>p10: len (src/llm_wiki_engine/markd…py:description_table_cells)(row)
+    p0-->>p13: cells.append (src/llm_wiki_engine/markd…py:description_table_cells)(TableDescriptionCell(...))
     p0-->>p14: row[…].strip
     p0-->>p15: tuple(row)
     p0-->>p15: tuple(cells)
@@ -67,7 +67,7 @@ sequenceDiagram
     p2-->>p23: stripped.endswith('|')
     p3-->>p24: cell.replace(' ', '')
     p4-->>p25: key.replace(…).replace('*', '')
-    p2-->>p26: len (src/llm_wiki_cli/services…ections.py:split_table_row)(body)
+    p2-->>p26: len (src/llm_wiki_engine/markd…ections.py:split_table_row)(body)
     p4-->>p27: key.replace('`', '')
 ```
 
@@ -79,12 +79,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 10 | - | external | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 10 | - | unresolved | 9 |
-| `src/llm_wiki_cli/services/markdown_sections.py:description_table_cells` | 1 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:semantic_table_key` | 38 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:normalize_markdown` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 10 | - | external | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 10 | - | unresolved | 9 |
+| `src/llm_wiki_engine/markdown_sections.py:description_table_cells` | 1 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:semantic_table_key` | 38 | - | unresolved | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

@@ -13,20 +13,21 @@ and release a recovery probe through the failure path.
 
 | Source | Symbols |
 |--------|---------|
+| `..cli_declarations` | `DEFAULT_MAX_PROMPT_BYTES` |
 | `..config` | `DEFAULT_WIKI_DIR`, `IDE_AGENTS`, `validate_path`, `validate_source_root` |
-| `..services` | `circuit_breaker` |
 | `..services.extraction_service` | `filter_source_diff`, `get_call_graph`, `get_inventory_result`, `print_inventory_failures` |
-| `..services.lockfile` | `LockAcquisitionError`, `WikiLock` |
 | `..services.metrics` | `record_event` |
 | `..services.plugins` | `PluginError` |
-| `..services.secure_file` | `write_private_text` |
-| `..services.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `..services.sync_manifest` | `SyncManifest` |
 | `..services.team` | `TeamConfigError`, `team_prompt_template_default` |
 | `.generate_prompt_cmd` | `_build_prompt`, `_redact_prompt_artifact` |
 | `__future__` | `annotations` |
 | `json` | `json` |
+| `llm_wiki_engine` | `circuit_breaker` |
+| `llm_wiki_engine.lockfile` | `LockAcquisitionError`, `WikiLock` |
+| `llm_wiki_engine.secure_file` | `write_private_text` |
+| `llm_wiki_engine.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 | `math` | `math` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -53,9 +54,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (12) |
+| Outbound | `src` (13) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

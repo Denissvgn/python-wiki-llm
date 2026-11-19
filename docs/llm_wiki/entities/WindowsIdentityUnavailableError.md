@@ -1,6 +1,6 @@
 # WindowsIdentityUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:64`
+**Location:** `src/llm_wiki_engine/filesystem_guard.py:64`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -22,12 +22,12 @@ Raised when Windows cannot expose a stable filesystem object identity.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["WindowsIdentityUnavailableError (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n0["WindowsIdentityUnavailableError (src/llm_wiki_engine/filesystem_guard.py)"]
     n1["OSError"]
     n2["src/llm_wiki_cli/services/documentation_policy.py"]
     n3["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n4["windows_object_identity_from_values (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n5["WindowsObjectIdentity.__post_init__ (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n4["windows_object_identity_from_values (src/llm_wiki_engine/filesystem_guard.py)"]
+    n5["WindowsObjectIdentity.__post_init__ (src/llm_wiki_engine/filesystem_guard.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

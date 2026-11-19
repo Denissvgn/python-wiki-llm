@@ -16,22 +16,22 @@ from llm_wiki_cli.services.documentation_run import (
     load_documentation_run,
     save_documentation_run,
 )
-from llm_wiki_cli.services.knowledge_artifacts import (
+from llm_wiki_engine.knowledge_artifacts import (
     build_knowledge_commit_plan,
     validate_knowledge_artifacts,
 )
-from llm_wiki_cli.services.knowledge_consumption import (
+from llm_wiki_engine.knowledge_consumption import (
     build_knowledge_read_view,
     load_knowledge_read_view,
 )
-from llm_wiki_cli.services.knowledge_governance import (
+from llm_wiki_engine.knowledge_governance import (
     GovernanceLedger,
     apply_governance_projection,
     concept_references_from_knowledge,
     reconcile_concepts,
 )
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
-from llm_wiki_cli.services.knowledge_model import (
+from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult
+from llm_wiki_engine.knowledge_model import (
     KnowledgeLoadState,
     serialize_knowledge_index,
 )
@@ -116,7 +116,7 @@ def test_standalone_projection_loader_is_snapshot_only_and_preserves_missing_gov
         return view
 
     monkeypatch.setattr(
-        "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
+        "llm_wiki_engine.knowledge_consumption.load_knowledge_read_view",
         fake_load,
     )
     public_identity = (
@@ -152,7 +152,7 @@ def test_standalone_projection_loader_is_snapshot_only_and_preserves_missing_gov
 
 def test_off_projection_mode_performs_no_native_read(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
+        "llm_wiki_engine.knowledge_consumption.load_knowledge_read_view",
         lambda *_args, **_kwargs: pytest.fail("off mode loaded native knowledge"),
     )
 
@@ -179,7 +179,7 @@ def test_standalone_export_reuses_persisted_projection_policy_and_hash(
     assert prepared.publication["knowledge_public_repository_identity"] is None
     governed_view = _governed_snapshot_view(workspace / "wiki")
     monkeypatch.setattr(
-        "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
+        "llm_wiki_engine.knowledge_consumption.load_knowledge_read_view",
         lambda *_args, _view=governed_view, **_kwargs: _view,
     )
     run = load_documentation_run(workspace)
@@ -261,7 +261,7 @@ def test_selected_projection_failure_blocks_without_implicit_fallback(
     run.publication["knowledge_public_repository_identity"] = None
     save_documentation_run(workspace, run)
     monkeypatch.setattr(
-        "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
+        "llm_wiki_engine.knowledge_consumption.load_knowledge_read_view",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             ValueError("invalid committed projection")
         ),

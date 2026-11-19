@@ -14,21 +14,21 @@ rewriting the evidence subsequently rendered by doctor or CI.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility` |
-| `.contracts` | `HEALTH_DETAILS_SCHEMA_VERSION` |
 | `.health_contract` | `COMPARABLE_STATES`, `EXAMPLE_LIMIT`, `FRESHNESS_STATES`, `HealthDetailsError` |
-| `.knowledge_artifacts` | `require_validated_artifacts` |
-| `.knowledge_consumption` | `KnowledgeReadView` |
-| `.knowledge_envelope` | `hash_source_snapshot` |
-| `.knowledge_evidence` | `canonical_json_text`, `hash_json` |
-| `.knowledge_freshness` | `structural_freshness_modeled` |
-| `.knowledge_model` | `ProducerComponent`, `ProducerRecord` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `bisect` | `insort` |
 | `collections` | `Counter` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility` |
+| `llm_wiki_engine.contracts` | `HEALTH_DETAILS_SCHEMA_VERSION` |
+| `llm_wiki_engine.knowledge_artifacts` | `require_validated_artifacts` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_source_snapshot` |
+| `llm_wiki_engine.knowledge_evidence` | `canonical_json_text`, `hash_json` |
+| `llm_wiki_engine.knowledge_freshness` | `structural_freshness_modeled` |
+| `llm_wiki_engine.knowledge_model` | `ProducerComponent`, `ProducerRecord` |
 | `typing` | `Any` |
 
 ## Local dependency map

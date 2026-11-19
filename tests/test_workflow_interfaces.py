@@ -12,7 +12,7 @@ import pytest
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import context_budget, search_service
 from llm_wiki_cli.services.mcp_server import McpServerConfig, McpWikiError, McpWikiService, create_mcp_server
-from llm_wiki_cli.services.request_json import MAX_REQUEST_BYTES, parse_request
+from llm_wiki_engine.request_json import MAX_REQUEST_BYTES, parse_request
 from llm_wiki_cli.services.token_counting import EstimatedCounter
 from tests.test_context_budget import ByteCounter
 from tests.test_mcp import _write_wiki
@@ -78,7 +78,7 @@ def test_budgeted_mcp_matches_api_and_independent_validator(project, fmt, counte
 @pytest.mark.parametrize("patch", [{"protocol": "future"}, {"tokenizer": "/private/secret"},
     {"src_dir": "/"}, {"budget_tokens": True}, {"changes": {"mode": "paths", "paths": ["../outside"]}}])
 def test_budget_request_rejected_before_source(project, monkeypatch, patch):
-    monkeypatch.setattr(context_budget.packets, "capture_context_read", lambda *a, **k: pytest.fail("source read"))
+    monkeypatch.setattr(context_budget.packet_builder, "capture_context_read", lambda *a, **k: pytest.fail("source read"))
     with pytest.raises(McpWikiError):
         McpWikiService().build_budgeted_context({"protocol": "llm-wiki-context/v3",
             "budget_tokens": 1000, "budget_mode": "estimated", **patch})

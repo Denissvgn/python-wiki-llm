@@ -1,6 +1,6 @@
 # HelperPreparationError
 
-**Location:** `src/llm_wiki_cli/services/helper_cache.py:47`
+**Location:** `src/llm_wiki_cli/services/helper_cache.py:48`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [helper_cache](../modules/helper_cache.md)
@@ -28,7 +28,7 @@ flowchart LR
     n0["HelperPreparationError (src/llm_wiki_cli/services/helper_cache.py)"]
     n1["RuntimeError"]
     n2["src/llm_wiki_cli/api.py"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
+    n3["src/llm_wiki_cli/services/context_packet_builder.py"]
     n4["src/llm_wiki_cli/services/context_service.py"]
     n5["_profile (src/llm_wiki_cli/services/helper_cache.py)"]
     n6["_selected_rust_executable (src/llm_wiki_cli/services/helper_cache.py)"]
@@ -44,7 +44,7 @@ flowchart LR
     n8 --> n0
     click n0 "../modules/helper_cache.md"
     click n2 "../modules/api.md"
-    click n3 "../modules/context_packet.md"
+    click n3 "../modules/context_packet_builder.md"
     click n4 "../modules/context_service.md"
     click n5 "../modules/helper_cache.md"
     click n6 "../modules/helper_cache.md"
@@ -69,7 +69,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `_profile` | call | [helper_cache](../modules/helper_cache.md) | 12 |
 | `_selected_rust_executable` | call | [helper_cache](../modules/helper_cache.md) | 3 |

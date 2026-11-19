@@ -1,7 +1,7 @@
 # save_recovery_snapshot
 
 **Entry point:** `maintenance_protocol.save_recovery_snapshot`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_recovery](../modules/maintenance_recovery.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_recovery](../modules/maintenance_recovery.md)
 
 ## Sequence
 
@@ -9,15 +9,15 @@
 1. `maintenance_recovery.save_recovery_catalog`
 2. `knowledge_storage_io._absolute_path`
 3. `filesystem_guard.ensure_guarded_directory`
-4. `knowledge_storage.digest`
+4. `canonical_json.sha256_digest`
 5. `filesystem_guard.ensure_guarded_directory`
 6. `knowledge_storage_io.read_guarded`
 7. `filesystem_guard.atomic_write_guarded_bytes`
 
 ## Touches
 
+- [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_recovery](../modules/maintenance_recovery.md)

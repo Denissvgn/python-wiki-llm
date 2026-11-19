@@ -24,7 +24,7 @@ from llm_wiki_cli.extractors.rust_extractor import RustExtractionRequest, RustEx
 from llm_wiki_cli.services import mcp_server, sync_analysis_cache
 from llm_wiki_cli.services.extraction_service import get_inventory_result
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
-from llm_wiki_cli.services.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_entity_retirement import _snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -475,7 +475,7 @@ def test_missing_cached_qualification_rebuilds_selected_native_paths(
     assert set(rebuilt.inventory) == {path}
     assert rebuilt.path_outcomes[path]["reason"] == "inventory-entry"
     (tmp_path / path).write_text(bad)
-    from llm_wiki_cli.services.source_retirement import SourceRetirementError
+    from llm_wiki_engine.source_retirement import SourceRetirementError
 
     with pytest.raises(SourceRetirementError, match="syntax-error"):
         sync_cmd._qualify_surviving_module_inventory(

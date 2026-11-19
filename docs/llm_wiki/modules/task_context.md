@@ -10,17 +10,11 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service` |
-| `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `.` | `context_packet`, `context_service`, `context_packet_builder` |
 | `.analysis_capture` | `validate_analysis_diagnostics` |
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render`, `fit_payload`, `validate_request` |
 | `.documentation_query_builder` | `build_documentation_query_service_from_view`, `normalize_supplied_paths` |
-| `.io` | `first_unsafe_path_component` |
-| `.knowledge_consumption` | `load_knowledge_read_view` |
-| `.knowledge_envelope` | `hash_source_snapshot` |
-| `.knowledge_loader` | `KnowledgeStateLoadError` |
-| `.request_json` | `_pairs`, `_constant` |
 | `.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
 | `.source_snapshot` | `SourceSnapshotError` |
 | `.task_context_v2` | `build_scoped_task_read`, `validate_scoped_bindings` |
@@ -28,12 +22,18 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.task_evidence` | `coverage`, `declaration_records`, `match_declarations`, `observe_requirement`, `query_service` |
 | `.task_implementation` | `attach_bindings`, `native_bindings`, `attach_capture`, `attach_bindings`, `validate_task_implementations` |
 | `.token_counting` | `EstimatedCounter`, `TokenCounter` |
-| `.wiki_surface_index` | `evaluate_surface_index` |
-| `.workflow_profile` | `SCOPES`, `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_envelope` | `hash_source_snapshot` |
+| `llm_wiki_engine.knowledge_loader` | `KnowledgeStateLoadError` |
+| `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
+| `llm_wiki_engine.workflow_profile` | `SCOPES`, `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `pathlib` | `Path` |
 | `types` | `SimpleNamespace` |
 | `typing` | `Any` |
@@ -57,16 +57,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (21) |
+| Outbound | `src` (22) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TaskCancelledError](../entities/TaskCancelledError.md) | 42 | `RuntimeError` | The trusted host cancelled before a task result was published. |
-| [TaskRead](../entities/TaskRead.md) | 47 | — | Private ownership retained only by an explicit bounded session. |
+| [TaskCancelledError](../entities/TaskCancelledError.md) | 43 | `RuntimeError` | The trusted host cancelled before a task result was published. |
+| [TaskRead](../entities/TaskRead.md) | 48 | — | Private ownership retained only by an explicit bounded session. |
 
 ## Functions
 
@@ -79,8 +79,8 @@ flowchart LR
 | `_followups` | `(requirements, observed, settings)` | — | — |
 | `_result_body` | `(request, profile, basis, plan, anchors, work, observations, facts, packet, accounting)` | — | — |
 | `_empty_render` | `(request, profile, counter, basis, plan, anchors, work, observations, facts, implementation_bindings = None)` | — | — |
-| `build_task_read` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None, _reused_capture: packets.CapturedContextRead \| None = None, _defer_scoped_validation: bool = False, _wiki_byte_budget: int \| None = None) -> TaskRead` | — | — |
-| `_read_once` | `(request, profile, counter, source_root, wiki_root, allow_external, source_selection, helper_cache, cancelled, attempt, reused_capture = None)` | `@packets._guarded_capture` | — |
+| `build_task_read` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None, _reused_capture: packet_builder.CapturedContextRead \| None = None, _defer_scoped_validation: bool = False, _wiki_byte_budget: int \| None = None) -> TaskRead` | — | — |
+| `_read_once` | `(request, profile, counter, source_root, wiki_root, allow_external, source_selection, helper_cache, cancelled, attempt, reused_capture = None)` | `@packet_builder._guarded_capture` | — |
 | `build_task_context` | `(request: Mapping[str, Any], **kwargs) -> TaskContext` | — | — |
 | `reconcile_task_context` | `(rendered: str, request: Mapping[str, Any], **options) -> dict[str, Any]` | — | — |
 | `_result_fields` | `(value, keys, label)` | — | — |

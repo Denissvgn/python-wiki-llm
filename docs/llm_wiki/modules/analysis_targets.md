@@ -16,18 +16,18 @@ Fresh target-native proof remains required. A known mismatch points to the proje
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `analysis_compatibility` |
 | `.analysis_capture` | `registry` |
 | `.health_policy` | `digest`, `strict_json`, `strict_json` |
-| `.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
-| `.knowledge_packs` | `parse_packed_root` |
-| `.knowledge_storage` | `parse_store_root` |
-| `.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
-| `.sync_manifest` | `SyncManifest` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Mapping` |
 | `json` | `json` |
+| `llm_wiki_engine` | `analysis_compatibility` |
+| `llm_wiki_engine.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
+| `llm_wiki_engine.knowledge_packs` | `parse_packed_root` |
+| `llm_wiki_engine.knowledge_storage` | `parse_store_root` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -39,26 +39,26 @@ Fresh target-native proof remains required. A known mismatch points to the proje
 flowchart LR
     n0["src/llm_wiki_cli/commands/doctor_cmd.py"]
     n1["src/llm_wiki_cli/services/analysis_capture.py"]
-    n2["src/llm_wiki_cli/services/analysis_compatibility.py"]
-    n3["src/llm_wiki_cli/services/analysis_targets.py"]
-    n4["src/llm_wiki_cli/services/health_policy.py"]
-    n5["src/llm_wiki_cli/services/knowledge_model.py"]
-    n6["src/llm_wiki_cli/services/knowledge_packs.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n8["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n9["src/llm_wiki_cli/services/sync_manifest.py"]
-    n0 --> n3
-    n1 --> n2
-    n3 --> n1
-    n3 --> n2
+    n2["src/llm_wiki_cli/services/analysis_targets.py"]
+    n3["src/llm_wiki_cli/services/health_policy.py"]
+    n4["src/llm_wiki_engine/analysis_compatibility.py"]
+    n5["src/llm_wiki_engine/knowledge_model.py"]
+    n6["src/llm_wiki_engine/knowledge_packs.py"]
+    n7["src/llm_wiki_engine/knowledge_storage.py"]
+    n8["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n9["src/llm_wiki_engine/sync_manifest.py"]
+    n0 --> n2
+    n1 --> n4
+    n2 --> n1
+    n2 --> n3
+    n2 --> n4
+    n2 --> n5
+    n2 --> n6
+    n2 --> n7
+    n2 --> n8
+    n2 --> n9
     n3 --> n4
-    n3 --> n5
-    n3 --> n6
-    n3 --> n7
-    n3 --> n8
-    n3 --> n9
-    n4 --> n2
-    n5 --> n2
+    n5 --> n4
     n6 --> n7
     n7 --> n5
     n8 --> n7
@@ -66,9 +66,9 @@ flowchart LR
     n9 --> n8
     click n0 "../modules/doctor_cmd.md"
     click n1 "../modules/analysis_capture.md"
-    click n2 "../modules/analysis_compatibility.md"
-    click n3 "../modules/analysis_targets.md"
-    click n4 "../modules/health_policy.md"
+    click n2 "../modules/analysis_targets.md"
+    click n3 "../modules/health_policy.md"
+    click n4 "../modules/analysis_compatibility.md"
     click n5 "../modules/knowledge_model.md"
     click n6 "../modules/knowledge_packs.md"
     click n7 "../modules/knowledge_storage.md"
@@ -82,8 +82,8 @@ flowchart LR
 |---|---|
 | Inbound | [doctor_cmd](../modules/doctor_cmd.md) |
 | Outbound | [analysis_capture](../modules/analysis_capture.md) |
-| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
 | Outbound | [health_policy](../modules/health_policy.md) |
+| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [knowledge_packs](../modules/knowledge_packs.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |

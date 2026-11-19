@@ -2,11 +2,12 @@
 
 **Entry point:** `get_calibration_run_status` (`api`)
 **Source:** [controller](../modules/controller.md)
-**Modules touched:** [calibration_contracts](../modules/calibration_contracts.md), [controller](../modules/controller.md), [documentation_policy](../modules/documentation_policy.md), and 4 more
+**Modules touched:** [calibration_contracts](../modules/calibration_contracts.md), [canonical_json](../modules/canonical_json.md), [controller](../modules/controller.md), and 5 more
 
 **Complete modules touched:**
 
 - [calibration_contracts](../modules/calibration_contracts.md)
+- [canonical_json](../modules/canonical_json.md)
 - [controller](../modules/controller.md)
 - [documentation_policy](../modules/documentation_policy.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -84,22 +85,22 @@ sequenceDiagram
     p0-->>p30: store.lock
 ```
 
-> Call sequence diagram shows 30 of 1236 interactions; 1206 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1235 interactions; 1205 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 280 (279 omitted); unresolved 1 of 440 (439 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 279 (278 omitted); unresolved 1 of 439 (438 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/protected_artifacts.py](../modules/protected_artifacts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_engine/protected_artifacts.py](../modules/protected_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_run_locked` | 7 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
-| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 12 | - | external | 9 |
+| `src/llm_wiki_engine/validation.py:require_exact_fields` | 12 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
 > Omission summary shows 8 of 195 groups; 187 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 517; effect analysis evaluated: 297, partial: 10, unavailable: 210. Counts include steps omitted from the displayed trace.
+Source steps: 518; effect analysis evaluated: 298, partial: 10, unavailable: 210. Counts include steps omitted from the displayed trace.
 
-Collector observations for 307 source steps with known totals: observed: 1344, emitted: 1311, omitted: 33. Unavailable totals are excluded.
+Collector observations for 308 source steps with known totals: observed: 1346, emitted: 1313, omitted: 33. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

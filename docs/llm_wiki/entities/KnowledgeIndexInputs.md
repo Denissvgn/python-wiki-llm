@@ -1,6 +1,6 @@
 # KnowledgeIndexInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:151`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:151`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -36,12 +36,12 @@ Already evaluated values required to construct one knowledge index.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["KnowledgeIndexInputs (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n0["KnowledgeIndexInputs (src/llm_wiki_engine/knowledge_index.py)"]
     n1["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n2["_assemble_knowledge_index (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n3["_validate_and_join_inputs (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n4["build_knowledge_index (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n5["validate_knowledge_index (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n2["_assemble_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_validate_and_join_inputs (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["build_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["validate_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

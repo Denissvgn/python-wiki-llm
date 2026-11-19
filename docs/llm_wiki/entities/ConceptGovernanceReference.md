@@ -1,6 +1,6 @@
 # ConceptGovernanceReference
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:339`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:340`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
@@ -28,13 +28,13 @@ Current generated concept coordinates used for reconciliation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ConceptGovernanceReference (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n1["_preflight_page_transition_governance (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n2["_validated_references (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n3["concept_references_from_knowledge (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n4["move_concept (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n5["reconcile_concepts (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n6["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n0["ConceptGovernanceReference (src/llm_wiki_engine/knowledge_governance.py)"]
+    n1["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n2["_preflight_page_transition_governance (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n3["_validated_references (src/llm_wiki_engine/knowledge_governance.py)"]
+    n4["concept_references_from_knowledge (src/llm_wiki_engine/knowledge_governance.py)"]
+    n5["move_concept (src/llm_wiki_engine/knowledge_governance.py)"]
+    n6["reconcile_concepts (src/llm_wiki_engine/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -42,12 +42,12 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     click n0 "../modules/knowledge_governance.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/knowledge_governance.md"
+    click n1 "../modules/knowledge_orchestration.md"
+    click n2 "../modules/sync_runtime.md"
     click n3 "../modules/knowledge_governance.md"
     click n4 "../modules/knowledge_governance.md"
     click n5 "../modules/knowledge_governance.md"
-    click n6 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_governance.md"
 ```
 
 ### Summary
@@ -60,11 +60,11 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_preflight_page_transition_governance` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_prepared_runtime_governance` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `_preflight_page_transition_governance` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_validated_references` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `_validated_references` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `concept_references_from_knowledge` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `concept_references_from_knowledge` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `reconcile_concepts` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `_prepared_runtime_governance` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |

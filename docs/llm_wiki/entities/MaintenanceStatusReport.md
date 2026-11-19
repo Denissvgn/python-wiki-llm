@@ -1,6 +1,6 @@
 # MaintenanceStatusReport
 
-**Location:** `src/llm_wiki_cli/services/maintenance_status.py:87`
+**Location:** `src/llm_wiki_engine/maintenance_status.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_status](../modules/maintenance_status.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-_Auto-generated from `MaintenanceStatusReport` in `src/llm_wiki_cli/services/maintenance_status.py`._
+_Auto-generated from `MaintenanceStatusReport` in `src/llm_wiki_engine/maintenance_status.py`._
 
 ## Attributes
 
@@ -32,10 +32,10 @@ _Auto-generated from `MaintenanceStatusReport` in `src/llm_wiki_cli/services/mai
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["MaintenanceStatusReport (src/llm_wiki_cli/services/maintenance_status.py)"]
-    n1["build_maintenance_status (src/llm_wiki_cli/services/maintenance_status.py)"]
-    n2["MaintenanceStatusReport.for_path (src/llm_wiki_cli/services/maintenance_status.py)"]
-    n3["snapshot_report_for_view (src/llm_wiki_cli/services/maintenance_status.py)"]
+    n0["MaintenanceStatusReport (src/llm_wiki_engine/maintenance_status.py)"]
+    n1["build_maintenance_status (src/llm_wiki_engine/maintenance_status.py)"]
+    n2["MaintenanceStatusReport.for_path (src/llm_wiki_engine/maintenance_status.py)"]
+    n3["snapshot_report_for_view (src/llm_wiki_engine/maintenance_status.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0

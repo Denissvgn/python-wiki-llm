@@ -167,6 +167,7 @@ def test_full_integrity_action_uses_its_own_locked_implementation() -> None:
         "pip",
         "install",
         "--no-cache-dir",
+        "${GITHUB_ACTION_PATH}/../../src",
         "${GITHUB_ACTION_PATH}/../..",
     ]
 

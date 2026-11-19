@@ -20,13 +20,13 @@ sequenceDiagram
     participant p6 as is_placeholder_description
     participant p7 as normalize_markdown
     participant p8 as _line_content
-    participant p9 as range (src/llm_wiki_cli/services…py:table_description_cells)
+    participant p9 as range (src/llm_wiki_engine/markd…py:table_description_cells)
     participant p10 as headers.index
-    participant p11 as len (src/llm_wiki_cli/services…py:table_description_cells)
+    participant p11 as len (src/llm_wiki_engine/markd…py:table_description_cells)
     participant p12 as row[…].strip
     participant p13 as re.findall
     participant p14 as heading.casefold
-    participant p15 as line.strip (src/llm_wiki_cli/services…ections.py:split_table_row)
+    participant p15 as line.strip (src/llm_wiki_engine/markd…ections.py:split_table_row)
     participant p16 as all
     participant p17 as re.sub
     participant p18 as value.strip
@@ -39,8 +39,8 @@ sequenceDiagram
     participant p25 as stripped.endswith
     participant p26 as cell.replace
     participant p27 as key.replace(…).replace
-    participant p28 as line.strip (src/llm_wiki_cli/services…sections.py:section_bounds)
-    participant p29 as len (src/llm_wiki_cli/services…ections.py:split_table_row)
+    participant p28 as line.strip (src/llm_wiki_engine/markd…sections.py:section_bounds)
+    participant p29 as len (src/llm_wiki_engine/markd…ections.py:split_table_row)
     p0->>p1: _markdown_lines
     p0->>p2: section_bounds
     p0->>p3: split_table_row
@@ -49,14 +49,14 @@ sequenceDiagram
     p0->>p6: is_placeholder_description
     p1->>p7: normalize_markdown
     p1->>p8: _line_content
-    p0-->>p9: range (src/llm_wiki_cli/services…py:table_description_cells)(start, end)
+    p0-->>p9: range (src/llm_wiki_engine/markd…py:table_description_cells)(start, end)
     p0-->>p10: headers.index('Description')
-    p0-->>p9: range (src/llm_wiki_cli/services…py:table_description_cells)(row_start, end)
-    p0-->>p11: len (src/llm_wiki_cli/services…py:table_description_cells)(row)
+    p0-->>p9: range (src/llm_wiki_engine/markd…py:table_description_cells)(row_start, end)
+    p0-->>p11: len (src/llm_wiki_engine/markd…py:table_description_cells)(row)
     p0-->>p12: row[…].strip
     p1-->>p13: re.findall('[^\\n]*\\n|[^\\n]+$', normalize_markdown(...))
     p2-->>p14: heading.casefold
-    p3-->>p15: line.strip (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p3-->>p15: line.strip (src/llm_wiki_engine/markd…ections.py:split_table_row)
     p4-->>p16: all(...)
     p5-->>p17: re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)
     p6-->>p18: value.strip
@@ -69,8 +69,8 @@ sequenceDiagram
     p3-->>p25: stripped.endswith('|')
     p4-->>p26: cell.replace(' ', '')
     p5-->>p27: key.replace(…).replace('*', '')
-    p2-->>p28: line.strip (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p3-->>p29: len (src/llm_wiki_cli/services…ections.py:split_table_row)(body)
+    p2-->>p28: line.strip (src/llm_wiki_engine/markd…sections.py:section_bounds)
+    p3-->>p29: len (src/llm_wiki_engine/markd…ections.py:split_table_row)(body)
 ```
 
 > Call sequence diagram shows 30 of 60 interactions; 30 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
@@ -81,14 +81,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 9 | - | external | 5 |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 9 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 27 | - | external | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 27 | - | unresolved | 9 |
-| `src/llm_wiki_cli/services/markdown_sections.py:table_description_cells` | 1 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:semantic_table_key` | 52 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:normalize_markdown` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:_line_content` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 9 | - | external | 5 |
+| `src/llm_wiki_engine/markdown_sections.py:section_bounds` | 9 | - | unresolved | 7 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 27 | - | external | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:split_table_row` | 27 | - | unresolved | 9 |
+| `src/llm_wiki_engine/markdown_sections.py:table_description_cells` | 1 | [src/llm_wiki_engine/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_engine/markdown_sections.py:semantic_table_key` | 52 | - | unresolved | 2 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -156,14 +156,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| table_description_cells | _markdown_lines | 840 | `_markdown_lines(markdown)` |
+| table_description_cells | _markdown_lines | 845 | `_markdown_lines(markdown)` |
 | _markdown_lines | re.findall | 218 | `re.findall('[^\\n]*\\n\|[^\\n]+$', normalize_markdown(...))` |
 | _markdown_lines | normalize_markdown | 218 | `normalize_markdown(markdown)` |
 | normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 | normalize_markdown | text.replace | 82 | `text.replace('\r\n', '\n')` |
 | _markdown_lines | _line_content | 219 | `_line_content(line)` |
 | _line_content | line.endswith | 212 | `line.endswith('\n')` |
-| table_description_cells | section_bounds | 841 | `section_bounds(lines, heading)` |
+| table_description_cells | section_bounds | 846 | `section_bounds(lines, heading)` |
 | section_bounds | heading.casefold | 669 | `heading.casefold(data not statically known)` |
 | section_bounds | enumerate | 670 | `enumerate(lines)` |
 | section_bounds | _LEGACY_HEADING_RE.match | 671 | `_LEGACY_HEADING_RE.match(line.strip(...))` |

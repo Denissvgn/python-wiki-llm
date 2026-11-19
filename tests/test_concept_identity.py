@@ -6,7 +6,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from llm_wiki_cli.services.concept_identity import (
+from llm_wiki_engine.concept_identity import (
     AliasType,
     ConceptAllocation,
     ConceptIdentityError,
@@ -201,7 +201,7 @@ def test_natural_key_accepts_occurrence_fragments_and_canonical_utf8_escapes():
     "PasswdEntry", "ApiKeySettings", "AccessTokenProvider", "PrivateKeyStore",
 ])
 def test_natural_key_construction_accepts_credential_related_identifiers(name):
-    from llm_wiki_cli.services import knowledge_governance
+    from llm_wiki_engine import knowledge_governance
 
     path = f"entities/{name}.md"
     expected = f"code-entity:{path}"
@@ -229,7 +229,7 @@ def test_natural_key_construction_preserves_existing_identity_bytes():
     "git@example.test/core.md",
 ])
 def test_natural_key_construction_keeps_path_and_credential_safeguards(path):
-    from llm_wiki_cli.services import knowledge_governance
+    from llm_wiki_engine import knowledge_governance
 
     with pytest.raises(ConceptIdentityError) as identity_error:
         natural_key_for("code-entity", path)

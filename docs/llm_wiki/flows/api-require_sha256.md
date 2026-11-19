@@ -12,26 +12,26 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_sha256
-    participant p1 as isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
+    participant p1 as isinstance (src/llm_wiki_engine/validation.py:require_sha256)
     participant p2 as _validation_error
     participant p3 as require_trimmed_text
     participant p4 as _SHA256_RE.fullmatch
-    participant p5 as isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)
+    participant p5 as isinstance (src/llm_wiki_engine/validation.py:_validation_error)
     participant p6 as require_nonempty_text
     participant p7 as error
-    participant p8 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
+    participant p8 as isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)
     participant p9 as value.strip
     participant p10 as contains_control_character
     participant p11 as pattern.search
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)
+    p0-->>p1: isinstance (src/llm_wiki_engine/validation.py:require_sha256)(value, str)
     p0->>p2: _validation_error
     p0->>p3: require_trimmed_text
     p0-->>p4: _SHA256_RE.fullmatch(parsed)
     p0->>p2: _validation_error
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)
+    p2-->>p5: isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)
     p3->>p6: require_nonempty_text
     p2-->>p7: error(context)
-    p6-->>p8: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
+    p6-->>p8: isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)
     p6->>p2: _validation_error
     p6-->>p9: value.strip
     p6->>p2: _validation_error
@@ -61,24 +61,24 @@ Collector observations for 10 source steps with known totals: observed: 45, emit
 ```mermaid
 flowchart LR
     s1["1. require_sha256"]
-    s2["2. isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)"]
+    s2["2. isinstance (src/llm_wiki_engine/validation.py:require_sha256)"]
     s3["3. _validation_error"]
-    s4["4. isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)"]
+    s4["4. isinstance (src/llm_wiki_engine/validation.py:_validation_error)"]
     s5["5. error"]
     s6["6. require_trimmed_text"]
     s7["7. require_nonempty_text"]
-    s8["8. isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)"]
+    s8["8. isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)"]
     s9["9. _validation_error"]
     s10["10. value.strip"]
     s11["11. _validation_error"]
     s12["12. _validation_error"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_engine/validation.py:require_sha256)(value, str)" .-> s2
     s1 -->|"_validation_error(digest_error, error_context)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)(error, Exception)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_engine/validation.py:_validation_error)(error, Exception)" .-> s4
     s3 -. "error(context)" .-> s5
     s1 -->|"require_trimmed_text(value, error=text_error, error_context=error_context, reject_control_characters=reject_control_characters)"| s6
     s6 -->|"require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)(value, str)" .-> s8
     s7 -->|"_validation_error(error, error_context)"| s9
     s7 -. "value.strip(data not statically known)" .-> s10
     s7 -->|"_validation_error(error, error_context)"| s11
@@ -97,13 +97,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_sha256` | `value: object`, `digest_error: _ValidationError`, `text_error: _ValidationError \| None`, `error_context: str`, `reject_control_characters: bool`, `allow_empty: bool` | - | - | `parsed`, `parsed` |
-| `isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:require_sha256)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…ation.py:_validation_error)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/validation.py:_validation_error)` | - | - | - | - |
 | `error` | - | - | - | - |
 | `require_trimmed_text` | `value: object`, `error: _ValidationError`, `error_context: str`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: _ValidationError`, `trim_error: _ValidationError \| None`, `error_context: str`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text)` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
 | `value.strip` | - | - | - | - |
 | `_validation_error` | `error: _ValidationError`, `context: str` | - | - | `...` |
@@ -113,13 +113,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_sha256 | isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256) | 1159 | `isinstance(value, str)` |
+| require_sha256 | isinstance (src/llm_wiki_engine/validation.py:require_sha256) | 1159 | `isinstance(value, str)` |
 | require_sha256 | _validation_error | 1160 | `_validation_error(digest_error, error_context)` |
-| _validation_error | isinstance (src/llm_wiki_cli/services…ation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
+| _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
 | _validation_error | error | 95 | `error(context)` |
 | require_sha256 | require_trimmed_text | 1163 | `require_trimmed_text(value, error=text_error, error_context=error_context, reject_control_characters=reject_control_characters)` |
 | require_trimmed_text | require_nonempty_text | 711 | `require_nonempty_text(value, error=error, error_context=error_context, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text) | 637 | `isinstance(value, str)` |
+| require_nonempty_text | isinstance (src/llm_wiki_engine/valid…n.py:require_nonempty_text) | 637 | `isinstance(value, str)` |
 | require_nonempty_text | _validation_error | 638 | `_validation_error(error, error_context)` |
 | require_nonempty_text | value.strip | 639 | `value.strip(data not statically known)` |
 | require_nonempty_text | _validation_error | 642 | `_validation_error(error, error_context)` |

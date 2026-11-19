@@ -1,6 +1,6 @@
 # knowledge_model Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_model.py`
+**Path:** `src/llm_wiki_engine/knowledge_model.py`
 
 ## Description
 
@@ -24,26 +24,26 @@ freshness. Loading the packaged JSON Schema is the sole resource read.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface` |
 | `.analysis_compatibility` | `EXTENSION`, `validate_record`, `configuration_commitment` |
-| `.contracts` | `KNOWLEDGE_SCHEMA_FILENAME`, `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
-| `.immutable` | `FrozenDict` |
-| `.implementation_evidence` | `validate_implementation_collection`, `validate_concept_implementation` |
-| `.knowledge_evidence` | `SHA256_PATTERN` |
-| `.knowledge_governance` | `validate_governance_projection` |
-| `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
-| `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `validate_reuse_commitment` |
-| `.maintenance_projection` | `validate_maintenance_projection` |
-| `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
-| `.validation` | `require_bounded_integral_number`, `require_enum_value`, `require_list`, `require_mapping`, `require_nonempty_text`, `require_repository_relative_path`, `require_sha256`, `require_string` |
-| `.wiki_media` | `contains_uri_authority_userinfo` |
-| `.wiki_surface` | `PageKind`, `SurfaceRole`, `is_safe_page_id`, `iter_page_kinds` |
+| `.knowledge_kinds` | `current_kinds` |
+| `.knowledge_reuse_format` | `REUSE_EXTENSION_KEY`, `validate_reuse_commitment` |
+| `.knowledge_validators` | `current_validators` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
 | `functools` | `partial` |
 | `importlib` | `resources` |
 | `json` | `json` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_FILENAME`, `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `llm_wiki_engine.immutable` | `FrozenDict` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.knowledge_evidence` | `SHA256_PATTERN` |
+| `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
+| `llm_wiki_engine.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
+| `llm_wiki_engine.validation` | `require_bounded_integral_number`, `require_enum_value`, `require_list`, `require_mapping`, `require_nonempty_text`, `require_repository_relative_path`, `require_sha256`, `require_string` |
+| `llm_wiki_engine.wiki_media` | `contains_uri_authority_userinfo` |
+| `llm_wiki_engine.wiki_surface` | `PageKind`, `SurfaceRole`, `is_safe_page_id`, `iter_page_kinds` |
 | `math` | `math` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |
@@ -56,7 +56,7 @@ freshness. Loading the packaged JSON Schema is the sole resource read.
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_model.py"]
+    n1["src/llm_wiki_engine/knowledge_model.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_model.md"
@@ -68,50 +68,50 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (37) |
+| Inbound | `src` (42) |
 | Outbound | `src` (13) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeModelError](../entities/KnowledgeModelError.md) | Class | 78 | `ValueError` | Raised when a knowledge payload violates the v1 contract. |
-| [ConceptKind](../entities/ConceptKind.md) | Enum | 118 | `str`, `Enum` | Versioned domain taxonomy independent of the current page layout. |
-| [Origin](../entities/Origin.md) | Enum | 140 | `str`, `Enum` | — |
-| [EvidenceState](../entities/EvidenceState.md) | Enum | 150 | `str`, `Enum` | — |
-| [Resolution](../entities/Resolution.md) | Enum | 158 | `str`, `Enum` | — |
-| [TargetClass](../entities/TargetClass.md) | Enum | 165 | `str`, `Enum` | Classification of a relationship target, separate from resolution. |
-| [Verification](../entities/Verification.md) | Enum | 178 | `str`, `Enum` | — |
-| [Lifecycle](../entities/Lifecycle.md) | Enum | 187 | `str`, `Enum` | — |
-| [ComputedFreshness](../entities/ComputedFreshness.md) | Enum | 195 | `str`, `Enum` | Live comparison outcomes; never serialized in the knowledge index. |
-| [KnowledgeLoadState](../entities/KnowledgeLoadState.md) | Enum | 206 | `str`, `Enum` | Validated artifact-load outcomes; never persisted in the knowledge index. |
-| [KnowledgeProjectionProfile](../entities/KnowledgeProjectionProfile.md) | Enum | 216 | `str`, `Enum` | Out-of-band projection policies; never selected by artifact metadata. |
-| [ActorKind](../entities/ActorKind.md) | Enum | 223 | `str`, `Enum` | — |
-| [WorkingTreeState](../entities/WorkingTreeState.md) | Enum | 231 | `str`, `Enum` | — |
-| [RepositoryIdentitySource](../entities/RepositoryIdentitySource.md) | Enum | 237 | `str`, `Enum` | How a repository identity was selected by an application-owned writer. |
-| [ObservationScope](../entities/ObservationScope.md) | Enum | 245 | `str`, `Enum` | — |
-| [RelationshipKind](../entities/RelationshipKind.md) | Enum | 253 | `str`, `Enum` | — |
-| [ConceptKindValue](../entities/ConceptKindValue.md) | Type alias | 258 | `Union[ConceptKind, str]` | — |
-| [RelationshipKindValue](../entities/RelationshipKindValue.md) | Type alias | 259 | `Union[RelationshipKind, str]` | — |
-| [Actor](../entities/Actor.md) | Class | 284 | — | — |
-| [RepositoryRecord](../entities/RepositoryRecord.md) | Class | 300 | — | — |
-| [SnapshotRecord](../entities/SnapshotRecord.md) | Class | 318 | — | — |
-| [ProducerComponent](../entities/ProducerComponent.md) | Class | 327 | — | — |
-| [ProducerRecord](../entities/ProducerRecord.md) | Class | 336 | — | — |
-| [BundleRecord](../entities/BundleRecord.md) | Class | 344 | — | — |
-| [DocumentRecord](../entities/DocumentRecord.md) | Class | 352 | — | — |
-| [EvidenceBasis](../entities/EvidenceBasis.md) | Class | 361 | — | — |
-| [StructuralFacet](../entities/StructuralFacet.md) | Class | 372 | — | — |
-| [SemanticFacet](../entities/SemanticFacet.md) | Class | 380 | — | — |
-| [ConceptFacets](../entities/ConceptFacets.md) | Class | 389 | — | — |
-| [ConceptRecord](../entities/ConceptRecord.md) | Class | 396 | — | — |
-| [RelationshipLocation](../entities/RelationshipLocation.md) | Class | 407 | — | Half-open character offsets for a relationship observation. |
-| [RelationshipTarget](../entities/RelationshipTarget.md) | Class | 416 | — | — |
-| [RelationshipEvidence](../entities/RelationshipEvidence.md) | Class | 454 | — | — |
-| [RelationshipRecord](../entities/RelationshipRecord.md) | Class | 464 | — | — |
-| [KnowledgeIndex](../entities/KnowledgeIndex.md) | Class | 475 | — | — |
+| [KnowledgeModelError](../entities/KnowledgeModelError.md) | Class | 80 | `ValueError` | Raised when a knowledge payload violates the v1 contract. |
+| [ConceptKind](../entities/ConceptKind.md) | Enum | 120 | `str`, `Enum` | Versioned domain taxonomy independent of the current page layout. |
+| [Origin](../entities/Origin.md) | Enum | 142 | `str`, `Enum` | — |
+| [EvidenceState](../entities/EvidenceState.md) | Enum | 152 | `str`, `Enum` | — |
+| [Resolution](../entities/Resolution.md) | Enum | 160 | `str`, `Enum` | — |
+| [TargetClass](../entities/TargetClass.md) | Enum | 167 | `str`, `Enum` | Classification of a relationship target, separate from resolution. |
+| [Verification](../entities/Verification.md) | Enum | 180 | `str`, `Enum` | — |
+| [Lifecycle](../entities/Lifecycle.md) | Enum | 189 | `str`, `Enum` | — |
+| [ComputedFreshness](../entities/ComputedFreshness.md) | Enum | 197 | `str`, `Enum` | Live comparison outcomes; never serialized in the knowledge index. |
+| [KnowledgeLoadState](../entities/KnowledgeLoadState.md) | Enum | 208 | `str`, `Enum` | Validated artifact-load outcomes; never persisted in the knowledge index. |
+| [KnowledgeProjectionProfile](../entities/KnowledgeProjectionProfile.md) | Enum | 218 | `str`, `Enum` | Out-of-band projection policies; never selected by artifact metadata. |
+| [ActorKind](../entities/ActorKind.md) | Enum | 225 | `str`, `Enum` | — |
+| [WorkingTreeState](../entities/WorkingTreeState.md) | Enum | 233 | `str`, `Enum` | — |
+| [RepositoryIdentitySource](../entities/RepositoryIdentitySource.md) | Enum | 239 | `str`, `Enum` | How a repository identity was selected by an application-owned writer. |
+| [ObservationScope](../entities/ObservationScope.md) | Enum | 247 | `str`, `Enum` | — |
+| [RelationshipKind](../entities/RelationshipKind.md) | Enum | 255 | `str`, `Enum` | — |
+| [ConceptKindValue](../entities/ConceptKindValue.md) | Type alias | 260 | `Union[ConceptKind, str]` | — |
+| [RelationshipKindValue](../entities/RelationshipKindValue.md) | Type alias | 261 | `Union[RelationshipKind, str]` | — |
+| [Actor](../entities/Actor.md) | Class | 286 | — | — |
+| [RepositoryRecord](../entities/RepositoryRecord.md) | Class | 302 | — | — |
+| [SnapshotRecord](../entities/SnapshotRecord.md) | Class | 320 | — | — |
+| [ProducerComponent](../entities/ProducerComponent.md) | Class | 329 | — | — |
+| [ProducerRecord](../entities/ProducerRecord.md) | Class | 338 | — | — |
+| [BundleRecord](../entities/BundleRecord.md) | Class | 346 | — | — |
+| [DocumentRecord](../entities/DocumentRecord.md) | Class | 354 | — | — |
+| [EvidenceBasis](../entities/EvidenceBasis.md) | Class | 363 | — | — |
+| [StructuralFacet](../entities/StructuralFacet.md) | Class | 374 | — | — |
+| [SemanticFacet](../entities/SemanticFacet.md) | Class | 382 | — | — |
+| [ConceptFacets](../entities/ConceptFacets.md) | Class | 391 | — | — |
+| [ConceptRecord](../entities/ConceptRecord.md) | Class | 398 | — | — |
+| [RelationshipLocation](../entities/RelationshipLocation.md) | Class | 409 | — | Half-open character offsets for a relationship observation. |
+| [RelationshipTarget](../entities/RelationshipTarget.md) | Class | 418 | — | — |
+| [RelationshipEvidence](../entities/RelationshipEvidence.md) | Class | 456 | — | — |
+| [RelationshipRecord](../entities/RelationshipRecord.md) | Class | 466 | — | — |
+| [KnowledgeIndex](../entities/KnowledgeIndex.md) | Class | 477 | — | — |
 
 ## Functions
 

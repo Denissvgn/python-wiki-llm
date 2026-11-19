@@ -78,16 +78,16 @@ callbacks cannot acknowledge review or replace recovery authority.
 ```mermaid
 flowchart LR
     n0["RuntimeKnowledgeInputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n1["_migration_runtime_inputs (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n2["_finalize_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n4["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
-    n5["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n6["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["_runtime_manifest_generation_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n9["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n10["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n1["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n2["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n3["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n4["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["_runtime_manifest_generation_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n9["_migration_runtime_inputs (src/llm_wiki_cli/services/migrate_runtime.py)"]
+    n10["_finalize_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -99,16 +99,16 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     click n0 "../modules/knowledge_orchestration.md"
-    click n1 "../modules/migrate_cmd.md"
-    click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/bootstrap_runtime.md"
-    click n4 "../modules/documentation_native.md"
+    click n1 "../modules/bootstrap_runtime.md"
+    click n2 "../modules/documentation_native.md"
+    click n3 "../modules/knowledge_orchestration.md"
+    click n4 "../modules/knowledge_orchestration.md"
     click n5 "../modules/knowledge_orchestration.md"
     click n6 "../modules/knowledge_orchestration.md"
     click n7 "../modules/knowledge_orchestration.md"
     click n8 "../modules/knowledge_orchestration.md"
-    click n9 "../modules/knowledge_orchestration.md"
-    click n10 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/migrate_runtime.md"
+    click n10 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -121,9 +121,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_migration_runtime_inputs` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
-| `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_finalize_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_finalize_bootstrap_artifacts` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 | `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
@@ -132,3 +129,6 @@ flowchart LR
 | `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `_migration_runtime_inputs` | call | [migrate_runtime](../modules/migrate_runtime.md) | 1 |
+| `_migration_runtime_inputs` | type_reference | [migrate_runtime](../modules/migrate_runtime.md) | — |
+| `_finalize_prepared_sync` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |

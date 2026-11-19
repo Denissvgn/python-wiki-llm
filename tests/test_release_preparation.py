@@ -127,6 +127,17 @@ def test_known_target_runtime_drift_precedes_policy_proof(monkeypatch):
 
 
 def test_preflight_exposes_source_capture_before_expensive_execution(monkeypatch):
+    import json
+
+    from release import knowledge_maintenance
+
+    # Bind the reviewed activation to the current policy inputs, so the
+    # ordering holds whether or not a policy renewal is pending.
+    recorded = json.loads((ROOT / "release/knowledge-maintenance.json").read_text())
+    monkeypatch.setattr(
+        knowledge_maintenance, "composite_policy_digest",
+        lambda read: recorded["activation"]["implementation_sha256"],
+    )
     monkeypatch.setattr(
         preparation,
         "source_status",

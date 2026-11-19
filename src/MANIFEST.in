@@ -1,0 +1,4 @@
+include release_build_backend.py
+include llm_wiki_engine/py.typed
+prune llm_wiki_cli
+global-exclude __pycache__ *.py[cod]

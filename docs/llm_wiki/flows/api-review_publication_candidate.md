@@ -2,11 +2,12 @@
 
 **Entry point:** `review_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [knowledge_evidence](../modules/knowledge_evidence.md), [publication_candidate](../modules/publication_candidate.md), [publication_contracts](../modules/publication_contracts.md), and 1 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [knowledge_evidence](../modules/knowledge_evidence.md), [publication_candidate](../modules/publication_candidate.md), and 2 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [publication_candidate](../modules/publication_candidate.md)
 - [publication_contracts](../modules/publication_contracts.md)
@@ -32,14 +33,14 @@ sequenceDiagram
     participant p10 as _proposal
     participant p11 as _guard
     participant p12 as _fail
-    participant p13 as canonical_json_bytes
+    participant p13 as compact_bytes
     participant p14 as _portable
     participant p15 as require_portable_relative_path
     participant p16 as _check_hash
-    participant p17 as sha256_bytes
+    participant p17 as sha256_digest
     participant p18 as portable_path_key
     participant p19 as PublicationProtocolError
-    participant p20 as canonical_json_text
+    participant p20 as compact_text
     participant p21 as _default_path_error
     participant p22 as _syntax_key
     participant p23 as _known_syntax
@@ -62,14 +63,14 @@ sequenceDiagram
     p2->>p10: _proposal
     p6->>p11: _guard
     p4->>p12: _fail
-    p5->>p13: canonical_json_bytes
+    p5->>p13: compact_bytes
     p8->>p14: _portable
     p14->>p15: require_portable_relative_path
     p2->>p16: _check_hash
-    p5->>p17: sha256_bytes
+    p5->>p17: sha256_digest
     p8->>p18: portable_path_key
     p12->>p19: PublicationProtocolError
-    p13->>p20: canonical_json_text
+    p13->>p20: compact_text
     p15->>p21: _default_path_error
     p15->>p22: _syntax_key
     p15->>p23: _known_syntax
@@ -96,8 +97,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 33 | - | external | 2 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 33 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 38 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 38 | - | external | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 38 | - | unresolved | 1 |
+| `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 38 | - | external | 1 |
 > Omission summary shows 8 of 33 groups; 25 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -113,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 57; effect analysis evaluated: 53, partial: 2, unavailable: 2. Counts include steps omitted from the displayed trace.
 
-Collector observations for 55 source steps with known totals: observed: 174, emitted: 163, omitted: 11. Unavailable totals are excluded.
+Collector observations for 55 source steps with known totals: observed: 176, emitted: 165, omitted: 11. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -201,35 +202,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| review_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3689 | `isinstance(receipt, Mapping)` |
-| review_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3690 | `ValueError('Publication receipt must be a mapping')` |
-| review_publication_candidate (src/llm_wiki_cli/api.py) | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3691 | `review(dict(...), reviewer=reviewer, reason=reason)` |
-| review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 577 | `validate_publication_receipt(receipt)` |
-| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 313 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 314 | `ValueError('Candidate receipt must be a mapping')` |
-| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 315 | `dict(receipt)` |
-| validate_publication_receipt | _json_tree | 316 | `_json_tree(receipt)` |
-| _json_tree | pending.pop | 135 | `pending.pop(data not statically known)` |
-| _json_tree | _fail | 138 | `_fail('document', 'exceeds JSON structural bounds')` |
-| _fail | PublicationProtocolError | 43 | `PublicationProtocolError(...)` |
+| review_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3841 | `isinstance(receipt, Mapping)` |
+| review_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:r…iew_publication_candidate) | 3842 | `ValueError('Publication receipt must be a mapping')` |
+| review_publication_candidate (src/llm_wiki_cli/api.py) | review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3843 | `review(dict(...), reviewer=reviewer, reason=reason)` |
+| review_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 601 | `validate_publication_receipt(receipt)` |
+| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 337 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 338 | `ValueError('Candidate receipt must be a mapping')` |
+| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `dict(receipt)` |
+| validate_publication_receipt | _json_tree | 340 | `_json_tree(receipt)` |
+| _json_tree | pending.pop | 140 | `pending.pop(data not statically known)` |
+| _json_tree | _fail | 143 | `_fail('document', 'exceeds JSON structural bounds')` |
+| _fail | PublicationProtocolError | 48 | `PublicationProtocolError(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 464 |
-| mutation | `pending.pop` | `_json_tree` | 135 |
-| mutation | `pending.extend` | `_json_tree` | 142 |
-| mutation | `pending.extend` | `_json_tree` | 144 |
+| mutation | `seen.add` | `validate_publication_receipt` | 488 |
+| mutation | `pending.pop` | `_json_tree` | 140 |
+| mutation | `pending.extend` | `_json_tree` | 147 |
+| mutation | `pending.extend` | `_json_tree` | 149 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `review_publication_candidate` | `isinstance` | 3689 |
-| external_call | `review_publication_candidate` | `ValueError` | 3690 |
-| external_call | `validate_publication_receipt` | `isinstance` | 313 |
-| external_call | `validate_publication_receipt` | `ValueError` | 314 |
+| external_call | `review_publication_candidate` | `isinstance` | 3841 |
+| external_call | `review_publication_candidate` | `ValueError` | 3842 |
+| external_call | `validate_publication_receipt` | `isinstance` | 337 |
+| external_call | `validate_publication_receipt` | `ValueError` | 338 |
 | step_limit | `review_publication_candidate` | `first 12 steps` | 0 |
 | truncated_flow | `review_publication_candidate` | `depth limit` | 0 |
 

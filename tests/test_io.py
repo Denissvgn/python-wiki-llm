@@ -8,9 +8,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from llm_wiki_cli.services import io
-from llm_wiki_cli.services.filesystem_guard import atomic_write_private_bytes
-from llm_wiki_cli.services.io import (
+from llm_wiki_engine import io
+from llm_wiki_engine.filesystem_guard import atomic_write_private_bytes
+from llm_wiki_engine.io import (
     first_unsafe_path_component,
     read_md,
     write_json_atomic,

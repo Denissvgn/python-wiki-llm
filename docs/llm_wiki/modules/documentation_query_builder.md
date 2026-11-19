@@ -10,27 +10,28 @@ Shared construction for supported documentation query services.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `wiki_surface`, `context_service`, `extraction_service` |
-| `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
-| `.context_packet` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor`, `confirmed_missing_source_paths` |
+| `.` | `context_service`, `extraction_service` |
+| `.context_packet_builder` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor`, `confirmed_missing_source_paths` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `QUERY_IDENTITY_BYTE_LIMIT` |
 | `.entrypoints` | `build_flow` |
-| `.knowledge_consumption` | `KnowledgeReadView`, `attach_implementation_read_view`, `load_knowledge_read_view` |
-| `.knowledge_storage_io` | `read_guarded` |
-| `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
-| `.maintenance_status` | `attach_maintenance_view_from_inputs` |
 | `.python_implementation` | `analysis_identity` |
 | `.source_path_diagnostics` | `source_path_diagnostics` |
-| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `.validation` | `require_portable_relative_path` |
-| `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `hashlib` | `hashlib` |
 | `itertools` | `islice` |
+| `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView`, `attach_implementation_read_view`, `load_knowledge_read_view` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `llm_wiki_engine.maintenance_status` | `attach_maintenance_view_from_inputs` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `SyncManifestError` |
+| `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shlex` | `shlex` |

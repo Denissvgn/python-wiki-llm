@@ -8,7 +8,8 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli.services import context_packet
-from llm_wiki_cli.services.knowledge_governance import governance_lock
+from llm_wiki_cli.services import context_packet_builder
+from llm_wiki_engine.knowledge_governance import governance_lock
 
 
 @pytest.mark.parametrize("git_inside", [False, True])
@@ -29,7 +30,7 @@ def test_owned_mutation_locks_are_not_read_and_other_files_remain_anchored(
     page.write_bytes(b"# Guide\n")
     locks = {lock_root / "llm-wiki-storage.lock", lock_root / "llm-wiki-governance.lock"}
     original = Path.open
-    original_scan = context_packet.os.scandir
+    original_scan = context_packet_builder.os.scandir
 
     @contextmanager
     def windows_cached_entries(directory):
@@ -53,19 +54,19 @@ def test_owned_mutation_locks_are_not_read_and_other_files_remain_anchored(
         return original(path, mode, *args, **kwargs)
 
     monkeypatch.setattr(Path, "open", no_lock_read)
-    monkeypatch.setattr(context_packet.os, "scandir", windows_cached_entries)
+    monkeypatch.setattr(context_packet_builder.os, "scandir", windows_cached_entries)
     with governance_lock(wiki), governance_lock(wiki, _lock_filename="llm-wiki-storage.lock"):
         integrity = {}
-        anchor = context_packet._wiki_anchor(wiki, reject_all_symlinks=True, integrity_out=integrity)
+        anchor = context_packet_builder._wiki_anchor(wiki, reject_all_symlinks=True, integrity_out=integrity)
         assert all(str(path) in integrity for path in locks)
-        context_packet._assert_wiki_unchanged(wiki, anchor, expected_integrity=integrity)
+        context_packet_builder._assert_wiki_unchanged(wiki, anchor, expected_integrity=integrity)
         ordinary.write_bytes(b"changed nested content\n")
-        with pytest.raises(context_packet.ContextPacketSourceMutationError):
-            context_packet._assert_wiki_unchanged(wiki, anchor)
+        with pytest.raises(context_packet_builder.ContextPacketSourceMutationError):
+            context_packet_builder._assert_wiki_unchanged(wiki, anchor)
         ordinary.write_bytes(b"ordinary wiki content\n")
         page.write_bytes(b"# Changed guide\n")
-        with pytest.raises(context_packet.ContextPacketSourceMutationError):
-            context_packet._assert_wiki_unchanged(wiki, anchor)
+        with pytest.raises(context_packet_builder.ContextPacketSourceMutationError):
+            context_packet_builder._assert_wiki_unchanged(wiki, anchor)
 
 
 @pytest.mark.parametrize("unsafe", ["directory", "symlink", "hardlink"])
@@ -85,7 +86,7 @@ def test_operational_lock_exemption_rejects_unsafe_entries(tmp_path, unsafe):
     else:
         lock.hardlink_to(target)
     with pytest.raises(context_packet.ContextPacketPathPolicyError):
-        context_packet._wiki_anchor(wiki)
+        context_packet_builder._wiki_anchor(wiki)
 
 
 @pytest.mark.parametrize("link_count", [0, 2])
@@ -94,7 +95,7 @@ def test_fresh_unknown_or_multiple_lock_links_are_not_trusted(tmp_path, monkeypa
     wiki.mkdir()
     lock = wiki / "llm-wiki-storage.lock"
     lock.write_bytes(b"\0")
-    original = context_packet.fresh_no_follow_stat
+    original = context_packet_builder.fresh_no_follow_stat
 
     def unsafe_metadata(path):
         actual = original(path)
@@ -102,9 +103,9 @@ def test_fresh_unknown_or_multiple_lock_links_are_not_trusted(tmp_path, monkeypa
             return SimpleNamespace(st_mode=actual.st_mode, st_nlink=link_count)
         return actual
 
-    monkeypatch.setattr(context_packet, "fresh_no_follow_stat", unsafe_metadata)
+    monkeypatch.setattr(context_packet_builder, "fresh_no_follow_stat", unsafe_metadata)
     with pytest.raises(context_packet.ContextPacketPathPolicyError):
-        context_packet._wiki_anchor(wiki)
+        context_packet_builder._wiki_anchor(wiki)
 
 
 def test_lock_name_is_not_exempt_when_actual_locks_live_in_ancestor_git(tmp_path):
@@ -113,10 +114,10 @@ def test_lock_name_is_not_exempt_when_actual_locks_live_in_ancestor_git(tmp_path
     wiki.mkdir()
     ordinary = wiki / "llm-wiki-storage.lock"
     ordinary.write_bytes(b"wiki owned content")
-    anchor = context_packet._wiki_anchor(wiki)
+    anchor = context_packet_builder._wiki_anchor(wiki)
     ordinary.write_bytes(b"changed wiki owned content")
-    with pytest.raises(context_packet.ContextPacketSourceMutationError):
-        context_packet._assert_wiki_unchanged(wiki, anchor)
+    with pytest.raises(context_packet_builder.ContextPacketSourceMutationError):
+        context_packet_builder._assert_wiki_unchanged(wiki, anchor)
 
 
 @pytest.mark.parametrize("change", ["remove", "same-bytes-replacement"])
@@ -126,12 +127,12 @@ def test_operational_lock_presence_and_private_identity_remain_guarded(tmp_path,
     lock = wiki / "llm-wiki-storage.lock"
     lock.write_bytes(b"\0")
     integrity = {}
-    anchor = context_packet._wiki_anchor(wiki, integrity_out=integrity)
+    anchor = context_packet_builder._wiki_anchor(wiki, integrity_out=integrity)
     if change == "remove":
         lock.unlink()
     else:
         replacement = wiki / "replacement"
         replacement.write_bytes(lock.read_bytes())
         replacement.replace(lock)
-    with pytest.raises(context_packet.ContextPacketSourceMutationError):
-        context_packet._assert_wiki_unchanged(wiki, anchor, expected_integrity=integrity)
+    with pytest.raises(context_packet_builder.ContextPacketSourceMutationError):
+        context_packet_builder._assert_wiki_unchanged(wiki, anchor, expected_integrity=integrity)

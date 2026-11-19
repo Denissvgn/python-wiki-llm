@@ -14,6 +14,7 @@ Install the provider packaged with the pinned action and attest its bytes.
 | `importlib` | `metadata` |
 | `json` | `json` |
 | `llm_wiki_cli` | `llm_wiki_cli` |
+| `llm_wiki_engine` | `llm_wiki_engine` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -43,10 +44,17 @@ flowchart LR
 |---|---|
 | Outbound | [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md) |
 
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 1 |
+
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_installed_files` | `(package: Path, expected: Path, declared, prefix: str = '') -> dict[str, str]` | — | Hash installed package files that match the pinned source byte for byte. |
 | `verify` | `(source: Path, receipt: Path, revision: str, repository: str) -> None` | — | — |
 | `build_input` | `(provider: Path, runtime: Path) -> tuple[Path, str, str]` | — | — |
 | `setup` | `(*, impact_only: bool = False) -> None` | — | — |

@@ -1,6 +1,6 @@
 # knowledge_storage_access Module
 
-**Path:** `src/llm_wiki_cli/services/knowledge_storage_access.py`
+**Path:** `src/llm_wiki_engine/knowledge_storage_access.py`
 
 ## Description
 
@@ -12,10 +12,6 @@ Graph expansion resolves anchor concepts as internal dependencies even when the 
 
 | Source | Symbols |
 |--------|---------|
-| `.concept_identity` | `natural_key_for` |
-| `.contracts` | `GOVERNANCE_EXTENSION_KEY` |
-| `.implementation_evidence` | `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY`, `validate_concept_implementation`, `validate_implementation_collection` |
-| `.io` | `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `_decode_json_object`, `_decode_json_object`, `_decode_json_object` |
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid`, `_validate_selected_supersession_edges` |
@@ -32,6 +28,11 @@ Graph expansion resolves anchor concepts as internal dependencies even when the 
 | `collections.abc` | `Iterable` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
+| `llm_wiki_engine.concept_identity` | `natural_key_for` |
+| `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY` |
+| `llm_wiki_engine.integrations` | `attributes` |
+| `llm_wiki_engine.io` | `decode_markdown_bytes` |
+| `llm_wiki_engine.knowledge_evidence` | `IMPLEMENTATION_KEY`, `DECLARATIONS_KEY` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
 
@@ -41,7 +42,7 @@ Graph expansion resolves anchor concepts as internal dependencies even when the 
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/knowledge_storage_access.py"]
+    n1["src/llm_wiki_engine/knowledge_storage_access.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/knowledge_storage_access.md"
@@ -54,15 +55,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (16) |
+| Outbound | `src` (17) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedKnowledgeRead](../entities/ScopedKnowledgeRead.md) | 33 | — | Request-owned observations that require a final authoritative recheck. |
+| [ScopedKnowledgeRead](../entities/ScopedKnowledgeRead.md) | 35 | — | Request-owned observations that require a final authoritative recheck. |
 
 ## Functions
 
