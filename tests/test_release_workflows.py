@@ -422,7 +422,8 @@ def test_recursion_coverage_probe_preserves_the_full_linux_gate():
     assert early["if"] == "${{ matrix.lane == 'core-ubuntu-3.11' && !inputs.discovery-mode }}"
     assert "tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap" in early["run"]
     assert "runner.coverage_rows" in early["run"]
-    assert "runner.source_manifest(package)" in early["run"]
+    assert "runner.source_manifest(parent)" in early["run"]
+    assert 'parent = (Path.cwd() / "src").resolve()' in early["run"]
     assert early["env"]["COVERAGE_FILE"] == "${{ github.workspace }}/evidence/native-regressions/coverage-recursion/coverage.data"
     assert "--cov-fail-under=0" in early["run"]
     assert "--cov-fail-under=87" in full["run"]

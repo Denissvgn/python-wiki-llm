@@ -527,7 +527,7 @@
       ],
       "condition": "${{ !cancelled() && (!inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "69d30c481efa108ead0bbbe72536f93985d947a12122c493de0fa00b89dd8a4f",
+      "declaration_sha256": "4e34615db792a25ac30d7b96f7ebbcb8d190a81235f2697c740fb379f31ca09a",
       "environments": [
         "macos-15"
       ],
@@ -635,7 +635,7 @@
       ],
       "condition": "${{ !cancelled() && (!cancelled() && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow && needs.freeze.result == 'success' && (needs.freeze.outputs.core-layout != 'platform-sharded' || (needs.core-ubuntu-plan.result == 'success' && needs.core-ubuntu-shards.result == 'success')) ) && (inputs.discovery-mode || inputs.bandit-parity-verification || inputs.ubuntu-suite-shadow || inputs.knowledge-policy-shadow || needs.admission.result == 'success') }}",
       "cost": "heavy",
-      "declaration_sha256": "5154f69fc327cc2bb1baee2e87b43778e4d0eed33e282ce9c42a9be456e1cae1",
+      "declaration_sha256": "140e9bb3c5765b6d1200ada892d3f4f96b13e18774e3b577949707b2b21f6b26",
       "environments": [
         "ubuntu-24.04"
       ],

@@ -663,7 +663,9 @@ def test_pr_source_guard_admits_only_byte_copies_in_the_engine_build_tree(pr_che
     name = "llm_wiki_cli/__init__.py" if copy != "untracked" else "llm_wiki_cli/extra.py"
     built = root / "src/build/lib" / name
     built.parent.mkdir(parents=True)
-    built.write_bytes(b"VALUE = 1\n" if copy == "identical" else b"VALUE = 2\n")
+    # Copy the tracked bytes exactly; the fixture writes them in text mode.
+    tracked = root / "src" / name
+    built.write_bytes(tracked.read_bytes() if copy == "identical" else b"VALUE = 2\n")
     if copy == "identical":
         assert canary.verify_pr_source(root, source, base, head, tree_sha=tree) == tree
         return
