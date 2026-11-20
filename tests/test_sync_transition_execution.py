@@ -3,6 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -10,12 +11,36 @@ from llm_wiki_cli.commands import sync_cmd
 from llm_wiki_cli.services import sync_transition_execution as execution
 from llm_wiki_cli.services.sync_transitions import PageTransitionError
 from llm_wiki_engine.io import read_md
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_sync_analysis import _inventory, _manifest
 from tests.test_sync_page_transitions import (
     _assert_consistent, _author_description, _bootstrap_project, _draft_source, _sync,
 )
 from tests.test_sync_transitions import _plan, _snapshot, _wiki
+
+
+def test_preview_rejects_divergence_before_or_during_a_source_transfer(tmp_path):
+    old = _inventory(model=["Draft"])
+    manifest = _manifest(old)
+    live = _wiki(tmp_path, manifest)
+    staged = tmp_path / "staged"
+    shutil.copytree(live, staged)
+    plan = _plan(live, manifest, {"new/model.py": old["pkg/model.py"]})
+    relative = "modules/model.md"
+    page = live / relative
+    original = page.read_bytes()
+    page.write_bytes(b"New authored content")
+    with pytest.raises(PageTransitionError, match="changed while staging"):
+        with execution.preview_maintenance_preimages(live, staged, plan):
+            pytest.fail("A divergent preview must not start")
+    page.write_bytes(original)
+    with pytest.raises(KnowledgeStorageError) as changed:
+        with execution.preview_maintenance_preimages(live, staged, plan) as previous:
+            assert previous[relative] == original
+            page.write_bytes(b"Concurrent edit")
+    assert changed.value.code == "storage-mutation"
+    assert page.read_bytes() == b"Concurrent edit" and (staged / relative).read_bytes() == original
 
 
 def _case(tmp_path, scope="entity", cycle=False):

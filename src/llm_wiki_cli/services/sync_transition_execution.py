@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
@@ -20,9 +22,31 @@ from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStora
 from llm_wiki_engine.knowledge_storage_io import StorageReadSession, read_guarded
 from llm_wiki_engine.markdown_sections import normalize_markdown
 from llm_wiki_engine.protected_artifacts import ProtectedArtifactStore
-from .sync_transitions import PageTransitionError, PageTransitionPlan
 from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine.host import emit
+from .sync_transitions import PageTransitionError, PageTransitionPlan
+
+
+@contextmanager
+def preview_maintenance_preimages(
+    live_wiki: Path, staged_wiki: Path, plan: PageTransitionPlan
+) -> Iterator[dict[str, bytes]]:
+    """Hold the verified prior owners' live Markdown stable while simulating their transfer."""
+    preimages = {}
+    with StorageReadSession(live_wiki).phase() as live:
+        with StorageReadSession(staged_wiki).phase() as staged:
+            for item in plan.transitions:
+                if (
+                    item.previous_owner is None or item.previous_owner.scope != item.owner.scope
+                    or item.old_path is None or item.source_path is None
+                    or (item.previous_owner == item.owner and item.old_path == item.final_path)
+                ):
+                    continue
+                original = live.read(item.source_path, MAX_EXPANDED_BYTES)
+                if original != staged.read(item.source_path, MAX_EXPANDED_BYTES):
+                    raise PageTransitionError(f"Prior page changed while staging the preview: {item.source_path!r}")
+                preimages[item.old_path] = original
+        yield preimages
 
 
 RECOVERY_PREFIX = ".llm-wiki-page-moves-"

@@ -190,6 +190,7 @@ from .sync_transitions import (
 from .sync_transition_execution import (
     PageTransitionExecution,
     assert_no_pending_page_moves,
+    preview_maintenance_preimages,
 )
 from .wiki_lifecycle import (
     WikiLifecycleState,
@@ -1890,6 +1891,7 @@ class _PreparedSyncRun:
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
     repair_boundary: ScopedRepairBoundary | None = None
+    maintenance_preview_preimages: Mapping[str, bytes] | None = None
 
 
 @dataclass(frozen=True)
@@ -5136,6 +5138,7 @@ def _finalize_prepared_sync(
             _plan_check=prepared.repair_boundary.validate_plan if prepared.repair_boundary is not None else None,
             _publication_check=prepared.repair_boundary.assert_analysis_current if prepared.repair_boundary is not None else None,
             maintenance_page_transitions=prepared.page_transitions,
+            maintenance_previous_raw_content_by_page=prepared.maintenance_preview_preimages,
             inventory=prepared.inventory,
             surface=surface,
             source_snapshot=prepared.source_snapshot,
@@ -5491,8 +5494,13 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
         PageTransitionExecution(options.wiki_dir, prepared.page_transitions, preview=dry_run)
         if prepared.page_transitions is not None else nullcontext(None)
     )
-    with boundary as execution:
-        active = replace(prepared, transition_execution=execution)
+    prior_pages = (
+        preview_maintenance_preimages(target_wiki_dir, options.wiki_dir, prepared.page_transitions)
+        if dry_run and target_wiki_dir is not None and prepared.page_transitions is not None
+        and prepared.manifest.maintenance_state is not None else nullcontext(None)
+    )
+    with prior_pages as preimages, boundary as execution:
+        active = replace(prepared, transition_execution=execution, maintenance_preview_preimages=preimages)
         result = _apply_prepared_sync(options, active)
         _finalize_prepared_sync(
             options, active, result, target_wiki_dir=target_wiki_dir, dry_run=dry_run

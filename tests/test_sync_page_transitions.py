@@ -343,9 +343,14 @@ def test_module_moved_to_another_directory_keeps_its_page(
     _sync(wiki_dir)
     (project / "engine").mkdir()
     (project / "pkg/model.py").rename(project / "engine/model.py")
+    with (project / "engine/model.py").open("a", encoding="utf-8") as stream:
+        stream.write("\n\ndef current_label():\n    return 'current'\n")
     if leaves_alias:
         (project / "pkg/model.py").write_text(MODULE_ALIAS, encoding="utf-8")
 
+    before = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+    _sync(wiki_dir, dry_run=True)
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == before
     _sync(wiki_dir)
 
     _assert_module_page(wiki_dir, "model", "engine/model.py")
