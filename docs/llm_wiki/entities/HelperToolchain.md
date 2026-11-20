@@ -1,9 +1,9 @@
 # HelperToolchain
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:655`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:274`
 **Kind:** Class
 **Bases:** —
-**Module:** [domain_pack](../modules/domain_pack.md)
+**Module:** [pack_interfaces](../modules/pack_interfaces.md)
 
 ## Description
 
@@ -23,8 +23,8 @@ binds what it found to the operation and returns those handles.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `languages` | `(snapshot: SourceSnapshot, registry: Mapping[str, str], *, only_files: Iterable[str] \| None = None) -> tuple[str, ...]` | — | — |
-| `prepare` | `(snapshot: SourceSnapshot, registry: Mapping[str, str], *, only_files: Iterable[str] \| None = None, cache_dir: str \| None = None) -> tuple[PreparedHelperHandle, ...]` | — | — |
+| `languages` | `(snapshot: Any, registry: Mapping[str, str], *, only_files: Iterable[str] \| None = None) -> tuple[str, ...]` | — | — |
+| `prepare` | `(snapshot: Any, registry: Mapping[str, str], *, only_files: Iterable[str] \| None = None, cache_dir: str \| None = None) -> tuple[Any, ...]` | — | — |
 | `__repr__` | `() -> str` | — | — |
 
 ## Relationships
@@ -32,38 +32,34 @@ binds what it found to the operation and returns those handles.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["HelperToolchain (src/llm_wiki_cli/services/domain_pack.py)"]
+    n0["HelperToolchain (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["BundledHelperToolchain (src/llm_wiki_cli/services/domain_pack.py)"]
-    n2["NoHelperToolchain (src/llm_wiki_cli/services/domain_pack.py)"]
-    n3["src/llm_wiki_cli/engine/__init__.py"]
-    n4["DomainPack.with_helper_toolchain (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["NoHelperToolchain (src/llm_wiki_engine/pack_interfaces.py)"]
+    n3["DomainPack.with_helper_toolchain (src/llm_wiki_cli/services/domain_pack.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
-    n4 --> n0
-    click n0 "../modules/domain_pack.md"
+    click n0 "../modules/pack_interfaces.md"
     click n1 "../modules/domain_pack.md"
-    click n2 "../modules/domain_pack.md"
-    click n3 "../modules/engine___init__.md"
-    click n4 "../modules/domain_pack.md"
+    click n2 "../modules/pack_interfaces.md"
+    click n3 "../modules/domain_pack.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [domain_pack](../modules/domain_pack.md) | 3 | — |
+| [pack_interfaces](../modules/pack_interfaces.md) | 3 | — |
 
 ### Structure
 
 | Kind | Entity | Module |
 |---|---|---|
 | Subclass | `BundledHelperToolchain` | [domain_pack](../modules/domain_pack.md) |
-| Subclass | `NoHelperToolchain` | [domain_pack](../modules/domain_pack.md) |
+| Subclass | `NoHelperToolchain` | [pack_interfaces](../modules/pack_interfaces.md) |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
 | `DomainPack.with_helper_toolchain` | type_reference | [domain_pack](../modules/domain_pack.md) | — |

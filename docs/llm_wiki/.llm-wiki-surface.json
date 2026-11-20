@@ -18,18 +18,18 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 769,
+      "entities": 770,
       "flows": 506,
       "guides": 11,
       "index": 1,
       "infrastructure": 5,
       "load-order": 1,
       "log": 1,
-      "modules": 311,
+      "modules": 312,
       "workflows": 316
     },
     "dependency_architecture": 2,
-    "total": 1922
+    "total": 1924
   },
   "dependency_pages": {
     "count": 2,
@@ -173,7 +173,7 @@
             "src/llm_wiki_engine/immutable.py",
             "src/llm_wiki_engine/infrastructure_state.py"
           ],
-          "step_count": 3246,
+          "step_count": 3249,
           "truncated": true
         }
       },
@@ -3224,7 +3224,7 @@
             "src/llm_wiki_engine/section_ownership.py",
             "src/llm_wiki_engine/markdown_sections.py"
           ],
-          "step_count": 1806,
+          "step_count": 1809,
           "truncated": true
         }
       },
@@ -3954,7 +3954,7 @@
             "src/llm_wiki_engine/knowledge_governance.py",
             "src/llm_wiki_engine/knowledge_envelope.py"
           ],
-          "step_count": 2628,
+          "step_count": 2631,
           "truncated": true
         }
       },
@@ -4199,7 +4199,7 @@
             "src/llm_wiki_engine/markdown_sections.py",
             "src/llm_wiki_engine/immutable.py"
           ],
-          "step_count": 1234,
+          "step_count": 1237,
           "truncated": true
         }
       },
@@ -4399,7 +4399,7 @@
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/markdown_sections.py"
           ],
-          "step_count": 1838,
+          "step_count": 1841,
           "truncated": true
         }
       },
@@ -4935,7 +4935,7 @@
             "src/llm_wiki_engine/packet_field_policy.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 5313,
+          "step_count": 5316,
           "truncated": true
         }
       },
@@ -5131,7 +5131,7 @@
             "src/llm_wiki_engine/maintenance_evidence.py",
             "src/llm_wiki_engine/storage_spool.py"
           ],
-          "step_count": 3457,
+          "step_count": 3460,
           "truncated": true
         }
       },
@@ -5990,7 +5990,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 5079,
+          "step_count": 5082,
           "truncated": true
         }
       },
@@ -8551,31 +8551,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 386,
+              "line": 231,
               "step": "context_entry",
               "target": "source.entry"
             },
             {
               "kind": "external_call",
-              "line": 387,
+              "line": 232,
               "step": "context_entry",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 388,
+              "line": 233,
               "step": "context_entry",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 750,
+              "line": 478,
               "step": "_qualified_type_name",
               "target": "type"
             }
@@ -8610,31 +8610,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 375,
+              "line": 220,
               "step": "context_related_sources",
               "target": "source.related_sources"
             },
             {
               "kind": "external_call",
-              "line": 376,
+              "line": 221,
               "step": "context_related_sources",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 377,
+              "line": 222,
               "step": "context_related_sources",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 750,
+              "line": 478,
               "step": "_qualified_type_name",
               "target": "type"
             }
@@ -8975,7 +8975,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             }
@@ -9045,7 +9045,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             }
@@ -10517,7 +10517,7 @@
             "src/llm_wiki_engine/source_retirement.py",
             "src/llm_wiki_engine/sync_manifest.py"
           ],
-          "step_count": 1129,
+          "step_count": 1132,
           "truncated": true
         }
       },
@@ -11810,7 +11810,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_engine/maintenance_evidence.py"
           ],
-          "step_count": 3244,
+          "step_count": 3247,
           "truncated": true
         }
       },
@@ -13062,7 +13062,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 3996,
+          "step_count": 3999,
           "truncated": true
         }
       },
@@ -13214,7 +13214,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_engine/markdown_sections.py"
           ],
-          "step_count": 2568,
+          "step_count": 2571,
           "truncated": true
         }
       },
@@ -15848,7 +15848,7 @@
             "src/llm_wiki_engine/knowledge_validators.py",
             "src/llm_wiki_engine/knowledge_kinds.py"
           ],
-          "step_count": 865,
+          "step_count": 868,
           "truncated": true
         }
       },
@@ -16704,7 +16704,7 @@
             "src/llm_wiki_engine/knowledge_verification.py",
             "src/llm_wiki_engine/verification_contracts.py"
           ],
-          "step_count": 1659,
+          "step_count": 1662,
           "truncated": true
         }
       },
@@ -16869,7 +16869,7 @@
             "src/llm_wiki_engine/knowledge_governance.py",
             "src/llm_wiki_engine/concept_identity.py"
           ],
-          "step_count": 1874,
+          "step_count": 1877,
           "truncated": true
         }
       },
@@ -17156,7 +17156,7 @@
             "src/llm_wiki_engine/knowledge_reuse_format.py",
             "src/llm_wiki_engine/knowledge_governance.py"
           ],
-          "step_count": 2159,
+          "step_count": 2162,
           "truncated": true
         }
       },
@@ -17785,6 +17785,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/python_imports.py",
+            "src/llm_wiki_engine/pack_interfaces.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_engine/knowledge_envelope.py",
             "src/llm_wiki_engine/wiki_surface.py",
@@ -19752,13 +19753,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 746,
+              "line": 474,
               "step": "pack_extractor",
               "target": "current_pack().extractors.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             }
@@ -19818,13 +19819,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 394,
+              "line": 239,
               "step": "uses_builtin_context_source",
               "target": "type"
             },
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             },
@@ -20137,7 +20138,7 @@
             "src/llm_wiki_engine/knowledge_validators.py",
             "src/llm_wiki_engine/knowledge_kinds.py"
           ],
-          "step_count": 979,
+          "step_count": 982,
           "truncated": true
         }
       },
@@ -23194,7 +23195,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             },
@@ -24460,55 +24461,55 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             },
             {
               "kind": "external_call",
-              "line": 241,
+              "line": 111,
               "step": "render_with_pack",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 242,
+              "line": 112,
               "step": "render_with_pack",
               "target": "renderer.render_module"
             },
             {
               "kind": "external_call",
-              "line": 243,
+              "line": 113,
               "step": "render_with_pack",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 244,
+              "line": 114,
               "step": "render_with_pack",
               "target": "renderer.render_entity"
             },
             {
               "kind": "unresolved_call",
-              "line": 246,
+              "line": 116,
               "step": "render_with_pack",
               "target": "renderer.render_page"
             },
             {
               "kind": "external_call",
-              "line": 247,
+              "line": 117,
               "step": "render_with_pack",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 248,
+              "line": 118,
               "step": "render_with_pack",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 750,
+              "line": 478,
               "step": "_qualified_type_name",
               "target": "type"
             }
@@ -31272,13 +31273,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 394,
+              "line": 239,
               "step": "uses_builtin_context_source",
               "target": "type"
             },
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             }
@@ -31313,7 +31314,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 588,
               "step": "current_pack",
               "target": "_ACTIVE_PACK.get"
             }
@@ -31395,19 +31396,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 864,
+              "line": 602,
               "step": "using_pack",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 865,
+              "line": 603,
               "step": "using_pack",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 870,
+              "line": 608,
               "step": "using_pack",
               "target": "_ACTIVE_PACK.reset"
             }
@@ -32751,27 +32752,33 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 72,
+              "line": 169,
               "step": "provider",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 73,
-              "step": "provider",
+              "line": 158,
+              "step": "_resolve",
+              "target": "_SCOPE.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 160,
+              "step": "_resolve",
+              "target": "scope.modules.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 163,
+              "step": "_resolve",
               "target": "_PROVIDED.get"
             },
             {
               "kind": "external_call",
-              "line": 78,
+              "line": 175,
               "step": "provider",
               "target": "importlib.import_module"
-            },
-            {
-              "kind": "external_call",
-              "line": 84,
-              "step": "attributes",
-              "target": "getattr"
             },
             {
               "kind": "step_limit",
@@ -32827,7 +32834,7 @@
             "src/llm_wiki_engine/concept_identity.py",
             "src/llm_wiki_engine/knowledge_envelope.py"
           ],
-          "step_count": 2472,
+          "step_count": 2475,
           "truncated": true
         }
       },
@@ -32917,7 +32924,7 @@
             "src/llm_wiki_engine/maintenance_state.py",
             "src/llm_wiki_engine/immutable.py"
           ],
-          "step_count": 1429,
+          "step_count": 1432,
           "truncated": true
         }
       },
@@ -32995,7 +33002,7 @@
             "src/llm_wiki_engine/knowledge_validators.py",
             "src/llm_wiki_engine/knowledge_kinds.py"
           ],
-          "step_count": 804,
+          "step_count": 807,
           "truncated": true
         }
       },
@@ -35234,7 +35241,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_engine/maintenance_evidence.py"
           ],
-          "step_count": 3521,
+          "step_count": 3524,
           "truncated": true
         }
       },
@@ -39389,7 +39396,7 @@
             "src/llm_wiki_cli/services/legacy_hooks.py",
             "src/llm_wiki_engine/circuit_breaker.py"
           ],
-          "step_count": 1822,
+          "step_count": 1825,
           "truncated": true
         }
       },
@@ -39737,7 +39744,8 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_engine/infrastructure_state.py",
             "src/llm_wiki_engine/knowledge_storage_lifecycle.py",
-            "src/llm_wiki_engine/source_retirement.py"
+            "src/llm_wiki_engine/source_retirement.py",
+            "src/llm_wiki_engine/pack_interfaces.py"
           ],
           "step_count": 2590,
           "truncated": true
@@ -42665,6 +42673,7 @@
         "entities/InstructionOwner.md",
         "entities/InstructionRoute.md",
         "entities/InstructionRouteKind.md",
+        "entities/IntegrationSet.md",
         "entities/IntegrationUnavailable.md",
         "entities/IntegrityDifference.md",
         "entities/InvalidRequestError.md",
@@ -43834,6 +43843,7 @@
         "modules/observe.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
+        "modules/pack_interfaces.md",
         "modules/packages.md",
         "modules/packet.md",
         "modules/packet_field_policy.md",
@@ -44812,7 +44822,8 @@
       "mcp_uri": "llm-wiki://entities/BundledHelperToolchain",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/engine___init__.md",
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/domain_pack.py",
@@ -45096,7 +45107,8 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/CodeSourceClassifier",
       "outgoing_internal_links": [
-        "modules/domain_pack.md"
+        "modules/domain_pack.md",
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/domain_pack.py",
@@ -45499,10 +45511,11 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/ContextDetail",
       "outgoing_internal_links": [
-        "modules/domain_pack.md"
+        "modules/domain_pack.md",
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "ContextDetail"
     },
     {
@@ -45707,10 +45720,10 @@
       "mcp_uri": "llm-wiki://entities/ContextSource",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "ContextSource"
     },
     {
@@ -46664,10 +46677,10 @@
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "EntityPageRequest"
     },
     {
@@ -46921,10 +46934,10 @@
       "mcp_uri": "llm-wiki://entities/ExtensionSourceClassifier",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "ExtensionSourceClassifier"
     },
     {
@@ -47843,10 +47856,10 @@
       "mcp_uri": "llm-wiki://entities/HelperToolchain",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "HelperToolchain"
     },
     {
@@ -48263,6 +48276,20 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/instruction_ownership.py",
       "title": "InstructionRouteKind"
+    },
+    {
+      "canonical_path": "entities/IntegrationSet.md",
+      "id": "IntegrationSet",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/IntegrationSet",
+      "outgoing_internal_links": [
+        "modules/domain_pack.md",
+        "modules/engine___init__.md",
+        "modules/integrations.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_engine/integrations.py",
+      "title": "IntegrationSet"
     },
     {
       "canonical_path": "entities/IntegrationUnavailable.md",
@@ -50221,10 +50248,10 @@
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "ModulePageRequest"
     },
     {
@@ -50297,10 +50324,10 @@
       "mcp_uri": "llm-wiki://entities/NoHelperToolchain",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "NoHelperToolchain"
     },
     {
@@ -50886,7 +50913,6 @@
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
         "modules/documentation_worklist.md",
-        "modules/domain_pack.md",
         "modules/knowledge_generation.md",
         "modules/knowledge_projection.md",
         "modules/lint_service.md",
@@ -50909,10 +50935,10 @@
       "mcp_uri": "llm-wiki://entities/PageNamer",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "PageNamer"
     },
     {
@@ -50934,10 +50960,10 @@
       "mcp_uri": "llm-wiki://entities/PageRenderer",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "PageRenderer"
     },
     {
@@ -50948,10 +50974,10 @@
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "PageRequest"
     },
     {
@@ -52700,10 +52726,10 @@
       "mcp_uri": "llm-wiki://entities/SourceClassifier",
       "outgoing_internal_links": [
         "modules/domain_pack.md",
-        "modules/engine___init__.md"
+        "modules/pack_interfaces.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/domain_pack.py",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
       "title": "SourceClassifier"
     },
     {
@@ -55694,18 +55720,7 @@
         "entities/BundledHelperToolchain.md",
         "entities/CodeContextSource.md",
         "entities/CodeSourceClassifier.md",
-        "entities/ContextDetail.md",
-        "entities/ContextSource.md",
         "entities/DomainPack.md",
-        "entities/EntityPageRequest.md",
-        "entities/ExtensionSourceClassifier.md",
-        "entities/HelperToolchain.md",
-        "entities/ModulePageRequest.md",
-        "entities/NoHelperToolchain.md",
-        "entities/PageNamer.md",
-        "entities/PageRenderer.md",
-        "entities/PageRequest.md",
-        "entities/SourceClassifier.md",
         "entities/StemPageNamer.md",
         "modules/domain_pack.md"
       ],
@@ -56507,6 +56522,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/integrations",
       "outgoing_internal_links": [
+        "entities/IntegrationSet.md",
         "entities/IntegrationUnavailable.md",
         "modules/integrations.md"
       ],
@@ -57703,6 +57719,31 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/commands/obsidian_cmd.py",
       "title": "obsidian_cmd Module"
+    },
+    {
+      "canonical_path": "modules/pack_interfaces.md",
+      "id": "pack_interfaces",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/pack_interfaces",
+      "outgoing_internal_links": [
+        "entities/ContextDetail.md",
+        "entities/ContextSource.md",
+        "entities/EntityPageRequest.md",
+        "entities/ExtensionSourceClassifier.md",
+        "entities/HelperToolchain.md",
+        "entities/ModulePageRequest.md",
+        "entities/NoHelperToolchain.md",
+        "entities/PageNamer.md",
+        "entities/PageRenderer.md",
+        "entities/PageRequest.md",
+        "entities/SourceClassifier.md",
+        "modules/domain_pack.md",
+        "modules/pack_interfaces.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_engine/pack_interfaces.py",
+      "title": "pack_interfaces Module"
     },
     {
       "canonical_path": "modules/packages.md",
@@ -61711,6 +61752,7 @@
         "modules/engine___init__.md",
         "modules/helper_runtime.md",
         "modules/host.md",
+        "modules/integrations.md",
         "modules/knowledge_kinds.md",
         "modules/knowledge_validators.md",
         "modules/publication_targets.md"
@@ -70232,6 +70274,7 @@
         "modules/manifest_storage.md",
         "modules/migrate_runtime.md",
         "modules/migrate_service.md",
+        "modules/pack_interfaces.md",
         "modules/path_policy.md",
         "modules/python_imports.md",
         "modules/source_selection.md",
@@ -75649,6 +75692,7 @@
         "modules/knowledge_storage_lifecycle.md",
         "modules/maintenance_state.md",
         "modules/manifest_storage.md",
+        "modules/pack_interfaces.md",
         "modules/packages.md",
         "modules/path_policy.md",
         "modules/plugins.md",
@@ -76520,6 +76564,7 @@
         "modules/observe.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
+        "modules/pack_interfaces.md",
         "modules/packages.md",
         "modules/packet.md",
         "modules/packet_field_policy.md",
@@ -76843,6 +76888,7 @@
         "modules/observe.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
+        "modules/pack_interfaces.md",
         "modules/packages.md",
         "modules/packet.md",
         "modules/packet_field_policy.md",
@@ -76978,5 +77024,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:70ae440a9a3000c9d13032a795051a50827befa40685c9fc8622b1569882dc21"
+  "source_hash": "sha256:674abd2bb5e76c5cb1c3e2888e4481d23d84399ac95069001377b8f7c23ddebb"
 }

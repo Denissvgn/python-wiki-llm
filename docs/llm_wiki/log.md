@@ -4802,3 +4802,19 @@ Existing permissions, validation bounds and native authority remain separate.
 - Pages deprecated: 0
 - Semantic fields preserved: 188
 - Moved entities: none
+
+## 2026-11-20
+
+### Wiki sync
+- Source: `.`
+- Generator version: `5.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:9c1aee9e63051b48cc14d64be072ef8c4b8daec3ce6ab149ec114b8ae695870c`
+- Pages created: 2
+- Pages updated: 86
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1818
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: `ContextDetail` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `ContextSource` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `EntityPageRequest` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `ExtensionSourceClassifier` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `HelperToolchain` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `ModulePageRequest` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `NoHelperToolchain` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `PageNamer` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `PageRenderer` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `PageRequest` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `SourceClassifier` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py)

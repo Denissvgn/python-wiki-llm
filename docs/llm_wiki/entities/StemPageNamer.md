@@ -1,6 +1,6 @@
 # StemPageNamer
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:592`
+**Location:** `src/llm_wiki_cli/services/domain_pack.py:366`
 **Kind:** Class
 **Bases:** —
 **Module:** [domain_pack](../modules/domain_pack.md)

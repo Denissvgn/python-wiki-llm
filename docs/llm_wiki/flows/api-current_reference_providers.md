@@ -59,7 +59,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | current_reference_providers | current_pack | 360 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -69,7 +69,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
 
 ## Behavior
 

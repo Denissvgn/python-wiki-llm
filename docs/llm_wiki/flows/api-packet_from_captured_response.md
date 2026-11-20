@@ -219,9 +219,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | packet_from_captured_response | uses_builtin_context_source | 1336 | `uses_builtin_context_source(data not statically known)` |
-| uses_builtin_context_source | type (src/llm_wiki_cli/services…es_builtin_context_source) | 394 | `type(...)` |
-| uses_builtin_context_source | current_pack | 394 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
+| uses_builtin_context_source | type (src/llm_wiki_cli/services…es_builtin_context_source) | 239 | `type(...)` |
+| uses_builtin_context_source | current_pack | 239 | `current_pack(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
 | packet_from_captured_response | ContextPacketUnavailableError | 1338 | `ContextPacketUnavailableError('qualified context packets need the built-in context source; the active domain pack replaces it', field='context_source')` |
 | packet_from_captured_response | _packet_contract_for_request | 1343 | `_packet_contract_for_request(normalized)` |
 | _packet_contract_for_request | request.get (src/llm_wiki_cli/services…cket_contract_for_request) | 280 | `request.get('protocol')` |
@@ -242,8 +242,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `uses_builtin_context_source` | `type` | 394 |
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
+| external_call | `uses_builtin_context_source` | `type` | 239 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
 | unresolved_call | `_packet_contract_for_request` | `request.get` | 280 |
 | step_limit | `packet_from_captured_response` | `first 12 steps` | 0 |
 | truncated_flow | `packet_from_captured_response` | `depth limit` | 0 |

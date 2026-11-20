@@ -1,7 +1,7 @@
 # Engine_operation
 
 **Entry point:** `__init__.Engine.operation`
-**Modules involved:** [analysis_compatibility](../modules/analysis_compatibility.md), [domain_pack](../modules/domain_pack.md), [engine___init__](../modules/engine___init__.md), [helper_runtime](../modules/helper_runtime.md), [host](../modules/host.md), [knowledge_kinds](../modules/knowledge_kinds.md), [knowledge_validators](../modules/knowledge_validators.md), [publication_targets](../modules/publication_targets.md)
+**Modules involved:** [analysis_compatibility](../modules/analysis_compatibility.md), [domain_pack](../modules/domain_pack.md), [engine___init__](../modules/engine___init__.md), [helper_runtime](../modules/helper_runtime.md), [host](../modules/host.md), [integrations](../modules/integrations.md), [knowledge_kinds](../modules/knowledge_kinds.md), [knowledge_validators](../modules/knowledge_validators.md), [publication_targets](../modules/publication_targets.md)
 
 > Apply this engine's grants to all work inside the block.
 
@@ -16,6 +16,7 @@
 6. `knowledge_kinds.using_kinds`
 7. `domain_pack.using_pack`
 8. `publication_targets.using_publication_targets`
+9. `integrations.using_integrations`
 
 ## Touches
 
@@ -24,6 +25,7 @@
 - [engine___init__](../modules/engine___init__.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [host](../modules/host.md)
+- [integrations](../modules/integrations.md)
 - [knowledge_kinds](../modules/knowledge_kinds.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
 - [publication_targets](../modules/publication_targets.md)

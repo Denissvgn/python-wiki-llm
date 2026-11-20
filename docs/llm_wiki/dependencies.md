@@ -63,6 +63,7 @@ flowchart TD
 | [wiki_media](modules/wiki_media.md) | 17 | 0 |
 | [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | 16 | 1 |
 | [publication_config](modules/publication_config.md) | 16 | 6 |
+| [integrations](modules/integrations.md) | 16 | 0 |
 | [maintenance_state](modules/maintenance_state.md) | 16 | 4 |
 | [helper_runtime](modules/helper_runtime.md) | 15 | 4 |
 | [canonical_json](modules/canonical_json.md) | 15 | 0 |
@@ -71,7 +72,6 @@ flowchart TD
 | [knowledge_observability](modules/knowledge_observability.md) | 15 | 10 |
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
 | [extractor_helpers](modules/extractor_helpers.md) | 14 | 7 |
-| [integrations](modules/integrations.md) | 14 | 0 |
 | [context_packet_builder](modules/context_packet_builder.md) | 13 | 32 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [knowledge_packs](modules/knowledge_packs.md) | 13 | 4 |
@@ -84,7 +84,7 @@ flowchart TD
 | [documentation_queries](modules/documentation_queries.md) | 11 | 18 |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 11 | 5 |
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
-| [domain_pack](modules/domain_pack.md) | 11 | 7 |
+| [domain_pack](modules/domain_pack.md) | 11 | 8 |
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 1 |
 | [section_ownership](modules/section_ownership.md) | 11 | 5 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
@@ -318,6 +318,7 @@ flowchart TD
 | [lockfile](modules/lockfile.md) | 1 | 1 |
 | [maintenance_queue_format](modules/maintenance_queue_format.md) | 1 | 1 |
 | [maintenance_shapes](modules/maintenance_shapes.md) | 1 | 2 |
+| [pack_interfaces](modules/pack_interfaces.md) | 1 | 1 |
 | [packet_field_policy](modules/packet_field_policy.md) | 1 | 0 |
 | [search_discovery_capture](modules/search_discovery_capture.md) | 1 | 9 |
 | [search_lexical](modules/search_lexical.md) | 1 | 3 |
@@ -335,7 +336,7 @@ flowchart TD
 | [run](modules/run.md) | 0 | 3 |
 | [observe](modules/observe.md) | 0 | 1 |
 | [cli](modules/cli.md) | 0 | 41 |
-| [engine___init__](modules/engine___init__.md) | 0 | 26 |
+| [engine___init__](modules/engine___init__.md) | 0 | 27 |
 | [eval_lite___init__](modules/eval_lite___init__.md) | 0 | 1 |
 | [detectors](modules/detectors.md) | 0 | 0 |
 | [styles](modules/styles.md) | 0 | 0 |

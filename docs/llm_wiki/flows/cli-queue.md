@@ -165,7 +165,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 4537 interactions; 4507 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1425 (1424 omitted); unresolved 1 of 1545 (1544 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1425 (1424 omitted); unresolved 1 of 1544 (1543 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -179,7 +179,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 25 | - | unresolved | 1 |
-> Omission summary shows 8 of 1175 groups; 1167 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1174 groups; 1166 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -192,9 +192,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1568; effect analysis evaluated: 1182, partial: 70, unavailable: 316. Counts include steps omitted from the displayed trace.
+Source steps: 1569; effect analysis evaluated: 1183, partial: 70, unavailable: 316. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1252 source steps with known totals: observed: 7650, emitted: 7304, omitted: 346. Unavailable totals are excluded.
+Collector observations for 1253 source steps with known totals: observed: 7653, emitted: 7307, omitted: 346. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

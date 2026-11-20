@@ -6,8 +6,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 769 | [Open section](#entities) |
-| Modules | 311 | [Open section](#modules) |
+| Entities | 770 | [Open section](#entities) |
+| Modules | 312 | [Open section](#modules) |
 | Workflows | 316 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 506 | [Open section](#entry-point-flows) |
@@ -321,6 +321,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InstructionOwner](entities/InstructionOwner.md)
 - [InstructionRoute](entities/InstructionRoute.md)
 - [InstructionRouteKind](entities/InstructionRouteKind.md)
+- [IntegrationSet](entities/IntegrationSet.md)
 - [IntegrationUnavailable](entities/IntegrationUnavailable.md)
 - [IntegrityDifference](entities/IntegrityDifference.md)
 - [InvalidRequestError](entities/InvalidRequestError.md)
@@ -973,6 +974,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [observe](modules/observe.md) - Observe committed sibling-wiki changes against the last delivered checkpoint.
 - [obsidian](modules/obsidian.md) - Obsidian mirror export support for LLM Wiki.
 - [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.
+- [pack_interfaces](modules/pack_interfaces.md) - The replaceable parts of a domain pack, as the engine sees them.
 - [packages](modules/packages.md) - Discover Python packages within a source tree.
 - [packet](modules/packet.md) - Documentation-run packet services.
 - [packet_field_policy](modules/packet_field_policy.md) - Explicit field/key spaces for the frozen qualified-packet path policy.

@@ -1,6 +1,6 @@
 # Operation
 
-**Location:** `src/llm_wiki_cli/engine/__init__.py:247`
+**Location:** `src/llm_wiki_cli/engine/__init__.py:251`
 **Kind:** Class
 **Bases:** —
 **Module:** [engine___init__](../modules/engine___init__.md)
@@ -23,6 +23,7 @@ The settings in force for one engine call and everything beneath it.
 | `kinds` | `KindRegistry` | `DEFAULT_KINDS` | — |
 | `pack` | `DomainPack` | `CODE_DOCS_PACK` | — |
 | `publication_targets` | `PublicationTargetRegistry` | `DEFAULT_PUBLICATION_TARGETS` | — |
+| `integrations` | `IntegrationSet` | `DEFAULT_INTEGRATIONS` | — |
 
 ## Methods
 
@@ -44,7 +45,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [engine___init__](../modules/engine___init__.md) | 0 | `comparison_policy`, `helper_cache_dir`, `helper_preparation`, `host`, `kinds`, `pack`, `publication_targets`, `validators` |
+| [engine___init__](../modules/engine___init__.md) | 0 | `comparison_policy`, `helper_cache_dir`, `helper_preparation`, `host`, `integrations`, `kinds`, `pack`, `publication_targets`, `validators` |
 
 ### References
 

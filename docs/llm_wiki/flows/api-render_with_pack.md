@@ -102,17 +102,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_with_pack | current_pack | 240 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
-| render_with_pack | isinstance | 241 | `isinstance(request, ModulePageRequest)` |
-| render_with_pack | renderer.render_module | 242 | `renderer.render_module(request)` |
-| render_with_pack | isinstance | 243 | `isinstance(request, EntityPageRequest)` |
-| render_with_pack | renderer.render_entity | 244 | `renderer.render_entity(request)` |
-| render_with_pack | renderer.render_page | 246 | `renderer.render_page(request)` |
-| render_with_pack | isinstance | 247 | `isinstance(markdown, str)` |
-| render_with_pack | TypeError | 248 | `TypeError(...)` |
-| render_with_pack | _qualified_type_name | 249 | `_qualified_type_name(renderer)` |
-| _qualified_type_name | type | 750 | `type(value)` |
+| render_with_pack | current_pack | 110 | `current_pack(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
+| render_with_pack | isinstance | 111 | `isinstance(request, ModulePageRequest)` |
+| render_with_pack | renderer.render_module | 112 | `renderer.render_module(request)` |
+| render_with_pack | isinstance | 113 | `isinstance(request, EntityPageRequest)` |
+| render_with_pack | renderer.render_entity | 114 | `renderer.render_entity(request)` |
+| render_with_pack | renderer.render_page | 116 | `renderer.render_page(request)` |
+| render_with_pack | isinstance | 117 | `isinstance(markdown, str)` |
+| render_with_pack | TypeError | 118 | `TypeError(...)` |
+| render_with_pack | _qualified_type_name | 119 | `_qualified_type_name(renderer)` |
+| _qualified_type_name | type | 478 | `type(value)` |
 
 ### Boundary effects
 
@@ -122,15 +122,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
-| external_call | `render_with_pack` | `isinstance` | 241 |
-| unresolved_call | `render_with_pack` | `renderer.render_module` | 242 |
-| external_call | `render_with_pack` | `isinstance` | 243 |
-| unresolved_call | `render_with_pack` | `renderer.render_entity` | 244 |
-| unresolved_call | `render_with_pack` | `renderer.render_page` | 246 |
-| external_call | `render_with_pack` | `isinstance` | 247 |
-| external_call | `render_with_pack` | `TypeError` | 248 |
-| external_call | `_qualified_type_name` | `type` | 750 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
+| external_call | `render_with_pack` | `isinstance` | 111 |
+| unresolved_call | `render_with_pack` | `renderer.render_module` | 112 |
+| external_call | `render_with_pack` | `isinstance` | 113 |
+| unresolved_call | `render_with_pack` | `renderer.render_entity` | 114 |
+| unresolved_call | `render_with_pack` | `renderer.render_page` | 116 |
+| external_call | `render_with_pack` | `isinstance` | 117 |
+| external_call | `render_with_pack` | `TypeError` | 118 |
+| external_call | `_qualified_type_name` | `type` | 478 |
 
 ## Behavior
 

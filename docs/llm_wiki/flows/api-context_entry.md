@@ -89,14 +89,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| context_entry | current_pack | 385 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
-| context_entry | source.entry | 386 | `source.entry(data, detail)` |
-| context_entry | isinstance | 387 | `isinstance(entry, Mapping)` |
-| context_entry | TypeError | 388 | `TypeError(...)` |
-| context_entry | _qualified_type_name | 388 | `_qualified_type_name(source)` |
-| _qualified_type_name | type | 750 | `type(value)` |
-| context_entry | dict | 389 | `dict(entry)` |
+| context_entry | current_pack | 230 | `current_pack(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
+| context_entry | source.entry | 231 | `source.entry(data, detail)` |
+| context_entry | isinstance | 232 | `isinstance(entry, Mapping)` |
+| context_entry | TypeError | 233 | `TypeError(...)` |
+| context_entry | _qualified_type_name | 233 | `_qualified_type_name(source)` |
+| _qualified_type_name | type | 478 | `type(value)` |
+| context_entry | dict | 234 | `dict(entry)` |
 
 ### Boundary effects
 
@@ -106,11 +106,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
-| unresolved_call | `context_entry` | `source.entry` | 386 |
-| external_call | `context_entry` | `isinstance` | 387 |
-| external_call | `context_entry` | `TypeError` | 388 |
-| external_call | `_qualified_type_name` | `type` | 750 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
+| unresolved_call | `context_entry` | `source.entry` | 231 |
+| external_call | `context_entry` | `isinstance` | 232 |
+| external_call | `context_entry` | `TypeError` | 233 |
+| external_call | `_qualified_type_name` | `type` | 478 |
 
 ## Behavior
 

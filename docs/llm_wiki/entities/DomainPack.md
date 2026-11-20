@@ -1,6 +1,6 @@
 # DomainPack
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:755`
+**Location:** `src/llm_wiki_cli/services/domain_pack.py:483`
 **Kind:** Class
 **Bases:** —
 **Module:** [domain_pack](../modules/domain_pack.md)
@@ -24,6 +24,7 @@ references and analysis helpers.
 | `reference_providers` | `tuple[ReferenceProvider, ...]` | `BUILTIN_REFERENCE_PROVIDERS` | — |
 | `helper_toolchain` | `HelperToolchain` | `field(default_factory=BundledHelperToolchain)` | — |
 | `extractors` | `Mapping[str, str]` | `field(default_factory=dict, hash=False)` | — |
+| `integrations` | `IntegrationSet` | `DEFAULT_INTEGRATIONS` | — |
 
 ## Methods
 
@@ -37,6 +38,7 @@ references and analysis helpers.
 | `with_reference_provider` | `(provider: ReferenceProvider) -> DomainPack` | — | A copy of this pack that also serves ``provider``, replacing one of the same kind. |
 | `with_extractor` | `(source_kind: str, entry_point: str) -> DomainPack` | — | A copy of this pack that extracts ``source_kind`` with ``entry_point``. |
 | `with_helper_toolchain` | `(helper_toolchain: HelperToolchain) -> DomainPack` | — | A copy of this pack that prepares analysis helpers with ``helper_toolchain``. |
+| `with_integrations` | `(integrations: IntegrationSet) -> DomainPack` | — | A copy of this pack whose knowledge core uses ``integrations``. |
 | `describe` | `() -> dict[str, Any]` | — | A JSON-ready summary of the pack. |
 
 ## Relationships
@@ -51,10 +53,11 @@ flowchart LR
     n4["DomainPack.with_context_source (src/llm_wiki_cli/services/domain_pack.py)"]
     n5["DomainPack.with_extractor (src/llm_wiki_cli/services/domain_pack.py)"]
     n6["DomainPack.with_helper_toolchain (src/llm_wiki_cli/services/domain_pack.py)"]
-    n7["DomainPack.with_page_namer (src/llm_wiki_cli/services/domain_pack.py)"]
-    n8["DomainPack.with_page_renderer (src/llm_wiki_cli/services/domain_pack.py)"]
-    n9["DomainPack.with_reference_provider (src/llm_wiki_cli/services/domain_pack.py)"]
-    n10["using_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n7["DomainPack.with_integrations (src/llm_wiki_cli/services/domain_pack.py)"]
+    n8["DomainPack.with_page_namer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n9["DomainPack.with_page_renderer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n10["DomainPack.with_reference_provider (src/llm_wiki_cli/services/domain_pack.py)"]
+    n11["using_pack (src/llm_wiki_cli/services/domain_pack.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -65,6 +68,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/domain_pack.md"
     click n1 "../modules/engine___init__.md"
     click n2 "../modules/domain_pack.md"
@@ -76,13 +80,14 @@ flowchart LR
     click n8 "../modules/domain_pack.md"
     click n9 "../modules/domain_pack.md"
     click n10 "../modules/domain_pack.md"
+    click n11 "../modules/domain_pack.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [domain_pack](../modules/domain_pack.md) | 9 | `classifier`, `context_source`, `extractors`, `helper_toolchain`, `name`, `page_namer`, `page_renderer`, `reference_providers` |
+| [domain_pack](../modules/domain_pack.md) | 10 | `classifier`, `context_source`, `extractors`, `helper_toolchain`, `integrations`, `name`, `page_namer`, `page_renderer`, `reference_providers` |
 
 ### References
 
@@ -94,6 +99,7 @@ flowchart LR
 | `DomainPack.with_context_source` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `DomainPack.with_extractor` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `DomainPack.with_helper_toolchain` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `DomainPack.with_integrations` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `DomainPack.with_page_namer` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `DomainPack.with_page_renderer` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `DomainPack.with_reference_provider` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
