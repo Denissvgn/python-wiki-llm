@@ -192,8 +192,12 @@ def test_cli_implementation_includes_registered_engine_inputs(compatibility_bund
     # The producer hashes engine inputs under their llm_wiki_engine/ prefix.
     root = compatibility_bundle
     source = root / "evidence/RD-00/source/candidate-source.tar"
+    files = {}
     with tarfile.open(source) as archive:
-        files = {m.name: archive.extractfile(m).read() for m in archive.getmembers()}
+        for member in archive.getmembers():
+            stream = archive.extractfile(member)
+            assert stream is not None
+            files[member.name] = stream.read()
     registry = json.loads(files["src/llm_wiki_cli/services/analysis_contracts.json"])
     registry["engine_shared"] = ["llm_wiki_engine/store.py"]
     files["src/llm_wiki_cli/services/analysis_contracts.json"] = json.dumps(registry).encode()
