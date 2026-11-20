@@ -4818,3 +4818,23 @@ Existing permissions, validation bounds and native authority remain separate.
 - Pages deprecated: 0
 - Semantic fields preserved: 0
 - Moved entities: `ContextDetail` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `ContextSource` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `EntityPageRequest` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `ExtensionSourceClassifier` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `HelperToolchain` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `ModulePageRequest` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `NoHelperToolchain` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `PageNamer` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `PageRenderer` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `PageRequest` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py), `SourceClassifier` (src/llm_wiki_cli/services/domain_pack.py → src/llm_wiki_engine/pack_interfaces.py)
+
+## 2026-11-20
+
+### Wiki sync
+- Source: `.`
+- Generator version: `5.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:78e84ff39f08a824f67cae9db9b3ea541af92727c0d09490824e01dea5de570f`
+- Pages created: 3
+- Pages updated: 74
+- Pages metadata-only: 3
+- Pages skipped (unchanged): 1829
+- Pages deprecated: 0
+- Semantic fields preserved: 13
+- Moved entities: `BudgetedContextResponseError` (src/llm_wiki_cli/services/context_budget_format.py → src/llm_wiki_engine/context_budget_format.py), `ContextPacketError` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_engine/context_packet.py), `ContextPacketMalformedError` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_engine/context_packet.py), `ContextPacketPathPolicyError` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_engine/context_packet.py), `ContextPacketValidation` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_engine/context_packet.py), `ContextResponseError` (src/llm_wiki_cli/services/context_response_format.py → src/llm_wiki_engine/context_response_format.py), `QualifiedContextPacket` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_engine/context_packet.py), `_PacketWireContract` (src/llm_wiki_cli/services/context_packet.py → src/llm_wiki_engine/context_packet.py)
+- Flow pages initialized: 1 (api=1)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no

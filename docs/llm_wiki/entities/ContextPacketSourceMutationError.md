@@ -1,6 +1,6 @@
 # ContextPacketSourceMutationError
 
-**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:130`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:111`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet_builder](../modules/context_packet_builder.md)
@@ -25,7 +25,7 @@ A captured source or wiki anchor changed before packet return.
 ```mermaid
 flowchart LR
     n0["ContextPacketSourceMutationError (src/llm_wiki_cli/services/context_packet_builder.py)"]
-    n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
+    n1["ContextPacketError (src/llm_wiki_engine/context_packet.py)"]
     n2["_assert_selection_unchanged (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n3["_assert_source_inputs_unchanged (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n4["_assert_source_unchanged (src/llm_wiki_cli/services/context_packet_builder.py)"]

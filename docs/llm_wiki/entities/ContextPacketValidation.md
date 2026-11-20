@@ -1,6 +1,6 @@
 # ContextPacketValidation
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:255`
+**Location:** `src/llm_wiki_engine/context_packet.py:256`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -38,8 +38,8 @@ Successful structural validation with explicitly unevaluated freshness.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextPacketValidation (src/llm_wiki_cli/services/context_packet.py)"]
-    n1["validate_context_packet (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextPacketValidation (src/llm_wiki_engine/context_packet.py)"]
+    n1["validate_context_packet (src/llm_wiki_engine/context_packet.py)"]
     n1 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"

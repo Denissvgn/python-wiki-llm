@@ -44,8 +44,6 @@ A host built with ``events=`` also receives structured
 |--------|---------|
 | `..services.bootstrap_runtime` | `execute_bootstrap` |
 | `..services.bootstrap_service` | `BootstrapContractError`, `BootstrapRequest`, `BootstrapRequestError`, `BootstrapResult`, `BootstrapServiceError` |
-| `..services.context_budget_format` | `CONTEXT_BUDGET_RESPONSE_PROTOCOL`, `BudgetedContextResponseError`, `validate_budgeted_context_response` |
-| `..services.context_response_format` | `CONTEXT_RESPONSE_PROTOCOLS`, `ContextResponseError`, `validate_context_response` |
 | `..services.domain_pack` | `CODE_DOCS_PACK`, `BuiltInPageRenderer`, `BundledHelperToolchain`, `CodeContextSource`, `ContextSource`, `DomainPack`, `EntityPageRequest`, `ExtensionSourceClassifier`, `HelperToolchain`, `ModulePageRequest`, `NoHelperToolchain`, `PageNamer`, `PageRenderer`, `PageRequest`, `SourceClassifier`, `StemPageNamer`, `using_pack` |
 | `..services.helper_runtime` | `helper_operation`, `helper_policy` |
 | `..services.lint_request` | `LintRequest`, `LintRequestError` |
@@ -63,6 +61,8 @@ A host built with ``events=`` also receives structured
 | `contextlib` | `ExitStack`, `contextmanager` |
 | `dataclasses` | `dataclass` |
 | `llm_wiki_engine.analysis_compatibility` | `selected_policy`, `comparison_scope` |
+| `llm_wiki_engine.context_budget_format` | `CONTEXT_BUDGET_RESPONSE_PROTOCOL`, `BudgetedContextResponseError`, `validate_budgeted_context_response` |
+| `llm_wiki_engine.context_response_format` | `CONTEXT_RESPONSE_PROTOCOLS`, `ContextResponseError`, `validate_context_response` |
 | `llm_wiki_engine.engine_events` | `ENGINE_EVENT_SCHEMA_VERSION`, `EVENT_KINDS`, `EngineEvent`, `EventKind`, `EventSink`, `operation_identity`, `validate_engine_event` |
 | `llm_wiki_engine.extract_format` | `EXTRACT_SCHEMA_VERSION`, `ExtractPayloadError`, `validate_extract_payload` |
 | `llm_wiki_engine.host` | `ALL_CAPABILITIES`, `Host`, `HostCapabilityError`, `MessageStream`, `NoProcessHost`, `current_host`, `using_host` |
@@ -103,9 +103,9 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [HelperPreparation](../entities/HelperPreparation.md) | Type alias | 242 | `Literal['auto', 'never']` | — |
-| [Operation](../entities/Operation.md) | Class | 251 | — | The settings in force for one engine call and everything beneath it. |
-| [Engine](../entities/Engine.md) | Class | 265 | — | One configured engine; independent engines may run side by side. |
+| [HelperPreparation](../entities/HelperPreparation.md) | Type alias | 234 | `Literal['auto', 'never']` | — |
+| [Operation](../entities/Operation.md) | Class | 243 | — | The settings in force for one engine call and everything beneath it. |
+| [Engine](../entities/Engine.md) | Class | 257 | — | One configured engine; independent engines may run side by side. |
 
 ## Functions
 

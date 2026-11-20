@@ -1,6 +1,6 @@
 # ContextPacketError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:170`
+**Location:** `src/llm_wiki_engine/context_packet.py:171`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -22,13 +22,13 @@ Base failure for context-packet construction and consumption.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextPacketError (src/llm_wiki_engine/context_packet.py)"]
     n1["ValueError"]
-    n2["ContextPacketMalformedError (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["ContextPacketPathPolicyError (src/llm_wiki_cli/services/context_packet.py)"]
-    n4["ContextPacketAuthorityError (src/llm_wiki_cli/services/context_packet_builder.py)"]
-    n5["ContextPacketSourceMutationError (src/llm_wiki_cli/services/context_packet_builder.py)"]
-    n6["ContextPacketUnavailableError (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n2["ContextPacketAuthorityError (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n3["ContextPacketSourceMutationError (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n4["ContextPacketUnavailableError (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n5["ContextPacketMalformedError (src/llm_wiki_engine/context_packet.py)"]
+    n6["ContextPacketPathPolicyError (src/llm_wiki_engine/context_packet.py)"]
     n7["src/llm_wiki_cli/eval_lite/planner.py"]
     n8["src/llm_wiki_cli/services/context_packet_builder.py"]
     n9["src/llm_wiki_cli/services/context_service.py"]
@@ -44,11 +44,11 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     click n0 "../modules/context_packet.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_packet.md"
+    click n2 "../modules/context_packet_builder.md"
+    click n3 "../modules/context_packet_builder.md"
     click n4 "../modules/context_packet_builder.md"
-    click n5 "../modules/context_packet_builder.md"
-    click n6 "../modules/context_packet_builder.md"
+    click n5 "../modules/context_packet.md"
+    click n6 "../modules/context_packet.md"
     click n7 "../modules/planner.md"
     click n8 "../modules/context_packet_builder.md"
     click n9 "../modules/context_service.md"
@@ -66,11 +66,11 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `ValueError` | — |
-| Subclass | `ContextPacketMalformedError` | [context_packet](../modules/context_packet.md) |
-| Subclass | `ContextPacketPathPolicyError` | [context_packet](../modules/context_packet.md) |
 | Subclass | `ContextPacketAuthorityError` | [context_packet_builder](../modules/context_packet_builder.md) |
 | Subclass | `ContextPacketSourceMutationError` | [context_packet_builder](../modules/context_packet_builder.md) |
 | Subclass | `ContextPacketUnavailableError` | [context_packet_builder](../modules/context_packet_builder.md) |
+| Subclass | `ContextPacketMalformedError` | [context_packet](../modules/context_packet.md) |
+| Subclass | `ContextPacketPathPolicyError` | [context_packet](../modules/context_packet.md) |
 
 ### References
 

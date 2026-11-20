@@ -1,6 +1,6 @@
 # IntegrationSet
 
-**Location:** `src/llm_wiki_engine/integrations.py:71`
+**Location:** `src/llm_wiki_engine/integrations.py:75`
 **Kind:** Class
 **Bases:** —
 **Module:** [integrations](../modules/integrations.md)

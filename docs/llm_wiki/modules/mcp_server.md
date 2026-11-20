@@ -27,7 +27,6 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `..config` | `IDE_AGENTS`, `PathValidationError`, `get_agent_config_path`, `read_config`, `validate_path`, `validate_source_root` |
 | `.bootstrap_runtime` | `build_module_page_map` |
 | `.context_budget` | `validate_request` |
-| `.context_packet` | `ContextPacketError` |
 | `.context_packet_builder` | `describe_context_packet_error`, `build_qualified_context`, `describe_context_packet_error` |
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
@@ -51,6 +50,7 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `llm_wiki_engine` | `analysis_compatibility`, `circuit_breaker`, `wiki_surface` |
 | `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
+| `llm_wiki_engine.context_packet` | `ContextPacketError` |
 | `llm_wiki_engine.io` | `read_md` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `llm_wiki_engine.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |

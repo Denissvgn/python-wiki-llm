@@ -1,6 +1,6 @@
 # ContextResponseError
 
-**Location:** `src/llm_wiki_cli/services/context_response_format.py:41`
+**Location:** `src/llm_wiki_engine/context_response_format.py:41`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_response_format](../modules/context_response_format.md)
@@ -22,17 +22,17 @@ A context protocol response does not follow its format.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextResponseError (src/llm_wiki_cli/services/context_response_format.py)"]
+    n0["ContextResponseError (src/llm_wiki_engine/context_response_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["_exact (src/llm_wiki_cli/services/context_response_format.py)"]
-    n4["_object (src/llm_wiki_cli/services/context_response_format.py)"]
-    n5["_request (src/llm_wiki_cli/services/context_response_format.py)"]
-    n6["_text (src/llm_wiki_cli/services/context_response_format.py)"]
-    n7["_validate (src/llm_wiki_cli/services/context_response_format.py)"]
-    n8["_validate_error (src/llm_wiki_cli/services/context_response_format.py)"]
-    n9["_validate_success (src/llm_wiki_cli/services/context_response_format.py)"]
-    n10["validate_context_response (src/llm_wiki_cli/services/context_response_format.py)"]
+    n3["_exact (src/llm_wiki_engine/context_response_format.py)"]
+    n4["_object (src/llm_wiki_engine/context_response_format.py)"]
+    n5["_request (src/llm_wiki_engine/context_response_format.py)"]
+    n6["_text (src/llm_wiki_engine/context_response_format.py)"]
+    n7["_validate (src/llm_wiki_engine/context_response_format.py)"]
+    n8["_validate_error (src/llm_wiki_engine/context_response_format.py)"]
+    n9["_validate_success (src/llm_wiki_engine/context_response_format.py)"]
+    n10["validate_context_response (src/llm_wiki_engine/context_response_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

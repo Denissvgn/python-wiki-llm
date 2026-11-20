@@ -18,7 +18,7 @@ flowchart TD
 
 > These additional coupling groups include deferred, `TYPE_CHECKING`, or erased TypeScript imports. Startup cycles, including any smaller cycles within these groups, are listed above.
 
-- [cli_declarations](modules/cli_declarations.md) ⇄ [go_extractor](modules/go_extractor.md) ⇄ [haskell_extractor](modules/haskell_extractor.md) ⇄ [python_extractor](modules/python_extractor.md) ⇄ [rust_extractor](modules/rust_extractor.md) ⇄ [analysis_capture](modules/analysis_capture.md) ⇄ [api_contracts](modules/api_contracts.md) ⇄ [behavior_reference](modules/behavior_reference.md) ⇄ [bootstrap_recovery](modules/bootstrap_recovery.md) ⇄ [bootstrap_runtime](modules/bootstrap_runtime.md) ⇄ [canonical_pages](modules/canonical_pages.md) ⇄ [change_selection](modules/change_selection.md) ⇄ [cli_reference](modules/cli_reference.md) ⇄ [context_budget](modules/context_budget.md) ⇄ [context_packet](modules/context_packet.md) ⇄ [context_packet_builder](modules/context_packet_builder.md) ⇄ [context_service](modules/context_service.md) ⇄ [current_contracts](modules/current_contracts.md) ⇄ [services_dependencies](modules/services_dependencies.md) ⇄ [dependency_versions](modules/dependency_versions.md) ⇄ [documentation_queries](modules/documentation_queries.md) ⇄ [documentation_query_builder](modules/documentation_query_builder.md) ⇄ [domain_pack](modules/domain_pack.md) ⇄ [entrypoints](modules/entrypoints.md) ⇄ [extraction_service](modules/extraction_service.md) ⇄ [extractor_helpers](modules/extractor_helpers.md) ⇄ [flow_followup](modules/flow_followup.md) ⇄ [health_details](modules/health_details.md) ⇄ [helper_cache](modules/helper_cache.md) ⇄ [helper_preparation](modules/helper_preparation.md) ⇄ [helper_runtime](modules/helper_runtime.md) ⇄ [implementation_evidence](modules/implementation_evidence.md) ⇄ [imports](modules/imports.md) ⇄ [infrastructure_inventory](modules/infrastructure_inventory.md) ⇄ [infrastructure_sync](modules/infrastructure_sync.md) ⇄ [inventory_cache](modules/inventory_cache.md) ⇄ [knowledge_generation](modules/knowledge_generation.md) ⇄ [knowledge_orchestration](modules/knowledge_orchestration.md) ⇄ [knowledge_reuse](modules/knowledge_reuse.md) ⇄ [lint_service](modules/lint_service.md) ⇄ [maintenance_queue](modules/maintenance_queue.md) ⇄ [maintenance_service](modules/maintenance_service.md) ⇄ [metrics](modules/metrics.md) ⇄ [module_coverage](modules/module_coverage.md) ⇄ [module_maps](modules/module_maps.md) ⇄ [packages](modules/packages.md) ⇄ [python_calls](modules/python_calls.md) ⇄ [python_implementation](modules/python_implementation.md) ⇄ [python_observations](modules/python_observations.md) ⇄ [reference_providers](modules/reference_providers.md) ⇄ [relationships](modules/relationships.md) ⇄ [search_service](modules/search_service.md) ⇄ [source_path_diagnostics](modules/source_path_diagnostics.md) ⇄ [source_snapshot](modules/source_snapshot.md) ⇄ [sync_analysis](modules/sync_analysis.md) ⇄ [sync_analysis_cache](modules/sync_analysis_cache.md) ⇄ [sync_transitions](modules/sync_transitions.md) ⇄ [task_compact](modules/task_compact.md) ⇄ [task_context](modules/task_context.md) ⇄ [task_context_v2](modules/task_context_v2.md) ⇄ [task_contract](modules/task_contract.md) ⇄ [task_evidence](modules/task_evidence.md) ⇄ [task_implementation](modules/task_implementation.md) ⇄ [team](modules/team.md) ⇄ [wiki_lifecycle](modules/wiki_lifecycle.md)
+- [cli_declarations](modules/cli_declarations.md) ⇄ [go_extractor](modules/go_extractor.md) ⇄ [haskell_extractor](modules/haskell_extractor.md) ⇄ [python_extractor](modules/python_extractor.md) ⇄ [rust_extractor](modules/rust_extractor.md) ⇄ [analysis_capture](modules/analysis_capture.md) ⇄ [api_contracts](modules/api_contracts.md) ⇄ [behavior_reference](modules/behavior_reference.md) ⇄ [bootstrap_recovery](modules/bootstrap_recovery.md) ⇄ [bootstrap_runtime](modules/bootstrap_runtime.md) ⇄ [canonical_pages](modules/canonical_pages.md) ⇄ [change_selection](modules/change_selection.md) ⇄ [cli_reference](modules/cli_reference.md) ⇄ [context_budget](modules/context_budget.md) ⇄ [context_packet_builder](modules/context_packet_builder.md) ⇄ [context_service](modules/context_service.md) ⇄ [current_contracts](modules/current_contracts.md) ⇄ [services_dependencies](modules/services_dependencies.md) ⇄ [dependency_versions](modules/dependency_versions.md) ⇄ [documentation_queries](modules/documentation_queries.md) ⇄ [documentation_query_builder](modules/documentation_query_builder.md) ⇄ [domain_pack](modules/domain_pack.md) ⇄ [entrypoints](modules/entrypoints.md) ⇄ [extraction_service](modules/extraction_service.md) ⇄ [extractor_helpers](modules/extractor_helpers.md) ⇄ [flow_followup](modules/flow_followup.md) ⇄ [health_details](modules/health_details.md) ⇄ [helper_cache](modules/helper_cache.md) ⇄ [helper_preparation](modules/helper_preparation.md) ⇄ [helper_runtime](modules/helper_runtime.md) ⇄ [implementation_evidence](modules/implementation_evidence.md) ⇄ [imports](modules/imports.md) ⇄ [infrastructure_inventory](modules/infrastructure_inventory.md) ⇄ [infrastructure_sync](modules/infrastructure_sync.md) ⇄ [inventory_cache](modules/inventory_cache.md) ⇄ [knowledge_generation](modules/knowledge_generation.md) ⇄ [knowledge_orchestration](modules/knowledge_orchestration.md) ⇄ [knowledge_reuse](modules/knowledge_reuse.md) ⇄ [lint_service](modules/lint_service.md) ⇄ [maintenance_queue](modules/maintenance_queue.md) ⇄ [maintenance_service](modules/maintenance_service.md) ⇄ [metrics](modules/metrics.md) ⇄ [module_coverage](modules/module_coverage.md) ⇄ [module_maps](modules/module_maps.md) ⇄ [packages](modules/packages.md) ⇄ [python_calls](modules/python_calls.md) ⇄ [python_implementation](modules/python_implementation.md) ⇄ [python_observations](modules/python_observations.md) ⇄ [reference_providers](modules/reference_providers.md) ⇄ [relationships](modules/relationships.md) ⇄ [search_service](modules/search_service.md) ⇄ [source_path_diagnostics](modules/source_path_diagnostics.md) ⇄ [source_snapshot](modules/source_snapshot.md) ⇄ [sync_analysis](modules/sync_analysis.md) ⇄ [sync_analysis_cache](modules/sync_analysis_cache.md) ⇄ [sync_transitions](modules/sync_transitions.md) ⇄ [task_compact](modules/task_compact.md) ⇄ [task_context](modules/task_context.md) ⇄ [task_context_v2](modules/task_context_v2.md) ⇄ [task_contract](modules/task_contract.md) ⇄ [task_evidence](modules/task_evidence.md) ⇄ [task_implementation](modules/task_implementation.md) ⇄ [team](modules/team.md) ⇄ [wiki_lifecycle](modules/wiki_lifecycle.md)
 - [knowledge_cmd](modules/knowledge_cmd.md) ⇄ [knowledge_storage_cmd](modules/knowledge_storage_cmd.md)
 - [calibration___init__](modules/calibration___init__.md) ⇄ [broker](modules/broker.md) ⇄ [calibration_contracts](modules/calibration_contracts.md) ⇄ [controller](modules/controller.md) ⇄ [host_broker](modules/host_broker.md) ⇄ [documentation_run___init__](modules/documentation_run___init__.md) ⇄ [documentation_run_contracts](modules/documentation_run_contracts.md) ⇄ [documentation_run_dependencies](modules/documentation_run_dependencies.md) ⇄ [export](modules/export.md) ⇄ [integrity](modules/integrity.md) ⇄ [packet](modules/packet.md) ⇄ [documentation_run_prepare](modules/documentation_run_prepare.md) ⇄ [publication](modules/publication.md) ⇄ [record](modules/record.md) ⇄ [refresh](modules/refresh.md) ⇄ [documentation_run_schema](modules/documentation_run_schema.md) ⇄ [verify](modules/verify.md) ⇄ [workspace](modules/workspace.md)
 - [ci_report](modules/ci_report.md) ⇄ [doctor_service](modules/doctor_service.md) ⇄ [health_policy](modules/health_policy.md)
@@ -60,32 +60,32 @@ flowchart TD
 | [progress](modules/progress.md) | 19 | 1 |
 | [markdown_sections](modules/markdown_sections.md) | 18 | 1 |
 | [plugins](modules/plugins.md) | 17 | 3 |
+| [integrations](modules/integrations.md) | 17 | 0 |
 | [wiki_media](modules/wiki_media.md) | 17 | 0 |
 | [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | 16 | 1 |
 | [publication_config](modules/publication_config.md) | 16 | 6 |
-| [integrations](modules/integrations.md) | 16 | 0 |
+| [canonical_json](modules/canonical_json.md) | 16 | 0 |
 | [maintenance_state](modules/maintenance_state.md) | 16 | 4 |
 | [helper_runtime](modules/helper_runtime.md) | 15 | 4 |
-| [canonical_json](modules/canonical_json.md) | 15 | 0 |
 | [immutable](modules/immutable.md) | 15 | 0 |
 | [knowledge_graph](modules/knowledge_graph.md) | 15 | 6 |
 | [knowledge_observability](modules/knowledge_observability.md) | 15 | 10 |
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
 | [extractor_helpers](modules/extractor_helpers.md) | 14 | 7 |
-| [context_packet_builder](modules/context_packet_builder.md) | 13 | 32 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [knowledge_packs](modules/knowledge_packs.md) | 13 | 4 |
 | [paths](modules/paths.md) | 13 | 1 |
 | [request_json](modules/request_json.md) | 13 | 0 |
 | [source_retirement](modules/source_retirement.md) | 13 | 6 |
 | [analysis_capture](modules/analysis_capture.md) | 12 | 6 |
+| [context_packet_builder](modules/context_packet_builder.md) | 12 | 32 |
 | [knowledge_loader](modules/knowledge_loader.md) | 12 | 10 |
-| [context_packet](modules/context_packet.md) | 11 | 14 |
 | [documentation_queries](modules/documentation_queries.md) | 11 | 18 |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 11 | 5 |
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
 | [domain_pack](modules/domain_pack.md) | 11 | 8 |
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 1 |
+| [context_packet](modules/context_packet.md) | 11 | 14 |
 | [section_ownership](modules/section_ownership.md) | 11 | 5 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [workspace](modules/workspace.md) | 10 | 3 |
@@ -101,7 +101,6 @@ flowchart TD
 | [context_service](modules/context_service.md) | 9 | 37 |
 | [integrity](modules/integrity.md) | 9 | 8 |
 | [entrypoints](modules/entrypoints.md) | 9 | 5 |
-| [implementation_evidence](modules/implementation_evidence.md) | 9 | 3 |
 | [inventory_cache](modules/inventory_cache.md) | 9 | 13 |
 | [publication_candidate](modules/publication_candidate.md) | 9 | 14 |
 | [python_implementation](modules/python_implementation.md) | 9 | 2 |
@@ -110,6 +109,7 @@ flowchart TD
 | [manifest_storage](modules/manifest_storage.md) | 9 | 7 |
 | [workflow_profile](modules/workflow_profile.md) | 9 | 2 |
 | [helper_cache](modules/helper_cache.md) | 8 | 5 |
+| [implementation_evidence](modules/implementation_evidence.md) | 8 | 4 |
 | [imports](modules/imports.md) | 8 | 6 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 3 |
 | [api](modules/api.md) | 7 | 67 |
@@ -209,7 +209,6 @@ flowchart TD
 | [python_contracts](modules/python_contracts.md) | 2 | 1 |
 | [python_extractor](modules/python_extractor.md) | 2 | 9 |
 | [broker](modules/broker.md) | 2 | 6 |
-| [context_response_format](modules/context_response_format.md) | 2 | 4 |
 | [context_session](modules/context_session.md) | 2 | 12 |
 | [diagrams](modules/diagrams.md) | 2 | 2 |
 | [dockerfile_parser](modules/dockerfile_parser.md) | 2 | 0 |
@@ -239,7 +238,9 @@ flowchart TD
 | [upgrade_service](modules/upgrade_service.md) | 2 | 1 |
 | [versioning](modules/versioning.md) | 2 | 0 |
 | [wiki_git_policy](modules/wiki_git_policy.md) | 2 | 0 |
+| [context_response_format](modules/context_response_format.md) | 2 | 4 |
 | [engine_events](modules/engine_events.md) | 2 | 0 |
+| [implementation_summary](modules/implementation_summary.md) | 2 | 1 |
 | [infrastructure_state](modules/infrastructure_state.md) | 2 | 2 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [maintenance_recovery](modules/maintenance_recovery.md) | 2 | 8 |
@@ -287,7 +288,6 @@ flowchart TD
 | [bootstrap_recovery](modules/bootstrap_recovery.md) | 1 | 9 |
 | [canonical_pages](modules/canonical_pages.md) | 1 | 3 |
 | [capability_diagnostics](modules/capability_diagnostics.md) | 1 | 8 |
-| [context_budget_format](modules/context_budget_format.md) | 1 | 4 |
 | [dependency_versions](modules/dependency_versions.md) | 1 | 3 |
 | [documentation_claim_evidence](modules/documentation_claim_evidence.md) | 1 | 4 |
 | [documentation_model_policy](modules/documentation_model_policy.md) | 1 | 2 |
@@ -313,6 +313,7 @@ flowchart TD
 | [wiki_git_delivery](modules/wiki_git_delivery.md) | 1 | 8 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
 | [yaml_formats](modules/yaml_formats.md) | 1 | 1 |
+| [context_budget_format](modules/context_budget_format.md) | 1 | 4 |
 | [extract_format](modules/extract_format.md) | 1 | 2 |
 | [knowledge_stream_audit](modules/knowledge_stream_audit.md) | 1 | 13 |
 | [lockfile](modules/lockfile.md) | 1 | 1 |

@@ -220,14 +220,14 @@ flowchart LR
 | validate_knowledge_artifacts | _validator_identity | 318 | `_validator_identity(data not statically known)` |
 | _validator_identity | maintenance_core | 374 | `maintenance_state.maintenance_core(data not statically known)` |
 | maintenance_core | attributes | 958 | `attributes('implementation_evidence', 'validate_implementation_evidence')` |
-| attributes | provider | 180 | `provider(capability)` |
-| provider | ValueError (src/llm_wiki_engine/integrations.py:provider) | 169 | `ValueError(...)` |
-| provider | _resolve | 170 | `_resolve(capability)` |
-| _resolve | _SCOPE.get | 158 | `_SCOPE.get(data not statically known)` |
-| _resolve | scope.modules.get | 160 | `scope.modules.get(capability)` |
-| _resolve | _PROVIDED.get | 163 | `_PROVIDED.get(capability)` |
-| provider | IntegrationUnavailable | 172 | `IntegrationUnavailable(...)` |
-| provider | importlib.import_module | 175 | `importlib.import_module(module)` |
+| attributes | provider | 184 | `provider(capability)` |
+| provider | ValueError (src/llm_wiki_engine/integrations.py:provider) | 173 | `ValueError(...)` |
+| provider | _resolve | 174 | `_resolve(capability)` |
+| _resolve | _SCOPE.get | 162 | `_SCOPE.get(data not statically known)` |
+| _resolve | scope.modules.get | 164 | `scope.modules.get(capability)` |
+| _resolve | _PROVIDED.get | 167 | `_PROVIDED.get(capability)` |
+| provider | IntegrationUnavailable | 176 | `IntegrationUnavailable(...)` |
+| provider | importlib.import_module | 179 | `importlib.import_module(module)` |
 
 ### Boundary effects
 
@@ -237,11 +237,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `provider` | `ValueError` | 169 |
-| unresolved_call | `_resolve` | `_SCOPE.get` | 158 |
-| unresolved_call | `_resolve` | `scope.modules.get` | 160 |
-| unresolved_call | `_resolve` | `_PROVIDED.get` | 163 |
-| external_call | `provider` | `importlib.import_module` | 175 |
+| external_call | `provider` | `ValueError` | 173 |
+| unresolved_call | `_resolve` | `_SCOPE.get` | 162 |
+| unresolved_call | `_resolve` | `scope.modules.get` | 164 |
+| unresolved_call | `_resolve` | `_PROVIDED.get` | 167 |
+| external_call | `provider` | `importlib.import_module` | 179 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

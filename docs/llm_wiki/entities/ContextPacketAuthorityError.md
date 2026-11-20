@@ -1,6 +1,6 @@
 # ContextPacketAuthorityError
 
-**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:152`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:133`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet_builder](../modules/context_packet_builder.md)
@@ -27,7 +27,7 @@ Carries the bounded `maintenance-authority-unavailable` diagnostic shared by pac
 ```mermaid
 flowchart LR
     n0["ContextPacketAuthorityError (src/llm_wiki_cli/services/context_packet_builder.py)"]
-    n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
+    n1["ContextPacketError (src/llm_wiki_engine/context_packet.py)"]
     n2["capture_context_read (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n3["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n0 --> n1

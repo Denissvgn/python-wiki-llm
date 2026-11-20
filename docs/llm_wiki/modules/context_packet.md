@@ -1,6 +1,6 @@
 # context_packet Module
 
-**Path:** `src/llm_wiki_cli/services/context_packet.py`
+**Path:** `src/llm_wiki_engine/context_packet.py`
 
 ## Description
 
@@ -31,8 +31,8 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet_builder` |
-| `.implementation_evidence` | `validate_implementation_summary` |
+| `.implementation_summary` | `validate_implementation_summary` |
+| `.integrations` | `IntegrationUnavailable`, `provider` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `dataclass` |
@@ -61,7 +61,7 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/context_packet.py"]
+    n1["src/llm_wiki_engine/context_packet.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/context_packet.md"
@@ -76,18 +76,18 @@ flowchart LR
 | Inbound | `src` (11) |
 | Outbound | `src` (14) |
 
-> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 123 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 170 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 176 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 189 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 218 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 255 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 124 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 171 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 177 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 190 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 219 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 256 | — | Successful structural validation with explicitly unevaluated freshness. |
 
 ## Functions
 

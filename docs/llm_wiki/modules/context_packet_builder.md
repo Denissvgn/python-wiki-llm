@@ -23,7 +23,6 @@ lives in :mod:`context_packet`, which loads none of the builders.
 | `.` | `context_service` |
 | `..` | `__version__` |
 | `.change_selection` | `select_changes` |
-| `.context_packet` | `_context_policy_digest`, `_domain_hash`, `_encode_packet_payload`, `_freeze_json`, `_KNOWLEDGE_PACKET_CONTRACT`, `_LEGACY_PACKET_CONTRACT`, `_LIMITATION_RE`, `_packet_id`, `_packet_limitations`, `_PacketWireContract`, `_path_policy_receipt`, `_thaw_json`, `CONTEXT_PACKET_ASSURANCE_LEVEL`, `ContextPacketError`, `ContextPacketMalformedError`, `ContextPacketPathPolicyError`, `QualifiedContextPacket`, `validate_context_packet` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
@@ -43,6 +42,7 @@ lives in :mod:`context_packet`, which loads none of the builders.
 | `enum` | `Enum` |
 | `functools` | `wraps` |
 | `llm_wiki_engine` | `wiki_surface` |
+| `llm_wiki_engine.context_packet` | `_context_policy_digest`, `_domain_hash`, `_encode_packet_payload`, `_freeze_json`, `_KNOWLEDGE_PACKET_CONTRACT`, `_LEGACY_PACKET_CONTRACT`, `_LIMITATION_RE`, `_packet_id`, `_packet_limitations`, `_PacketWireContract`, `_path_policy_receipt`, `_thaw_json`, `CONTEXT_PACKET_ASSURANCE_LEVEL`, `ContextPacketError`, `ContextPacketMalformedError`, `ContextPacketPathPolicyError`, `QualifiedContextPacket`, `validate_context_packet` |
 | `llm_wiki_engine.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `llm_wiki_engine.filesystem_guard` | `fresh_no_follow_stat`, `guard_windows_directory_chain`, `hold_windows_readonly_file` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
@@ -85,7 +85,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (13) |
+| Inbound | `src` (12) |
 | Outbound | `src` (32) |
 
 > All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
@@ -94,12 +94,12 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 130 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
-| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 142 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 152 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 292 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 345 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 371 | — | Consumer-time comparison against one fresh official read. |
+| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 111 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
+| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 123 | `ContextPacketError` | A required read-only packet capability is unavailable. |
+| [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 133 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 273 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 326 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 352 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 

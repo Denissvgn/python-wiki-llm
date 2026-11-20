@@ -1,6 +1,6 @@
 # context_budget_format Module
 
-**Path:** `src/llm_wiki_cli/services/context_budget_format.py`
+**Path:** `src/llm_wiki_engine/context_budget_format.py`
 
 ## Description
 
@@ -33,28 +33,28 @@ and the named counter; ``context_budget.validate_budgeted_context`` does both.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_cli/services/context_budget_format.py"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
-    n3["src/llm_wiki_cli/services/context_response_format.py"]
-    n4["src/llm_wiki_engine/context_request_format.py"]
+    n1["src/llm_wiki_engine/context_budget_format.py"]
+    n2["src/llm_wiki_engine/context_packet.py"]
+    n3["src/llm_wiki_engine/context_request_format.py"]
+    n4["src/llm_wiki_engine/context_response_format.py"]
     n5["src/llm_wiki_engine/contracts.py"]
     n0 --> n1
-    n0 --> n3
+    n0 --> n4
     n1 --> n2
     n1 --> n3
     n1 --> n4
     n1 --> n5
-    n2 --> n4
+    n2 --> n3
     n2 --> n5
-    n3 --> n2
-    n3 --> n4
     n3 --> n5
+    n4 --> n2
+    n4 --> n3
     n4 --> n5
     click n0 "../modules/engine___init__.md"
     click n1 "../modules/context_budget_format.md"
     click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_response_format.md"
-    click n4 "../modules/context_request_format.md"
+    click n3 "../modules/context_request_format.md"
+    click n4 "../modules/context_response_format.md"
     click n5 "../modules/llm_wiki_engine_contracts.md"
 ```
 
@@ -64,8 +64,8 @@ flowchart LR
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |
-| Outbound | [context_response_format](../modules/context_response_format.md) |
 | Outbound | [context_request_format](../modules/context_request_format.md) |
+| Outbound | [context_response_format](../modules/context_response_format.md) |
 | Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
 ## Classes

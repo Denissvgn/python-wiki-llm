@@ -25,7 +25,7 @@ the existing structural-path/URI rules for their nested string fields.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/context_packet.py"]
+    n0["src/llm_wiki_engine/context_packet.py"]
     n1["src/llm_wiki_engine/packet_field_policy.py"]
     n0 --> n1
     click n0 "../modules/context_packet.md"
