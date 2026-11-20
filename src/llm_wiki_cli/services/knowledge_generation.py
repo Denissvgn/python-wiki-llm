@@ -449,6 +449,8 @@ def _build_knowledge_generation_plan(
         historical.check_content(historical_records, inputs.content_by_page)
     except SourceRetirementError as exc:
         raise KnowledgeGenerationError("manifest_generation_inputs.historical_source_files", str(exc)) from exc
+    if historical.release_events(manifest.generation_inputs):
+        knowledge_extensions[historical.RELEASE_EXTENSION] = manifest.generation_inputs[historical.RELEASES]
     for page_path, row in historical_records.items():
         concept_implementations.setdefault(page_path, {})[historical.EXTENSION] = row
     for page_path, owner in retired_mappings.items():

@@ -6,6 +6,9 @@ from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
+import shutil
+import subprocess
 from unittest.mock import patch
 
 import pytest
@@ -17,7 +20,7 @@ from llm_wiki_cli.services.documentation_native import evaluate_documentation_na
 from llm_wiki_engine.knowledge_evidence import hash_json
 from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_engine.knowledge_model import ComputedFreshness, EvidenceState, knowledge_index_to_payload
-from llm_wiki_engine.sync_manifest import SyncManifest
+from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest
 
 
 SOURCE = (
@@ -39,6 +42,8 @@ PROSE = {
 }
 REGISTRY = "historical_source_files"
 EXTENSION = "llm-wiki/historical-source-file"
+RELEASES = "historical_source_releases"
+RELEASE_EXTENSION = "llm-wiki/historical-source-releases"
 HEADING = "### Historical source files"
 HEADER = "> ⚠️ **Stale:** Source no longer found in codebase. Run `llm-wiki lint` to audit.\n\n"
 
@@ -99,10 +104,10 @@ def _acknowledge(wiki):
     return {rid: deepcopy(owner["records"][rid]["acknowledgment_history"]) for rid in selected.values()}
 
 
-def _call(capsys, *args, success=True):
+def _call(capsys, *args, success=True, json_output=False):
     capsys.readouterr()
     common = ["--src-dir", "src", "--wiki-dir", "wiki"]
-    if args[0] != "migrate":
+    if args[0] not in {"migrate", "upgrade"}:
         common.extend(("--jobs", "1"))
     with patch("sys.argv", ["llm-wiki", *args, *common]):
         try:
@@ -117,11 +122,40 @@ def _call(capsys, *args, success=True):
     else:
         assert code != 0, log.err + log.out
         assert "unrecognized arguments" not in log.err
+    if json_output:
+        return json.loads(log.out)
     return log.out + log.err
 
 
 def _retire(capsys, *, success=True):
     return _call(capsys, "sync", "--retire-missing-source", SOURCE_PATH, success=success)
+
+
+def _release_args(pages):
+    return [f"--release-historical-page={path}" for path in pages]
+
+
+def _preview_release(capsys, wiki, pages):
+    before = _snapshot(wiki)
+    output = _call(capsys, "sync", "--dry-run", *_release_args(pages))
+    matches = re.findall(r"^\s*Historical release digest: (sha256:[0-9a-f]{64})\s*$", output, re.MULTILINE)
+    assert len(matches) == 1, output
+    assert _snapshot(wiki) == before
+    return matches[0]
+
+
+def _release(capsys, pages, digest):
+    return _call(capsys, "sync", *_release_args(pages), f"--expected-historical-release={digest}")
+
+
+def _release_events(wiki):
+    native = load_knowledge_state(wiki)
+    assert native.validated_artifacts is not None and native.knowledge is not None
+    ledger = SyncManifest.load(wiki).generation_inputs[RELEASES]
+    assert native.knowledge.extensions[RELEASE_EXTENSION] == ledger
+    events = {event["digest"]: event["basis"] for event in ledger["events"]}
+    assert len(events) == len(ledger["events"])
+    return events
 
 
 def _new_producer(monkeypatch):
@@ -271,30 +305,332 @@ def test_unowned_stale_page_is_not_an_enrolled_source(project, capsys):
 
 
 
-def test_edited_enrolled_markdown_does_not_keep_an_unearned_lint_exemption(project, capsys):
+def _assert_invalid_history_reports(capsys, *, entity_present, undocumented=None):
+    lint = api.lint_wiki("src", "wiki", strict=True)
+    ci = _call(capsys, "ci-check", "--no-report", "--format", "json", success=False, json_output=True)
+    for report in (lint, ci):
+        assert not report["ok"] and report["issue_count"] == len(report["issues"])
+        issues = report["issues"]
+        assert any(issue.get("reason_code") == "historical-source-invalid" for issue in issues)
+        assert any(issue["category"] == "stale_modules" and issue.get("target") == "former" for issue in issues)
+        if entity_present:
+            assert any(issue["category"] == "stale_entities" and issue.get("target") == "ReadingWindow" for issue in issues)
+        else:
+            assert any(ENTITY in issue["message"] for issue in issues)
+        if undocumented:
+            assert any(issue["category"] == "undocumented_classes" and issue.get("target") == undocumented for issue in issues)
+
+
+@pytest.mark.parametrize("target_enrolled", [False, True], ids=["missing-projection", "different-projection"])
+def test_manifest_only_history_cannot_exempt_stale_pages(project, capsys, target_enrolled):
+    src, wiki = project
+    comparison = shutil.copytree(wiki, src.parent / "comparison")
+    # A legitimate independently committed generation differs only in an unrelated
+    # page. Its historical rows have the same owners and page bytes, but point
+    # to a genuinely different predecessor knowledge digest.
+    unrelated = comparison / "entities/CurrentReading.md"
+    unrelated.write_bytes(unrelated.read_bytes() + b"\n## Notes\n\nA different editorial revision.\n")
+    api.sync_wiki("src", "comparison")
+    (src / SOURCE_PATH).unlink()
+    api.sync_wiki("src", "comparison", retire_missing_sources=[SOURCE_PATH])
+    genuine = SyncManifest.load(comparison).generation_inputs[REGISTRY]
+    if target_enrolled:
+        _retire(capsys)
+    else:
+        _call(capsys, "sync")
+    before = _snapshot(wiki)
+    manifest = SyncManifest.load(wiki)
+    if target_enrolled:
+        previous = manifest.generation_inputs[REGISTRY]["pages"]
+        for path, row in genuine["pages"].items():
+            assert {field for field in row if row[field] != previous[path][field]} == {"knowledge_hash"}
+    else:
+        assert REGISTRY not in manifest.generation_inputs
+    manifest.generation_inputs[REGISTRY] = deepcopy(genuine)
+    manifest.save(wiki)
+    after = _snapshot(wiki)
+    assert {name for name in before.keys() | after.keys() if before.get(name) != after.get(name)} == {MANIFEST_FILENAME}
+    (src / "pending.py").write_text("class PendingReading:\n    count: int = 1\n", encoding="utf-8")
+    _assert_invalid_history_reports(capsys, entity_present=True, undocumented="PendingReading")
+    assert _snapshot(wiki) == after
+
+
+@pytest.mark.parametrize("damage", ["edited", "deleted"])
+def test_invalid_enrolled_markdown_revokes_coverage_without_crashing(project, capsys, damage):
     src, wiki = project
     (src / SOURCE_PATH).unlink()
     _retire(capsys)
     page = wiki / ENTITY
-    page.write_bytes(page.read_bytes() + b"\nContent outside the archived commitment.\n")
+    if damage == "edited":
+        page.write_bytes(page.read_bytes() + b"\nContent outside the archived commitment.\n")
+    else:
+        page.unlink()
     before = _snapshot(wiki)
-    lint = api.lint_wiki("src", "wiki", strict=True)
-    assert not lint["ok"] and "ReadingWindow" in json.dumps(lint["issues"])
-    _call(capsys, "ci-check", "--no-report", success=False)
+    _assert_invalid_history_reports(capsys, entity_present=page.exists())
     _retire(capsys, success=False)
     assert _snapshot(wiki) == before
 
 
 def test_chunked_legacy_migration_preserves_the_entire_enrolled_workspace(project, capsys):
-    src, _ = project
+    src, wiki = project
     (src / SOURCE_PATH).unlink()
     _retire(capsys)
     root = src.parent
     (root / ".gitignore").write_bytes(b"# Maintainer-owned rules\n*.scratch\n")
     before = _snapshot(root)
     refusal = _call(capsys, "migrate", "--chunk-size", "1", "--chunk", "1", success=False)
-    assert "historical" in refusal.lower()
+    assert "--release-historical-page" in refusal
     assert _snapshot(root) == before
+    digest = _preview_release(capsys, wiki, list(PAGES))
+    _release(capsys, list(PAGES), digest)
+    stable = _snapshot(wiki)
+    _call(capsys, "migrate", "--chunk-size", "1", "--chunk", "1", "--dry-run")
+    assert _snapshot(wiki) == stable
+
+
+@pytest.mark.parametrize(
+    "command", [("upgrade", "--agent", "generic", "--no-skills"),
+                ("sync", "--initialize-surfaces", "flows")], ids=["upgrade", "surface-only-index"],
+)
+def test_public_index_writers_defer_to_explicit_release_without_changing_the_workspace(project, capsys, command):
+    src, wiki = project
+    subprocess.run(["git", "init", "-q", str(src.parent)], check=True)
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    (src.parent / ".gitignore").write_bytes(b"# Maintainer-owned rules\n*.scratch\n")
+    before = _snapshot(src.parent)
+    refusal = _call(capsys, *command, success=False)
+    assert "--release-historical-page" in refusal
+    assert _snapshot(src.parent) == before
+    manifest = SyncManifest.load(wiki)
+    assert set(manifest.generation_inputs[REGISTRY]["pages"]) == set(PAGES)
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+    digest = _preview_release(capsys, wiki, list(PAGES))
+    _release(capsys, list(PAGES), digest)
+    events = _release_events(wiki)
+    _call(capsys, *command)
+    assert _release_events(wiki) == events
+
+
+def test_no_preserve_semantic_refuses_to_discard_archived_authorship_on_exact_revival(project, capsys):
+    src, wiki = project
+    originals = {path: (wiki / path).read_bytes() for path in PAGES}
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    (src / SOURCE_PATH).write_bytes(SOURCE.encode())
+    before = _snapshot(src.parent)
+    refusal = _call(capsys, "sync", "--no-preserve-semantic", success=False)
+    assert "--release-historical-page" in refusal
+    assert _snapshot(src.parent) == before
+    _call(capsys, "sync")
+    assert REGISTRY not in SyncManifest.load(wiki).generation_inputs
+    assert {path: (wiki / path).read_bytes() for path in PAGES} == originals
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+
+
+def test_release_requires_preview_bound_to_the_selected_pages_and_current_snapshot(project, capsys):
+    src, wiki = project
+    acknowledgments = _acknowledge(wiki)
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    before = _snapshot(wiki)
+    custody = deepcopy(SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"])
+    original_pages = {path: (wiki / path).read_bytes() for path in PAGES}
+    approved = _preview_release(capsys, wiki, [ENTITY])
+    other = _preview_release(capsys, wiki, [MODULE])
+    assert approved != other
+    for args in ((), (f"--expected-historical-release={other}",)):
+        _call(capsys, "sync", *_release_args([ENTITY]), *args, success=False)
+        assert _snapshot(wiki) == before
+    result = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=approved)
+    assert result.historical_release == {"digest": approved, "pages": [ENTITY], "applied": True, "replayed": False}
+    stable = _snapshot(wiki)
+    repeated = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=approved)
+    assert repeated.historical_release == {**result.historical_release, "replayed": True}
+    assert _snapshot(wiki) == stable
+    manifest = SyncManifest.load(wiki)
+    assert manifest.generation_inputs[REGISTRY]["pages"] == {MODULE: custody[MODULE]}
+    assert {path: (wiki / path).read_bytes() for path in PAGES} == original_pages
+    native = load_knowledge_state(wiki)
+    concepts = {entry.document.canonical_path: entry for entry in native.knowledge.concepts}
+    assert EXTENSION not in concepts[ENTITY].extensions and concepts[MODULE].extensions[EXTENSION] == custody[MODULE]
+    section = (wiki / "index.md").read_text(encoding="utf-8").split(HEADING, 1)[1].split("\n## ", 1)[0]
+    assert f"({MODULE})" in section and f"({ENTITY})" not in section
+    first_events = _release_events(wiki)
+    assert set(first_events) == {approved}
+    assert first_events[approved]["pages"] == {ENTITY: {
+        "record": custody[ENTITY], "retained_page_hash": _hash(original_pages[ENTITY]),
+    }}
+    _assert_ack_history(wiki, acknowledgments, archived=True)
+    lint = api.lint_wiki("src", "wiki", strict=True)
+    assert any(issue["category"] == "stale_entities" and issue.get("target") == "ReadingWindow" for issue in lint["issues"])
+    assert not any(issue["category"] == "stale_modules" and issue.get("target") == "former" for issue in lint["issues"])
+    ci = _call(capsys, "ci-check", "--no-report", "--format", "json", success=False, json_output=True)
+    assert any(issue["category"] == "stale_entities" and issue.get("target") == "ReadingWindow" for issue in ci["issues"])
+    current = _snapshot(wiki)
+    _call(capsys, "sync", *_release_args([MODULE]), f"--expected-historical-release={other}", success=False)
+    assert _snapshot(wiki) == current
+    last = _preview_release(capsys, wiki, [MODULE])
+    assert last != other
+    _release(capsys, [MODULE], last)
+    last_events = _release_events(wiki)
+    assert set(last_events) == {approved, last}
+    assert last_events[approved] == first_events[approved]
+    assert last_events[approved]["parent"] is None and last_events[last]["parent"] == approved
+    assert last_events[last]["pages"] == {MODULE: {
+        "record": custody[MODULE], "retained_page_hash": _hash(original_pages[MODULE]),
+    }}
+    assert REGISTRY not in SyncManifest.load(wiki).generation_inputs
+    assert HEADING not in (wiki / "index.md").read_text(encoding="utf-8").splitlines()
+
+
+@pytest.mark.parametrize("damage", ["changed", "deleted", "line-endings", "index"])
+def test_release_is_recoverable_only_after_restoring_the_exact_approved_bytes(project, capsys, damage):
+    src, wiki = project
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    digest = _preview_release(capsys, wiki, [ENTITY])
+    path = wiki / ("index.md" if damage == "index" else ENTITY)
+    original = path.read_bytes()
+    if damage == "deleted":
+        path.unlink()
+    elif damage == "line-endings":
+        assert b"\r\n" not in original
+        path.write_bytes(original.replace(b"\n", b"\r\n"))
+    elif damage == "index":
+        path.write_bytes(original.replace(HEADING.encode(), b"### Different index heading"))
+    else:
+        path.write_bytes(original + b"\nA new editorial revision.\n")
+    damaged = _snapshot(wiki)
+    _call(capsys, "sync", "--dry-run", *_release_args([ENTITY]), success=False)
+    _call(capsys, "sync", *_release_args([ENTITY]), f"--expected-historical-release={digest}", success=False)
+    assert _snapshot(wiki) == damaged
+    path.write_bytes(original)
+    confirmed = _preview_release(capsys, wiki, [ENTITY])
+    _release(capsys, [ENTITY], confirmed)
+    if damage != "index":
+        assert path.read_bytes() == original
+    assert confirmed in _release_events(wiki)
+
+
+@pytest.mark.parametrize("phase", ["preview", "apply"])
+def test_concurrent_author_edit_is_kept_and_no_release_is_committed(project, capsys, monkeypatch, phase):
+    from llm_wiki_cli.services import historical_release
+
+    src, wiki = project
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    digest = _preview_release(capsys, wiki, [ENTITY])
+    initial = {path: raw for path, (raw, _) in _snapshot(wiki).items()}
+    edited = initial[MODULE] + b"\nConcurrent field editor update.\n"
+    if phase == "preview":
+        original = historical_release.commit_knowledge_artifacts
+
+        def editing_preview(plan, *, dry_run):
+            assert dry_run
+            result = original(plan, dry_run=dry_run)
+            (wiki / MODULE).write_bytes(edited)
+            return result
+
+        monkeypatch.setattr(historical_release, "commit_knowledge_artifacts", editing_preview)
+        options = ["--dry-run"]
+    else:
+        original = historical_release.write_bytes_atomic
+
+        def editing_apply(path, content):
+            original(path, content)
+            if path.name == "index.md" and content != initial["index.md"]:
+                (wiki / MODULE).write_bytes(edited)
+
+        monkeypatch.setattr(historical_release, "write_bytes_atomic", editing_apply)
+        options = [f"--expected-historical-release={digest}"]
+    result = _call(capsys, "sync", *_release_args([ENTITY]), *options, success=False)
+    assert "Historical release digest:" not in result
+    assert {path: raw for path, (raw, _) in _snapshot(wiki).items()} == {**initial, MODULE: edited}
+    assert RELEASES not in SyncManifest.load(wiki).generation_inputs
+
+
+@pytest.mark.parametrize("replacement", ["same-class", "same-module", "edited-original"])
+def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_owner(project, capsys, replacement):
+    src, wiki = project
+    subprocess.run(["git", "init", "-q", str(src.parent)], check=True)
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    if replacement == "same-class":
+        new_source, pages = "later.py", [ENTITY]
+        new_code = '"""A later collection."""\nclass ReadingWindow:\n    """A new station interval."""\n    zone: str = "north"\n'
+    elif replacement == "same-module":
+        new_source, pages = "nested/former.py", [MODULE]
+        new_code = '"""Collect station intervals."""\nclass StationInterval:\n    """A fresh station reading."""\n    zone: str = "south"\n'
+    else:
+        new_source, pages = SOURCE_PATH, list(PAGES)
+        new_code = SOURCE.replace("retained sample", "fresh station").replace("values[:3]", "values[:2]")
+    source_file = src / new_source
+    source_file.parent.mkdir(parents=True, exist_ok=True)
+    source_file.write_text(new_code, encoding="utf-8")
+    before = _snapshot(wiki)
+    refusal = _call(capsys, "sync", success=False)
+    assert "--release-historical-page" in refusal
+    assert _snapshot(wiki) == before
+    custody = {path: (wiki / path).read_bytes() for path in pages}
+    digest = _preview_release(capsys, wiki, pages)
+    _release(capsys, pages, digest)
+    event = _release_events(wiki)[digest]
+    archive = src.parent / "history"
+    for path, raw in custody.items():
+        assert (wiki / path).read_bytes() == raw
+        assert event["pages"][path]["retained_page_hash"] == _hash(raw)
+        saved = archive / path
+        saved.parent.mkdir(parents=True, exist_ok=True)
+        (wiki / path).rename(saved)
+        relative = saved.relative_to(src.parent).as_posix()
+        subprocess.run(["git", "add", "--", relative], check=True)
+        assert subprocess.run(["git", "show", f":{relative}"], check=True, capture_output=True).stdout == raw
+    _call(capsys, "sync")
+    manifest = SyncManifest.load(wiki)
+    for path, raw in custody.items():
+        current = (wiki / path).read_bytes()
+        assert not current.startswith(HEADER.encode()) and PROSE[path][1].encode() not in current
+        assert f"author-owned bytes — {path}".encode() not in current
+        assert manifest.page_source_mappings[path].source_path == new_source
+        assert manifest.evidence_baselines[path].basis.source_content_hash == _hash(new_code.encode())
+        assert (archive / path).read_bytes() == raw
+    assert _release_events(wiki)[digest] == event
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+
+
+def test_release_frees_a_real_generated_link_repair_without_altering_its_original_audit(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    src, wiki = tmp_path / "src", tmp_path / "wiki"
+    src.mkdir()
+    (src / SOURCE_PATH).write_text(
+        '"""Prior readings."""\nfrom current import CurrentReading\n\nclass ReadingWindow(CurrentReading):\n'
+        '    """Prior measurement."""\n    def measurement(self):\n        return CurrentReading()\n', encoding="utf-8",
+    )
+    (src / "current.py").write_text('class CurrentReading:\n    """A live measurement."""\n    count: int = 1\n', encoding="utf-8")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1", skip_flows=True, skip_workflows=True)
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    before = {path: (wiki / path).read_bytes() for path in PAGES}
+    assert all(b'../modules/current.md' in data for data in before.values())
+    (src / "nested").mkdir()
+    (src / "nested/current.py").write_text('class AnotherReading:\n    separate: str = "north"\n', encoding="utf-8")
+    original = _snapshot(wiki)
+    refusal = _call(capsys, "sync", success=False)
+    assert "--release-historical-page" in refusal
+    assert _snapshot(wiki) == original
+    digest = _preview_release(capsys, wiki, list(PAGES))
+    _release(capsys, list(PAGES), digest)
+    assert {path: (wiki / path).read_bytes() for path in PAGES} == before
+    _call(capsys, "sync")
+    manifest = SyncManifest.load(wiki)
+    link_target, = (path for path, owner in manifest.page_source_mappings.items()
+                    if owner.scope == "module" and owner.source_path == "current.py" and path not in manifest.tombstones)
+    assert link_target != "modules/current.md"
+    for path, raw in before.items():
+        repaired = (wiki / path).read_bytes()
+        assert f"../{link_target}".encode() in repaired and b'../modules/current.md' not in repaired
+        assert _release_events(wiki)[digest]["pages"][path]["retained_page_hash"] == _hash(raw)
 
 
 def test_fresh_enrollment_refuses_a_different_source_claiming_the_canonical_module(tmp_path, monkeypatch, capsys):

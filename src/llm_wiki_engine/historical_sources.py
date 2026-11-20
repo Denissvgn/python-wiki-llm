@@ -17,6 +17,9 @@ from .wiki_surface import PageKind, canonical_path
 INPUT = "historical_source_files"
 SCHEMA = "llm-wiki-historical-source-files/v1"
 EXTENSION = "llm-wiki/historical-source-file"
+RELEASES = "historical_source_releases"
+RELEASE_EXTENSION = "llm-wiki/historical-source-releases"
+RELEASE_SCHEMA = "llm-wiki-historical-source-releases/v1"
 HEADING = "### Historical source files"
 STALE_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
@@ -61,6 +64,64 @@ def read_records(inputs: Mapping) -> dict:
         claimed_owners.add(owner)
         pages[path] = row
     return pages
+
+
+def release_events(inputs: Mapping) -> list:
+    """Validate append order, subject commitments and the retained original proofs."""
+    if RELEASES not in inputs:
+        return []
+    value = inputs[RELEASES]
+    if (not isinstance(value, Mapping) or set(value) != {"schema_version", "events"}
+            or value["schema_version"] != RELEASE_SCHEMA or not isinstance(value["events"], (list, tuple))
+            or not value["events"]):
+        raise _refuse("invalid release ledger")
+    previous = None
+    for event in value["events"]:
+        if not isinstance(event, Mapping) or set(event) != {"digest", "basis"}:
+            raise _refuse("invalid release event")
+        basis = event["basis"]
+        if (not isinstance(basis, Mapping) or set(basis) != {"parent", "knowledge_hash", "index_hash", "pages"}
+                or basis["parent"] != previous or not is_valid_sha256(basis["knowledge_hash"])
+                or not is_valid_sha256(basis["index_hash"]) or not isinstance(basis["pages"], Mapping)
+                or not basis["pages"] or len(basis["pages"]) > 4096):
+            raise _refuse("invalid release predecessor")
+        records = {}
+        for path, page in basis["pages"].items():
+            if not isinstance(page, Mapping) or set(page) != {"record", "retained_page_hash"}:
+                raise _refuse("invalid released page")
+            records[path] = page["record"]
+        read_records({INPUT: {"schema_version": SCHEMA, "pages": records}})
+        for path, page in basis["pages"].items():
+            if page["retained_page_hash"] not in {records[path]["page_hash"], records[path]["marked_page_hash"]}:
+                raise _refuse("released bytes do not belong to the original owner")
+        if event["digest"] != hash_json(basis):
+            raise _refuse("release digest does not match its original evidence")
+        previous = event["digest"]
+    return list(value["events"])
+
+
+def make_release(previous, prior, index_bytes, page_bytes):
+    records = bound_records(previous)
+    events = release_events(previous.generation_inputs)
+    if not page_bytes or not set(page_bytes) <= records.keys():
+        raise _refuse("each released page must belong to the active historical registry")
+    selected = {}
+    for path, raw in sorted(page_bytes.items()):
+        original = records[path]
+        if not page_matches(raw, original["page_hash"]):
+            raise _refuse(f"restore the exact historical Markdown at {path!r} from its verified backup before release")
+        selected[path] = {"record": original, "retained_page_hash": sha256_bytes(raw)}
+    basis = {"parent": events[-1]["digest"] if events else None, "knowledge_hash": prior.knowledge_index_hash,
+             "index_hash": sha256_bytes(index_bytes), "pages": selected}
+    event = {"basis": basis, "digest": hash_json(basis)}
+    inputs = dict(previous.generation_inputs)
+    remaining = {path: row for path, row in records.items() if path not in selected}
+    if remaining:
+        inputs[INPUT] = {"schema_version": SCHEMA, "pages": remaining}
+    else:
+        del inputs[INPUT]
+    inputs[RELEASES] = {"schema_version": RELEASE_SCHEMA, "events": [*events, event]}
+    return inputs, event
 
 
 def bound_records(manifest: SyncManifest) -> dict:
@@ -123,6 +184,9 @@ def predecessor_records(manifest, artifacts, pages):
 
 def validate_transition(previous, prior_artifacts, manifest, confirmed_missing, content):
     """Validate fresh claims, immutable retained proofs, and positive source revival."""
+    old_events = [] if previous is None else release_events(previous.generation_inputs)
+    if release_events(manifest.generation_inputs) != old_events:
+        raise _refuse("ordinary source sync cannot create or rewrite a historical release event")
     old = {} if previous is None else bound_records(previous)
     new = bound_records(manifest)
     if not old and not new:
@@ -157,6 +221,12 @@ def validate_transition(previous, prior_artifacts, manifest, confirmed_missing, 
 
 def check_projections(manifest, knowledge):
     records = bound_records(manifest)
+    releases = release_events(manifest.generation_inputs)
+    projection = knowledge.extensions.get(RELEASE_EXTENSION)
+    if (releases and projection != manifest.generation_inputs[RELEASES]) or (
+        not releases and RELEASE_EXTENSION in knowledge.extensions
+    ):
+        raise _refuse("native historical release ledger differs from its manifest owner")
     seen = set()
     hashes = {}
     if records:
@@ -250,3 +320,21 @@ def check_content(records: Mapping, content: Mapping) -> None:
             value = value.encode("utf-8")
         if not isinstance(value, bytes) or not page_matches(value, row["page_hash"]):
             raise _refuse(f"retained page bytes differ from the authenticated predecessor at {path!r}")
+
+
+def validate_release_transition(previous, prior, next_manifest, index_bytes, pages, expected_digest):
+    """Authorize only a metadata release derived from the exact current native owner."""
+    from .knowledge_artifacts import require_validated_artifacts
+
+    prior = require_validated_artifacts(prior)
+    if previous.artifact_hashes is None or previous.artifact_hashes.knowledge_index_hash != prior.knowledge_index_hash:
+        raise _refuse("release source is not the authenticated previous native owner")
+    check_projections(previous, prior.knowledge)
+    inputs, event = make_release(previous, prior, index_bytes, pages)
+    if (event["digest"] != expected_digest or read_records(inputs) != bound_records(next_manifest)
+            or release_events(inputs) != release_events(next_manifest.generation_inputs)
+            or previous.maintenance_state != next_manifest.maintenance_state
+            or previous.page_source_mappings != next_manifest.page_source_mappings
+            or previous.evidence_baselines != next_manifest.evidence_baselines
+            or previous.tombstones != next_manifest.tombstones or previous.sources != next_manifest.sources):
+        raise _refuse("release changed source/maintenance custody or differs from its checked preview")

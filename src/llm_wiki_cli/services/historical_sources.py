@@ -18,7 +18,7 @@ from .source_snapshot import confirmed_missing_source_paths
 
 
 def refuse(message):
-    raise SourceRetirementError(f"Historical source retirement refused: {message}")
+    raise SourceRetirementError(f"Historical source retirement refused: {message}. For enrolled pages, preview --release-historical-page PAGE before reconciling a replacement.")
 
 
 def _selected_paths(values, maximum):
@@ -107,6 +107,8 @@ def plan_retirement(options, manifest, committed, snapshot, inventory, page_plan
     records = dict(previous)
     old_sources = {row["owner"]["source_path"] for row in previous.values()}
     present = old_sources.intersection(inventory)
+    if present and not options.preserve_semantic:
+        refuse("exact revival restores the full archived body; omit --no-preserve-semantic or explicitly release first")
     if requested.intersection(inventory):
         refuse("a requested source still exists in the current inventory")
     confirm_absence(snapshot, (requested | old_sources) - present)

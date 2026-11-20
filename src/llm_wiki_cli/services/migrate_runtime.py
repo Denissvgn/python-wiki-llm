@@ -808,7 +808,7 @@ def _build_migration_plan(
             # or add a legacy ignore rule before the native commit checks run.
             first = min(historical_pages)
             _abort(f"Legacy migration cannot preserve the enrolled historical registry at {first!r}. "
-                   "Use ordinary sync to retain its canonical paths and native owners.")
+                   "Use ordinary sync to retain its owners, or preview --release-historical-page PAGE for each enrolled page before legacy migration.")
 
     for page in active_pages:
         target = _match_existing_page(page, lookups)

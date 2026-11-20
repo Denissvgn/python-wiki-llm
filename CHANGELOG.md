@@ -11,7 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Sync can retain the original module and entity pages of explicitly selected
   missing source files. The index lists their historical location and the native
-  record retains the original source, page and producer commitments.
+  record retains the original source, page and producer commitments. A
+  digest-bound release returns selected pages to ordinary ownership checks
+  and preserves their historical evidence. Legacy migration, optional surface
+  initialization and managed upgrade require prior release of enrolled pages.
+- The source-analysis producer now includes the historical enrollment and
+  release components. A producer change can leave current structural evidence
+  unknown while a separately validated predecessor remains available.
 
 ### Fixed
 

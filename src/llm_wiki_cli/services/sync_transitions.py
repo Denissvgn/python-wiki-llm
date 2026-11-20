@@ -323,7 +323,18 @@ def plan_page_transitions(
         if key in prior.claims and not regular:
             raise PageTransitionError(f"Recorded source page is not a regular file: {path!r}")
     current = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
-    historical = {manifest.page_source_mappings[path]: path for path in historical_sources.bound_records(manifest)}
+    enrolled = historical_sources.bound_records(manifest)
+    historical = {manifest.page_source_mappings[path]: path for path in enrolled}
+    released_paths = {path for event in historical_sources.release_events(manifest.generation_inputs)
+                      for path in event["basis"]["pages"]}
+    unassigned = {portable_path_key(path) for path in released_paths if path in manifest.tombstones and path not in enrolled}
+    for path in current.values():
+        key = portable_path_key(path)
+        if key in unassigned and key in existing:
+            raise PageTransitionError(
+                f"Released page {path!r} still occupies the new declaration's URL. Move the hash-verified "
+                "former Markdown to a tracked history path outside the generated wiki, then run ordinary sync."
+            )
     for owner, path in historical.items():
         if owner in current:
             # Positive return of the same complete coordinate. A similar filename has no custody.
@@ -371,7 +382,7 @@ def plan_page_transitions(
             else:
                 previous = _moved_entity_owner(prior, target, owner, inventory)
         if previous in historical and previous != owner:
-            raise PageTransitionError(f"A different declaration occupies historical source page {historical[previous]!r}")
+            raise PageTransitionError(f"A different declaration occupies historical source page {historical[previous]!r}; preview --release-historical-page {historical[previous]!r}")
         old_path = prior.resolve(previous) if previous is not None else None
         source_path = None
         if old_path is not None and portable_path_key(old_path) in existing:
@@ -402,6 +413,8 @@ def plan_page_transitions(
             raise PageTransitionError(f"Write target is not a regular file: {occupant!r}")
         outgoing = origins.get(key)
         if outgoing is None or prior.claims.get(key) != {outgoing.previous_owner}:
+            if any(portable_path_key(path) == key for path in historical.values()):
+                raise PageTransitionError(f"Occupied historical page {occupant!r}; preview --release-historical-page {occupant!r}")
             raise PageTransitionError(
                 f"Occupied target has no verified outgoing owner: {occupant!r}"
             )

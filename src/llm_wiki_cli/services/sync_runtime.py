@@ -283,6 +283,7 @@ class _OutcomeRecorder:
     status: SyncStatus = "no-change"
     result: "SyncResult | None" = None
     storage_cleanup: dict | None = None
+    historical_release: dict | None = None
 
 
 _OUTCOME: ContextVar[_OutcomeRecorder | None] = ContextVar("llm_wiki_sync_outcome", default=None)
@@ -1800,6 +1801,8 @@ class _SyncRunOptions:
     repair_paths: tuple[str, ...] = ()
     retire_missing_sources: tuple[str, ...] = ()
     retire_missing_pages: tuple[str, ...] = ()
+    release_historical_pages: tuple[str, ...] = ()
+    expected_historical_release: str | None = None
 
 
 @dataclass(frozen=True)
@@ -2516,6 +2519,8 @@ def sync_request_from_args(args) -> SyncRequest:
         repair_evidence=getattr(args, "repair_evidence", None),
         retire_missing_sources=getattr(args, "retire_missing_source", None),
         retire_missing_pages=getattr(args, "retire_missing_page", None),
+        release_historical_pages=getattr(args, "release_historical_page", None),
+        expected_historical_release=getattr(args, "expected_historical_release", None),
         allow_external_source=bool(getattr(args, "allow_external_src", False)),
         rebuild_knowledge=bool(getattr(args, "rebuild_knowledge", False)),
         knowledge_format=getattr(args, "knowledge_format", None),
@@ -2569,6 +2574,14 @@ def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:
         scoped_paths = repair_paths(request.repair_evidence)
         retire_sources = historical_plan.selected_sources(request.retire_missing_sources)
         retire_pages = historical_plan.selected_pages(request.retire_missing_pages)
+        release_pages = historical_plan.selected_pages(request.release_historical_pages)
+        expected_release = request.expected_historical_release
+        if expected_release is not None and (not release_pages or not is_valid_sha256(expected_release)):
+            raise SourceRetirementError("--expected-historical-release requires selected pages and their preview digest")
+        if release_pages and (retire_sources or retire_pages or scoped_paths or initialize_surfaces or not preserve_semantic
+                              or request.knowledge_format or request.rebuild_knowledge or request.prune_storage
+                              or openapi_file or clear_openapi_file):
+            raise SourceRetirementError("Historical release is a metadata-only operation; run other changes separately")
         if retire_pages and not retire_sources:
             raise SourceRetirementError("--retire-missing-page requires --retire-missing-source")
         if retire_sources and (initialize_surfaces or scoped_paths or not preserve_semantic):
@@ -2641,6 +2654,8 @@ def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:
         repair_paths=scoped_paths,
         retire_missing_sources=retire_sources,
         retire_missing_pages=retire_pages,
+        release_historical_pages=release_pages,
+        expected_historical_release=expected_release,
     )
 
 
@@ -3048,6 +3063,9 @@ def _sync_preview_argv(options: _SyncRunOptions) -> list[str]:
         argv.extend(("--include-tests", language))
     argv.extend(f"--retire-missing-source={path}" for path in options.retire_missing_sources)
     argv.extend(f"--retire-missing-page={path}" for path in options.retire_missing_pages)
+    argv.extend(f"--release-historical-page={path}" for path in options.release_historical_pages)
+    if options.expected_historical_release:
+        argv.extend(("--expected-historical-release", options.expected_historical_release))
     if options.repair_paths:
         argv.extend(f"--repair-evidence={path}" for path in options.repair_paths)
     return argv
@@ -5642,6 +5660,7 @@ def execute_sync(request: SyncRequest) -> SyncOutcome:
         pages={} if result is None else {name: getattr(result, name) for name in SYNC_PAGE_COUNTERS},
         regenerated_evidence_pages=() if result is None else tuple(sorted(result.regenerated_evidence_page_paths)),
         storage_cleanup=recorder.storage_cleanup,
+        historical_release=recorder.historical_release,
     )
 
 
@@ -5661,12 +5680,28 @@ def run_request(request: SyncRequest) -> None:
             raise ValueError("--storage-recovery-dir requires --prune-storage")
         from llm_wiki_engine.knowledge_storage_lifecycle import _outside_tree
         _outside_tree(Path(recovery), options.wiki_dir)
+    release = None
     try:
         with maintenance_write_operation(options.wiki_dir, dry_run=options.dry_run) as basis:
-            _run_sync_options(options, basis)
+            if options.release_historical_pages:
+                from .historical_release import run_release
+                try:
+                    release = run_release(options, basis)
+                except (OSError, ValueError) as exc:
+                    emit(f"Error: {exc}. Restore the verified historical files and retry the release preview.", stream="stderr")
+                    raise SyncAborted(2) from exc
+            else:
+                _run_sync_options(options, basis)
     except MaintenanceProtocolError as exc:
         emit(f"Error: {exc}", stream="stderr")
         raise SyncAborted(2)
+    if release is not None:
+        emit(f"Historical release digest: {release['digest']}")
+        emit(f"Historical release {'preview' if options.dry_run else 'applied'} for {len(release['pages'])} page(s).")
+        recorder = _OUTCOME.get()
+        if recorder is not None:
+            recorder.historical_release = release
+        _record_outcome("synced")
     if prune and options.dry_run:
         emit("Storage cleanup will validate and prune unreferenced objects after successful sync.")
     elif prune:

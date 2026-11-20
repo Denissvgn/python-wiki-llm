@@ -2027,6 +2027,10 @@ def _add_sync_command(subparsers):
         'Never force automatically. Re-anchor semantic changes, then run strict lint and ci-check.',
     )
     _add_progress_arguments(sync_parser)
+    sync_parser.add_argument("--release-historical-page", action="append", metavar="PAGE",
+                             help="Release an enrolled canonical page to ordinary checks without changing source pages")
+    sync_parser.add_argument("--expected-historical-release", metavar="SHA256",
+                             help="Digest printed by the exact historical release preview (required to apply)")
     sync_parser.add_argument(
         "--retire-missing-page", action="append", metavar="PAGE",
         help="Restrict historical enrollment to exact canonical pages of the selected removed sources (repeatable)",
