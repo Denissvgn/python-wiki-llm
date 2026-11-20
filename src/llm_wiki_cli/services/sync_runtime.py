@@ -246,7 +246,7 @@ from .extraction_service import (
     resolve_call_observations,
     resolve_call_edges,
 )
-from llm_wiki_engine.host import current_host, discarding_stdout, emit, recording_errors
+from llm_wiki_engine.host import current_host, deferred_stdout, discarding_stdout, emit, recording_errors
 from .sync_service import (
     SYNC_PAGE_COUNTERS,
     SyncError,
@@ -1891,7 +1891,7 @@ class _PreparedSyncRun:
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
     repair_boundary: ScopedRepairBoundary | None = None
-    maintenance_preview_preimages: Mapping[str, bytes] | None = None
+    maintenance_preview_preimages: Mapping[str, bytes] | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -5336,6 +5336,13 @@ def _run_sync_dry_run(
     options: _SyncRunOptions,
     prepared: _PreparedSyncRun,
 ) -> None:
+    with deferred_stdout():
+        result = _simulate_sync_dry_run(options, prepared)
+    if options.dry_run:
+        _record_outcome("synced", result)
+
+
+def _simulate_sync_dry_run(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> SyncResult:
     unsafe_symlink = _unsafe_dry_run_symlink(options.wiki_dir)
     if unsafe_symlink is not None:
         emit(
@@ -5384,7 +5391,7 @@ def _run_sync_dry_run(
             wiki_dir=staged_wiki,
             dry_run=False,
         )
-        _execute_prepared_sync(
+        result = _execute_prepared_sync(
             staged_options, prepared,
             target_wiki_dir=options.wiki_dir,
             dry_run=True,
@@ -5406,6 +5413,7 @@ def _run_sync_dry_run(
         prepared.inventory_result.cache_stats,
         enabled=options.cache_stats_enabled,
     )
+    return result
 
 
 def _unsafe_dry_run_symlink(wiki_dir: Path) -> str | None:
@@ -5489,7 +5497,9 @@ def _enforce_sync_write_safety(
         )
 
 
-def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=False) -> None:
+def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=False) -> SyncResult:
+    if dry_run and target_wiki_dir is None:
+        raise ValueError("A staged preview requires its original wiki directory")
     boundary = (
         PageTransitionExecution(options.wiki_dir, prepared.page_transitions, preview=dry_run)
         if prepared.page_transitions is not None else nullcontext(None)
@@ -5505,7 +5515,9 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
         _finalize_prepared_sync(
             options, active, result, target_wiki_dir=target_wiki_dir, dry_run=dry_run
         )
+    if not dry_run:
         _record_outcome("synced", result)
+    return result
 
 
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:

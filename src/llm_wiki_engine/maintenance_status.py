@@ -280,6 +280,21 @@ def _source_location(coordinate, scope, envelope):
     }
 
 
+def _observed_coverage(capture, known):
+    targets = capture.semantic_targets
+    if targets is None:
+        # Older bounded callers may count more semantic targets than they provide.
+        targets = {key: value["target"] for key, value in capture.by_owner.items()
+                   if key not in capture.retained_owner_keys and value["target_presence"] == "present"}
+        total = max(capture.source_backed_semantic_total, len(targets))
+    else:
+        total = len(targets)
+    tracked = sum(key in known for key in targets)
+    return {"source_backed_semantic_total": total, "tracked_semantic_total": tracked,
+            "untracked_semantic_total": total - tracked, "issues": deepcopy(list(capture.issues)),
+            "untracked_targets": [deepcopy(target) for key, target in targets.items() if key not in known]}
+
+
 def build_maintenance_status(
     state,
     marker,
@@ -324,17 +339,7 @@ def build_maintenance_status(
         if marker is not None:
             raise ValueError("Adopted maintenance marker has no durable owner")
         if live and capture is not None:
-            base["coverage"] = {
-                "source_backed_semantic_total": capture.source_backed_semantic_total,
-                "tracked_semantic_total": 0,
-                "untracked_semantic_total": capture.source_backed_semantic_total,
-                "issues": deepcopy(list(capture.issues)),
-                "untracked_targets": [
-                    deepcopy(value["target"])
-                    for key, value in capture.by_owner.items()
-                    if key not in capture.retained_owner_keys and value["target_presence"] == "present"
-                ],
-            }
+            base["coverage"] = _observed_coverage(capture, set())
         return MaintenanceStatusReport(base, {}, {})
     owner, guard = (
         validate_maintenance_state(state),
@@ -350,21 +355,7 @@ def build_maintenance_status(
         for value in owner["observations"].values()
     }
     if live and capture is not None:
-        untracked = [
-            deepcopy(value["target"])
-            for key, value in capture.by_owner.items()
-            if key not in known and key not in capture.retained_owner_keys and value["target_presence"] == "present"
-        ]
-        base["coverage"] = {
-            "source_backed_semantic_total": capture.source_backed_semantic_total,
-            "tracked_semantic_total": capture.tracked_semantic_total,
-            "untracked_semantic_total": max(
-                capture.source_backed_semantic_total - capture.tracked_semantic_total,
-                len(untracked),
-            ),
-            "issues": deepcopy(list(capture.issues)),
-            "untracked_targets": untracked,
-        }
+        base["coverage"] = _observed_coverage(capture, known)
     if coverage is not None:
         base["coverage"] = deepcopy(dict(coverage))
     records, by_path = {}, {}

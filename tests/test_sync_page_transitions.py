@@ -381,10 +381,26 @@ def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_pa
     assert original_ids
     (project / "pkg/beta.py").write_text(source.replace("first", "second"), encoding="utf-8")
     before = {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+    projected = []
+    finalize = sync_cmd._finalize_prepared_sync
+    def record_finalization(*args, **kwargs):
+        result = finalize(*args, **kwargs)
+        projected.append(result.committed_manifest.maintenance_state)
+        return result
+    monkeypatch.setattr(sync_cmd, "_finalize_prepared_sync", record_finalization)
     _sync(wiki, dry_run=True)
     assert before == {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
     _sync(wiki)
     committed = SyncManifest.load(wiki).maintenance_state
+    preview, written = projected
+    assert written == committed
+    for rid in original_ids:
+        assert preview["records"][rid] == written["records"][rid]
+        assert preview["observations"][rid] == written["observations"][rid]
+    def owners(state):
+        return sorted((row["coordinate"]["source_path"], row["target"]["section_locator"], state["records"][rid]["mapping"]["state"])
+                      for rid, row in state["observations"].items())
+    assert owners(preview) == owners(written)
     for record_id in original_ids:
         row = committed["observations"][record_id]
         assert row["coordinate"]["source_path"] == "pkg/alpha.py"
@@ -397,6 +413,35 @@ def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_pa
     _sync(wiki, dry_run=True)
     _sync(wiki)
     assert committed == SyncManifest.load(wiki).maintenance_state
+
+
+@pytest.mark.parametrize("body_fails", [False, True])
+def test_changed_live_page_never_publishes_a_successful_preview(tmp_path, monkeypatch, capsys, body_fails):
+    from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"alpha.py": _draft_source("Original prose.")})
+    adopt_maintenance_authority(project, wiki, recovery_dir=tmp_path / "owner-recovery")
+    (project / "moved").mkdir()
+    (project / "pkg/alpha.py").rename(project / "moved/alpha.py")
+    page = wiki / "modules/alpha.md"
+    apply_stage = sync_cmd._apply_prepared_sync
+    outcomes = []
+    def edit_during_simulation(*args):
+        result = apply_stage(*args)
+        page.write_text("A concurrent edit.\n")
+        if body_fails:
+            raise RuntimeError("original simulation failure")
+        return result
+    monkeypatch.setattr(sync_cmd, "_apply_prepared_sync", edit_during_simulation)
+    monkeypatch.setattr(sync_cmd, "_record_outcome", lambda status, result=None: outcomes.append(status))
+    capsys.readouterr()
+    error = pytest.raises(RuntimeError, match="original simulation failure") if body_fails else pytest.raises(KnowledgeStorageError)
+    with error:
+        _sync(wiki, dry_run=True)
+    stdout = capsys.readouterr().out
+    assert "Sync dry-run plan:" not in stdout and "DRY-RUN:" not in stdout and "Preview completed." not in stdout
+    assert "synced" not in outcomes and page.read_text() == "A concurrent edit.\n"
 
 
 @pytest.mark.parametrize("leaves_alias", [False, True])

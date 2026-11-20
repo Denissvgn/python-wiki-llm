@@ -124,6 +124,7 @@ def test_missing_prior_capture_never_guesses_section_transfer_from_names_or_hash
     )
     assert result.confirmed == () and result.ambiguous == ()
     assert result.issues
+    assert any(issue["canonical_path"] == "entities/Batch.md" and issue["source_path"] == "policy.py" for issue in result.issues)
 
 
 def test_retained_owner_observations_cannot_allocate_after_verified_transfer(project):

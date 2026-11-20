@@ -29,24 +29,69 @@ from .sync_transitions import PageTransitionError, PageTransitionPlan
 
 @contextmanager
 def preview_maintenance_preimages(
-    live_wiki: Path, staged_wiki: Path, plan: PageTransitionPlan
+    live_wiki: Path, staged_wiki: Path, plan: PageTransitionPlan, *, max_bytes: int = MAX_EXPANDED_BYTES
 ) -> Iterator[dict[str, bytes]]:
     """Hold the verified prior owners' live Markdown stable while simulating their transfer."""
     preimages = {}
-    with StorageReadSession(live_wiki).phase() as live:
-        with StorageReadSession(staged_wiki).phase() as staged:
-            for item in plan.transitions:
-                if (
-                    item.previous_owner is None or item.previous_owner.scope != item.owner.scope
-                    or item.old_path is None or item.source_path is None
-                    or (item.previous_owner == item.owner and item.old_path == item.final_path)
-                ):
-                    continue
+    commitments = {}
+    prior_origins = set()
+    with StorageReadSession(live_wiki, max_bytes=max_bytes).phase() as live:
+        for item in plan.transitions:
+            if item.previous_owner is None or item.previous_owner.scope != item.owner.scope:
+                continue
+            if item.old_path is None:
+                if item.previous_owner != item.owner:
+                    raise PageTransitionError(f"No recorded prior page for transfer from {item.previous_owner.source_path!r} to {item.final_path!r}")
+                continue
+            if item.previous_owner == item.owner and item.old_path == item.final_path:
+                continue
+            origin = portable_path_key(item.old_path)
+            if origin in prior_origins:
+                raise PageTransitionError(f"Multiple transitions claim the prior page {item.old_path!r}")
+            prior_origins.add(origin)
+            if item.source_path is None:
+                raise PageTransitionError(f"Missing prior page {item.old_path!r} for {item.previous_owner.source_path!r}")
+            try:
                 original = live.read(item.source_path, MAX_EXPANDED_BYTES)
-                if original != staged.read(item.source_path, MAX_EXPANDED_BYTES):
-                    raise PageTransitionError(f"Prior page changed while staging the preview: {item.source_path!r}")
-                preimages[item.old_path] = original
+            except KnowledgeStorageError as exc:
+                if exc.code == "storage-budget-exhausted" or (exc.code == "storage-limit" and exc.message == "file exceeds byte limit"):
+                    raise PageTransitionError(f"Prior pages exceed the combined preview byte limit ({max_bytes}) at {item.old_path!r}") from exc
+                raise PageTransitionError(f"Cannot read prior page {item.old_path!r} for {item.previous_owner.source_path!r}: {exc}") from exc
+            digest = hashlib.sha256(original).digest()
+            try:
+                staged_digest, _ = _bounded_page_digest(staged_wiki / item.source_path, len(original))
+            except KnowledgeStorageError as exc:
+                raise PageTransitionError(f"Prior page changed while staging the preview: {item.source_path!r}") from exc
+            if staged_digest != digest:
+                raise PageTransitionError(f"Prior page changed while staging the preview: {item.source_path!r}")
+            preimages[item.old_path] = original
+            observed = live.observations[item.source_path]
+            commitments[item.source_path] = (len(original), digest, (observed.identity, observed.directories))
         yield preimages
+        # A phase can evict handles. Recheck every original, including evicted pages.
+        for relative, (size, digest, identity) in commitments.items():
+            try:
+                current = _bounded_page_digest(live.root / relative, size)
+            except KnowledgeStorageError as exc:
+                raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation") from exc
+            if current != (digest, identity):
+                raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation")
+
+
+def _bounded_page_digest(path: Path, size: int):
+    """Hash a regular file at its expected size, holding at most one chunk and its identity."""
+    result = hashlib.sha256()
+    identity = None
+    chunk_bytes = 64 * 1024
+    for offset in range(0, max(1, size), chunk_bytes):
+        length = min(chunk_bytes, size - offset)
+        part = read_guarded(path, length, offset=offset, length=length, file_bytes=size)
+        observed = (part.identity, part.directories)
+        if identity is not None and observed != identity:
+            raise KnowledgeStorageError(path.name, "prior page changed between bounded reads", code="storage-mutation")
+        identity = observed
+        result.update(part.content)
+    return result.digest(), identity
 
 
 RECOVERY_PREFIX = ".llm-wiki-page-moves-"

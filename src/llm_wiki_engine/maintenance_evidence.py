@@ -127,14 +127,18 @@ class MaintenanceCapture:
     tracked_semantic_total: int = 0
     # Fallback observations can update their existing owner, never create a second one.
     retained_owner_keys: frozenset[str] = frozenset()
+    # Includes semantic targets even when their source evidence cannot be joined.
+    semantic_targets: Mapping[str, dict[str, Any]] | None = None
 
     def __post_init__(self):
         object.__setattr__(self, "by_owner", freeze(dict(self.by_owner)))
         object.__setattr__(self, "issues", freeze(tuple(self.issues)))
         object.__setattr__(self, "retained_owner_keys", frozenset(self.retained_owner_keys))
+        if self.semantic_targets is not None:
+            object.__setattr__(self, "semantic_targets", freeze(dict(self.semantic_targets)))
 
-    def can_register(self, key):
-        return key not in self.retained_owner_keys and _has_registration_basis(self.by_owner[key])
+    def can_register(self, key, observed):
+        return key not in self.retained_owner_keys and _has_registration_basis(observed)
 
     def to_payload(self) -> dict:
         return {
@@ -327,7 +331,7 @@ def captured_observations_from_knowledge(
         else None
     )
     observations, issues, semantic_by_page, evidence_by_coordinate = {}, [], {}, {}
-    semantic_keys = set()
+    semantic_targets = {}
     retained = set()
     concepts = knowledge.concepts if hasattr(knowledge, "concepts") else knowledge
     for concept in concepts:
@@ -381,16 +385,8 @@ def captured_observations_from_knowledge(
             continue
         coordinate, _ = _mapping_values(mapping)
         for section in semantic.values():
-            semantic_keys.add(
-                owner_key(
-                    coordinate,
-                    {
-                        "canonical_path": path,
-                        "section_locator": section["locator"],
-                        "ownership": "semantic",
-                    },
-                )
-            )
+            target = {"canonical_path": path, "section_locator": section["locator"], "ownership": "semantic"}
+            semantic_targets[owner_key(coordinate, target)] = target
         evidence, reason = current_evidence, current_reason
         coordinate, scope = _mapping_values(mapping)
         if evidence is None:
@@ -509,9 +505,10 @@ def captured_observations_from_knowledge(
         selected,
         frozenset(content_by_page),
         tuple(issues),
-        len(semantic_keys),
-        sum(key in retained or _has_registration_basis(observations[key]) for key in semantic_keys & observations.keys()),
+        len(semantic_targets),
+        sum(key in retained or _has_registration_basis(observations[key]) for key in semantic_targets.keys() & observations.keys()),
         frozenset(retained),
+        semantic_targets,
     )
 
 
@@ -546,7 +543,7 @@ def reconcile_pending_maintenance(
     if previous_state is None:
         initial = {}
         for key, observed in capture.by_owner.items():
-            if capture.can_register(key):
+            if capture.can_register(key, observed):
                 record_id = allocate_id()
                 if record_id in initial:
                     raise MaintenanceError(
@@ -662,7 +659,7 @@ def _reconcile_existing_maintenance(
         if record_id in unresolved_ids or key in unresolved_keys:
             continue
         if record_id is None:
-            if capture.can_register(key):
+            if capture.can_register(key, observed):
                 record_id = allocate_id()
                 current = operation._apply_owned(
                     current,
@@ -758,11 +755,16 @@ def maintenance_transfers_from_page_plan(
     confirmed, ambiguous, issues = [], [], []
     selected = set()
     for transition in page_plan.transitions:
-        if transition.previous_owner is None or transition.old_path is None:
+        if transition.previous_owner is None:
             continue
         old_coordinate, old_scope = _mapping_values(transition.previous_owner)
         new_coordinate, new_scope = _mapping_values(transition.owner)
         if old_scope != new_scope:
+            continue
+        if transition.old_path is None:
+            if old_coordinate != new_coordinate:
+                issues.append({"canonical_path": transition.final_path, "source_path": old_coordinate["source_path"],
+                               "reason": "previous-semantic-preimage-unavailable"})
             continue
         if (
             old_coordinate == new_coordinate
@@ -778,6 +780,7 @@ def maintenance_transfers_from_page_plan(
             issues.append(
                 {
                     "canonical_path": transition.old_path,
+                    "source_path": old_coordinate["source_path"],
                     "reason": "previous-semantic-preimage-unavailable",
                 }
             )

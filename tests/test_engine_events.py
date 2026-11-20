@@ -21,7 +21,7 @@ from llm_wiki_cli.engine import (
     SyncRequest,
 )
 from llm_wiki_engine.engine_events import current_operation, operation_identity
-from llm_wiki_engine.host import MessageStream, discarding_stdout, emit, using_host
+from llm_wiki_engine.host import MessageStream, deferred_stdout, discarding_stdout, emit, using_host
 
 BILLING = "class Invoice:\n    total: int\n\n\ndef bill(invoice: Invoice) -> int:\n    return invoice.total\n"
 
@@ -147,6 +147,27 @@ def test_hosts_without_a_sink_and_calls_report_nothing(source: Path) -> None:
     Engine(host=NoProcessHost(stdout=io.StringIO())).sync(SyncRequest(source_root="src", wiki_root="wiki"))
 
     assert recorder.events == []
+
+
+def test_preview_stdout_and_engine_messages_are_published_once_after_validation() -> None:
+    output, errors, recorder = io.StringIO(), io.StringIO(), Recorder()
+    host = NoProcessHost(stdout=output, stderr=errors, events=recorder)
+    with using_host(host), operation_identity("sync", "preview"):
+        with pytest.raises(RuntimeError, match="stale"):
+            with deferred_stdout():
+                emit("unverified summary")
+                emit("diagnostic", stream="stderr")
+                raise RuntimeError("stale")
+        assert output.getvalue() == "" and recorder.lines("stdout") == []
+        assert recorder.lines("stderr") == ["diagnostic"]
+        with deferred_stdout():
+            emit("verified action")
+            stream = MessageStream()
+            stream.write("verified summary")
+            stream.close()
+            assert output.getvalue() == "" and recorder.lines("stdout") == []
+    assert output.getvalue() == "verified action\nverified summary"
+    assert recorder.lines("stdout") == ["verified action", "verified summary"]
 
 
 def test_lines_outside_an_operation_or_discarded_are_not_reported() -> None:

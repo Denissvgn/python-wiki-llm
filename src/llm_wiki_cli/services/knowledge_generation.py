@@ -500,7 +500,11 @@ def _build_knowledge_generation_plan(
         )
         if transfers.issues:
             reasons = sorted({issue["reason"] for issue in transfers.issues})
-            raise KnowledgeGenerationError("maintenance.moves", "Unresolved maintenance transfer prevents publication: " + ", ".join(reasons))
+            paths = sorted({issue["canonical_path"] + (f" from {issue['source_path']}" if "source_path" in issue else "")
+                            for issue in transfers.issues})
+            detail = ", ".join(paths[:5]) + (" (additional paths omitted)" if len(paths) > 5 else "")
+            raise KnowledgeGenerationError("maintenance.moves", "Unresolved maintenance transfer prevents publication: "
+                                           + ", ".join(reasons) + f" [{detail}]")
         state = reconcile_pending_maintenance(manifest.maintenance_state, inputs.maintenance_adoption, capture,
             confirmed_transfers=transfers.confirmed, ambiguous_transfers=transfers.ambiguous)
         manifest = manifest.with_maintenance_state(state)

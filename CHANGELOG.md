@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When same-named declarations gain separate pages, maintenance keeps the
   transferred record and its history. A new record requires captured source
   and prose for its current owner.
+  Coverage lists new sections as untracked until a sync captures both and
+  registers them. Existing records retain their identity when a basis is missing.
 
 ## [5.0.0] - 2026-11-19
 
