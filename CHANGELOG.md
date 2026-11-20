@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Engines in one process can use different knowledge-core providers. An
+  `IntegrationSet` names providers for some capabilities; a `DomainPack`
+  carries one (`integrations`, `with_integrations()`), and
+  `Engine(integrations=...)` adds its own on top of the pack's. Each engine
+  call resolves capabilities through its set first, so two engines never
+  see each other's providers. A set built with `inherit=False` uses only
+  the providers it names and never falls back to the process-wide ones.
+  `llm_wiki_engine.integrations.using_integrations()` applies a set to a
+  block of code outside an engine.
+
+### Changed
+
+- The domain pack interfaces (`SourceClassifier`, `PageNamer`,
+  `PageRenderer`, `ContextSource`, `HelperToolchain`), the page request
+  types, `ExtensionSourceClassifier` and `NoHelperToolchain` now live in
+  `llm_wiki_engine.pack_interfaces`. They stay importable from
+  `llm_wiki_cli.services.domain_pack` and `llm_wiki_cli.engine`, but a pack
+  description now names `ExtensionSourceClassifier` and `NoHelperToolchain`
+  by their engine module.
+- `llm_wiki_engine.integrations.provided()` reports the providers in effect
+  where it is called, including an active `IntegrationSet`;
+  `integrations.defaults()` reports the process-wide ones.
+
 ## [5.0.0] - 2026-11-19
 
 ### Added

@@ -52,6 +52,7 @@ flowchart LR
     n4["src/llm_wiki_engine/knowledge_model.py"]
     n5["src/llm_wiki_engine/knowledge_validators.py"]
     n6["src/llm_wiki_engine/maintenance_projection.py"]
+    n0 --> n1
     n0 --> n5
     n2 --> n4
     n3 --> n2

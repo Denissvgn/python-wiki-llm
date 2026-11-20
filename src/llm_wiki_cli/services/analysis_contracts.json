@@ -386,6 +386,7 @@
     "llm_wiki_engine/manifest_storage.py",
     "llm_wiki_engine/markdown_sections.py",
     "llm_wiki_engine/normalization_diagnostics.py",
+    "llm_wiki_engine/pack_interfaces.py",
     "llm_wiki_engine/packet_field_policy.py",
     "llm_wiki_engine/path_policy.py",
     "llm_wiki_engine/paths.py",

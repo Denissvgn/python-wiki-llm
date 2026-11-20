@@ -1,6 +1,6 @@
 # Engine
 
-**Location:** `src/llm_wiki_cli/engine/__init__.py:260`
+**Location:** `src/llm_wiki_cli/engine/__init__.py:265`
 **Kind:** Class
 **Bases:** —
 **Module:** [engine___init__](../modules/engine___init__.md)
@@ -17,7 +17,7 @@ One configured engine; independent engines may run side by side.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(*, host: Host \| None = None, helper_preparation: HelperPreparation = 'never', helper_cache_dir: str \| Path \| None = None, comparison_policy: str = 'auto', validators: ValidatorRegistry = DEFAULT_VALIDATORS, kinds: KindRegistry = DEFAULT_KINDS, pack: DomainPack = CODE_DOCS_PACK, publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS) -> None` | — | — |
+| `__init__` | `(*, host: Host \| None = None, helper_preparation: HelperPreparation = 'never', helper_cache_dir: str \| Path \| None = None, comparison_policy: str = 'auto', validators: ValidatorRegistry = DEFAULT_VALIDATORS, kinds: KindRegistry = DEFAULT_KINDS, pack: DomainPack = CODE_DOCS_PACK, publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS, integrations: IntegrationSet = DEFAULT_INTEGRATIONS) -> None` | — | — |
 | `host` | `() -> Host` | `@property` | — |
 | `capabilities` | `() -> dict[str, object]` | — | What this engine may do, so a caller can explain a refused operation. |
 | `operation` | `() -> Iterator[Operation]` | `@contextmanager` | Apply this engine's grants to all work inside the block. |

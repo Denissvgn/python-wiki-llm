@@ -1,6 +1,6 @@
 # CodeSourceClassifier
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:468`
+**Location:** `src/llm_wiki_cli/services/domain_pack.py:242`
 **Kind:** Class
 **Bases:** `ExtensionSourceClassifier`
 **Module:** [domain_pack](../modules/domain_pack.md)
@@ -30,10 +30,10 @@ only when a source is first classified.
 ```mermaid
 flowchart LR
     n0["CodeSourceClassifier (src/llm_wiki_cli/services/domain_pack.py)"]
-    n1["ExtensionSourceClassifier (src/llm_wiki_cli/services/domain_pack.py)"]
+    n1["ExtensionSourceClassifier (src/llm_wiki_engine/pack_interfaces.py)"]
     n0 --> n1
     click n0 "../modules/domain_pack.md"
-    click n1 "../modules/domain_pack.md"
+    click n1 "../modules/pack_interfaces.md"
 ```
 
 ### Summary
@@ -46,4 +46,4 @@ flowchart LR
 
 | Kind | Entity | Module |
 |---|---|---|
-| Base | `ExtensionSourceClassifier` | [domain_pack](../modules/domain_pack.md) |
+| Base | `ExtensionSourceClassifier` | [pack_interfaces](../modules/pack_interfaces.md) |

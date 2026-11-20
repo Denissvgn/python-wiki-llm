@@ -84,13 +84,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| context_related_sources | current_pack | 374 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
-| context_related_sources | source.related_sources | 375 | `source.related_sources(inventory)` |
-| context_related_sources | isinstance | 376 | `isinstance(related, Mapping)` |
-| context_related_sources | TypeError | 377 | `TypeError(...)` |
-| context_related_sources | _qualified_type_name | 378 | `_qualified_type_name(source)` |
-| _qualified_type_name | type | 750 | `type(value)` |
+| context_related_sources | current_pack | 219 | `current_pack(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
+| context_related_sources | source.related_sources | 220 | `source.related_sources(inventory)` |
+| context_related_sources | isinstance | 221 | `isinstance(related, Mapping)` |
+| context_related_sources | TypeError | 222 | `TypeError(...)` |
+| context_related_sources | _qualified_type_name | 223 | `_qualified_type_name(source)` |
+| _qualified_type_name | type | 478 | `type(value)` |
 
 ### Boundary effects
 
@@ -100,11 +100,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
-| unresolved_call | `context_related_sources` | `source.related_sources` | 375 |
-| external_call | `context_related_sources` | `isinstance` | 376 |
-| external_call | `context_related_sources` | `TypeError` | 377 |
-| external_call | `_qualified_type_name` | `type` | 750 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
+| unresolved_call | `context_related_sources` | `source.related_sources` | 220 |
+| external_call | `context_related_sources` | `isinstance` | 221 |
+| external_call | `context_related_sources` | `TypeError` | 222 |
+| external_call | `_qualified_type_name` | `type` | 478 |
 
 ## Behavior
 

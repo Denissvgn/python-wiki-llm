@@ -93,3 +93,115 @@ def test_attributes_are_read_at_call_time(monkeypatch):
     assert integrations.attributes("implementation_evidence", "validate_concept_implementation") == (marker,)
     knowledge_model = importlib.import_module("llm_wiki_engine.knowledge_model")
     assert knowledge_model is importlib.import_module("llm_wiki_engine.knowledge_model")
+
+
+@pytest.fixture
+def fake_providers(monkeypatch):
+    """Two stand-in source snapshot providers, importable by name."""
+    import types
+
+    names = []
+    for label in ("alpha", "beta"):
+        name = f"tests_fake_snapshots_{label}"
+        module = types.ModuleType(name)
+        module.LABEL = label  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, name, module)
+        names.append(name)
+    return names
+
+
+def test_integration_sets_validate_their_names():
+    with pytest.raises(ValueError, match="unknown"):
+        integrations.IntegrationSet({"telemetry": "example.module"})
+    with pytest.raises(ValueError, match="module name"):
+        integrations.IntegrationSet({"source_snapshots": "not a module"})
+    with pytest.raises(TypeError, match="inherit"):
+        integrations.IntegrationSet(inherit="no")  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        with integrations.using_integrations({"source_snapshots": "x"}):  # type: ignore[arg-type]
+            pass
+    named = integrations.IntegrationSet({"source_snapshots": "example.snapshots"})
+    assert named == integrations.IntegrationSet({"source_snapshots": "example.snapshots"})
+    assert hash(named) == hash(integrations.IntegrationSet({"source_snapshots": "example.snapshots"}))
+    assert named.describe() == {"modules": {"source_snapshots": "example.snapshots"}, "inherit": True}
+    with pytest.raises(TypeError):
+        named.modules["source_snapshots"] = "other"  # type: ignore[index]
+
+
+def test_a_scope_wins_over_the_defaults_and_restores_them(fake_providers):
+    alpha, beta = fake_providers
+    default = integrations.provided()["source_snapshots"]
+    with integrations.using_integrations(integrations.IntegrationSet({"source_snapshots": alpha})):
+        assert integrations.provider("source_snapshots").LABEL == "alpha"
+        # Unnamed capabilities keep the process-wide default.
+        assert integrations.provided()["implementation_evidence"] == integrations.defaults()["implementation_evidence"]
+        with integrations.using_integrations(integrations.IntegrationSet({"source_snapshots": beta})):
+            assert integrations.provider("source_snapshots").LABEL == "beta"
+        assert integrations.provider("source_snapshots").LABEL == "alpha"
+    assert integrations.provided()["source_snapshots"] == default
+    assert integrations.defaults()["source_snapshots"] == default
+
+
+def test_an_isolated_scope_never_falls_back_to_the_defaults(fake_providers):
+    alpha, _ = fake_providers
+    isolated = integrations.IntegrationSet({"source_snapshots": alpha}, inherit=False)
+    with integrations.using_integrations(isolated):
+        assert integrations.provider("source_snapshots").LABEL == "alpha"
+        assert set(integrations.provided()) == {"source_snapshots"}
+        with pytest.raises(integrations.IntegrationUnavailable, match="implementation_evidence"):
+            integrations.provider("implementation_evidence")
+
+
+def test_merging_keeps_the_override_and_isolation(fake_providers):
+    alpha, beta = fake_providers
+    base = integrations.IntegrationSet({"source_snapshots": alpha, "inventory_results": alpha})
+    merged = base.merged(integrations.IntegrationSet({"source_snapshots": beta}))
+    assert dict(merged.modules) == {"inventory_results": alpha, "source_snapshots": beta}
+    assert merged.inherit
+    assert not base.merged(integrations.IntegrationSet(inherit=False)).inherit
+    assert not integrations.IntegrationSet(inherit=False).merged(base).inherit
+
+
+def test_two_engines_in_one_process_never_share_providers(fake_providers):
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    from llm_wiki_cli.engine import CODE_DOCS_PACK, Engine, IntegrationSet
+
+    alpha, beta = fake_providers
+    # One engine takes its provider from its pack, the other names its own.
+    first = Engine(pack=CODE_DOCS_PACK.with_integrations(IntegrationSet({"source_snapshots": alpha})))
+    second = Engine(integrations=IntegrationSet({"source_snapshots": beta}))
+    both_inside = threading.Barrier(2, timeout=10)
+
+    def observe(engine):
+        with engine.operation() as operation:
+            before = integrations.provider("source_snapshots").LABEL
+            both_inside.wait()  # the other engine's scope is active right now
+            after = integrations.provider("source_snapshots").LABEL
+            return before, after, operation.integrations
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(observe, (first, second)))
+    assert [result[:2] for result in results] == [("alpha", "alpha"), ("beta", "beta")]
+    assert results[0][2] == IntegrationSet({"source_snapshots": alpha})
+    # Interleaved on one thread, each operation still sees only its own.
+    with first.operation():
+        with second.operation():
+            assert integrations.provider("source_snapshots").LABEL == "beta"
+        assert integrations.provider("source_snapshots").LABEL == "alpha"
+    assert integrations.provided()["source_snapshots"].startswith("llm_wiki_cli.services.")
+
+
+def test_an_engine_choice_wins_over_its_pack(fake_providers):
+    from llm_wiki_cli.engine import CODE_DOCS_PACK, Engine, IntegrationSet
+
+    alpha, beta = fake_providers
+    pack = CODE_DOCS_PACK.with_integrations(IntegrationSet({"source_snapshots": alpha}))
+    engine = Engine(pack=pack, integrations=IntegrationSet({"source_snapshots": beta}))
+    with engine.operation():
+        assert integrations.provider("source_snapshots").LABEL == "beta"
+    with pytest.raises(TypeError, match="IntegrationSet"):
+        Engine(integrations={"source_snapshots": beta})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="IntegrationSet"):
+        CODE_DOCS_PACK.with_integrations({"source_snapshots": beta})  # type: ignore[arg-type]

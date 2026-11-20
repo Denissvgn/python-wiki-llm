@@ -63,9 +63,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| uses_builtin_context_source | type | 394 | `type(...)` |
-| uses_builtin_context_source | current_pack | 394 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
+| uses_builtin_context_source | type | 239 | `type(...)` |
+| uses_builtin_context_source | current_pack | 239 | `current_pack(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -75,8 +75,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `uses_builtin_context_source` | `type` | 394 |
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
+| external_call | `uses_builtin_context_source` | `type` | 239 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
 
 ## Behavior
 

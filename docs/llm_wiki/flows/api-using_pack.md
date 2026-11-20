@@ -67,10 +67,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| using_pack | isinstance | 864 | `isinstance(pack, DomainPack)` |
-| using_pack | TypeError | 865 | `TypeError('pack must be a DomainPack')` |
-| using_pack | _ACTIVE_PACK.set | 866 | `_ACTIVE_PACK.set(pack)` |
-| using_pack | _ACTIVE_PACK.reset | 870 | `_ACTIVE_PACK.reset(token)` |
+| using_pack | isinstance | 602 | `isinstance(pack, DomainPack)` |
+| using_pack | TypeError | 603 | `TypeError('pack must be a DomainPack')` |
+| using_pack | _ACTIVE_PACK.set | 604 | `_ACTIVE_PACK.set(pack)` |
+| using_pack | _ACTIVE_PACK.reset | 608 | `_ACTIVE_PACK.reset(token)` |
 
 ### Boundary effects
 
@@ -80,9 +80,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_pack` | `isinstance` | 864 |
-| external_call | `using_pack` | `TypeError` | 865 |
-| unresolved_call | `using_pack` | `_ACTIVE_PACK.reset` | 870 |
+| external_call | `using_pack` | `isinstance` | 602 |
+| external_call | `using_pack` | `TypeError` | 603 |
+| unresolved_call | `using_pack` | `_ACTIVE_PACK.reset` | 608 |
 
 ## Behavior
 

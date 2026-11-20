@@ -1,6 +1,6 @@
 # IntegrationUnavailable
 
-**Location:** `src/llm_wiki_engine/integrations.py:52`
+**Location:** `src/llm_wiki_engine/integrations.py:60`
 **Kind:** Class
 **Bases:** `LookupError`
 **Module:** [integrations](../modules/integrations.md)

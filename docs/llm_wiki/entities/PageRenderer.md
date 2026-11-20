@@ -1,9 +1,9 @@
 # PageRenderer
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:209`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:162`
 **Kind:** Class
 **Bases:** `Protocol`
-**Module:** [domain_pack](../modules/domain_pack.md)
+**Module:** [pack_interfaces](../modules/pack_interfaces.md)
 
 **Decorators:** `@runtime_checkable`
 
@@ -28,23 +28,20 @@ Writes the Markdown of generated pages.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageRenderer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n0["PageRenderer (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["Protocol"]
-    n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["DomainPack.with_page_renderer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["DomainPack.with_page_renderer (src/llm_wiki_cli/services/domain_pack.py)"]
     n0 --> n1
     n2 --> n0
-    n3 --> n0
-    click n0 "../modules/domain_pack.md"
-    click n2 "../modules/engine___init__.md"
-    click n3 "../modules/domain_pack.md"
+    click n0 "../modules/pack_interfaces.md"
+    click n2 "../modules/domain_pack.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [domain_pack](../modules/domain_pack.md) | 3 | — |
+| [pack_interfaces](../modules/pack_interfaces.md) | 3 | — |
 
 ### Structure
 
@@ -56,5 +53,4 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
 | `DomainPack.with_page_renderer` | type_reference | [domain_pack](../modules/domain_pack.md) | — |

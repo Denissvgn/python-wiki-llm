@@ -13,9 +13,10 @@ be prepared automatically, the analysis comparison policy, the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
 it declares, the :class:`DomainPack` that classifies sources, names
 pages, renders them, builds budgeted context, serves publication
-reference kinds and prepares analysis helpers, and the
+reference kinds and prepares analysis helpers, the
 :class:`PublicationTargetRegistry` of places a reviewed documentation
-candidate may be published to. Every call runs
+candidate may be published to, and the :class:`IntegrationSet` of
+knowledge-core providers (the pack's, with the engine's own on top). Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -65,6 +66,7 @@ A host built with ``events=`` also receives structured
 | `llm_wiki_engine.engine_events` | `ENGINE_EVENT_SCHEMA_VERSION`, `EVENT_KINDS`, `EngineEvent`, `EventKind`, `EventSink`, `operation_identity`, `validate_engine_event` |
 | `llm_wiki_engine.extract_format` | `EXTRACT_SCHEMA_VERSION`, `ExtractPayloadError`, `validate_extract_payload` |
 | `llm_wiki_engine.host` | `ALL_CAPABILITIES`, `Host`, `HostCapabilityError`, `MessageStream`, `NoProcessHost`, `current_host`, `using_host` |
+| `llm_wiki_engine.integrations` | `DEFAULT_INTEGRATIONS`, `IntegrationSet`, `using_integrations` |
 | `llm_wiki_engine.knowledge_kinds` | `DEFAULT_KINDS`, `ConceptKindSpec`, `KindRegistry`, `RelationshipKindSpec`, `using_kinds` |
 | `llm_wiki_engine.knowledge_validators` | `DEFAULT_VALIDATORS`, `ModelValidator`, `ValidatorRegistry`, `using_validators` |
 | `llm_wiki_engine.maintenance_queue_format` | `MAINTENANCE_QUEUE_SCHEMA_VERSION`, `MaintenanceQueueError`, `validate_maintenance_queue` |
@@ -93,17 +95,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (26) |
+| Outbound | `src` (27) |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [HelperPreparation](../entities/HelperPreparation.md) | Type alias | 238 | `Literal['auto', 'never']` | — |
-| [Operation](../entities/Operation.md) | Class | 247 | — | The settings in force for one engine call and everything beneath it. |
-| [Engine](../entities/Engine.md) | Class | 260 | — | One configured engine; independent engines may run side by side. |
+| [HelperPreparation](../entities/HelperPreparation.md) | Type alias | 242 | `Literal['auto', 'never']` | — |
+| [Operation](../entities/Operation.md) | Class | 251 | — | The settings in force for one engine call and everything beneath it. |
+| [Engine](../entities/Engine.md) | Class | 265 | — | One configured engine; independent engines may run side by side. |
 
 ## Functions
 

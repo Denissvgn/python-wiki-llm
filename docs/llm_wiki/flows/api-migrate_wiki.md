@@ -2,7 +2,7 @@
 
 **Entry point:** `migrate_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 32 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 33 more
 
 **Complete modules touched:**
 
@@ -33,6 +33,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [migrate_runtime](../modules/migrate_runtime.md)
 - [migrate_service](../modules/migrate_service.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [python_imports](../modules/python_imports.md)
 - [source_selection](../modules/source_selection.md)
@@ -129,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/migrate_runtime.py:run_request` | 17 | - | external | 9 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
-> Omission summary shows 8 of 293 groups; 285 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 295 groups; 287 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

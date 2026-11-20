@@ -7,9 +7,10 @@ be prepared automatically, the analysis comparison policy, the
 :class:`KindRegistry` of custom concept, relationship and graph-edge kinds
 it declares, the :class:`DomainPack` that classifies sources, names
 pages, renders them, builds budgeted context, serves publication
-reference kinds and prepares analysis helpers, and the
+reference kinds and prepares analysis helpers, the
 :class:`PublicationTargetRegistry` of places a reviewed documentation
-candidate may be published to. Every call runs
+candidate may be published to, and the :class:`IntegrationSet` of
+knowledge-core providers (the pack's, with the engine's own on top). Every call runs
 inside one :class:`Operation` that applies those choices to all work beneath
 it, including calls into :mod:`llm_wiki_cli.api`.
 
@@ -124,6 +125,7 @@ from ..services.domain_pack import (
 )
 from llm_wiki_engine.knowledge_kinds import DEFAULT_KINDS, ConceptKindSpec, KindRegistry, RelationshipKindSpec
 from llm_wiki_engine.knowledge_validators import DEFAULT_VALIDATORS, ModelValidator, ValidatorRegistry
+from llm_wiki_engine.integrations import DEFAULT_INTEGRATIONS, IntegrationSet, using_integrations
 from ..services.lint_request import LintRequest, LintRequestError
 from ..services.reference_providers import (
     BUILTIN_REFERENCE_PROVIDERS,
@@ -168,6 +170,7 @@ __all__ = [
     "ContextResponseError",
     "ContextSource",
     "ContractFileProvider",
+    "DEFAULT_INTEGRATIONS",
     "DEFAULT_KINDS",
     "DOCUMENTATION_QUERY_SCHEMA_VERSION",
     "DEFAULT_PUBLICATION_TARGETS",
@@ -183,6 +186,7 @@ __all__ = [
     "Host",
     "HelperToolchain",
     "HostCapabilityError",
+    "IntegrationSet",
     "KindRegistry",
     "LintRequest",
     "LintRequestError",
@@ -255,6 +259,7 @@ class Operation:
     kinds: KindRegistry = DEFAULT_KINDS
     pack: DomainPack = CODE_DOCS_PACK
     publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS
+    integrations: IntegrationSet = DEFAULT_INTEGRATIONS
 
 
 class Engine:
@@ -271,6 +276,7 @@ class Engine:
         kinds: KindRegistry = DEFAULT_KINDS,
         pack: DomainPack = CODE_DOCS_PACK,
         publication_targets: PublicationTargetRegistry = DEFAULT_PUBLICATION_TARGETS,
+        integrations: IntegrationSet = DEFAULT_INTEGRATIONS,
     ) -> None:
         from llm_wiki_engine.analysis_compatibility import selected_policy
 
@@ -291,6 +297,8 @@ class Engine:
             raise TypeError("pack must be a DomainPack")
         if not isinstance(publication_targets, PublicationTargetRegistry):
             raise TypeError("publication_targets must be a PublicationTargetRegistry")
+        if not isinstance(integrations, IntegrationSet):
+            raise TypeError("integrations must be an IntegrationSet")
         self._host = host
         self._helper_preparation: HelperPreparation = helper_preparation
         self._helper_cache_dir = None if helper_cache_dir is None else str(helper_cache_dir)
@@ -299,6 +307,8 @@ class Engine:
         self._kinds = kinds
         self._pack = pack
         self._publication_targets = publication_targets
+        # The engine's own choices win over the pack's.
+        self._integrations = pack.integrations.merged(integrations)
 
     @property
     def host(self) -> Host:
@@ -341,9 +351,11 @@ class Engine:
             stack.enter_context(using_kinds(self._kinds))
             stack.enter_context(using_pack(self._pack))
             stack.enter_context(using_publication_targets(self._publication_targets))
+            stack.enter_context(using_integrations(self._integrations))
             yield Operation(
                 self._host, self._helper_preparation, self._helper_cache_dir, self._comparison_policy,
                 self._validators, self._kinds, self._pack, self._publication_targets,
+                self._integrations,
             )
 
     def call(self, function: Callable[_P, _R], /, *args: _P.args, **kwargs: _P.kwargs) -> _R:

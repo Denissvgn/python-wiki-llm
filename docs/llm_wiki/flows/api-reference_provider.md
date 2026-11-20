@@ -71,7 +71,7 @@ flowchart LR
 |---|---|---:|---|
 | reference_provider | current_reference_providers | 365 | `current_reference_providers(data not statically known)` |
 | current_reference_providers | current_pack | 360 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
+| current_pack | _ACTIVE_PACK.get | 588 | `_ACTIVE_PACK.get(data not statically known)` |
 | reference_provider | KeyError | 367 | `KeyError(...)` |
 
 ### Boundary effects
@@ -82,7 +82,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
+| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 588 |
 | external_call | `reference_provider` | `KeyError` | 367 |
 
 ## Behavior
