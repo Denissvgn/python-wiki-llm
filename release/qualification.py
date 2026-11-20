@@ -1917,9 +1917,17 @@ def _validate_analysis_conformance_inputs(root: Path) -> None:
         registry = json.loads(member_bytes("src/llm_wiki_cli/services/analysis_contracts.json"), object_pairs_hook=_strict_object)
         def digest(value):
             return "sha256:" + _sha256_bytes(json.dumps(value, sort_keys=True, separators=(",", ":")).encode())
-        def implementation(paths):
-            return digest({name: _sha256_bytes(member_bytes("src/llm_wiki_cli/" + name).replace(b"\r\n", b"\n")) for name in sorted(set(paths))})
-        implementations = {"agent-wiki-cli": implementation(registry["shared"])}
+        def implementation(paths, engine_paths=()):
+            hashes = {name: _sha256_bytes(member_bytes("src/llm_wiki_cli/" + name).replace(b"\r\n", b"\n")) for name in sorted(set(paths))}
+            # Engine inputs keep their package prefix, as the producer records them.
+            for name in sorted(set(engine_paths)):
+                parts = name.split("/") if isinstance(name, str) else []
+                if (len(parts) < 2 or parts[0] != "llm_wiki_engine"
+                        or any(part in {"", ".", ".."} for part in parts) or "\\" in name or ":" in name):
+                    raise QualificationError("unsafe engine analysis input")
+                hashes[name] = _sha256_bytes(member_bytes("src/" + name).replace(b"\r\n", b"\n"))
+            return digest(hashes)
+        implementations = {"agent-wiki-cli": implementation(registry["shared"], registry.get("engine_shared", ()))}
         for provider in ("python", "typescript"):
             implementations["llm-wiki/extractor/" + provider] = implementation(registry["providers"][provider])
         implementations["llm-wiki/extractor/javascript"] = implementations["llm-wiki/extractor/typescript"]

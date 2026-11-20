@@ -125,12 +125,16 @@ def test_metadata_check_finds_historical_stale_version_links_and_residue(tmp_pat
     for name in ("CHANGELOG.md", "pyproject.toml", "tests/test_package_metadata.py"):
         (tmp_path / name).write_bytes((ROOT / name).read_bytes())
     assert contracts.release_input_errors(tmp_path) == []
-    version = tomllib.loads((tmp_path / "pyproject.toml").read_text())["project"]["version"]
+    version = tomllib.loads((tmp_path / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     file = tmp_path / "tests/test_package_metadata.py"
-    file.write_text(file.read_text().replace(f'== "{version}"', '== "0.0.0"'))
+    file.write_text(
+        file.read_text(encoding="utf-8").replace(f'== "{version}"', '== "0.0.0"'),
+        encoding="utf-8", newline="",
+    )
     changelog = tmp_path / "CHANGELOG.md"
     changelog.write_text(
-        changelog.read_text().replace(f"v{version}...HEAD", "v0.0.0...HEAD")
+        changelog.read_text(encoding="utf-8").replace(f"v{version}...HEAD", "v0.0.0...HEAD"),
+        encoding="utf-8", newline="",
     )
     (tmp_path / "build").mkdir()
     issues = contracts.release_input_errors(tmp_path)

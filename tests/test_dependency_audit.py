@@ -384,3 +384,54 @@ def test_audit_retries_do_not_repeat_bandit_or_prevent_later_checks(tmp_path, mo
     assert sleeps == ([5] if passed else [5, 15])
     if not passed:
         assert "http-503" in result["checks"][2]["error"]
+
+
+def companion_inventory():
+    value = inventory()
+    value["packages"].insert(1, {"name": "llm-wiki-engine", "version": "2.3.0", "installed_version": "2.3.0"})
+    value["exclusion"]["companions"] = [{"name": "llm-wiki-engine", "version": "2.3.0"}]
+    return value
+
+
+def test_lockstep_engine_is_excluded_with_the_verified_cli():
+    assert audit.scope(companion_inventory()) == audit.scope(inventory())
+
+
+@pytest.mark.parametrize("mutation", ["undeclared", "unknown-name", "other-version", "missing-row", "duplicate", "extra-field"])
+def test_owned_companion_exclusion_is_exact(mutation):
+    value = companion_inventory()
+    companions = value["exclusion"]["companions"]
+    if mutation == "undeclared":
+        del value["exclusion"]["companions"]
+        # Without the declaration the engine stays in scope and must be audited.
+        assert "llm-wiki-engine" in audit.scope(value)
+        return
+    if mutation == "unknown-name":
+        companions[0]["name"] = "runtime-extra"
+    elif mutation == "other-version":
+        for row in value["packages"]:
+            if row["name"] == "llm-wiki-engine":
+                row["version"] = row["installed_version"] = "2.2.0"
+        companions[0]["version"] = "2.2.0"
+    elif mutation == "missing-row":
+        value["packages"] = [row for row in value["packages"] if row["name"] != "llm-wiki-engine"]
+    elif mutation == "duplicate":
+        companions.append(dict(companions[0]))
+    else:
+        companions[0]["reason"] = "unreviewed"
+    with pytest.raises(ValueError, match="companion"):
+        audit.scope(value)
+
+
+def test_capture_excludes_the_installed_lockstep_engine(tmp_path, monkeypatch):
+    monkeypatch.setattr(audit.metadata, "version", lambda name: audit.PINNED_AUDIT)
+    monkeypatch.setattr(audit, "installed_packages", lambda: companion_inventory()["packages"])
+    monkeypatch.setattr(audit, "candidate_identity", lambda candidate: inventory()["exclusion"]["verification"])
+    captured = audit.capture_inventory(tmp_path)
+    assert captured["exclusion"]["companions"] == [{"name": "llm-wiki-engine", "version": "2.3.0"}]
+    assert "llm-wiki-engine" not in audit.scope(captured)
+    packages = companion_inventory()["packages"]
+    packages[1] = {"name": "llm-wiki-engine", "version": "2.2.0", "installed_version": "2.2.0"}
+    monkeypatch.setattr(audit, "installed_packages", lambda: packages)
+    with pytest.raises(ValueError, match="companion"):
+        audit.capture_inventory(tmp_path)

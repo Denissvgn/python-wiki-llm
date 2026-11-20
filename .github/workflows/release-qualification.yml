@@ -883,12 +883,13 @@ jobs:
           from pathlib import Path
           sys.path.insert(0, str(Path.cwd()))
           from release import core_shard_runner as runner
-          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
+          # Sources are named relative to the CLI and engine packages' shared parent.
+          parent = (Path.cwd() / "src").resolve()
           output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
-          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
+          rows = runner.coverage_rows(output / "coverage.data", [parent.as_posix()], runner.source_manifest(parent))
           runner.q.write_json(output / "source-boundary.json", {
               "scope": "focused source probe; full native and hosted gates remain required",
-              "measured_files": len(rows), "source_root": package.as_posix(),
+              "measured_files": len(rows), "source_root": parent.as_posix(),
           })
           PY
         working-directory: candidate
@@ -1353,12 +1354,13 @@ jobs:
           from pathlib import Path
           sys.path.insert(0, str(Path.cwd()))
           from release import core_shard_runner as runner
-          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
+          # Sources are named relative to the CLI and engine packages' shared parent.
+          parent = (Path.cwd() / "src").resolve()
           output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
-          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
+          rows = runner.coverage_rows(output / "coverage.data", [parent.as_posix()], runner.source_manifest(parent))
           runner.q.write_json(output / "source-boundary.json", {
               "scope": "focused source probe; full native and hosted gates remain required",
-              "measured_files": len(rows), "source_root": package.as_posix(),
+              "measured_files": len(rows), "source_root": parent.as_posix(),
           })
           PY
         working-directory: candidate

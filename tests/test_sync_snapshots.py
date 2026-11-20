@@ -40,6 +40,9 @@ MACHINE_STORES = (
     "wiki/.llm-wiki-maintenance-adoption.json",
     ".llm-wiki-maintenance-recovery/",
 )
+# Lock files are pinned by presence only: Windows byte-range locking leaves one
+# byte in them, other platforms leave them empty.
+LOCK_FILES = ("wiki/llm-wiki-governance.lock", "wiki/llm-wiki-storage.lock")
 AUTHORED_SENTENCE = "Keep task titles in the user's original spelling."
 
 
@@ -67,6 +70,9 @@ def _pinned(tree: dict[str, bytes]) -> dict[str, str]:
         if not path.startswith(MACHINE_STORES)
     }
     pinned["wiki/log.md"] = _normalized_log(pinned["wiki/log.md"])
+    for path in LOCK_FILES:
+        if path in pinned:
+            pinned[path] = ""
     return pinned
 
 
@@ -102,14 +108,14 @@ def _edit_task_and_model(project: Path) -> None:
     end = text.index("\n## ", start + 1)
     page.write_text(
         text[:end].rstrip("\n") + f"\n\n{AUTHORED_SENTENCE}\n" + text[end:],
-        encoding="utf-8",
+        encoding="utf-8", newline="",
     )
     model = project / "models.py"
     source = model.read_text(encoding="utf-8")
     assert "done: bool = False\n" in source
     model.write_text(
         source.replace("done: bool = False\n", "done: bool = False\n    priority: int = 1\n", 1),
-        encoding="utf-8",
+        encoding="utf-8", newline="",
     )
 
 
@@ -128,7 +134,7 @@ def _assert_matches_fixture(fixture: Path, actual: dict[str, dict[str, str]]) ->
         fixture.parent.mkdir(parents=True, exist_ok=True)
         fixture.write_text(
             json.dumps(actual, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="",
         )
     expected = json.loads(fixture.read_text(encoding="utf-8"))
     assert sorted(actual) == sorted(expected)

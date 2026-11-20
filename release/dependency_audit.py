@@ -24,6 +24,9 @@ import uuid
 
 PINNED_AUDIT = "2.10.1"
 OWNED_PROJECT = "agent-wiki-cli"
+# Released in lockstep with the CLI. The CLI identity check verifies its installed
+# files, so it is excluded with the CLI instead of being looked up on the registry.
+OWNED_COMPANIONS = ("llm-wiki-engine",)
 MAX_BYTES = 64 * 1024 * 1024
 DEADLINE_SECONDS = 540
 BACKOFF_SECONDS = (5, 15)
@@ -123,14 +126,25 @@ def capture_inventory(candidate: Path) -> dict:
     owned = next((row for row in packages if row["name"] == OWNED_PROJECT), None)
     if owned is None or owned["installed_version"] != identity["version"] or identity["editable"]:
         raise ValueError("candidate exclusion does not match the installed inventory")
+    exclusion = {"name": OWNED_PROJECT, "version": owned["version"],
+                 "reason": "application-owned candidate; verified against source, not registry-audited",
+                 "verification": identity}
+    companions = []
+    for name in OWNED_COMPANIONS:
+        row = next((row for row in packages if row["name"] == name), None)
+        if row is None:
+            continue  # A candidate from before the engine distribution has none.
+        if row["installed_version"] != identity["version"]:
+            raise ValueError("owned companion does not match the candidate version")
+        companions.append({"name": name, "version": row["version"]})
+    if companions:
+        exclusion["companions"] = companions
     return {
         "schema_version": SCHEMA, "scanner": {"name": "pip-audit", "version": PINNED_AUDIT},
         "environment": {"python": sys.executable, "prefix": sys.prefix,
                         "python_version": platform.python_version(), "platform": platform.platform()},
         "packages": packages,
-        "exclusion": {"name": OWNED_PROJECT, "version": owned["version"],
-                      "reason": "application-owned candidate; verified against source, not registry-audited",
-                      "verification": identity},
+        "exclusion": exclusion,
     }
 
 
@@ -162,6 +176,19 @@ def scope(inventory: dict) -> dict[str, str]:
             or not isinstance(verification.get("implementation_hash"), str)
             or not re.fullmatch(r"sha256:[0-9a-f]{64}", verification["implementation_hash"])):
         raise ValueError("invalid candidate exclusion identity")
+    companions = excluded.get("companions", [])
+    if not isinstance(companions, list):
+        raise ValueError("invalid owned companion exclusion")
+    names = set()
+    for item in companions:
+        if (not isinstance(item, dict) or set(item) != {"name", "version"}
+                or item["name"] not in OWNED_COMPANIONS or item["name"] in names
+                or result.get(item["name"]) != item["version"]
+                or item["version"] != result[OWNED_PROJECT]):
+            raise ValueError("invalid owned companion exclusion")
+        names.add(item["name"])
+    for name in names:
+        del result[name]
     del result[OWNED_PROJECT]
     return result
 

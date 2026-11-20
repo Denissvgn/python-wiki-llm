@@ -185,3 +185,40 @@ def test_dependency_tree_native_records_are_required_and_bound(compatibility_bun
     else:
         with pytest.raises(q.QualificationError):
             q._validate_analysis_conformance(root)
+
+
+@pytest.mark.parametrize("engine_bytes", [None, b"ENGINE = 2\n"])
+def test_cli_implementation_includes_registered_engine_inputs(compatibility_bundle, engine_bytes):
+    # The producer hashes engine inputs under their llm_wiki_engine/ prefix.
+    root = compatibility_bundle
+    source = root / "evidence/RD-00/source/candidate-source.tar"
+    files = {}
+    with tarfile.open(source) as archive:
+        for member in archive.getmembers():
+            stream = archive.extractfile(member)
+            assert stream is not None
+            files[member.name] = stream.read()
+    registry = json.loads(files["src/llm_wiki_cli/services/analysis_contracts.json"])
+    registry["engine_shared"] = ["llm_wiki_engine/store.py"]
+    files["src/llm_wiki_cli/services/analysis_contracts.json"] = json.dumps(registry).encode()
+    files["src/llm_wiki_engine/store.py"] = b"ENGINE = 1\n"
+    hashes = {"core.py": hashlib.sha256(files["src/llm_wiki_cli/core.py"]).hexdigest(),
+              "llm_wiki_engine/store.py": hashlib.sha256(b"ENGINE = 1\n").hexdigest()}
+    implementation = "sha256:" + hashlib.sha256(json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    if engine_bytes is not None:
+        files["src/llm_wiki_engine/store.py"] = engine_bytes
+    with tarfile.open(source, "w") as archive:
+        for name, raw in files.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(raw)
+            archive.addfile(info, io.BytesIO(raw))
+    for path in (root / "evidence").rglob("*.json"):
+        data = json.loads(path.read_text())
+        if isinstance(data, dict) and "agent-wiki-cli" in data.get("components", {}):
+            data["components"]["agent-wiki-cli"]["implementation"] = implementation
+            write(path, data)
+    if engine_bytes is None:
+        q._validate_analysis_conformance(root)
+    else:
+        with pytest.raises(q.QualificationError, match="differs from frozen inputs"):
+            q._validate_analysis_conformance(root)
