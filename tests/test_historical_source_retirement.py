@@ -550,6 +550,71 @@ def test_concurrent_author_edit_is_kept_and_no_release_is_committed(project, cap
     assert RELEASES not in SyncManifest.load(wiki).generation_inputs
 
 
+@pytest.mark.parametrize("profile", ["v1", "sharded-v2", "adopted-v1"])
+def test_concurrent_editor_during_knowledge_publication_preserves_the_predecessor_and_allows_retry(
+    project, capsys, monkeypatch, profile
+):
+    from llm_wiki_cli.services import historical_release
+    from llm_wiki_engine.knowledge_artifacts import CommitStage
+
+    src, wiki = project
+    if profile == "sharded-v2":
+        api.sync_wiki("src", "wiki", knowledge_format=profile)
+    acknowledgments = _acknowledge(wiki) if profile == "adopted-v1" else None
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    digest = _preview_release(capsys, wiki, [ENTITY])
+    roots = ["index.md", ".llm-wiki-surface.json", ".llm-wiki-knowledge.json", MANIFEST_FILENAME]
+    previous = {name: (wiki / name).read_bytes() for name in roots}
+    selected = wiki / ENTITY
+    original = selected.read_bytes()
+    edited = original + b"\nField editor: a correction to the original page.\n"
+    captured = []
+    original_commit = historical_release.commit_knowledge_artifacts
+
+    def concurrent_commit(plan, **kwargs):
+        existing_hook = kwargs.pop("fault_injector", None)
+
+        def editor(stage):
+            if stage == CommitStage.KNOWLEDGE_INDEX_WRITTEN:
+                assert (wiki / "index.md").read_bytes() != previous["index.md"]
+                assert (wiki / ".llm-wiki-knowledge.json").read_bytes() != previous[".llm-wiki-knowledge.json"]
+                assert (wiki / MANIFEST_FILENAME).read_bytes() == previous[MANIFEST_FILENAME]
+                assert selected.read_bytes() == original
+                selected.write_bytes(edited)
+                captured.append(stage)
+            if existing_hook:
+                existing_hook(stage)
+
+        return original_commit(plan, fault_injector=editor, **kwargs)
+
+    with monkeypatch.context() as patcher:
+        patcher.setattr(historical_release, "commit_knowledge_artifacts", concurrent_commit)
+        result = _call(capsys, "sync", *_release_args([ENTITY]), f"--expected-historical-release={digest}", success=False)
+    assert captured == [CommitStage.KNOWLEDGE_INDEX_WRITTEN] and "Historical release digest:" not in result
+    assert selected.read_bytes() == edited
+    assert all((wiki / name).read_bytes() == raw for name, raw in previous.items())
+    manifest = SyncManifest.load(wiki)
+    assert RELEASES not in manifest.generation_inputs and set(manifest.generation_inputs[REGISTRY]["pages"]) == set(PAGES)
+    _assert_ack_history(wiki, acknowledgments, archived=True)
+    _assert_invalid_history_reports(capsys, entity_present=True)
+
+    # The editor saves their own newer text before the verified original is
+    # restored for a new preview. The release itself never rewrites either.
+    editor_copy = src.parent / "editor-revision.md"
+    selected.rename(editor_copy)
+    selected.write_bytes(original)
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+    fresh = _preview_release(capsys, wiki, [ENTITY])
+    _release(capsys, [ENTITY], fresh)
+    assert list(_release_events(wiki)) == [fresh]
+    stable = _snapshot(wiki)
+    again = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=fresh)
+    assert again.historical_release["replayed"] and _snapshot(wiki) == stable
+    assert selected.read_bytes() == original and editor_copy.read_bytes() == edited
+    _assert_ack_history(wiki, acknowledgments, archived=True)
+
+
 @pytest.mark.parametrize("replacement", ["same-class", "same-module", "edited-original"])
 def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_owner(project, capsys, replacement):
     src, wiki = project

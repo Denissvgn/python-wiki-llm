@@ -131,8 +131,7 @@ def run_release(options, write_basis):
         manifest=next_manifest, prior=artifacts, maintenance_adoption=guard_maintenance_owner(root, manifest))
     history.validate_release_transition(manifest, artifacts, plan.committed_manifest, files["index.md"], selected_bytes, digest)
 
-    def unchanged(expected_index):
-        state.assert_current()
+    def check_markdown(expected_index):
         if {p.relative_path for p in collect_wiki_pages(root)} != files.keys():
             raise SourceRetirementError("Wiki page membership changed during historical release; preview again")
         for path, (size, digest, identity) in commitments.items():
@@ -145,14 +144,24 @@ def run_release(options, write_basis):
                 raise SourceRetirementError(f"Wiki page {path!r} changed during historical release; restore it and preview again")
 
     planned_index = index.encode("utf-8")
-    unchanged(files["index.md"])
+    state.assert_current()
+    check_markdown(files["index.md"])
     if not options.dry_run:
         if write_basis is not None:
             write_basis.assert_current()
         write_bytes_atomic(root / "index.md", planned_index)
         try:
-            unchanged(planned_index)
-            commit_knowledge_artifacts(plan)
+            state.assert_current()
+            check_markdown(planned_index)
+
+            def confirm_release():
+                # The native writer has verified its new projection roots. The
+                # old manifest and the author's files must still authorize this release.
+                if read_guarded(root / MANIFEST_FILENAME, MAX_EXPANDED_BYTES).content != state.captured_bytes[MANIFEST_FILENAME]:
+                    raise SourceRetirementError("Native manifest changed during historical release; preview again")
+                check_markdown(planned_index)
+
+            commit_knowledge_artifacts(plan, before_manifest=confirm_release)
         except BaseException:
             # Restore only bytes this operation still owns, and only while the
             # original manifest is authoritative. Preserve any concurrency conflict.
@@ -168,5 +177,6 @@ def run_release(options, write_basis):
             raise
     else:
         commit_knowledge_artifacts(plan, dry_run=True)
-        unchanged(files["index.md"])
+        state.assert_current()
+        check_markdown(files["index.md"])
     return {"digest": digest, "pages": sorted(selection), "applied": not options.dry_run, "replayed": False}
