@@ -434,7 +434,7 @@ def test_pack_values_are_checked() -> None:
     assert NOTES.describe() == {
         "name": "team/notes",
         "source_kinds": {"notes": [".md", ".txt"]},
-        "classifier": "llm_wiki_cli.services.domain_pack.ExtensionSourceClassifier",
+        "classifier": "llm_wiki_engine.pack_interfaces.ExtensionSourceClassifier",
         "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
         "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
         "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
@@ -442,3 +442,14 @@ def test_pack_values_are_checked() -> None:
         "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
         "extractors": {},
     }
+
+
+def test_pack_interfaces_live_in_the_engine_and_stay_importable_here():
+    import llm_wiki_engine.pack_interfaces as engine_side
+    from llm_wiki_cli.services import domain_pack as cli_side
+
+    for name in engine_side.__all__:
+        assert getattr(cli_side, name) is getattr(engine_side, name), name
+    # The code-documentation pack and its defaults stay with the CLI.
+    assert cli_side.CODE_DOCS_PACK.classifier.__class__.__module__ == cli_side.__name__
+    assert not hasattr(engine_side, "CODE_DOCS_PACK")

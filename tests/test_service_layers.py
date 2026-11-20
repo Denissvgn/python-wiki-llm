@@ -941,7 +941,7 @@ def test_engine_package_loads_without_the_provider_or_third_party_modules() -> N
 
 
 # Engine modules written for the engine, which never had a services path.
-ENGINE_NATIVE_MODULES = frozenset({"infrastructure_state", "integrations", "knowledge_reuse_format"})
+ENGINE_NATIVE_MODULES = frozenset({"infrastructure_state", "integrations", "knowledge_reuse_format", "pack_interfaces"})
 
 
 def test_engine_native_modules_have_no_services_path() -> None:
