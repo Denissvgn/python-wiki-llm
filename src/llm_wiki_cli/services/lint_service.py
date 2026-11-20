@@ -1290,14 +1290,39 @@ def _check_orphan_pages(
                 )
 
 
+def _historical_pages_for_lint(report, wiki_path, inputs):
+    from llm_wiki_engine import historical_sources
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+    from .historical_sources import confirm_absence
+
+    manifest = inputs.manifest
+    if manifest is None or historical_sources.INPUT not in manifest.generation_inputs:
+        return {}
+    try:
+        records = historical_sources.bound_records(manifest)
+        with StorageReadSession(wiki_path).phase() as reader:
+            content = {path: reader.read(path, MAX_EXPANDED_BYTES) for path in ("index.md", *records)}
+            historical_sources.check_content(records, content)
+        confirm_absence(inputs.source_snapshot, {row["owner"]["source_path"] for row in records.values()})
+    except (OSError, ValueError) as exc:
+        _add(report, "knowledge_projection", f"Historical source custody failed: {exc}",
+             path=MANIFEST_FILENAME, reason_code="historical-source-invalid")
+        return {}
+    return records
+
+
 def _check_entity_coverage(
     report: LintReport,
     wiki_path: Path,
     deep_inventory: dict,
     *,
     manifest: SyncManifest | None = None,
+    historical_pages: Mapping | None = None,
 ) -> None:
     documented_entities = _collect_documented_entities(wiki_path)
+    documented_entities -= {Path(path).stem for path, row in (historical_pages or {}).items()
+                            if row["owner"]["scope"] == "entity"}
     retired_mappings = _lint_retired_entity_mappings(report, manifest)
     documented_entities -= {Path(path).stem for path in retired_mappings}
     code_classes = _inventory_code_classes(deep_inventory)
@@ -1372,8 +1397,11 @@ def _check_module_coverage(
     deep_inventory: dict,
     source_snapshot: SourceSnapshot,
     statuses: Mapping[str, ExtractorStatus],
+    historical_pages: Mapping | None = None,
 ) -> None:
     documented_modules = _collect_documented_modules(wiki_path)
+    documented_modules -= {Path(path).stem for path, row in (historical_pages or {}).items()
+                           if row["owner"]["scope"] == "module"}
     code_modules = _inventory_code_modules(deep_inventory)
 
     undoc_mods = code_modules - documented_modules
@@ -2123,9 +2151,21 @@ def _check_knowledge_concepts(
     manifest = view.manifest_basis
     if knowledge is None or manifest is None:
         return
+    from llm_wiki_engine import historical_sources
+    try:
+        historical_pages = historical_sources.check_projections(manifest, knowledge)
+    except SourceRetirementError as exc:
+        _add(report, "knowledge_projection", str(exc), path=MANIFEST_FILENAME, reason_code="historical-source-invalid")
+        historical_pages = {}
     retired_mappings = _lint_retired_entity_mappings(report, manifest)
     for concept in sorted(knowledge.concepts, key=lambda item: item.locator):
         page_path = concept.document.canonical_path
+        if page_path in historical_pages:
+            _diagnose(report, "knowledge_evidence",
+                      f"Historical source page {page_path!r} retains its predecessor proof. "
+                      f"Present-day structural evidence is {concept.facets.structure.evidence.value}.",
+                      path=page_path, target=concept.locator, severity="info", reason_code="historical-source-file")
+            continue
         retired_owner = retired_mappings.get(page_path)
         retirement = concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY)
         expected_retirement = (
@@ -2633,9 +2673,10 @@ def _run_report_checks(
         _check_generated_diagrams(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "orphans"):
         _check_orphan_pages(report, wiki_path, inputs.page_index)
+    historical_pages = _historical_pages_for_lint(report, wiki_path, inputs)
     with _profile_phase(profiler, "entities"):
         _check_entity_coverage(
-            report, wiki_path, inputs.deep_inventory, manifest=inputs.manifest
+            report, wiki_path, inputs.deep_inventory, manifest=inputs.manifest, historical_pages=historical_pages
         )
     with _profile_phase(profiler, "modules"):
         _check_module_coverage(
@@ -2644,6 +2685,7 @@ def _run_report_checks(
             inputs.deep_inventory,
             inputs.source_snapshot,
             inputs.inventory_result.statuses,
+            historical_pages=historical_pages,
         )
     with _profile_phase(profiler, "workflows"):
         _check_workflow_coverage(

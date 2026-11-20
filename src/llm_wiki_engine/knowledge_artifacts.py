@@ -53,6 +53,7 @@ from .knowledge_model import (
     Origin,
 )
 from llm_wiki_engine.section_ownership import SectionOwnershipError, validate_section_ownership
+from . import historical_sources
 from .source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
@@ -569,7 +570,7 @@ def _validate_artifact_parity(
         knowledge_payload=canonical_payload,
         retired_locators=frozenset(
             concept.locator for concept in knowledge.concepts
-            if SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+            if SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions or historical_sources.EXTENSION in concept.extensions
         ),
     )
     object.__setattr__(
@@ -1382,6 +1383,7 @@ def _validate_manifest_knowledge_parity(
             exc.message,
         ) from exc
     try:
+        historical_sources.check_projections(manifest, knowledge)
         retired_mappings = retired_entity_mappings(manifest)
     except SourceRetirementError as exc:
         raise KnowledgeArtifactError(

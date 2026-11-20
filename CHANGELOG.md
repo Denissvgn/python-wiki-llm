@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Sync can retain the original module and entity pages of explicitly selected
+  missing source files. The index lists their historical location and the native
+  record retains the original source, page and producer commitments.
+
 ### Fixed
 
 - Sync previews preserve authored module and entity descriptions across source
   moves in maintained wikis. A concurrent edit to a prior page invalidates
-  the preview.
+  the preview. Dry-run standard output and its engine message events are published
+  after validation. Progress and errors remain visible on standard error.
 - When same-named declarations gain separate pages, maintenance keeps the
   transferred record and its history. A new record requires captured source
   and prose for its current owner.

@@ -89,6 +89,8 @@ from llm_wiki_engine.io import read_md, write_md
 from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from llm_wiki_engine.validation import portable_path_key
+from llm_wiki_engine import historical_sources as historical
+from . import historical_sources as historical_plan
 from llm_wiki_engine.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
     SourceRetirementError,
@@ -183,7 +185,7 @@ from .sync_analysis import (
     SyncOwnershipError,
     compute_sync_diff as _compute_diff,
 )
-from .sync_generated_sections import plan_generated_source_repairs
+from .sync_generated_sections import plan_generated_source_repairs, repair_source_sections
 from .sync_transitions import (
     PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
 )
@@ -312,10 +314,7 @@ MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
 _GUARD_PATH_SAMPLE_LIMIT = 8
 _GUARD_PREVIEW_COMMAND_LIMIT = 3072
 _FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
-_DEPRECATION_HEADER = (
-    "> ⚠️ **Stale:** Source no longer found in codebase. "
-    "Run `llm-wiki lint` to audit.\n\n"
-)
+_DEPRECATION_HEADER = historical.STALE_HEADER
 _GENERATED_FLOW_MARKER = "<!-- Auto-generated from static call edges."
 _GENERATED_WORKFLOW_MARKER = "<!-- Auto-generated static call-chain projection."
 _LEGACY_GENERATED_WORKFLOW_MARKER = "<!-- Auto-detected call chain."
@@ -947,6 +946,20 @@ def _record_page_write(
         emit(f"  SKIP {page_kind} (unchanged): {page_name}")
 
 
+def _merge_revived_source_page(ctx, path, existing, generated, kind):
+    relative = path.relative_to(ctx.wiki_dir).as_posix()
+    row = ctx.manifest.generation_inputs.get(historical.INPUT, {}).get("pages", {}).get(relative)
+    if row is None:
+        return None
+    from llm_wiki_engine.knowledge_evidence import sha256_bytes
+    if existing is None or not historical.page_matches(existing.encode("utf-8"), row["page_hash"]):
+        raise SourceRetirementError(f"Historical page changed before revival at {relative!r}")
+    # Begin from the original body. Replace only recognized generated structures;
+    # all authored, mixed-table descriptions, nested and unknown sections stay in place.
+    original = existing if sha256_bytes(existing.encode("utf-8")) == row["page_hash"] else existing.removeprefix(_DEPRECATION_HEADER)
+    return SemanticMergeResult(repair_source_sections(original, generated, kind, relative))
+
+
 def _merge_entity_page(
     ctx: _ApplyDiffContext,
     entity_path: Path,
@@ -955,6 +968,9 @@ def _merge_entity_page(
 ) -> SemanticMergeResult:
     merge_result = SemanticMergeResult(generated)
     existing = _read_transition_page(ctx, entity_path)
+    revived = _merge_revived_source_page(ctx, entity_path, existing, generated, PageKind.ENTITIES)
+    if revived is not None:
+        return revived
     if ctx.preserve_semantic and existing is not None:
         merge_result = _merge_entity_semantics(
             existing,
@@ -985,6 +1001,9 @@ def _merge_module_page(
 ) -> SemanticMergeResult:
     merge_result = SemanticMergeResult(generated)
     existing = _read_transition_page(ctx, module_path)
+    revived = _merge_revived_source_page(ctx, module_path, existing, generated, PageKind.MODULES)
+    if revived is not None:
+        return revived
     if ctx.preserve_semantic and existing is not None:
         old_module_semantics = (
             old_generated_semantics.get("module")
@@ -1779,6 +1798,8 @@ class _SyncRunOptions:
     knowledge_format: str | None = None
     capture_cache_options: InventoryCacheOptions | None = None
     repair_paths: tuple[str, ...] = ()
+    retire_missing_sources: tuple[str, ...] = ()
+    retire_missing_pages: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -2493,6 +2514,8 @@ def sync_request_from_args(args) -> SyncRequest:
         clear_openapi_file=bool(getattr(args, "clear_openapi_file", False)),
         source_selection=getattr(args, "source_selection", None),
         repair_evidence=getattr(args, "repair_evidence", None),
+        retire_missing_sources=getattr(args, "retire_missing_source", None),
+        retire_missing_pages=getattr(args, "retire_missing_page", None),
         allow_external_source=bool(getattr(args, "allow_external_src", False)),
         rebuild_knowledge=bool(getattr(args, "rebuild_knowledge", False)),
         knowledge_format=getattr(args, "knowledge_format", None),
@@ -2544,12 +2567,18 @@ def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:
     source_selection = request.source_selection
     try:
         scoped_paths = repair_paths(request.repair_evidence)
+        retire_sources = historical_plan.selected_sources(request.retire_missing_sources)
+        retire_pages = historical_plan.selected_pages(request.retire_missing_pages)
+        if retire_pages and not retire_sources:
+            raise SourceRetirementError("--retire-missing-page requires --retire-missing-source")
+        if retire_sources and (initialize_surfaces or scoped_paths or not preserve_semantic):
+            raise ScopedRepairError("historical source retirement requires ordinary sync preserving semantic Markdown")
         if scoped_paths and include_plugins:
             raise ScopedRepairError("--repair-evidence requires --no-plugins and complete built-in analysis")
         if scoped_paths and (initialize_surfaces or not preserve_semantic or openapi_file or clear_openapi_file
                              or request.knowledge_format or request.rebuild_knowledge):
             raise ScopedRepairError("--repair-evidence cannot change generation/storage policy or initialize surfaces")
-    except ScopedRepairError as exc:
+    except (ScopedRepairError, SourceRetirementError) as exc:
         emit(f"Error: {exc}", stream="stderr")
         raise SyncRequestAborted(2)
     if openapi_file and clear_openapi_file:
@@ -2610,6 +2639,8 @@ def _sync_run_options_from_request(request: SyncRequest) -> _SyncRunOptions:
         clear_openapi_file=clear_openapi_file,
         source_selection=source_selection,
         repair_paths=scoped_paths,
+        retire_missing_sources=retire_sources,
+        retire_missing_pages=retire_pages,
     )
 
 
@@ -3015,6 +3046,8 @@ def _sync_preview_argv(options: _SyncRunOptions) -> list[str]:
         argv.extend(("--flow-category", category))
     for language in sorted(options.include_tests or ()):
         argv.extend(("--include-tests", language))
+    argv.extend(f"--retire-missing-source={path}" for path in options.retire_missing_sources)
+    argv.extend(f"--retire-missing-page={path}" for path in options.retire_missing_pages)
     if options.repair_paths:
         argv.extend(f"--repair-evidence={path}" for path in options.repair_paths)
     return argv
@@ -3175,6 +3208,8 @@ def _apply_sync_changes(
             )
         ),
         retired_entity_pages=list(read_entity_retirement_state(surface_plan.generation_inputs)),
+        previous_history=historical.read_records(manifest.generation_inputs),
+        file_history=historical.read_records(surface_plan.generation_inputs),
     )
     _record_page_write_state(result, index_state)
 
@@ -4141,6 +4176,8 @@ def _prepare_sync_run(
 ) -> _PreparedSyncRun | _ReusedSync | None:
     assert_no_pending_page_moves(options.wiki_dir)
     manifest, seed_manifest = _load_or_seed_manifest(options)
+    if manifest is None and options.retire_missing_sources:
+        raise SourceRetirementError("Historical source retirement needs an intact prior source/wiki snapshot")
     if manifest is None and not seed_manifest:
         return None
 
@@ -4306,6 +4343,9 @@ def _prepare_sync_run(
             # Page application must run for recovery/header repair even when
             # source bytes and the already committed retirement marker match.
             diff.retirement_repairs = True
+    generation_inputs = historical_plan.plan_retirement(
+        options, manifest, committed_state, source_snapshot, inventory, generated_plan, generation_inputs
+    )
     surface_plan = _build_surface_initialization_plan(
         options,
         manifest,
@@ -4409,6 +4449,8 @@ def _prepare_sync_run(
     if (
         not options.rebuild_knowledge
         and not options.repair_paths
+        and not options.retire_missing_sources
+        and historical.INPUT not in baseline_manifest.generation_inputs
         and options.knowledge_format is None
         and not options.initialize_surfaces
         and not seed_manifest
@@ -5037,6 +5079,8 @@ def _apply_prepared_sync(
                 prepared.infrastructure_plan,
             ),
             retired_entity_pages=list(read_entity_retirement_state(prepared.surface_plan.generation_inputs)),
+            previous_history=historical.read_records(prepared.manifest.generation_inputs),
+            file_history=historical.read_records(prepared.surface_plan.generation_inputs),
         )
     _record_page_write_state(result, index_state)
     if _applied_sync_has_changes(options, prepared, result):
@@ -5500,14 +5544,22 @@ def _enforce_sync_write_safety(
 def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=False) -> SyncResult:
     if dry_run and target_wiki_dir is None:
         raise ValueError("A staged preview requires its original wiki directory")
+    file_history = historical.read_records(prepared.surface_plan.generation_inputs)
+    historical_plan.confirm_absence(prepared.source_snapshot, {row["owner"]["source_path"] for row in file_history.values()})
     boundary = (
         PageTransitionExecution(options.wiki_dir, prepared.page_transitions, preview=dry_run)
         if prepared.page_transitions is not None else nullcontext(None)
     )
+    previous_history = historical.read_records(prepared.manifest.generation_inputs)
+    historical_plan.check_prior_pages(target_wiki_dir or options.wiki_dir, previous_history, file_history)
+    historical_pages = previous_history.keys() | file_history.keys()
+    if historical_pages:
+        historical_pages.add("index.md")
     prior_pages = (
-        preview_maintenance_preimages(target_wiki_dir, options.wiki_dir, prepared.page_transitions)
+        preview_maintenance_preimages(target_wiki_dir, options.wiki_dir, prepared.page_transitions,
+                                      guarded_pages=frozenset(historical_pages))
         if dry_run and target_wiki_dir is not None and prepared.page_transitions is not None
-        and prepared.manifest.maintenance_state is not None else nullcontext(None)
+        and (prepared.manifest.maintenance_state is not None or historical_pages) else nullcontext(None)
     )
     with prior_pages as preimages, boundary as execution:
         active = replace(prepared, transition_execution=execution, maintenance_preview_preimages=preimages)
@@ -5515,6 +5567,7 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
         _finalize_prepared_sync(
             options, active, result, target_wiki_dir=target_wiki_dir, dry_run=dry_run
         )
+    historical_plan.confirm_absence(prepared.source_snapshot, {row["owner"]["source_path"] for row in file_history.values()})
     if not dry_run:
         _record_outcome("synced", result)
     return result
@@ -5865,6 +5918,8 @@ def _rebuild_index(
     flow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
     retired_entity_pages: list[str] | None = None,
+    previous_history: Mapping | None = None,
+    file_history: Mapping | None = None,
 ) -> str:
     """Regenerate index.md from the live inventory."""
     if entity_page_cache is None:
@@ -5929,7 +5984,12 @@ def _rebuild_index(
         api_contracts_present=(wiki_dir / "api-contracts.md").is_file(),
     )
     if preserve_semantic and index_path.exists():
-        new_index = _preserve_index_custom_sections(read_md(index_path), new_index)
+        previous_index = read_md(index_path)
+        if previous_history or file_history:
+            previous_index = historical.remove_bound_registry(previous_index, previous_history or {})
+        new_index = _preserve_index_custom_sections(previous_index, new_index)
+    if file_history:
+        new_index = historical.insert_registry(new_index, file_history)
     write_state = _write_md_if_changed(
         index_path,
         new_index,

@@ -77,6 +77,7 @@ from llm_wiki_engine.contracts import (
     TYPED_GRAPH_EXTENSION_KEY,
 )
 from llm_wiki_engine.section_ownership import observe_page_sections, section_ownership_extension
+from llm_wiki_engine import historical_sources as historical
 from llm_wiki_engine.source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
@@ -441,6 +442,15 @@ def _build_knowledge_generation_plan(
         raise KnowledgeGenerationError(
             "manifest_generation_inputs.entity_retirement", str(exc)
         ) from exc
+    try:
+        historical_records = historical.validate_transition(
+            previous, inputs.prior_artifacts, manifest, inputs.maintenance_missing_source_paths, inputs.content_by_page
+        )
+        historical.check_content(historical_records, inputs.content_by_page)
+    except SourceRetirementError as exc:
+        raise KnowledgeGenerationError("manifest_generation_inputs.historical_source_files", str(exc)) from exc
+    for page_path, row in historical_records.items():
+        concept_implementations.setdefault(page_path, {})[historical.EXTENSION] = row
     for page_path, owner in retired_mappings.items():
         concept_implementations.setdefault(page_path, {})[
             SOURCE_RETIREMENT_EXTENSION_KEY

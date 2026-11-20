@@ -288,7 +288,11 @@ def evaluate_knowledge_freshness(
         from .source_retirement import qualified_retired_entity_locators
 
         try:
-            retired = qualified_retired_entity_locators(model, retirement_manifest)
+            from . import historical_sources
+            historical_pages = historical_sources.check_projections(retirement_manifest, model)
+            retired = qualified_retired_entity_locators(model, retirement_manifest) | {
+                concept.locator for concept in model.concepts if concept.document.canonical_path in historical_pages
+            }
         except (TypeError, ValueError, AttributeError) as exc:
             raise KnowledgeFreshnessError("retirement_manifest", str(exc)) from exc
         if artifacts is not None and retired != artifacts.retired_locators:

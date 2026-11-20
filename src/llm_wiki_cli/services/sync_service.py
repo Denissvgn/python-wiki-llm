@@ -53,6 +53,8 @@ class SyncRequest:
     cache_stats: bool = False
     prune_storage: bool = False
     storage_recovery_dir: str | Path | None = None
+    retire_missing_sources: Iterable[str] | None = None
+    retire_missing_pages: Iterable[str] | None = None
 
 
 @dataclass(frozen=True)

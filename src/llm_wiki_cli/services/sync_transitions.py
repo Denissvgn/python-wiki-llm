@@ -17,6 +17,7 @@ from llm_wiki_engine.sync_manifest import ManifestPageSource, SyncManifest
 from llm_wiki_engine.sync_retained_links import repair_retained_page_links
 from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, canonical_path
+from llm_wiki_engine import historical_sources
 from llm_wiki_engine.source_retirement import retired_entity_mappings
 
 
@@ -322,6 +323,11 @@ def plan_page_transitions(
         if key in prior.claims and not regular:
             raise PageTransitionError(f"Recorded source page is not a regular file: {path!r}")
     current = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
+    historical = {manifest.page_source_mappings[path]: path for path in historical_sources.bound_records(manifest)}
+    for owner, path in historical.items():
+        if owner in current:
+            # Positive return of the same complete coordinate. A similar filename has no custody.
+            prior.add(owner, path)
     old_counts = {
         source: Counter(info.get("entities", []))
         for source, info in manifest.sources.items()
@@ -341,7 +347,9 @@ def plan_page_transitions(
             raise PageTransitionError(f"Multiple current owners target {target!r}")
         targets.add(target_key)
         previous = None
-        if owner.scope == "module" and owner.source_path in manifest.sources:
+        if owner in historical:
+            previous = owner
+        elif owner.scope == "module" and owner.source_path in manifest.sources:
             previous = owner
         elif owner.scope == "module":
             previous = _moved_module_owner(prior, target, inventory)
@@ -362,6 +370,8 @@ def plan_page_transitions(
                 previous = ManifestPageSource("entity", old_source, name, 1)
             else:
                 previous = _moved_entity_owner(prior, target, owner, inventory)
+        if previous in historical and previous != owner:
+            raise PageTransitionError(f"A different declaration occupies historical source page {historical[previous]!r}")
         old_path = prior.resolve(previous) if previous is not None else None
         source_path = None
         if old_path is not None and portable_path_key(old_path) in existing:

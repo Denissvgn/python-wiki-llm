@@ -427,6 +427,40 @@ roots and selection. A subsequent sync with unchanged inputs should be a no-op.
 If publication is rejected, follow its explicit recovery diagnostic before
 retrying; do not delete authority files or reinitialize an established wiki.
 
+Use `--retire-missing-source` when the original documentation for a deliberately
+removed source file should remain accessible at its established module and
+entity URLs. Start with the intact wiki that still records that source. Preview
+the selection before applying it with an otherwise identical invocation.
+
+```bash
+llm-wiki sync --src-dir src --wiki-dir wiki --retire-missing-source reports/legacy.py --dry-run
+llm-wiki sync --src-dir src --wiki-dir wiki --retire-missing-source reports/legacy.py
+```
+
+Repeat the option for each exact, repository-relative path under `--src-dir`.
+When a removed file has both obsolete pages and declarations that continue
+elsewhere, add one `--retire-missing-page=modules/example.md` or
+`--retire-missing-page=entities/Example.md` for each exact historical page.
+Every chosen page must belong to a named source and have no competing live
+owner. Other pages follow the ordinary sync plan. Without page selectors,
+a competing transfer must have a uniquely matched exact source fingerprint.
+The command requires a complete source scan that confirms absence, an original
+native source and producer binding, unique page ownership and an exact prior
+Markdown commitment. Verified transfers to current declarations keep their
+existing owners. The generated Historical source files list in the index links
+to the retained pages. Their native `llm-wiki/historical-source-file` records
+preserve historical proof separately from the structural evidence available
+with the current producer. Authored page bodies and prior maintenance
+acknowledgments retain their original attribution.
+
+If a previous ordinary sync has already dropped the active source basis, use a
+complete, verified wiki snapshot from before that change and preview the same
+source transition again. Missing proof, a current source, a conflicting target,
+or an intervening Markdown edit stops enrollment. Once enrolled, ordinary sync
+retains the registry. If the exact source file returns with its original bytes
+and declaration coordinates, ordinary sync restores current-source coverage.
+A changed replacement at the same path needs an independently reconciled owner.
+
 Add `--prune-storage` to validate and clean unreferenced native storage after
 successful sync. The writer uses a fresh generation-bound plan and verified
 recovery copies. `--storage-recovery-dir` selects a directory outside the wiki.

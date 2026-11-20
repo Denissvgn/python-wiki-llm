@@ -2028,6 +2028,14 @@ def _add_sync_command(subparsers):
     )
     _add_progress_arguments(sync_parser)
     sync_parser.add_argument(
+        "--retire-missing-page", action="append", metavar="PAGE",
+        help="Restrict historical enrollment to exact canonical pages of the selected removed sources (repeatable)",
+    )
+    sync_parser.add_argument(
+        "--retire-missing-source", action="append", metavar="SOURCE",
+        help="Retain the authenticated original pages of one disappeared source file as history (repeatable)",
+    )
+    sync_parser.add_argument(
         "--repair-evidence", nargs="+", action="extend", default=None, metavar="SOURCE",
         help="Repair owned unchanged evidence with --no-plugins (POSIX paths relative to --src-dir); full analysis still runs",
     )

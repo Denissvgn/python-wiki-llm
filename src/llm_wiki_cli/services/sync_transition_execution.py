@@ -29,7 +29,8 @@ from .sync_transitions import PageTransitionError, PageTransitionPlan
 
 @contextmanager
 def preview_maintenance_preimages(
-    live_wiki: Path, staged_wiki: Path, plan: PageTransitionPlan, *, max_bytes: int = MAX_EXPANDED_BYTES
+    live_wiki: Path, staged_wiki: Path, plan: PageTransitionPlan, *, max_bytes: int = MAX_EXPANDED_BYTES,
+    guarded_pages: frozenset[str] = frozenset(),
 ) -> Iterator[dict[str, bytes]]:
     """Hold the verified prior owners' live Markdown stable while simulating their transfer."""
     preimages = {}
@@ -51,22 +52,13 @@ def preview_maintenance_preimages(
             prior_origins.add(origin)
             if item.source_path is None:
                 raise PageTransitionError(f"Missing prior page {item.old_path!r} for {item.previous_owner.source_path!r}")
-            try:
-                original = live.read(item.source_path, MAX_EXPANDED_BYTES)
-            except KnowledgeStorageError as exc:
-                if exc.code == "storage-budget-exhausted" or (exc.code == "storage-limit" and exc.message == "file exceeds byte limit"):
-                    raise PageTransitionError(f"Prior pages exceed the combined preview byte limit ({max_bytes}) at {item.old_path!r}") from exc
-                raise PageTransitionError(f"Cannot read prior page {item.old_path!r} for {item.previous_owner.source_path!r}: {exc}") from exc
-            digest = hashlib.sha256(original).digest()
-            try:
-                staged_digest, _ = _bounded_page_digest(staged_wiki / item.source_path, len(original))
-            except KnowledgeStorageError as exc:
-                raise PageTransitionError(f"Prior page changed while staging the preview: {item.source_path!r}") from exc
-            if staged_digest != digest:
-                raise PageTransitionError(f"Prior page changed while staging the preview: {item.source_path!r}")
+            original, commitment = _capture_preview_page(
+                live, staged_wiki, item.source_path, f"{item.old_path!r} for {item.previous_owner.source_path!r}", max_bytes
+            )
             preimages[item.old_path] = original
-            observed = live.observations[item.source_path]
-            commitments[item.source_path] = (len(original), digest, (observed.identity, observed.directories))
+            commitments[item.source_path] = commitment
+        for relative in sorted(guarded_pages - commitments.keys()):
+            _, commitments[relative] = _capture_preview_page(live, staged_wiki, relative, repr(relative), max_bytes)
         yield preimages
         # A phase can evict handles. Recheck every original, including evicted pages.
         for relative, (size, digest, identity) in commitments.items():
@@ -76,6 +68,24 @@ def preview_maintenance_preimages(
                 raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation") from exc
             if current != (digest, identity):
                 raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation")
+
+
+def _capture_preview_page(live, staged_root, relative, description, max_bytes):
+    try:
+        original = live.read(relative, MAX_EXPANDED_BYTES)
+    except KnowledgeStorageError as exc:
+        if exc.code == "storage-budget-exhausted" or (exc.code == "storage-limit" and exc.message == "file exceeds byte limit"):
+            raise PageTransitionError(f"Prior pages exceed the combined preview byte limit ({max_bytes}) at {description}") from exc
+        raise PageTransitionError(f"Cannot read prior page {description}: {exc}") from exc
+    digest = hashlib.sha256(original).digest()
+    try:
+        staged_digest, _ = _bounded_page_digest(staged_root / relative, len(original))
+    except KnowledgeStorageError as exc:
+        raise PageTransitionError(f"Prior page changed while staging the preview: {relative!r}") from exc
+    if staged_digest != digest:
+        raise PageTransitionError(f"Prior page changed while staging the preview: {relative!r}")
+    observed = live.observations[relative]
+    return original, (len(original), digest, (observed.identity, observed.directories))
 
 
 def _bounded_page_digest(path: Path, size: int):

@@ -800,6 +800,15 @@ def _build_migration_plan(
 
     active_pages = _active_managed_pages(wiki_dir, src_dir)
     active_rels = {page.rel for page in active_pages}
+    if previous_manifest is not None:
+        from llm_wiki_engine.historical_sources import bound_records
+        historical_pages = bound_records(previous_manifest)
+        if historical_pages:
+            # Even a single nonfinal chunk may archive the source page, alter links
+            # or add a legacy ignore rule before the native commit checks run.
+            first = min(historical_pages)
+            _abort(f"Legacy migration cannot preserve the enrolled historical registry at {first!r}. "
+                   "Use ordinary sync to retain its canonical paths and native owners.")
 
     for page in active_pages:
         target = _match_existing_page(page, lookups)
