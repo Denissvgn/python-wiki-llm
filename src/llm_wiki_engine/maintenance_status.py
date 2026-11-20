@@ -331,8 +331,8 @@ def build_maintenance_status(
                 "issues": deepcopy(list(capture.issues)),
                 "untracked_targets": [
                     deepcopy(value["target"])
-                    for value in capture.by_owner.values()
-                    if value["target_presence"] == "present"
+                    for key, value in capture.by_owner.items()
+                    if key not in capture.retained_owner_keys and value["target_presence"] == "present"
                 ],
             }
         return MaintenanceStatusReport(base, {}, {})
@@ -353,7 +353,7 @@ def build_maintenance_status(
         untracked = [
             deepcopy(value["target"])
             for key, value in capture.by_owner.items()
-            if key not in known and value["target_presence"] == "present"
+            if key not in known and key not in capture.retained_owner_keys and value["target_presence"] == "present"
         ]
         base["coverage"] = {
             "source_backed_semantic_total": capture.source_backed_semantic_total,

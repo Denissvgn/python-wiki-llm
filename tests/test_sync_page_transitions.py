@@ -366,6 +366,39 @@ def test_module_moved_to_another_directory_keeps_its_page(
     assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == stable
 
 
+def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
+
+    source = "class Bookmark:\n    def caption(self):\n        return 'first'\n"
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"alpha.py": source})
+    adopt_maintenance_authority(project, wiki, recovery_dir=tmp_path / "owner-recovery")
+    prior = SyncManifest.load(wiki).maintenance_state
+    old_target = "entities/Bookmark.md"
+    original_ids = {
+        record_id for record_id, row in prior["observations"].items()
+        if row["target"]["canonical_path"] == old_target and row["coordinate"]["source_path"] == "pkg/alpha.py"
+    }
+    assert original_ids
+    (project / "pkg/beta.py").write_text(source.replace("first", "second"), encoding="utf-8")
+    before = {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+    _sync(wiki, dry_run=True)
+    assert before == {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+    _sync(wiki)
+    committed = SyncManifest.load(wiki).maintenance_state
+    for record_id in original_ids:
+        row = committed["observations"][record_id]
+        assert row["coordinate"]["source_path"] == "pkg/alpha.py"
+        assert row["target"]["canonical_path"] == "entities/alpha_Bookmark.md"
+        assert row["basis"]["prose_hash"] == prior["observations"][record_id]["basis"]["prose_hash"]
+        assert len(committed["records"][record_id]["target_history"]) == 2
+    assert any(row["coordinate"]["source_path"] == "pkg/beta.py" and
+               row["target"]["canonical_path"] == "entities/beta_Bookmark.md" for row in committed["observations"].values())
+    assert all(row["target"]["canonical_path"] != old_target for row in committed["observations"].values())
+    _sync(wiki, dry_run=True)
+    _sync(wiki)
+    assert committed == SyncManifest.load(wiki).maintenance_state
+
+
 @pytest.mark.parametrize("leaves_alias", [False, True])
 def test_shared_class_name_moved_with_its_module_keeps_its_page(
     tmp_path, monkeypatch, leaves_alias

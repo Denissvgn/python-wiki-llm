@@ -107,6 +107,14 @@ def owner_key(coordinate, target) -> str:
     return canonical_hash({"coordinate": coordinate, "target": target})
 
 
+def _has_registration_basis(observed):
+    return (
+        observed["presence"] == observed["target_presence"] == "present"
+        and observed["basis"]["source_hash"] is not None
+        and observed["basis"]["prose_hash"] is not None
+    )
+
+
 @dataclass(frozen=True)
 class MaintenanceCapture:
     by_owner: Mapping[str, dict[str, Any]]
@@ -117,10 +125,16 @@ class MaintenanceCapture:
     issues: tuple[dict[str, Any], ...] = ()
     source_backed_semantic_total: int = 0
     tracked_semantic_total: int = 0
+    # Fallback observations can update their existing owner, never create a second one.
+    retained_owner_keys: frozenset[str] = frozenset()
 
     def __post_init__(self):
         object.__setattr__(self, "by_owner", freeze(dict(self.by_owner)))
         object.__setattr__(self, "issues", freeze(tuple(self.issues)))
+        object.__setattr__(self, "retained_owner_keys", frozenset(self.retained_owner_keys))
+
+    def can_register(self, key):
+        return key not in self.retained_owner_keys and _has_registration_basis(self.by_owner[key])
 
     def to_payload(self) -> dict:
         return {
@@ -314,6 +328,7 @@ def captured_observations_from_knowledge(
     )
     observations, issues, semantic_by_page, evidence_by_coordinate = {}, [], {}, {}
     semantic_keys = set()
+    retained = set()
     concepts = knowledge.concepts if hasattr(knowledge, "concepts") else knowledge
     for concept in concepts:
         if isinstance(concept, Mapping):
@@ -486,6 +501,7 @@ def captured_observations_from_knowledge(
                 target_presence=target_presence,
             )
             observations[key] = observed
+            retained.add(key)
     return MaintenanceCapture(
         observations,
         missing,
@@ -494,7 +510,8 @@ def captured_observations_from_knowledge(
         frozenset(content_by_page),
         tuple(issues),
         len(semantic_keys),
-        len(semantic_keys & set(observations)),
+        sum(key in retained or _has_registration_basis(observations[key]) for key in semantic_keys & observations.keys()),
+        frozenset(retained),
     )
 
 
@@ -528,12 +545,8 @@ def reconcile_pending_maintenance(
         raise TypeError("capture must be an owned MaintenanceCapture")
     if previous_state is None:
         initial = {}
-        for observed in capture.by_owner.values():
-            if (
-                observed["presence"] == observed["target_presence"] == "present"
-                and observed["basis"]["source_hash"] is not None
-                and observed["basis"]["prose_hash"] is not None
-            ):
+        for key, observed in capture.by_owner.items():
+            if capture.can_register(key):
                 record_id = allocate_id()
                 if record_id in initial:
                     raise MaintenanceError(
@@ -649,7 +662,7 @@ def _reconcile_existing_maintenance(
         if record_id in unresolved_ids or key in unresolved_keys:
             continue
         if record_id is None:
-            if observed["presence"] == observed["target_presence"] == "present":
+            if capture.can_register(key):
                 record_id = allocate_id()
                 current = operation._apply_owned(
                     current,

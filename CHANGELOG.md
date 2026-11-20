@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync previews preserve authored module and entity descriptions across source
   moves in maintained wikis. A concurrent edit to a prior page invalidates
   the preview.
+- When same-named declarations gain separate pages, maintenance keeps the
+  transferred record and its history. A new record requires captured source
+  and prose for its current owner.
 
 ## [5.0.0] - 2026-11-19
 
