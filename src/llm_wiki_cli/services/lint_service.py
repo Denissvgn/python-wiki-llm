@@ -1293,7 +1293,7 @@ def _check_orphan_pages(
 def _historical_pages_for_lint(report, wiki_path, inputs, knowledge_state):
     from llm_wiki_engine import historical_sources
     from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
-    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
     from llm_wiki_engine.knowledge_storage_io import StorageReadSession
     from .historical_sources import confirm_absence
 
@@ -1312,7 +1312,9 @@ def _historical_pages_for_lint(report, wiki_path, inputs, knowledge_state):
             content = {path: reader.read(path, MAX_EXPANDED_BYTES) for path in ("index.md", *records)}
             historical_sources.check_content(records, content)
         confirm_absence(inputs.source_snapshot, {row["owner"]["source_path"] for row in records.values()})
-    except (SourceRetirementError, KnowledgeStorageError, OSError, UnicodeError, TypeError) as exc:
+    # SourceSnapshotError (including a concurrent source-directory change),
+    # SourceRetirementError and KnowledgeStorageError all derive from ValueError.
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
         _add(report, "knowledge_projection", f"Historical source custody failed: {exc}",
              path=MANIFEST_FILENAME, reason_code="historical-source-invalid")
         return {}

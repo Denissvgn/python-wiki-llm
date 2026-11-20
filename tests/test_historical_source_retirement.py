@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -107,7 +108,7 @@ def _acknowledge(wiki):
 def _call(capsys, *args, success=True, json_output=False):
     capsys.readouterr()
     common = ["--src-dir", "src", "--wiki-dir", "wiki"]
-    if args[0] not in {"migrate", "upgrade"}:
+    if args[0] not in {"bootstrap", "migrate", "upgrade"}:
         common.extend(("--jobs", "1"))
     with patch("sys.argv", ["llm-wiki", *args, *common]):
         try:
@@ -371,6 +372,48 @@ def test_invalid_enrolled_markdown_revokes_coverage_without_crashing(project, ca
     assert _snapshot(wiki) == before
 
 
+def test_source_directory_mutation_reports_an_invalid_history_without_suppressing_ordinary_lint(project, capsys, monkeypatch):
+    from llm_wiki_cli.services import historical_sources, source_snapshot
+    from llm_wiki_engine import filesystem_guard
+
+    src, wiki = project
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    before = _snapshot(wiki)
+    checked = []
+    original = historical_sources.confirm_absence
+
+    def racing_confirmation(snapshot, selected):
+        assert selected == {SOURCE_PATH}
+        changed = False
+        target = filesystem_guard if os.name == "nt" else os
+        name = "fresh_no_follow_stat" if os.name == "nt" else "stat"
+        original_stat = getattr(target, name)
+
+        def stat_during_edit(path, *args, **kwargs):
+            nonlocal changed
+            is_selected = (Path(path) == src / SOURCE_PATH if os.name == "nt" else
+                           path == SOURCE_PATH and kwargs.get("dir_fd") is not None)
+            if not changed and is_selected:
+                changed = True
+                previous = src.stat()
+                (src / f".membership-change-{len(checked)}").write_bytes(b"concurrent source editor\n")
+                os.utime(src, ns=(previous.st_atime_ns, previous.st_mtime_ns + 2_000_000_000))
+            return original_stat(path, *args, **kwargs)
+
+        with patch.object(target, name, stat_during_edit):
+            try:
+                return original(snapshot, selected)
+            except source_snapshot.SourceSnapshotMutationError as exc:
+                assert changed and "directory changed" in str(exc)
+                checked.append(exc.field)
+                raise
+
+    monkeypatch.setattr(historical_sources, "confirm_absence", racing_confirmation)
+    _assert_invalid_history_reports(capsys, entity_present=True)
+    assert checked == ["source", "source"] and _snapshot(wiki) == before
+
+
 def test_chunked_legacy_migration_preserves_the_entire_enrolled_workspace(project, capsys):
     src, wiki = project
     (src / SOURCE_PATH).unlink()
@@ -412,6 +455,40 @@ def test_public_index_writers_defer_to_explicit_release_without_changing_the_wor
     assert _release_events(wiki) == events
 
 
+@pytest.mark.parametrize("operation", ["rebuild", "sharded-format", "scoped-known-source", "existing-bootstrap"])
+def test_supported_writer_options_respect_enrolled_pages_and_native_proof(project, capsys, operation):
+    from llm_wiki_engine.knowledge_artifacts import current_knowledge_format
+
+    src, wiki = project
+    acknowledgments = _acknowledge(wiki) if operation == "scoped-known-source" else None
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    records = deepcopy(SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"])
+    before = _snapshot(wiki)
+    if operation == "existing-bootstrap":
+        response = _call(capsys, "bootstrap", "--knowledge-format", "v1", success=False)
+        assert "first-use only" in response and _snapshot(wiki) == before
+    else:
+        options = {"rebuild": ["--rebuild-knowledge"], "sharded-format": ["--knowledge-format", "sharded-v2"],
+                   "scoped-known-source": ["--no-plugins", "--repair-evidence", "current.py"]}[operation]
+        _call(capsys, "sync", *options, "--dry-run")
+        assert _snapshot(wiki) == before
+        response = _call(capsys, "sync", *options)
+        if operation == "sharded-format":
+            assert current_knowledge_format(wiki) == "sharded-v2"
+        if operation == "scoped-known-source":
+            assert "no scoped publication" in response.lower() and _snapshot(wiki) == before
+    now = load_knowledge_state(wiki)
+    assert now.validated_artifacts is not None and now.knowledge is not None
+    assert SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"] == records
+    concepts = {entry.document.canonical_path: entry for entry in now.knowledge.concepts}
+    for path, row in records.items():
+        assert (wiki / path).read_bytes() == before[path][0] and concepts[path].extensions[EXTENSION] == row
+    _assert_ack_history(wiki, acknowledgments, archived=True)
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+    _call(capsys, "ci-check", "--no-report")
+
+
 def test_no_preserve_semantic_refuses_to_discard_archived_authorship_on_exact_revival(project, capsys):
     src, wiki = project
     originals = {path: (wiki / path).read_bytes() for path in PAGES}
@@ -447,6 +524,8 @@ def test_release_requires_preview_bound_to_the_selected_pages_and_current_snapsh
     stable = _snapshot(wiki)
     repeated = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=approved)
     assert repeated.historical_release == {**result.historical_release, "replayed": True}
+    replay_preview = api.sync_wiki("src", "wiki", dry_run=True, release_historical_pages=[ENTITY], expected_historical_release=approved)
+    assert replay_preview.historical_release == {**result.historical_release, "applied": False, "replayed": True}
     assert _snapshot(wiki) == stable
     manifest = SyncManifest.load(wiki)
     assert manifest.generation_inputs[REGISTRY]["pages"] == {MODULE: custody[MODULE]}
@@ -556,6 +635,7 @@ def test_concurrent_editor_during_knowledge_publication_preserves_the_predecesso
 ):
     from llm_wiki_cli.services import historical_release
     from llm_wiki_engine.knowledge_artifacts import CommitStage
+    from llm_wiki_engine.maintenance_protocol import ADOPTION_FILENAME
 
     src, wiki = project
     if profile == "sharded-v2":
@@ -566,6 +646,10 @@ def test_concurrent_editor_during_knowledge_publication_preserves_the_predecesso
     digest = _preview_release(capsys, wiki, [ENTITY])
     roots = ["index.md", ".llm-wiki-surface.json", ".llm-wiki-knowledge.json", MANIFEST_FILENAME]
     previous = {name: (wiki / name).read_bytes() for name in roots}
+    marker = before_marker = None
+    if profile == "adopted-v1":
+        marker = wiki / ADOPTION_FILENAME
+        before_marker = (marker.read_bytes(), marker.stat().st_ino, marker.stat().st_mtime_ns)
     selected = wiki / ENTITY
     original = selected.read_bytes()
     edited = original + b"\nField editor: a correction to the original page.\n"
@@ -573,6 +657,8 @@ def test_concurrent_editor_during_knowledge_publication_preserves_the_predecesso
     original_commit = historical_release.commit_knowledge_artifacts
 
     def concurrent_commit(plan, **kwargs):
+        if marker is not None:
+            assert plan.maintenance_adoption is not None and not plan.maintenance_adoption.needs_write
         existing_hook = kwargs.pop("fault_injector", None)
 
         def editor(stage):
@@ -612,6 +698,8 @@ def test_concurrent_editor_during_knowledge_publication_preserves_the_predecesso
     again = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=fresh)
     assert again.historical_release["replayed"] and _snapshot(wiki) == stable
     assert selected.read_bytes() == original and editor_copy.read_bytes() == edited
+    if marker is not None:
+        assert (marker.read_bytes(), marker.stat().st_ino, marker.stat().st_mtime_ns) == before_marker
     _assert_ack_history(wiki, acknowledgments, archived=True)
 
 
@@ -641,6 +729,9 @@ def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_ow
     digest = _preview_release(capsys, wiki, pages)
     _release(capsys, pages, digest)
     event = _release_events(wiki)[digest]
+    measured = _snapshot(wiki)
+    held = _call(capsys, "sync", success=False)
+    assert "released" in held.lower() and _snapshot(wiki) == measured
     archive = src.parent / "history"
     for path, raw in custody.items():
         assert (wiki / path).read_bytes() == raw
@@ -662,6 +753,66 @@ def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_ow
         assert (archive / path).read_bytes() == raw
     assert _release_events(wiki)[digest] == event
     assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+
+    stable = _snapshot(wiki)
+    _call(capsys, "sync")
+    assert _snapshot(wiki) == stable
+
+    # The new author's editorial record is independent from the older entry
+    # in the permanent release audit, even when both occupy the same URL.
+    for path in pages:
+        page = wiki / path
+        page.write_bytes(page.read_bytes() + ("\n## Notes\n\nCurrent field notes — "+path+".\n").encode())
+    _call(capsys, "sync")
+    newer_pages = {path: (wiki / path).read_bytes() for path in pages}
+    source_file.unlink()
+    _call(capsys, "sync")
+    deleted = SyncManifest.load(wiki)
+    assert all(path in deleted.tombstones and deleted.page_source_mappings[path].source_path == new_source for path in pages)
+    source_file.write_text(new_code, encoding="utf-8")
+    if replacement != "edited-original":
+        companion, = (path for path, owner in deleted.page_source_mappings.items()
+                      if owner.source_path == new_source and path in deleted.tombstones and path not in pages)
+        sibling = wiki / companion
+        original_companion = sibling.read_bytes()
+        sibling.write_bytes(original_companion + b"\nA separate editor changed only the sibling.\n")
+        uncommitted = _snapshot(wiki)
+        _call(capsys, "sync", success=False)
+        assert _snapshot(wiki) == uncommitted
+        sibling.write_bytes(original_companion)
+    _call(capsys, "sync")
+    revived = SyncManifest.load(wiki)
+    for path in pages:
+        assert path not in revived.tombstones and revived.evidence_baselines[path].basis.source_content_hash == _hash(new_code.encode())
+        assert (wiki / path).read_bytes() == newer_pages[path]
+        assert (archive / path).read_bytes() == custody[path]
+    assert _release_events(wiki)[digest] == event
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+
+
+def test_exact_original_source_can_reclaim_its_measured_released_markdown_in_place(project, capsys):
+    src, wiki = project
+    original = {path: (wiki / path).read_bytes() for path in PAGES}
+    previous = SyncManifest.load(wiki)
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    digest = _preview_release(capsys, wiki, list(PAGES))
+    _release(capsys, list(PAGES), digest)
+    event = _release_events(wiki)[digest]
+    assert all(event["pages"][path]["retained_page_hash"] == _hash((wiki / path).read_bytes()) for path in PAGES)
+    (src / SOURCE_PATH).write_bytes(SOURCE.encode())
+    before = _snapshot(wiki)
+    _call(capsys, "sync", "--dry-run")
+    assert _snapshot(wiki) == before
+    _call(capsys, "sync")
+    manifest = SyncManifest.load(wiki)
+    for path in PAGES:
+        assert manifest.page_source_mappings[path].to_payload() == previous.page_source_mappings[path].to_payload()
+        assert manifest.evidence_baselines[path].basis.source_content_hash == _hash(SOURCE.encode()) and path not in manifest.tombstones
+        assert (wiki / path).read_bytes() == original[path]
+    assert REGISTRY not in manifest.generation_inputs and _release_events(wiki)[digest] == event
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+    _call(capsys, "ci-check", "--no-report")
 
 
 def test_release_frees_a_real_generated_link_repair_without_altering_its_original_audit(tmp_path, monkeypatch, capsys):

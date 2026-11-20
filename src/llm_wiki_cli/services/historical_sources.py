@@ -92,6 +92,30 @@ def _original_owners(manifest, source):
     return owners
 
 
+def released_inputs(manifest, artifacts, source_snapshot):
+    """Associate ordinary revival with the current capture and the previous native page digest."""
+    from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+    from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
+    from llm_wiki_engine.historical_sources import RELEASES, latest_released_pages
+    from .sync_transitions import ReleasedPageInputs
+
+    if RELEASES not in manifest.generation_inputs or artifacts is None:
+        return None
+    released = latest_released_pages(manifest.generation_inputs).keys() & manifest.tombstones.keys()
+    if not released or manifest.artifact_hashes is None:
+        return None
+    prior = require_validated_artifacts(artifacts)
+    if manifest.artifact_hashes.knowledge_index_hash != prior.knowledge_index_hash:
+        refuse("previous source/page custody is not bound to this native snapshot")
+    sources = {owner.source_path for path, owner in manifest.page_source_mappings.items() if path in released}
+    paths = {path for path, owner in manifest.page_source_mappings.items()
+             if owner.source_path in sources and path in manifest.tombstones}
+    locators = {c.locator: c.document.canonical_path for c in prior.knowledge.concepts if c.document.canonical_path in paths}
+    sections = prior.knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY, {}).get("pages", ())
+    page_hashes = {locators[row["page_locator"]]: row["source_hash"] for row in sections if row["page_locator"] in locators}
+    return ReleasedPageInputs(source_snapshot.captured_content_hashes, page_hashes)
+
+
 def plan_retirement(options, manifest, committed, snapshot, inventory, page_plan, generation_inputs):
     previous = bound_records(manifest)
     requested = set(options.retire_missing_sources)

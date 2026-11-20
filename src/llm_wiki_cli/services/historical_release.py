@@ -101,7 +101,7 @@ def run_release(options, write_basis):
     if selection.isdisjoint(records) and expected:
         for event in events:
             if event["digest"] == expected and set(event["basis"]["pages"]) == selection:
-                return {"digest": expected, "pages": sorted(selection), "applied": True, "replayed": True}
+                return {"digest": expected, "pages": sorted(selection), "applied": not options.dry_run, "replayed": True}
     if not selection <= records.keys():
         raise SourceRetirementError("Release requires the exact canonical paths of currently enrolled historical pages")
     pages = collect_wiki_pages(root)
@@ -111,7 +111,14 @@ def run_release(options, write_basis):
     history.check_content(records, files)
     content = {name: decode_markdown_bytes(raw) for name, raw in files.items()}
     if hash_markdown_snapshot(content) != artifacts.knowledge.bundle.snapshot.markdown_snapshot_hash:
-        raise SourceRetirementError("Restore the wiki Markdown to its authenticated snapshot before historical release")
+        locators = {c.locator: c.document.canonical_path for c in artifacts.knowledge.concepts}
+        sections = artifacts.knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]
+        expected_hashes = {locators[row["page_locator"]]: row["source_hash"] for row in sections}
+        changed = set(expected_hashes) ^ content.keys()
+        changed.update(path for path in expected_hashes.keys() & content.keys()
+                       if "sha256:" + hashlib.sha256(content[path].encode("utf-8")).hexdigest() != expected_hashes[path])
+        first = min(changed) if changed else "index.md"
+        raise SourceRetirementError(f"Restore the whole wiki Markdown to its authenticated snapshot; first difference: {first!r}")
     selected_bytes = {path: files[path] for path in selection}
     inputs, event = history.make_release(manifest, artifacts, files["index.md"], selected_bytes)
     digest = event["digest"]
@@ -129,6 +136,8 @@ def run_release(options, write_basis):
     surface, _ = validated_artifact_bytes(artifacts)
     plan = build_knowledge_commit_plan(root, surface_index_bytes=surface, knowledge_index=knowledge,
         manifest=next_manifest, prior=artifacts, maintenance_adoption=guard_maintenance_owner(root, manifest))
+    if plan.maintenance_adoption is not None and plan.maintenance_adoption.needs_write:
+        raise SourceRetirementError("Historical release cannot create or replace the adopted maintenance marker")
     history.validate_release_transition(manifest, artifacts, plan.committed_manifest, files["index.md"], selected_bytes, digest)
 
     def check_markdown(expected_index):

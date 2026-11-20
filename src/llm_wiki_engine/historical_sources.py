@@ -100,6 +100,14 @@ def release_events(inputs: Mapping) -> list:
     return list(value["events"])
 
 
+def latest_released_pages(inputs: Mapping) -> dict:
+    """Return the most recent release entry for each canonical page."""
+    latest = {}
+    for event in release_events(inputs):
+        latest.update(event["basis"]["pages"])
+    return latest
+
+
 def make_release(previous, prior, index_bytes, page_bytes):
     records = bound_records(previous)
     events = release_events(previous.generation_inputs)

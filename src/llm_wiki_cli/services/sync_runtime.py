@@ -187,7 +187,7 @@ from .sync_analysis import (
 )
 from .sync_generated_sections import plan_generated_source_repairs, repair_source_sections
 from .sync_transitions import (
-    PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
+    PageTransitionPlan, ReleasedPageInputs, find_missing_source_pages, plan_page_transitions,
 )
 from .sync_transition_execution import (
     PageTransitionExecution,
@@ -950,14 +950,18 @@ def _record_page_write(
 def _merge_revived_source_page(ctx, path, existing, generated, kind):
     relative = path.relative_to(ctx.wiki_dir).as_posix()
     row = ctx.manifest.generation_inputs.get(historical.INPUT, {}).get("pages", {}).get(relative)
-    if row is None:
+    if row is None and not ctx.preserve_semantic:
+        return None  # Released pages use the ordinary explicit regeneration policy.
+    item = ctx.transition_execution.by_path.get(relative) if ctx.transition_execution is not None else None
+    body_hash = row["page_hash"] if row is not None else (item.revival_body_hash if item is not None else None)
+    if body_hash is None:
         return None
     from llm_wiki_engine.knowledge_evidence import sha256_bytes
-    if existing is None or not historical.page_matches(existing.encode("utf-8"), row["page_hash"]):
+    if existing is None or not historical.page_matches(existing.encode("utf-8"), body_hash):
         raise SourceRetirementError(f"Historical page changed before revival at {relative!r}")
     # Begin from the original body. Replace only recognized generated structures;
     # all authored, mixed-table descriptions, nested and unknown sections stay in place.
-    original = existing if sha256_bytes(existing.encode("utf-8")) == row["page_hash"] else existing.removeprefix(_DEPRECATION_HEADER)
+    original = existing if sha256_bytes(existing.encode("utf-8")) == body_hash else existing.removeprefix(_DEPRECATION_HEADER)
     return SemanticMergeResult(repair_source_sections(original, generated, kind, relative))
 
 
@@ -1621,10 +1625,11 @@ def _build_apply_diff_context(
     preserve_semantic: bool,
     include_plugins: bool,
     source_selection_policy: SourceSelectionPolicy | None,
+    released_inputs: ReleasedPageInputs | None = None,
 ) -> _ApplyDiffContext:
     transitions = _plan_source_page_transitions(
         wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache,
-        source_selection_policy=source_selection_policy,
+        source_selection_policy=source_selection_policy, released_inputs=released_inputs,
     )
     if diff.generated_page_repairs:
         transitions, _ = plan_generated_source_repairs(
@@ -1732,6 +1737,7 @@ def _apply_diff(
         preserve_semantic=preserve_semantic,
         include_plugins=include_plugins,
         source_selection_policy=source_selection_policy,
+        released_inputs=transition_execution.plan.released_inputs if transition_execution is not None else None,
     )
 
     emit("Applying wiki page changes...", flush=True)
@@ -4144,6 +4150,7 @@ def _plan_source_page_transitions(
     entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
     *,
     source_selection_policy: SourceSelectionPolicy | None = None,
+    released_inputs: ReleasedPageInputs | None = None,
 ) -> PageTransitionPlan:
     deleted_sources = frozenset(
         source for source in {
@@ -4159,7 +4166,7 @@ def _plan_source_page_transitions(
         entity_occurrence_page_map=entity_occurrence_page_map,
         refresh_sources=frozenset(_refresh_files_for_diff(diff)),
         moved_entities=diff.moved_entities,
-        deleted_source_paths=deleted_sources,
+        deleted_source_paths=deleted_sources, released_inputs=released_inputs,
     )
     retired = discover_retired_entities(manifest, inventory)
     repairs = {item.path: item for item in plan.retained_page_repairs}
@@ -4334,13 +4341,14 @@ def _prepare_sync_run(
         if (baseline := historical_entity_semantics(manifest, owner)) is not None
     }
     generation_inputs = with_entity_retirement_state(generation_inputs, retirement_mappings, generated_semantics=retained_semantics)
+    released_inputs = historical_plan.released_inputs(manifest, committed_state.artifacts, source_snapshot)
     missing_pages = (
         find_missing_source_pages(
             options.wiki_dir, manifest, inventory,
             module_page_map=maps.module_page_map,
             entity_occurrence_page_map=maps.entity_occurrence_page_cache,
             refresh_sources=frozenset(_refresh_files_for_diff(diff)),
-            moved_entities=diff.moved_entities,
+            moved_entities=diff.moved_entities, released_inputs=released_inputs,
         )
         if not seed_manifest and not repair_only and not options.initialize_surfaces
         else {}
@@ -4350,7 +4358,7 @@ def _prepare_sync_run(
         generated_plan = _plan_source_page_transitions(
             options.wiki_dir, manifest, inventory, diff,
             maps.module_page_map, maps.entity_occurrence_page_cache,
-            source_selection_policy=source_snapshot.source_selection_policy,
+            source_selection_policy=source_snapshot.source_selection_policy, released_inputs=released_inputs,
         )
         generated_plan, diff.generated_page_repairs = plan_generated_source_repairs(
             options.wiki_dir, generated_plan, inventory,
@@ -4628,7 +4636,7 @@ def _prepare_sync_run(
         page_transitions = _plan_source_page_transitions(
             options.wiki_dir, manifest, inventory, application_diff,
             maps.module_page_map, maps.entity_occurrence_page_cache,
-            source_selection_policy=source_snapshot.source_selection_policy,
+            source_selection_policy=source_snapshot.source_selection_policy, released_inputs=released_inputs,
         )
     if page_transitions is not None and generated_plan is not None:
         generated_repairs = tuple(r for r in generated_plan.retained_page_repairs if r.reason == "generated sections")
@@ -5742,6 +5750,10 @@ def _run_sync_options(options, write_basis=None) -> None:
                 options.wiki_dir, prepared.manifest, prepared.inventory, application,
                 maps.module_page_map, maps.entity_occurrence_page_cache,
                 source_selection_policy=prepared.source_snapshot.source_selection_policy,
+                released_inputs=historical_plan.released_inputs(
+                    prepared.manifest, prepared.committed_state.artifacts if prepared.committed_state else None,
+                    prepared.source_snapshot,
+                ),
             )
             if transitions.staged_moves or transitions.retained_page_repairs or any(
                 p.action in {"create", "rename"} or p.owner != p.previous_owner for p in transitions.transitions

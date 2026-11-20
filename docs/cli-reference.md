@@ -482,7 +482,24 @@ evidence findings can therefore be expected for released pages. Partial
 release leaves other enrolled pages protected. A different selection or
 changed native snapshot needs a new preview. If a protected file or index
 was deleted or edited, restore its exact bytes from a verified earlier
-commit or backup before releasing it.
+commit or backup before releasing it. Release requires the complete canonical
+wiki Markdown to match the native snapshot. Re-anchor unrelated Markdown
+changes separately, or restore the prior complete snapshot. A released page
+whose original source remains absent cannot be re-enrolled from that
+already-released generation. Use the prior intact wiki where the source was
+live, or wait for a genuine revival and subsequent removal.
+
+Keep a verified pre-release copy of the native wiki, including the original
+`index.md`, before applying. The native writer rechecks Markdown immediately
+before replacing its manifest. A direct external edit can still occur between
+that check and the replacement or after publication. Re-read the committed
+native state and run strict lint and CI after release. An adopted release never
+rewrites the maintenance adoption marker. A hard process or machine stop
+between the index write and native manifest publication leaves a pending
+change. Restore the complete verified pre-release native snapshot and original
+index from Git or a backup (or use the matching adopted recovery catalogue),
+verify it, then obtain a fresh preview before retrying. Preserve concurrent
+authored edits separately before restoring a snapshot.
 
 If a replacement needs a released page's URL, separately move the measured
 old Markdown to a tracked history path outside the generated wiki. For example,
@@ -492,12 +509,24 @@ against the release event. Ordinary sync can then create a fresh source page.
 For an ordinary generated-link repair, retaining the released file in place
 lets the next sync perform the native repair. Legacy migration, optional
 surface initialization and managed upgrade require the active registry to be
-released first. Regular sync continues to operate with enrolled pages.
+released first. Regular sync, a full `--rebuild-knowledge`, an otherwise
+supported `--knowledge-format` conversion and scoped `--repair-evidence`
+on eligible live source preserve the enrolled registry. Ordinary scoped
+repair still requires its original prerequisites, including `--no-plugins`.
+Bootstrap remains a first-use operation.
 
 `ValidatedKnowledgeArtifacts.retired_locators` contains both retained
 declarations from live files and explicitly enrolled pages from missing source
 files. Each retains its own native evidence contract. A released page receives
-ordinary checks. A release digest identifies a verified historical operation.
+ordinary checks. The URL remains protected only while the most recently
+released original owner and its measured original page are still there. If
+that exact source returns with its original bytes and canonical coordinate,
+ordinary sync can revive its own page in place. Once a separate live owner
+acquires the URL, subsequent syncs use that owner's native source and page
+evidence. Its own documented file can disappear and return without inheriting
+the earlier owner's authorship.
+
+A release digest identifies a verified historical operation.
 After native storage pruning, it remains a commitment to the predecessor.
 Recovering the full earlier source, wiki or native artifact requires a retained
 backup or Git revision. Cross-platform checkouts must preserve the original
