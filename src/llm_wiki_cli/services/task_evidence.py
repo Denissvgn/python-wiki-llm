@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
-from . import context_packet as packets
+from llm_wiki_engine import context_packet as packets
 from .documentation_query_builder import build_documentation_query_service_from_view
 from llm_wiki_engine.markdown_sections import parse_markdown_document
 from llm_wiki_engine.workflow_profile import content_id

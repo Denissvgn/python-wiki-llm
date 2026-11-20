@@ -10,7 +10,8 @@ from types import SimpleNamespace
 from typing import Any
 
 from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from . import context_packet as packets, context_service as context
+from . import context_service as context
+from llm_wiki_engine import context_packet as packets
 from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
 from .context_budget import _accounted_render, fit_payload, validate_request as budget_request

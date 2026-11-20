@@ -34,7 +34,7 @@ import sys
 
 sys.path.insert(0, sys.argv[1])
 from llm_wiki_cli import api
-from llm_wiki_cli.services.context_packet import capture_context_read
+from llm_wiki_engine.context_packet import capture_context_read
 from llm_wiki_cli.services.maintenance_queue import build_maintenance_queue
 from tests.test_maintenance_read_projections import _context
 

@@ -18,7 +18,8 @@ from llm_wiki_cli.eval_lite import (
     normalize_task_manifest,
 )
 from llm_wiki_cli.eval_lite import planner
-from llm_wiki_cli.services import context_packet, extraction_service
+from llm_wiki_cli.services import extraction_service
+from llm_wiki_engine import context_packet
 from llm_wiki_cli.services import context_packet_builder
 
 

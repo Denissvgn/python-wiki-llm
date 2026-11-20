@@ -1016,7 +1016,7 @@ class McpWikiService:
     ) -> dict:
         """Return a fresh qualified packet or an unchanged cache marker."""
 
-        from .context_packet import ContextPacketError
+        from llm_wiki_engine.context_packet import ContextPacketError
         from .context_packet_builder import (
             build_qualified_context,
             describe_context_packet_error,

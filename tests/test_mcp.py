@@ -1242,7 +1242,7 @@ class TestMcpWikiService:
         tmp_path,
         monkeypatch,
     ):
-        from llm_wiki_cli.services import context_packet
+        from llm_wiki_engine import context_packet
 
         packet_id = "sha256:" + "a" * 64
         payload = {

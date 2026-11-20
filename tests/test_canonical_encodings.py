@@ -13,7 +13,8 @@ import hashlib
 import pytest
 
 from llm_wiki_cli.eval_lite import planner
-from llm_wiki_cli.services import context_packet, documentation_queries, health_policy, python_implementation, site_export
+from llm_wiki_cli.services import documentation_queries, health_policy, python_implementation, site_export
+from llm_wiki_engine import context_packet
 from llm_wiki_engine import analysis_compatibility, canonical_json, knowledge_evidence, knowledge_graph, knowledge_storage, maintenance_shapes, maintenance_state, protected_artifacts, workflow_profile
 from llm_wiki_cli.services.calibration import broker, controller
 from llm_wiki_cli.services.documentation_run import contracts as run_contracts
