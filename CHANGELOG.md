@@ -38,6 +38,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `llm_wiki_engine.integrations.using_integrations()` applies a set to a
   block of code outside an engine.
 
+- `llm_wiki_engine.context_packet.validate_context_packet()` takes
+  `accepted_generators` to admit packets from producers other than
+  `agent-wiki-cli`. Without it, only `agent-wiki-cli` packets validate, as
+  before (`DEFAULT_ACCEPTED_GENERATORS`).
+- `llm_wiki_engine.layout.DEFAULT_LAYOUT` names every file and directory the
+  knowledge core keeps on disk (the wiki directory, the sync manifest, the
+  knowledge index and store, the surface index, governance and lock files,
+  the maintenance adoption record, the verification receipt, page-move
+  recovery and circuit breaker state). The existing name constants are
+  taken from it; the names themselves are unchanged.
+
 ### Changed
 
 - The domain pack interfaces (`SourceClassifier`, `PageNamer`,

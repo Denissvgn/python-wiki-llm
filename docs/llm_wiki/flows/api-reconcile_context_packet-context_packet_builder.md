@@ -82,82 +82,82 @@ sequenceDiagram
     participant p1 as validate_context_packet
     participant p2 as build_qualified_context
     participant p3 as _reconcile_packet_views
-    participant p4 as _coerce_packet_bytes
+    participant p4 as _validate_context_packet_bytes
     participant p5 as _normalized_request
-    participant p6 as _strict_json_payload
-    participant p7 as _packet_contract_for_request
-    participant p8 as _packet_contract_for_schema
-    participant p9 as capture_context_read
-    participant p10 as _reconciliation_facets
-    participant p11 as _validate_packet_shape
-    participant p12 as _encode_packet_payload
-    participant p13 as build_context_from_captured_read
-    participant p14 as _protocol_success_payload
-    participant p15 as ContextPacketReconciliation._from_official_read
-    participant p16 as _packet_id
-    participant p17 as _path_policy_receipt
-    participant p18 as _fit_knowledge_packet_response
-    participant p19 as packet_from_captured_response
-    participant p20 as QualifiedContextPacket._from_validated_payload
-    participant p21 as _exact_fields
-    participant p22 as _candidate_packet_size
-    participant p23 as uses_builtin_context_source
-    participant p24 as _render_markdown
-    participant p25 as _freeze_json
-    participant p26 as _validate_reconciliation_contract
-    participant p27 as _build_legacy_context_from_captured_read
-    participant p28 as _validate_assurance
-    participant p29 as len (src/llm_wiki_engine/conte…y:validate_context_packet)
+    participant p6 as _packet_contract_for_request
+    participant p7 as capture_context_read
+    participant p8 as _reconciliation_facets
+    participant p9 as build_context_from_captured_read
+    participant p10 as _protocol_success_payload
+    participant p11 as ContextPacketReconciliation._from_official_read
+    participant p12 as _fit_knowledge_packet_response
+    participant p13 as packet_from_captured_response
+    participant p14 as _coerce_packet_bytes
+    participant p15 as _candidate_packet_size
+    participant p16 as uses_builtin_context_source
+    participant p17 as _strict_json_payload
+    participant p18 as _render_markdown
+    participant p19 as _packet_contract_for_schema
+    participant p20 as _validate_reconciliation_contract
+    participant p21 as _build_legacy_context_from_captured_read
+    participant p22 as _build_knowledge_context_from_captured_read
+    participant p23 as _validate_packet_shape
+    participant p24 as _validate_protocol_request
+    participant p25 as _assert_selection_unchanged
+    participant p26 as _encode_packet_payload
+    participant p27 as _packet_id
+    participant p28 as validate_source_root
+    participant p29 as isinstance (src/llm_wiki_engine/conte…y:validate_context_packet)
     participant p30 as validation.packet.to_payload
     p0->>p1: validate_context_packet
     p0->>p2: build_qualified_context
     p0->>p3: _reconcile_packet_views
-    p1->>p4: _coerce_packet_bytes
+    p1->>p4: _validate_context_packet_bytes
     p2->>p5: _normalized_request
-    p1->>p6: _strict_json_payload
-    p2->>p7: _packet_contract_for_request
-    p1->>p8: _packet_contract_for_schema
-    p2->>p9: capture_context_read
-    p3->>p10: _reconciliation_facets
-    p1->>p11: _validate_packet_shape
-    p1->>p12: _encode_packet_payload
-    p2->>p13: build_context_from_captured_read
-    p2->>p14: _protocol_success_payload
-    p3->>p15: ContextPacketReconciliation._from_official_read
-    p1->>p16: _packet_id
-    p1->>p17: _path_policy_receipt
-    p2->>p18: _fit_knowledge_packet_response
-    p2->>p19: packet_from_captured_response
-    p1->>p20: QualifiedContextPacket._from_validated_payload
-    p11->>p21: _exact_fields
-    p18->>p22: _candidate_packet_size
-    p19->>p23: uses_builtin_context_source
-    p14->>p24: _render_markdown
-    p20->>p25: _freeze_json
-    p15->>p26: _validate_reconciliation_contract
-    p13->>p27: _build_legacy_context_from_captured_read
-    p11->>p28: _validate_assurance
-    p1-->>p29: len (src/llm_wiki_engine/conte…y:validate_context_packet)(raw)
+    p2->>p6: _packet_contract_for_request
+    p2->>p7: capture_context_read
+    p3->>p8: _reconciliation_facets
+    p2->>p9: build_context_from_captured_read
+    p2->>p10: _protocol_success_payload
+    p3->>p11: ContextPacketReconciliation._from_official_read
+    p2->>p12: _fit_knowledge_packet_response
+    p2->>p13: packet_from_captured_response
+    p4->>p14: _coerce_packet_bytes
+    p12->>p15: _candidate_packet_size
+    p13->>p16: uses_builtin_context_source
+    p4->>p17: _strict_json_payload
+    p10->>p18: _render_markdown
+    p4->>p19: _packet_contract_for_schema
+    p11->>p20: _validate_reconciliation_contract
+    p9->>p21: _build_legacy_context_from_captured_read
+    p9->>p22: _build_knowledge_context_from_captured_read
+    p4->>p23: _validate_packet_shape
+    p5->>p24: _validate_protocol_request
+    p13->>p25: _assert_selection_unchanged
+    p4->>p26: _encode_packet_payload
+    p4->>p27: _packet_id
+    p7->>p28: validate_source_root
+    p1-->>p29: isinstance (src/llm_wiki_engine/conte…y:validate_context_packet)(accepted_generators, (...))
     p0-->>p30: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 4044 interactions; 4014 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3927 interactions; 3897 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1336 (1335 omitted); unresolved 1 of 1334 (1333 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1280 (1279 omitted); unresolved 1 of 1321 (1320 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_engine/context_packet.py:_coerce_packet_bytes` | 3 | - | external | 5 |
-| `src/llm_wiki_engine/context_packet.py:_coerce_packet_bytes` | 3 | [src/llm_wiki_engine/context_packet.py](../modules/context_packet.md) | internal | 4 |
-| `src/llm_wiki_engine/context_packet.py:_coerce_packet_bytes` | 3 | - | unresolved | 3 |
-| `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 16 | - | unresolved | 1 |
-| `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 16 | [src/llm_wiki_engine/context_packet.py](../modules/context_packet.md) | internal | 4 |
-| `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
-| `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
-| `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 922 groups; 914 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/context_packet.py:_coerce_packet_bytes` | 4 | - | external | 5 |
+| `src/llm_wiki_engine/context_packet.py:_coerce_packet_bytes` | 4 | [src/llm_wiki_engine/context_packet.py](../modules/context_packet.md) | internal | 4 |
+| `src/llm_wiki_engine/context_packet.py:_coerce_packet_bytes` | 4 | - | unresolved | 3 |
+| `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 17 | - | unresolved | 1 |
+| `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 17 | [src/llm_wiki_engine/context_packet.py](../modules/context_packet.md) | internal | 4 |
+| `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 17 | - | external | 2 |
+| `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 24 | - | external | 1 |
+| `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 24 | - | unresolved | 1 |
+> Omission summary shows 8 of 917 groups; 909 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -170,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1375; effect analysis evaluated: 917, partial: 50, unavailable: 408. Counts include steps omitted from the displayed trace.
+Source steps: 1327; effect analysis evaluated: 895, partial: 48, unavailable: 384. Counts include steps omitted from the displayed trace.
 
-Collector observations for 967 source steps with known totals: observed: 5785, emitted: 5465, omitted: 320. Unavailable totals are excluded.
+Collector observations for 943 source steps with known totals: observed: 5683, emitted: 5370, omitted: 313. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -181,7 +181,8 @@ Collector observations for 967 source steps with known totals: observed: 5785, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `reconcile_context_packet` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
-| `validate_context_packet` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `validate_context_packet` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_validate_context_packet_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_coerce_packet_bytes` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -191,39 +192,38 @@ Collector observations for 967 source steps with known totals: observed: 5785, e
 | `len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR
     s1["1. reconcile_context_packet"]
     s2["2. validate_context_packet"]
-    s3["3. _coerce_packet_bytes"]
-    s4["4. isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
+    s3["3. _validate_context_packet_bytes"]
+    s4["4. _coerce_packet_bytes"]
     s5["5. isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
-    s6["6. bytes (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
-    s7["7. TypeError (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
-    s8["8. ContextPacketMalformedError"]
-    s9["9. len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
-    s10["10. ContextPacketMalformedError"]
-    s11["11. raw.startswith"]
-    s12["12. ContextPacketMalformedError"]
+    s6["6. isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
+    s7["7. bytes (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
+    s8["8. TypeError (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
+    s9["9. ContextPacketMalformedError"]
+    s10["10. len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)"]
+    s11["11. ContextPacketMalformedError"]
+    s12["12. raw.startswith"]
     s1 -->|"validate_context_packet(packet_bytes)"| s2
-    s2 -->|"_coerce_packet_bytes(packet_bytes)"| s3
-    s3 -. "isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(value, bytes)" .-> s4
-    s3 -. "isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(value, (...))" .-> s5
-    s3 -. "bytes (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(value)" .-> s6
-    s3 -. "TypeError (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)('packet_bytes must be bytes-like')" .-> s7
-    s3 -->|"ContextPacketMalformedError('packet_bytes', 'must not be empty')"| s8
-    s3 -. "len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(raw)" .-> s9
-    s3 -->|"ContextPacketMalformedError('packet_bytes', ...)"| s10
-    s3 -. "raw.startswith(b'\xef\xbb\xbf')" .-> s11
-    s3 -->|"ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')"| s12
+    s2 -->|"_validate_context_packet_bytes(packet_bytes)"| s3
+    s3 -->|"_coerce_packet_bytes(packet_bytes)"| s4
+    s4 -. "isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(value, bytes)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(value, (...))" .-> s6
+    s4 -. "bytes (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(value)" .-> s7
+    s4 -. "TypeError (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)('packet_bytes must be bytes-like')" .-> s8
+    s4 -->|"ContextPacketMalformedError('packet_bytes', 'must not be empty')"| s9
+    s4 -. "len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)(raw)" .-> s10
+    s4 -->|"ContextPacketMalformedError('packet_bytes', ...)"| s11
+    s4 -. "raw.startswith(b'\xef\xbb\xbf')" .-> s12
     click s1 "../modules/context_packet_builder.md"
     click s2 "../modules/context_packet.md"
     click s3 "../modules/context_packet.md"
-    click s8 "../modules/context_packet.md"
-    click s10 "../modules/context_packet.md"
-    click s12 "../modules/context_packet.md"
+    click s4 "../modules/context_packet.md"
+    click s9 "../modules/context_packet.md"
+    click s11 "../modules/context_packet.md"
 ```
 
 ### Step data
@@ -231,7 +231,8 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `reconcile_context_packet` | `packet_bytes: bytes \| bytearray \| memoryview`, `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None` | - | - | `_reconcile_packet_views(...)` |
-| `validate_context_packet` | `packet_bytes: bytes \| bytearray \| memoryview` | - | - | `ContextPacketValidation(...)` |
+| `validate_context_packet` | `packet_bytes: bytes \| bytearray \| memoryview`, `accepted_generators: Iterable[str] \| None` | - | - | `_validate_context_packet_bytes(...)`, `_validate_context_packet_bytes(...)` |
+| `_validate_context_packet_bytes` | `packet_bytes: bytes \| bytearray \| memoryview` | - | - | `ContextPacketValidation(...)` |
 | `_coerce_packet_bytes` | `value: bytes \| bytearray \| memoryview` | `_MAX_PACKET_BYTES`, `_MAX_PACKET_BYTES` | - | `raw` |
 | `isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)` | - | - | - | - |
 | `isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)` | - | - | - | - |
@@ -241,23 +242,22 @@ flowchart LR
 | `len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes)` | - | - | - | - |
 | `ContextPacketMalformedError` | - | - | - | - |
 | `raw.startswith` | - | - | - | - |
-| `ContextPacketMalformedError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| reconcile_context_packet | validate_context_packet | 1587 | `validate_context_packet(packet_bytes)` |
-| validate_context_packet | _coerce_packet_bytes | 303 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 584 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 586 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 587 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 589 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 591 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 592 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 593 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 597 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 598 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| reconcile_context_packet | validate_context_packet | 1589 | `validate_context_packet(packet_bytes)` |
+| validate_context_packet | _validate_context_packet_bytes | 319 | `_validate_context_packet_bytes(packet_bytes)` |
+| _validate_context_packet_bytes | _coerce_packet_bytes | 335 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 616 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 618 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 619 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 621 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 623 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_engine/conte…t.py:_coerce_packet_bytes) | 624 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 625 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 629 | `raw.startswith(b'\xef\xbb\xbf')` |
 
 ### Boundary effects
 
@@ -267,11 +267,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 584 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 586 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 587 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 589 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 597 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 616 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 618 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 619 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 621 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 629 |
 | step_limit | `reconcile_context_packet` | `first 12 steps` | 0 |
 | truncated_flow | `reconcile_context_packet` | `depth limit` | 0 |
 

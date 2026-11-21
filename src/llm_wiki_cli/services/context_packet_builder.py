@@ -13,6 +13,8 @@ lives in :mod:`context_packet`, which loads none of the builders.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import os
 import re
 import stat
@@ -2148,7 +2150,7 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: in
     lock_root = _governance_lock_root(root)
     operational_locks = {
         lock_root / GOVERNANCE_LOCK_FILENAME,
-        lock_root / "llm-wiki-storage.lock",
+        lock_root / DEFAULT_LAYOUT.storage_lock,
     }
     used_bytes = 0
     inspected_entries = 0
@@ -2252,10 +2254,10 @@ def _assert_wiki_integrity(expected: Mapping[str, tuple[int, ...]]) -> None:
 
 def _wiki_symlink_is_captured_input(relative_path: str) -> bool:
     if relative_path in {
-        ".llm-wiki-governance.json",
-        ".llm-wiki-knowledge.json",
-        ".llm-wiki-manifest.json",
-        ".llm-wiki-surface.json",
+        DEFAULT_LAYOUT.governance,
+        DEFAULT_LAYOUT.knowledge_index,
+        DEFAULT_LAYOUT.manifest,
+        DEFAULT_LAYOUT.surface_index,
     }:
         return True
     try:

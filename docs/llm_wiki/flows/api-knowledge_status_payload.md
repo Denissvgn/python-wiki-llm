@@ -94,15 +94,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_status_payload | isinstance (src/llm_wiki_engine/knowl…y:knowledge_status_payload) | 537 | `isinstance(view, KnowledgeReadView)` |
-| knowledge_status_payload | TypeError (src/llm_wiki_engine/knowl…y:knowledge_status_payload) | 538 | `TypeError('view must be a KnowledgeReadView or None')` |
-| knowledge_status_payload | knowledge_freshness_disclosure | 542 | `knowledge_freshness_disclosure(view)` |
-| knowledge_freshness_disclosure | isinstance (src/llm_wiki_engine/knowl…ledge_freshness_disclosure) | 458 | `isinstance(view, KnowledgeReadView)` |
-| knowledge_freshness_disclosure | TypeError (src/llm_wiki_engine/knowl…ledge_freshness_disclosure) | 459 | `TypeError('view must be a KnowledgeReadView')` |
-| knowledge_freshness_disclosure | _freshness_disclosure | 463 | `_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))` |
-| knowledge_freshness_disclosure | sum | 465 | `sum(...)` |
-| knowledge_freshness_disclosure | int | 465 | `int(count)` |
-| knowledge_freshness_disclosure | view.freshness.counts.values | 465 | `view.freshness.counts.values(data not statically known)` |
+| knowledge_status_payload | isinstance (src/llm_wiki_engine/knowl…y:knowledge_status_payload) | 539 | `isinstance(view, KnowledgeReadView)` |
+| knowledge_status_payload | TypeError (src/llm_wiki_engine/knowl…y:knowledge_status_payload) | 540 | `TypeError('view must be a KnowledgeReadView or None')` |
+| knowledge_status_payload | knowledge_freshness_disclosure | 544 | `knowledge_freshness_disclosure(view)` |
+| knowledge_freshness_disclosure | isinstance (src/llm_wiki_engine/knowl…ledge_freshness_disclosure) | 460 | `isinstance(view, KnowledgeReadView)` |
+| knowledge_freshness_disclosure | TypeError (src/llm_wiki_engine/knowl…ledge_freshness_disclosure) | 461 | `TypeError('view must be a KnowledgeReadView')` |
+| knowledge_freshness_disclosure | _freshness_disclosure | 465 | `_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))` |
+| knowledge_freshness_disclosure | sum | 467 | `sum(...)` |
+| knowledge_freshness_disclosure | int | 467 | `int(count)` |
+| knowledge_freshness_disclosure | view.freshness.counts.values | 467 | `view.freshness.counts.values(data not statically known)` |
 
 ### Boundary effects
 
@@ -112,12 +112,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `knowledge_status_payload` | `isinstance` | 537 |
-| external_call | `knowledge_status_payload` | `TypeError` | 538 |
-| external_call | `knowledge_freshness_disclosure` | `isinstance` | 458 |
-| external_call | `knowledge_freshness_disclosure` | `TypeError` | 459 |
-| external_call | `knowledge_freshness_disclosure` | `sum` | 465 |
-| unresolved_call | `knowledge_freshness_disclosure` | `view.freshness.counts.values` | 465 |
+| external_call | `knowledge_status_payload` | `isinstance` | 539 |
+| external_call | `knowledge_status_payload` | `TypeError` | 540 |
+| external_call | `knowledge_freshness_disclosure` | `isinstance` | 460 |
+| external_call | `knowledge_freshness_disclosure` | `TypeError` | 461 |
+| external_call | `knowledge_freshness_disclosure` | `sum` | 467 |
+| unresolved_call | `knowledge_freshness_disclosure` | `view.freshness.counts.values` | 467 |
 
 ## Behavior
 

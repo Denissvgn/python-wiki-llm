@@ -6,8 +6,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 784 | [Open section](#entities) |
-| Modules | 319 | [Open section](#modules) |
+| Entities | 785 | [Open section](#entities) |
+| Modules | 320 | [Open section](#modules) |
 | Workflows | 313 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 512 | [Open section](#entry-point-flows) |
@@ -376,6 +376,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [KnowledgeStorePlan](entities/KnowledgeStorePlan.md)
 - [KnowledgeStoreReader](entities/KnowledgeStoreReader.md)
 - [LanguagePlugin](entities/LanguagePlugin.md)
+- [Layout](entities/Layout.md)
 - [LazyCalibrationAnnotations](entities/LazyCalibrationAnnotations.md)
 - [LegacyHookError](entities/LegacyHookError.md)
 - [LegacyHookInspection](entities/LegacyHookInspection.md)
@@ -955,6 +956,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_stream_audit](modules/knowledge_stream_audit.md) - Complete storage/routing audit without constructing a complete native model.
 - [knowledge_validators](modules/knowledge_validators.md) - The checks every parsed knowledge index must pass, as one registry.
 - [knowledge_verification](modules/knowledge_verification.md) - Read-only machine-verification evaluation for native knowledge sessions.
+- [layout](modules/layout.md) - The names a wiki and its machine state use on disk.
 - [legacy_hooks](modules/legacy_hooks.md) - Recognize and retire historical LLM Wiki Git hooks without installing hooks.
 - [lint_request](modules/lint_request.md) - Typed lint inputs shared by the CLI, the Python API and engines.
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`

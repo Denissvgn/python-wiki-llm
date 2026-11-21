@@ -18,6 +18,7 @@ from diagnostics.
 | `.knowledge_audit` | `audit_logical_records` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_parse_extensions` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
 | `collections.abc` | `MutableMapping`, `Callable`, `Iterable`, `Mapping` |
@@ -52,20 +53,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (48) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 47 | `ValueError` | A storage contract, integrity or bounded-work failure. |
-| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 205 | — | — |
-| [_Encoder](../entities/Encoder.md) | 212 | — | — |
-| [_TreeBuilder](../entities/TreeBuilder.md) | 238 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 498 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 507 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 49 | `ValueError` | A storage contract, integrity or bounded-work failure. |
+| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 207 | — | — |
+| [_Encoder](../entities/Encoder.md) | 214 | — | — |
+| [_TreeBuilder](../entities/TreeBuilder.md) | 240 | — | — |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 500 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 509 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 

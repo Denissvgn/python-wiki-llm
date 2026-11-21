@@ -129,7 +129,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 389; effect analysis evaluated: 293, partial: 8, unavailable: 88. Counts include steps omitted from the displayed trace.
 
-Collector observations for 301 source steps with known totals: observed: 1402, emitted: 1366, omitted: 36. Unavailable totals are excluded.
+Collector observations for 301 source steps with known totals: observed: 1404, emitted: 1368, omitted: 36. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -220,11 +220,11 @@ flowchart LR
 | check_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:check_publication_candidate) | 3817 | `isinstance(receipt, Mapping)` |
 | check_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:check_publication_candidate) | 3818 | `ValueError('Publication receipt must be a mapping')` |
 | check_publication_candidate (src/llm_wiki_cli/api.py) | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3819 | `check(consumer_root, candidate_dir=candidate_dir, receipt=dict(...), config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
-| check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 989 | `validate_publication_receipt(receipt)` |
-| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 337 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 338 | `ValueError('Candidate receipt must be a mapping')` |
-| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `dict(receipt)` |
-| validate_publication_receipt | _json_tree | 340 | `_json_tree(receipt)` |
+| check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 991 | `validate_publication_receipt(receipt)` |
+| validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 340 | `ValueError('Candidate receipt must be a mapping')` |
+| validate_publication_receipt | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 341 | `dict(receipt)` |
+| validate_publication_receipt | _json_tree | 342 | `_json_tree(receipt)` |
 | _json_tree | pending.pop (src/llm_wiki_cli/services…n_contracts.py:_json_tree) | 140 | `pending.pop(data not statically known)` |
 | _json_tree | _fail | 143 | `_fail('document', 'exceeds JSON structural bounds')` |
 | _fail | PublicationProtocolError | 48 | `PublicationProtocolError(...)` |
@@ -233,7 +233,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `validate_publication_receipt` | 488 |
+| mutation | `seen.add` | `validate_publication_receipt` | 490 |
 | mutation | `pending.pop` | `_json_tree` | 140 |
 | mutation | `pending.extend` | `_json_tree` | 147 |
 | mutation | `pending.extend` | `_json_tree` | 149 |
@@ -244,8 +244,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `check_publication_candidate` | `isinstance` | 3817 |
 | external_call | `check_publication_candidate` | `ValueError` | 3818 |
-| external_call | `validate_publication_receipt` | `isinstance` | 337 |
-| external_call | `validate_publication_receipt` | `ValueError` | 338 |
+| external_call | `validate_publication_receipt` | `isinstance` | 339 |
+| external_call | `validate_publication_receipt` | `ValueError` | 340 |
 | step_limit | `check_publication_candidate` | `first 12 steps` | 0 |
 | truncated_flow | `check_publication_candidate` | `depth limit` | 0 |
 

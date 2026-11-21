@@ -126,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 441; effect analysis evaluated: 221, partial: 20, unavailable: 200. Counts include steps omitted from the displayed trace.
 
-Collector observations for 241 source steps with known totals: observed: 1390, emitted: 1318, omitted: 72. Unavailable totals are excluded.
+Collector observations for 241 source steps with known totals: observed: 1391, emitted: 1319, omitted: 72. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -203,16 +203,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| install_ci_workflow | normalize_action_ref | 320 | `normalize_action_ref(action_ref)` |
-| normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 75 | `isinstance(value, str)` |
-| normalize_action_ref | _ACTION_REF_RE.fullmatch | 75 | `_ACTION_REF_RE.fullmatch(value)` |
-| normalize_action_ref | InstallCiError | 76 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
-| normalize_action_ref | value.lower | 77 | `value.lower(data not statically known)` |
-| install_ci_workflow | _portable_project_path | 321 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
-| _portable_project_path | _without_github_expression | 112 | `_without_github_expression(_validated_project_path(...), label=label)` |
-| _without_github_expression | InstallCiError | 105 | `InstallCiError(...)` |
-| _portable_project_path | _validated_project_path | 113 | `_validated_project_path(value, label=label)` |
-| _validated_project_path | require_repository_relative_path | 81 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
+| install_ci_workflow | normalize_action_ref | 322 | `normalize_action_ref(action_ref)` |
+| normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 77 | `isinstance(value, str)` |
+| normalize_action_ref | _ACTION_REF_RE.fullmatch | 77 | `_ACTION_REF_RE.fullmatch(value)` |
+| normalize_action_ref | InstallCiError | 78 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
+| normalize_action_ref | value.lower | 79 | `value.lower(data not statically known)` |
+| install_ci_workflow | _portable_project_path | 323 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
+| _portable_project_path | _without_github_expression | 114 | `_without_github_expression(_validated_project_path(...), label=label)` |
+| _without_github_expression | InstallCiError | 107 | `InstallCiError(...)` |
+| _portable_project_path | _validated_project_path | 115 | `_validated_project_path(value, label=label)` |
+| _validated_project_path | require_repository_relative_path | 83 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_engine/valid…_repository_relative_path) | 304 | `isinstance(value, str)` |
 
 ### Boundary effects
@@ -223,9 +223,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_action_ref` | `isinstance` | 75 |
-| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 75 |
-| unresolved_call | `normalize_action_ref` | `value.lower` | 77 |
+| external_call | `normalize_action_ref` | `isinstance` | 77 |
+| unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 77 |
+| unresolved_call | `normalize_action_ref` | `value.lower` | 79 |
 | external_call | `require_repository_relative_path` | `isinstance` | 304 |
 | step_limit | `install_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_ci_workflow` | `depth limit` | 0 |

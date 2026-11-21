@@ -10,6 +10,7 @@ Shares wiki page discovery and ranked or substring search across public consumer
 
 | Source | Symbols |
 |--------|---------|
+| `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable` |
 | `llm_wiki_engine` | `wiki_surface` |
@@ -50,9 +51,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (15) |
+| Outbound | `src` (16) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -65,7 +66,7 @@ flowchart LR
 | `search_records` | `(records: Iterable[dict[str, Any]], query: str, *, limit: int, mode: str)` | — | Apply the same ranking and legacy substring contracts to captured pages. |
 | `page_records` | `(wiki_root: Path, kinds: set[str], *, reader: Callable = read_md, eligible: Callable \| None = None)` | — | — |
 | `normalize_discovery` | `(discovery)` | — | — |
-| `search_wiki` | `(query, *, src_dir = '.', wiki_dir = 'docs/llm_wiki', kinds = None, limit = 20, mode = 'ranked', source_selection = None, allow_external_src = False, include_source = False, reader = read_md, discovery = None)` | — | — |
+| `search_wiki` | `(query, *, src_dir = '.', wiki_dir = DEFAULT_LAYOUT.wiki_dir, kinds = None, limit = 20, mode = 'ranked', source_selection = None, allow_external_src = False, include_source = False, reader = read_md, discovery = None)` | — | — |
 | `search_prevalidated_roots` | `(query, *, source_root: Path, wiki_root: Path, kinds = None, limit = 20, mode = 'ranked', source_selection = None, include_source = False, reader = read_md, discovery = None)` | — | Share capture/ranking while preserving trusted MCP configured-root boundaries. |
 | `_published` | `(result: dict[str, Any]) -> dict[str, Any]` | — | Name the result format a search returns to its callers. |
 | `_page_membership` | `(wiki_root: Path, kinds: set[str]) -> tuple[str, ...]` | — | — |

@@ -222,7 +222,7 @@ flowchart LR
 | load_knowledge_state | TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 120 | `TypeError('rebuild_callback must be callable')` |
 | load_knowledge_state | Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 122 | `Path(wiki_dir)` |
 | load_knowledge_state | guard_maintenance_owner | 126 | `guard_maintenance_owner(root)` |
-| guard_maintenance_owner | _absolute_path | 112 | `_absolute_path(Path(...))` |
+| guard_maintenance_owner | _absolute_path | 114 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 

@@ -230,10 +230,10 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 116 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 125 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_source_root | validate_path | 127 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 102 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
 
 ### Boundary effects
 
@@ -251,8 +251,8 @@ flowchart LR
 | external_call | `run` | `getattr` | 112 |
 | external_call | `run` | `getattr` | 113 |
 | external_call | `run` | `getattr` | 115 |
-| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 103 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

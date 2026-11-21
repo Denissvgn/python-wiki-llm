@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import sys
 from typing import Any
 
@@ -59,7 +61,7 @@ def run(args) -> None:
         comparison_policy=getattr(args, "comparison_policy", "auto"),
         src_dir=str(source_root) if allow_external else requested_source,
         allow_external_src=allow_external,
-        wiki_dir=getattr(args, "wiki_dir", "docs/llm_wiki"),
+        wiki_dir=getattr(args, "wiki_dir", DEFAULT_LAYOUT.wiki_dir),
         transport=getattr(args, "transport", "stdio"),
         host=getattr(args, "host", "127.0.0.1"),
         port=getattr(args, "port", 8765),

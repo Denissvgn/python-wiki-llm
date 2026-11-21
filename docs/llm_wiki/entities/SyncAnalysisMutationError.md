@@ -1,6 +1,6 @@
 # SyncAnalysisMutationError
 
-**Location:** `src/llm_wiki_cli/services/sync_analysis_cache.py:30`
+**Location:** `src/llm_wiki_cli/services/sync_analysis_cache.py:32`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_analysis_cache](../modules/sync_analysis_cache.md)

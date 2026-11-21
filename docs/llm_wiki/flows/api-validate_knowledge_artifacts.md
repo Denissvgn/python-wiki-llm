@@ -215,7 +215,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | _validator_identity | 318 | `_validator_identity(data not statically known)` |
+| validate_knowledge_artifacts | _validator_identity | 320 | `_validator_identity(data not statically known)` |
 | _validator_identity | maintenance_state.maintenance_core | 374 | `maintenance_state.maintenance_core(data not statically known)` |
 | _validator_identity | current_validators().identity | 377 | `current_validators().identity(data not statically known)` |
 | _validator_identity | current_validators | 377 | `current_validators(data not statically known)` |

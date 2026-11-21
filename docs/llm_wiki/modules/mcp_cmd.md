@@ -17,6 +17,7 @@ the MCP service.
 | `..config` | `validate_source_root` |
 | `..services` | `mcp_server` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `sys` | `sys` |
 | `typing` | `Any` |
 
@@ -29,15 +30,19 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/mcp_cmd.py"]
     n2["src/llm_wiki_cli/config.py"]
     n3["src/llm_wiki_cli/services/mcp_server.py"]
+    n4["src/llm_wiki_engine/layout.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
     n1 --> n3
+    n1 --> n4
     n3 --> n2
+    n3 --> n4
     click n0 "../modules/cli.md"
     click n1 "../modules/mcp_cmd.md"
     click n2 "../modules/config.md"
     click n3 "../modules/mcp_server.md"
+    click n4 "../modules/layout.md"
 ```
 
 ### Internal neighbors
@@ -47,6 +52,7 @@ flowchart LR
 | Inbound | [cli](../modules/cli.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [mcp_server](../modules/mcp_server.md) |
+| Outbound | [layout](../modules/layout.md) |
 
 ## Functions
 

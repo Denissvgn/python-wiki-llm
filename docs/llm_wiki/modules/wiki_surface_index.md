@@ -11,6 +11,7 @@ Machine-readable index for generated wiki surfaces.
 | Source | Symbols |
 |--------|---------|
 | `.io` | `write_bytes_atomic` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
@@ -43,15 +44,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (26) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
-> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SurfaceIndexEvaluation](../entities/SurfaceIndexEvaluation.md) | 39 | — | One collected canonical-page view reused by projection builders. |
+| [SurfaceIndexEvaluation](../entities/SurfaceIndexEvaluation.md) | 41 | — | One collected canonical-page view reused by projection builders. |
 
 ## Functions
 

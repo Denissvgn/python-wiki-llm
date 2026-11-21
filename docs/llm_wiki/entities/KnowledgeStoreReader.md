@@ -1,6 +1,6 @@
 # KnowledgeStoreReader
 
-**Location:** `src/llm_wiki_engine/knowledge_storage.py:507`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:509`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import asyncio
 from collections.abc import Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
@@ -25,13 +27,13 @@ from .storage_spool import ByteSpool
 SourceSnapshot = Any
 CommittedKnowledgeState = Any
 
-ADOPTION_FILENAME = ".llm-wiki-maintenance-adoption.json"
-STORAGE_LOCK_FILENAME = "llm-wiki-storage.lock"
+ADOPTION_FILENAME = DEFAULT_LAYOUT.maintenance_adoption
+STORAGE_LOCK_FILENAME = DEFAULT_LAYOUT.storage_lock
 _OWNED_STORAGE: ContextVar[tuple | None] = ContextVar("llm_wiki_storage_owner", default=None)
 _OWNED_GOVERNANCE: ContextVar[tuple | None] = ContextVar("llm_wiki_governance_owner", default=None)
 _STORAGE_STAGING_ISSUER = object()
 _PUBLICATION_ROOTS = (
-    ".llm-wiki-surface.json", ".llm-wiki-knowledge.json", ".llm-wiki-manifest.json", ADOPTION_FILENAME,
+    DEFAULT_LAYOUT.surface_index, DEFAULT_LAYOUT.knowledge_index, DEFAULT_LAYOUT.manifest, ADOPTION_FILENAME,
 )
 
 
@@ -151,9 +153,9 @@ def _wiki_files(wiki_dir: str | Path, *, include_transient=False):
         return
     for path in sorted(root.rglob("*")):
         relative = path.relative_to(root).as_posix()
-        if relative in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"} or path.name == "llm-wiki-sync-analysis.lock":
+        if relative in {DEFAULT_LAYOUT.storage_lock, DEFAULT_LAYOUT.governance_lock} or path.name == "llm-wiki-sync-analysis.lock":
             continue
-        if not include_transient and relative.startswith((".llm-wiki-locks/", ".llm-wiki-page-moves-")):
+        if not include_transient and relative.startswith((".llm-wiki-locks/", DEFAULT_LAYOUT.page_move_recovery_prefix)):
             continue
         if first_unsafe_path_component(path) is not None:
             raise MaintenanceProtocolError("unsafe-wiki", "Maintenance preimage cannot follow symbolic links")
@@ -266,7 +268,7 @@ class WikiWriteBasis:
         relative = self._relative(path)
         if relative is None:
             return
-        if relative == ".llm-wiki-manifest.json":
+        if relative == DEFAULT_LAYOUT.manifest:
             self.assert_current()
         previous = self.expected.get(relative)
         if relative == ADOPTION_FILENAME and previous is not None and previous != content:
@@ -282,7 +284,7 @@ class WikiWriteBasis:
         staging = self._is_unreferenced_storage_staging(relative, content, previous, current)
         if relative in _PUBLICATION_ROOTS:
             self._close_storage_staging()
-        if relative != ".llm-wiki-manifest.json":
+        if relative != DEFAULT_LAYOUT.manifest:
             if not staging:
                 self.assert_source_current()
         if self.recovery_directory is not None:

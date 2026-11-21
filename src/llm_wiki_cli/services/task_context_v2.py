@@ -7,6 +7,8 @@ existing owners; this module composes their selected observations.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -297,7 +299,7 @@ class ScopedTaskState:
             if select_changes(self.source_root, self.change_request) != self.changes:
                 raise packet_builder.ContextPacketSourceMutationError("changes")
         session = StorageReadSession(self.wiki_root, max_bytes=settings["max_wiki_bytes"])
-        if self.native_absent and (self.wiki_root / ".llm-wiki-knowledge.json").exists():
+        if self.native_absent and (self.wiki_root / DEFAULT_LAYOUT.knowledge_index).exists():
             raise KnowledgeStorageError("root", "native state appeared during the request", code="storage-mutation")
         try:
             with session.phase():
@@ -357,7 +359,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
         except KnowledgeStorageError as exc:
             if exc.code == "storage-cancelled":
                 _cancel(lambda: True)
-            if exc.code != "storage-missing" or exc.field != ".llm-wiki-knowledge.json":
+            if exc.code != "storage-missing" or exc.field != DEFAULT_LAYOUT.knowledge_index:
                 raise
             native_reason = getattr(exc, "code", "native-input-unavailable")
             compatible = False
@@ -477,7 +479,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
         native_status != "unavailable" and all(module.get("language") == "python" for module in inventory.values()),
         changes, normalized["changes"], native_status == "unavailable", dict(work),
         {} if native is None else dict(native.session.range_observations), "storage_options" in normalized)
-    if state.native_absent and (wiki_root / ".llm-wiki-knowledge.json").exists():
+    if state.native_absent and (wiki_root / DEFAULT_LAYOUT.knowledge_index).exists():
         raise packet_builder.ContextPacketSourceMutationError("wiki")
     return TaskRead(normalized, effective, None, wiki_root, wiki_id, result,
                     scoped_state=state, source_root=source_root)
@@ -565,9 +567,9 @@ def validate_scoped_bindings(payload, normalized, profile):
             or type(storage["expanded_bytes"]) is not int or not 0 <= storage["expanded_bytes"] <= 16_777_216):
         raise ValueError("storage work is inconsistent or exceeds policy")
     if storage["status"] == "scoped":
-        roots = [i for i in inputs if i["path"] == ".llm-wiki-knowledge.json"]
+        roots = [i for i in inputs if i["path"] == DEFAULT_LAYOUT.knowledge_index]
         if (len(roots) != 1 or roots[0]["hash"] != storage["root_hash"]
-                or payload["basis"]["wiki"] != storage["root_hash"] or ".llm-wiki-manifest.json" not in names):
+                or payload["basis"]["wiki"] != storage["root_hash"] or DEFAULT_LAYOUT.manifest not in names):
             raise ValueError("scoped generation commitment was lost")
     elif inputs or storage["root_hash"] is not None:
         raise ValueError("unavailable native state cannot claim consumed storage")

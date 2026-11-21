@@ -1,6 +1,6 @@
 # ContextPacketMalformedError
 
-**Location:** `src/llm_wiki_engine/context_packet.py:177`
+**Location:** `src/llm_wiki_engine/context_packet.py:178`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)

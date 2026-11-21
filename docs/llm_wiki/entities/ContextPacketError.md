@@ -1,6 +1,6 @@
 # ContextPacketError
 
-**Location:** `src/llm_wiki_engine/context_packet.py:171`
+**Location:** `src/llm_wiki_engine/context_packet.py:172`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_packet](../modules/context_packet.md)

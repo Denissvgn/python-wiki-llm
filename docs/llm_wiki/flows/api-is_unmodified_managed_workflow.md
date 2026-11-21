@@ -110,17 +110,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_unmodified_managed_workflow | _normalize_newlines | 263 | `_normalize_newlines(content)` |
-| _normalize_newlines | content.decode | 252 | `content.decode('utf-8')` |
-| _normalize_newlines | text.replace(…).replace(…).encode | 255 | `text.replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')` |
-| _normalize_newlines | text.replace(…).replace | 255 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| _normalize_newlines | text.replace | 255 | `text.replace('\r\n', '\n')` |
-| is_unmodified_managed_workflow | normalized.decode | 266 | `normalized.decode('utf-8')` |
-| is_unmodified_managed_workflow | _MANAGED_HEADER_RE.match | 267 | `_MANAGED_HEADER_RE.match(text)` |
-| is_unmodified_managed_workflow | match.group | 275 | `match.group(1)` |
-| is_unmodified_managed_workflow | schemas.get | 275 | `schemas.get(workflow_path)` |
-| is_unmodified_managed_workflow | text[…].encode | 277 | `text[match.end():].encode('utf-8')` |
-| is_unmodified_managed_workflow | match.end | 277 | `match.end(data not statically known)` |
+| is_unmodified_managed_workflow | _normalize_newlines | 265 | `_normalize_newlines(content)` |
+| _normalize_newlines | content.decode | 254 | `content.decode('utf-8')` |
+| _normalize_newlines | text.replace(…).replace(…).encode | 257 | `text.replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')` |
+| _normalize_newlines | text.replace(…).replace | 257 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| _normalize_newlines | text.replace | 257 | `text.replace('\r\n', '\n')` |
+| is_unmodified_managed_workflow | normalized.decode | 268 | `normalized.decode('utf-8')` |
+| is_unmodified_managed_workflow | _MANAGED_HEADER_RE.match | 269 | `_MANAGED_HEADER_RE.match(text)` |
+| is_unmodified_managed_workflow | match.group | 277 | `match.group(1)` |
+| is_unmodified_managed_workflow | schemas.get | 277 | `schemas.get(workflow_path)` |
+| is_unmodified_managed_workflow | text[…].encode | 279 | `text[match.end():].encode('utf-8')` |
+| is_unmodified_managed_workflow | match.end | 279 | `match.end(data not statically known)` |
 
 ### Boundary effects
 
@@ -130,16 +130,16 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_newlines` | `content.decode` | 252 |
-| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace('\r', '\n').encode` | 255 |
-| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace` | 255 |
-| unresolved_call | `_normalize_newlines` | `text.replace` | 255 |
-| unresolved_call | `is_unmodified_managed_workflow` | `normalized.decode` | 266 |
-| unresolved_call | `is_unmodified_managed_workflow` | `_MANAGED_HEADER_RE.match` | 267 |
-| unresolved_call | `is_unmodified_managed_workflow` | `match.group` | 275 |
-| unresolved_call | `is_unmodified_managed_workflow` | `schemas.get` | 275 |
-| unresolved_call | `is_unmodified_managed_workflow` | `text[match.end():].encode` | 277 |
-| unresolved_call | `is_unmodified_managed_workflow` | `match.end` | 277 |
+| unresolved_call | `_normalize_newlines` | `content.decode` | 254 |
+| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace('\r', '\n').encode` | 257 |
+| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace` | 257 |
+| unresolved_call | `_normalize_newlines` | `text.replace` | 257 |
+| unresolved_call | `is_unmodified_managed_workflow` | `normalized.decode` | 268 |
+| unresolved_call | `is_unmodified_managed_workflow` | `_MANAGED_HEADER_RE.match` | 269 |
+| unresolved_call | `is_unmodified_managed_workflow` | `match.group` | 277 |
+| unresolved_call | `is_unmodified_managed_workflow` | `schemas.get` | 277 |
+| unresolved_call | `is_unmodified_managed_workflow` | `text[match.end():].encode` | 279 |
+| unresolved_call | `is_unmodified_managed_workflow` | `match.end` | 279 |
 | step_limit | `is_unmodified_managed_workflow` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -1,6 +1,6 @@
 # UnknownVerificationCheckerError
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:79`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:81`
 **Kind:** Class
 **Bases:** `VerificationContractError`
 **Module:** [verification_contracts](../modules/verification_contracts.md)

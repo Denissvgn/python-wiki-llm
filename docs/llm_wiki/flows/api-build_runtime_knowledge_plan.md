@@ -158,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1597; effect analysis evaluated: 925, partial: 67, unavailable: 605. Counts include steps omitted from the displayed trace.
 
-Collector observations for 992 source steps with known totals: observed: 5831, emitted: 5512, omitted: 319. Unavailable totals are excluded.
+Collector observations for 992 source steps with known totals: observed: 5832, emitted: 5513, omitted: 319. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -245,7 +245,7 @@ flowchart LR
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |
-| guard_maintenance_owner | _absolute_path | 112 | `_absolute_path(Path(...))` |
+| guard_maintenance_owner | _absolute_path | 114 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |

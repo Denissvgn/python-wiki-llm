@@ -1,6 +1,6 @@
 # SitePublicationReceipt
 
-**Location:** `src/llm_wiki_cli/services/site_export.py:157`
+**Location:** `src/llm_wiki_cli/services/site_export.py:159`
 **Kind:** Class
 **Bases:** —
 **Module:** [site_export](../modules/site_export.md)

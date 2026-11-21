@@ -177,7 +177,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1086; effect analysis evaluated: 676, partial: 64, unavailable: 346. Counts include steps omitted from the displayed trace.
 
-Collector observations for 740 source steps with known totals: observed: 4762, emitted: 4494, omitted: 268. Unavailable totals are excluded.
+Collector observations for 740 source steps with known totals: observed: 4768, emitted: 4500, omitted: 268. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -254,13 +254,13 @@ flowchart LR
 | get_maintenance_status | type (src/llm_wiki_cli/api.py:get_maintenance_status) | 1875 | `type(allow_external_src)` |
 | get_maintenance_status | ValueError (src/llm_wiki_cli/api.py:get_maintenance_status) | 1876 | `ValueError('Maintenance status boolean options must be booleans')` |
 | get_maintenance_status | validate_queue_limit | 1877 | `validate_queue_limit(limit)` |
-| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 58 | `isinstance(limit, bool)` |
-| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
-| validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
+| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 60 | `isinstance(limit, bool)` |
+| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 61 | `isinstance(limit, int)` |
+| validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 64 | `ValueError(...)` |
 | get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1878 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
 | get_maintenance_status | get_maintenance_status_authority | 1878 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| get_maintenance_status_authority | _validate_status_request | 414 | `_validate_status_request(live, record_id, limit)` |
-| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 341 | `type(live)` |
+| get_maintenance_status_authority | _validate_status_request | 416 | `_validate_status_request(live, record_id, limit)` |
+| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 343 | `type(live)` |
 
 ### Boundary effects
 
@@ -272,11 +272,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `get_maintenance_status` | `type` | 1875 |
 | external_call | `get_maintenance_status` | `ValueError` | 1876 |
-| external_call | `validate_queue_limit` | `isinstance` | 58 |
-| external_call | `validate_queue_limit` | `isinstance` | 59 |
-| external_call | `validate_queue_limit` | `ValueError` | 62 |
+| external_call | `validate_queue_limit` | `isinstance` | 60 |
+| external_call | `validate_queue_limit` | `isinstance` | 61 |
+| external_call | `validate_queue_limit` | `ValueError` | 64 |
 | external_call | `get_maintenance_status` | `cast` | 1878 |
-| external_call | `_validate_status_request` | `type` | 341 |
+| external_call | `_validate_status_request` | `type` | 343 |
 | step_limit | `get_maintenance_status` | `first 12 steps` | 0 |
 | truncated_flow | `get_maintenance_status` | `depth limit` | 0 |
 

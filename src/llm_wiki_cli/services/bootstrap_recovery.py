@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from contextlib import contextmanager
 import json
 from pathlib import Path, PurePosixPath
@@ -33,7 +35,7 @@ from llm_wiki_engine.wiki_write_basis import ACTIVE_BOOTSTRAP_JOURNAL
 
 SCHEMA = "llm-wiki-bootstrap-recovery/v1"
 MAX_RECORD_BYTES = 8 * 1024 * 1024
-LOCK_FILES = {"llm-wiki-governance.lock", "llm-wiki-storage.lock"}
+LOCK_FILES = {DEFAULT_LAYOUT.governance_lock, DEFAULT_LAYOUT.storage_lock}
 
 
 def _record_path(root: Path) -> Path:
@@ -169,9 +171,9 @@ def _recovery_inputs(root: Path, record: dict):
     if any(
         name.startswith(
             (
-                ".llm-wiki-manifest",
+                DEFAULT_LAYOUT.manifest_objects,
                 ".llm-wiki-maintenance",
-                ".llm-wiki-knowledge",
+                DEFAULT_LAYOUT.knowledge_store,
                 ".llm-wiki-governance",
             )
         )

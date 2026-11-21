@@ -19,6 +19,7 @@ Portable installation of the managed integrity and documentation CI workflows.
 | `json` | `json` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `locate_exact_repository_path`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `llm_wiki_engine.validation` | `require_repository_relative_path` |
@@ -38,12 +39,13 @@ flowchart LR
     n5["src/llm_wiki_cli/services/wiki_lifecycle.py"]
     n6["src/llm_wiki_engine/filesystem_guard.py"]
     n7["src/llm_wiki_engine/io.py"]
-    n8["src/llm_wiki_engine/source_selection.py"]
-    n9["src/llm_wiki_engine/sync_manifest.py"]
-    n10["src/llm_wiki_engine/validation.py"]
+    n8["src/llm_wiki_engine/layout.py"]
+    n9["src/llm_wiki_engine/source_selection.py"]
+    n10["src/llm_wiki_engine/sync_manifest.py"]
+    n11["src/llm_wiki_engine/validation.py"]
     n0 --> n3
-    n0 --> n8
-    n0 --> n10
+    n0 --> n9
+    n0 --> n11
     n1 --> n3
     n1 --> n4
     n2 --> n3
@@ -56,16 +58,19 @@ flowchart LR
     n3 --> n8
     n3 --> n9
     n3 --> n10
-    n4 --> n8
-    n4 --> n10
+    n3 --> n11
+    n4 --> n9
+    n4 --> n11
     n5 --> n6
     n5 --> n7
-    n5 --> n9
-    n8 --> n10
-    n9 --> n6
-    n9 --> n7
-    n9 --> n8
-    n9 --> n10
+    n5 --> n8
+    n5 --> n10
+    n9 --> n11
+    n10 --> n6
+    n10 --> n7
+    n10 --> n8
+    n10 --> n9
+    n10 --> n11
     click n0 "../modules/api.md"
     click n1 "../modules/install_ci_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
@@ -74,9 +79,10 @@ flowchart LR
     click n5 "../modules/wiki_lifecycle.md"
     click n6 "../modules/filesystem_guard.md"
     click n7 "../modules/io.md"
-    click n8 "../modules/source_selection.md"
-    click n9 "../modules/sync_manifest.md"
-    click n10 "../modules/validation.md"
+    click n8 "../modules/layout.md"
+    click n9 "../modules/source_selection.md"
+    click n10 "../modules/sync_manifest.md"
+    click n11 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -90,6 +96,7 @@ flowchart LR
 | Outbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [io](../modules/io.md) |
+| Outbound | [layout](../modules/layout.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [sync_manifest](../modules/sync_manifest.md) |
 | Outbound | [validation](../modules/validation.md) |
@@ -98,8 +105,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [InstallCiError](../entities/InstallCiError.md) | 54 | `ValueError` | Raised when a portable CI workflow cannot be installed safely. |
-| [InstallCiResult](../entities/InstallCiResult.md) | 59 | — | Outcome of one workflow installation attempt. |
+| [InstallCiError](../entities/InstallCiError.md) | 56 | `ValueError` | Raised when a portable CI workflow cannot be installed safely. |
+| [InstallCiResult](../entities/InstallCiResult.md) | 61 | — | Outcome of one workflow installation attempt. |
 
 ## Functions
 
@@ -112,12 +119,12 @@ flowchart LR
 | `_project_directory` | `(project_root: Path, relative_path: str, *, label: str) -> Path` | — | — |
 | `_validate_default_selection_contract` | `(source_root: Path, wiki_dir: Path) -> None` | — | Prove the managed wiki can use default source-selection discovery. |
 | `_workflow_body` | `(*, action_ref: str, src_dir: str, wiki_dir: str) -> str` | — | — |
-| `render_managed_workflow` | `(*, action_ref: str, src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki') -> bytes` | — | Render deterministic workflow bytes with a self-verifying owner marker. |
+| `render_managed_workflow` | `(*, action_ref: str, src_dir: str = '.', wiki_dir: str = DEFAULT_LAYOUT.wiki_dir) -> bytes` | — | Render deterministic workflow bytes with a self-verifying owner marker. |
 | `_with_ownership_checksum` | `(body: str, schema: str = MANAGED_WORKFLOW_SCHEMA) -> bytes` | — | — |
 | `_normalize_newlines` | `(content: bytes) -> bytes \| None` | — | — |
 | `is_unmodified_managed_workflow` | `(content: bytes, *, workflow_path: Path \| None = None) -> bool` | — | Return whether bytes carry a valid installer ownership checksum. |
 | `_validate_workflow_target` | `(project_root: Path, workflow_path: Path) -> Path` | — | — |
-| `install_ci_workflow` | `(*, action_ref: str, src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', dry_run: bool = False, force: bool = False, project_root: str \| Path \| None = None) -> InstallCiResult` | — | Create or safely update the repository's managed integrity workflow. |
+| `install_ci_workflow` | `(*, action_ref: str, src_dir: str = '.', wiki_dir: str = DEFAULT_LAYOUT.wiki_dir, dry_run: bool = False, force: bool = False, project_root: str \| Path \| None = None) -> InstallCiResult` | — | Create or safely update the repository's managed integrity workflow. |
 | `install_documentation_ci_workflow` | `(*, action_ref: str, config: str = PUBLICATION_CONFIG_PATH, working_directory: str = '.', src_dir: str \| None = None, target_dir: str \| None = None, baseline: str \| None = None, reviews: str \| None = None, previous_receipt: str \| None = None, candidate_review: str \| None = None, require_ready: bool = False, dry_run: bool = False, force: bool = False, project_root: str \| Path \| None = None) -> InstallCiResult` | — | Install a read-only candidate workflow for a configured consumer project. |
 | `_documentation_workflow` | `(action_ref: str, inputs: dict[str, str]) -> bytes` | — | — |
 | `_project_root` | `(project_root: str \| Path \| None) -> Path` | — | — |

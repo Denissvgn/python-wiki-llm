@@ -1,6 +1,6 @@
 # VerificationContractError
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:75`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:77`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [verification_contracts](../modules/verification_contracts.md)

@@ -205,36 +205,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| apply_governance_projection | _event_limit | 1814 | `_event_limit(event_limit)` |
-| _event_limit | isinstance (src/llm_wiki_engine/knowl…overnance.py:_event_limit) | 2693 | `isinstance(value, bool)` |
-| _event_limit | isinstance (src/llm_wiki_engine/knowl…overnance.py:_event_limit) | 2694 | `isinstance(value, int)` |
-| _event_limit | GovernanceError | 2697 | `GovernanceError('event_limit', ...)` |
-| apply_governance_projection | strip_governance_projection | 1815 | `strip_governance_projection(knowledge)` |
-| strip_governance_projection | isinstance (src/llm_wiki_engine/knowl…rip_governance_projection) | 1647 | `isinstance(knowledge, KnowledgeIndex)` |
-| strip_governance_projection | TypeError (src/llm_wiki_engine/knowl…rip_governance_projection) | 1648 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| strip_governance_projection | dict (src/llm_wiki_engine/knowl…rip_governance_projection) | 1651 | `dict(concept.extensions)` |
-| strip_governance_projection | extensions.pop | 1652 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | concepts.append (src/llm_wiki_engine/knowl…rip_governance_projection) | 1653 | `concepts.append(replace(...))` |
-| strip_governance_projection | replace (src/llm_wiki_engine/knowl…rip_governance_projection) | 1654 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
+| apply_governance_projection | _event_limit | 1816 | `_event_limit(event_limit)` |
+| _event_limit | isinstance (src/llm_wiki_engine/knowl…overnance.py:_event_limit) | 2695 | `isinstance(value, bool)` |
+| _event_limit | isinstance (src/llm_wiki_engine/knowl…overnance.py:_event_limit) | 2696 | `isinstance(value, int)` |
+| _event_limit | GovernanceError | 2699 | `GovernanceError('event_limit', ...)` |
+| apply_governance_projection | strip_governance_projection | 1817 | `strip_governance_projection(knowledge)` |
+| strip_governance_projection | isinstance (src/llm_wiki_engine/knowl…rip_governance_projection) | 1649 | `isinstance(knowledge, KnowledgeIndex)` |
+| strip_governance_projection | TypeError (src/llm_wiki_engine/knowl…rip_governance_projection) | 1650 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| strip_governance_projection | dict (src/llm_wiki_engine/knowl…rip_governance_projection) | 1653 | `dict(concept.extensions)` |
+| strip_governance_projection | extensions.pop | 1654 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | concepts.append (src/llm_wiki_engine/knowl…rip_governance_projection) | 1655 | `concepts.append(replace(...))` |
+| strip_governance_projection | replace (src/llm_wiki_engine/knowl…rip_governance_projection) | 1656 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `extensions.pop` | `strip_governance_projection` | 1652 |
-| mutation | `concepts.append` | `strip_governance_projection` | 1653 |
-| mutation | `extensions.pop` | `strip_governance_projection` | 1661 |
-| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1690 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1654 |
+| mutation | `concepts.append` | `strip_governance_projection` | 1655 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1663 |
+| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1692 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_event_limit` | `isinstance` | 2693 |
-| external_call | `_event_limit` | `isinstance` | 2694 |
-| external_call | `strip_governance_projection` | `isinstance` | 1647 |
-| external_call | `strip_governance_projection` | `TypeError` | 1648 |
-| external_call | `strip_governance_projection` | `replace` | 1654 |
+| external_call | `_event_limit` | `isinstance` | 2695 |
+| external_call | `_event_limit` | `isinstance` | 2696 |
+| external_call | `strip_governance_projection` | `isinstance` | 1649 |
+| external_call | `strip_governance_projection` | `TypeError` | 1650 |
+| external_call | `strip_governance_projection` | `replace` | 1656 |
 | step_limit | `apply_governance_projection` | `first 12 steps` | 0 |
 | truncated_flow | `apply_governance_projection` | `depth limit` | 0 |
 

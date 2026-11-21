@@ -263,3 +263,20 @@ def test_token_counters_live_in_the_engine_and_the_exact_counter_in_the_cli():
     # The exact counter needs the optional tokenizers package, so the host supplies it.
     assert not hasattr(token_counters, "LocalTokenizerCounter")
     assert token_counting.LocalTokenizerCounter.exact
+
+
+def test_packet_validation_accepts_other_producers_only_when_asked():
+    from llm_wiki_engine import context_packet
+
+    raw = (Path(__file__).resolve().parent / "fixtures" / "context-packet-v1.json").read_bytes()
+    assert context_packet.DEFAULT_ACCEPTED_GENERATORS == frozenset({"agent-wiki-cli"})
+    context_packet.validate_context_packet(raw)
+    context_packet.validate_context_packet(raw, accepted_generators={"agent-wiki-cli", "example/notes-engine"})
+    with pytest.raises(context_packet.ContextPacketError, match="accepted producer"):
+        context_packet.validate_context_packet(raw, accepted_generators={"example/notes-engine"})
+    # The default still names the one supported producer.
+    context_packet.validate_context_packet(raw)
+    with pytest.raises(TypeError):
+        context_packet.validate_context_packet(raw, accepted_generators="agent-wiki-cli")
+    with pytest.raises(ValueError):
+        context_packet.validate_context_packet(raw, accepted_generators=())

@@ -145,6 +145,7 @@ still stop the operation.
 | `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
 | `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
 | `llm_wiki_engine.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `llm_wiki_engine.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `llm_wiki_engine.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
@@ -185,31 +186,31 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (49) |
+| Outbound | `src` (50) |
 
-> All 52 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAborted](../entities/SyncAborted.md) | 261 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
-| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 271 | `SyncAborted` | The request's options were rejected before any sync work started. |
-| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 276 | — | — |
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 337 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 341 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/sync_runtime_SyncResult.md) | 673 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 712 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 734 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1753 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1781 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1788 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1794 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1800 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1816 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1860 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1893 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1899 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [SyncAborted](../entities/SyncAborted.md) | 263 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
+| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 273 | `SyncAborted` | The request's options were rejected before any sync work started. |
+| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 278 | — | — |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 339 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 343 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/sync_runtime_SyncResult.md) | 675 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 714 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 736 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1755 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1783 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1790 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1796 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1802 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1818 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1862 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1895 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1901 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 

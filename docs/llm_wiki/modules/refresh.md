@@ -24,6 +24,7 @@ preserved history, with independent full native validation still required.
 | `__future__` | `annotations` |
 | `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
 | `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_disclosure` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.markdown_sections` | `preserve_index_custom_sections` |
 | `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 
@@ -46,9 +47,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

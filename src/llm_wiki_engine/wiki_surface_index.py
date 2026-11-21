@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 import re
@@ -28,7 +30,7 @@ from llm_wiki_engine.wiki_surface import (
 )
 
 
-SURFACE_INDEX_FILENAME = ".llm-wiki-surface.json"
+SURFACE_INDEX_FILENAME = DEFAULT_LAYOUT.surface_index
 WIKI_SURFACE_INDEX_SCHEMA_VERSION = "llm-wiki-surface-index/v1"
 
 _MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)

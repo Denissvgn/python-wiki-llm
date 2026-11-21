@@ -13,6 +13,7 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 | `.knowledge_artifacts` | `_decode_json_object` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError`, `canonical_bytes`, `decode_bytes`, `digest`, `logical_digest`, `_hash` |
 | `.knowledge_storage_io` | `read_guarded` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `.maintenance_state` | `validate_maintenance_adoption`, `LIMITS`, `maintenance_state_hash` |
 | `.sync_manifest` | `ManifestArtifactHashes`, `SyncManifest`, `SyncManifest`, `validate_manifest_policy`, `MANIFEST_FILENAME` |
 | `__future__` | `annotations` |
@@ -45,17 +46,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (7) |
+| Outbound | `src` (8) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ManifestStore](../entities/ManifestStore.md) | 82 | — | — |
-| [ManifestStoreReader](../entities/ManifestStoreReader.md) | 153 | — | — |
-| [ValidatedManifestHeader](../entities/ValidatedManifestHeader.md) | 248 | — | Policy and artifact commitments only; never a complete sync manifest. |
+| [ManifestStore](../entities/ManifestStore.md) | 84 | — | — |
+| [ManifestStoreReader](../entities/ManifestStoreReader.md) | 155 | — | — |
+| [ValidatedManifestHeader](../entities/ValidatedManifestHeader.md) | 250 | — | Policy and artifact commitments only; never a complete sync manifest. |
 
 ## Functions
 

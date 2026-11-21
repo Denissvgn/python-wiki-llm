@@ -1,6 +1,6 @@
 # PathValidationError
 
-**Location:** `src/llm_wiki_engine/path_policy.py:90`
+**Location:** `src/llm_wiki_engine/path_policy.py:92`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [path_policy](../modules/path_policy.md)

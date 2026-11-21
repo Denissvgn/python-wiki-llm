@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import json
 import os
 import shlex
@@ -189,7 +191,7 @@ def is_pristine_wiki_target(wiki_dir: Union[str, Path]) -> bool:
             relative = path.relative_to(root).as_posix()
         except ValueError:
             return False
-        if relative in {"llm-wiki-governance.lock", "llm-wiki-storage.lock"}:
+        if relative in {DEFAULT_LAYOUT.governance_lock, DEFAULT_LAYOUT.storage_lock}:
             if not path.is_file() or path.stat().st_nlink != 1:
                 return False
             continue

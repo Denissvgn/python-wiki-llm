@@ -142,7 +142,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1266; effect analysis evaluated: 748, partial: 49, unavailable: 469. Counts include steps omitted from the displayed trace.
 
-Collector observations for 797 source steps with known totals: observed: 4409, emitted: 4184, omitted: 225. Unavailable totals are excluded.
+Collector observations for 797 source steps with known totals: observed: 4410, emitted: 4185, omitted: 225. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -153,7 +153,7 @@ Collector observations for 797 source steps with known totals: observed: 4409, e
 | `build_knowledge_commit_plan` | `available` | `partial` | `available` | `25` | `21` | `4` |
 | `Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `current_manifest_format` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `current_manifest_format` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
 | `Path (src/llm_wiki_engine/manif…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `adoption.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `adoption.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -202,7 +202,7 @@ flowchart LR
 | `build_knowledge_commit_plan` | `wiki_dir: str \| Path`, `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes \| None`, `manifest: SyncManifest`, `knowledge_format: str \| None`, `knowledge_index: KnowledgeIndex \| None`, `manifest_format: str \| None`, `prior: ValidatedKnowledgeArtifacts \| None` | `PACKED_FORMATS`, `KnowledgeStorageError`, `KnowledgeStorageError`, `SyncManifest`, `SURFACE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME` | `committed_manifest.storage_version`, `committed_manifest.storage_objects`, `committed_manifest.storage_version`, `committed_manifest.storage_objects` | `KnowledgeCommitPlan(...)` |
 | `Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan)` | - | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
-| `current_manifest_format` | `wiki_dir: str \| Path` | `MAX_EXPANDED_BYTES`, `MAINTENANCE_VERSION`, `VERSION`, `MAINTENANCE_VERSION` | - | `'v5'`, `'v5'`, `'v5'`, `'indexed-v6'`, `'v7'`, `'indexed-v8'` |
+| `current_manifest_format` | `wiki_dir: str \| Path` | `DEFAULT_LAYOUT`, `MAX_EXPANDED_BYTES`, `MAINTENANCE_VERSION`, `VERSION`, `MAINTENANCE_VERSION` | - | `'v5'`, `'v5'`, `'v5'`, `'indexed-v6'`, `'v7'`, `'indexed-v8'` |
 | `Path (src/llm_wiki_engine/manif…y:current_manifest_format)` | - | - | - | - |
 | `adoption.exists` | - | - | - | - |
 | `adoption.is_symlink` | - | - | - | - |
@@ -216,17 +216,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan) | 689 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | KnowledgeArtifactError | 692 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
-| build_knowledge_commit_plan | current_manifest_format | 693 | `current_manifest_format(root)` |
-| current_manifest_format | Path (src/llm_wiki_engine/manif…y:current_manifest_format) | 287 | `Path(wiki_dir)` |
-| current_manifest_format | adoption.exists | 289 | `adoption.exists(data not statically known)` |
-| current_manifest_format | adoption.is_symlink | 289 | `adoption.is_symlink(data not statically known)` |
-| current_manifest_format | path.exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 290 | `path.exists(data not statically known)` |
-| current_manifest_format | path.is_symlink (src/llm_wiki_engine/manif…y:current_manifest_format) | 290 | `path.is_symlink(data not statically known)` |
-| current_manifest_format | KnowledgeStorageError | 292 | `KnowledgeStorageError('manifest', 'adopted maintenance owner is missing; restore a complete snapshot', code='maintenance-adoption-incomplete')` |
-| current_manifest_format | (…).exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 293 | `(path.parent / '.llm-wiki-manifest').exists(data not statically known)` |
-| current_manifest_format | KnowledgeStorageError | 294 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
+| build_knowledge_commit_plan | Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan) | 691 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | KnowledgeArtifactError | 694 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
+| build_knowledge_commit_plan | current_manifest_format | 695 | `current_manifest_format(root)` |
+| current_manifest_format | Path (src/llm_wiki_engine/manif…y:current_manifest_format) | 289 | `Path(wiki_dir)` |
+| current_manifest_format | adoption.exists | 291 | `adoption.exists(data not statically known)` |
+| current_manifest_format | adoption.is_symlink | 291 | `adoption.is_symlink(data not statically known)` |
+| current_manifest_format | path.exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 292 | `path.exists(data not statically known)` |
+| current_manifest_format | path.is_symlink (src/llm_wiki_engine/manif…y:current_manifest_format) | 292 | `path.is_symlink(data not statically known)` |
+| current_manifest_format | KnowledgeStorageError | 294 | `KnowledgeStorageError('manifest', 'adopted maintenance owner is missing; restore a complete snapshot', code='maintenance-adoption-incomplete')` |
+| current_manifest_format | (…).exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 295 | `(path.parent / DEFAULT_LAYOUT.manifest_objects).exists(data not statically known)` |
+| current_manifest_format | KnowledgeStorageError | 296 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
 
 ### Boundary effects
 
@@ -236,11 +236,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_manifest_format` | `adoption.exists` | 289 |
-| unresolved_call | `current_manifest_format` | `adoption.is_symlink` | 289 |
-| unresolved_call | `current_manifest_format` | `path.exists` | 290 |
-| unresolved_call | `current_manifest_format` | `path.is_symlink` | 290 |
-| unresolved_call | `current_manifest_format` | `(path.parent / '.llm-wiki-manifest').exists` | 293 |
+| unresolved_call | `current_manifest_format` | `adoption.exists` | 291 |
+| unresolved_call | `current_manifest_format` | `adoption.is_symlink` | 291 |
+| unresolved_call | `current_manifest_format` | `path.exists` | 292 |
+| unresolved_call | `current_manifest_format` | `path.is_symlink` | 292 |
+| unresolved_call | `current_manifest_format` | `(path.parent / DEFAULT_LAYOUT.manifest_objects).exists` | 295 |
 | step_limit | `build_knowledge_commit_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_commit_plan` | `depth limit` | 0 |
 

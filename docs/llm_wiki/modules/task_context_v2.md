@@ -33,6 +33,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError`, `_concept_aliases`, `digest`, `COLLECTIONS`, `COLLECTIONS` |
 | `llm_wiki_engine.knowledge_storage_access` | `ScopedKnowledgeRead`, `capture_knowledge_slice` |
 | `llm_wiki_engine.knowledge_storage_io` | `ReadObservation`, `StorageReadSession`, `range_batches` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_status` | `LIMITATIONS`, `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
@@ -66,15 +67,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 277 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 279 | — | — |
 
 ## Functions
 

@@ -197,10 +197,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_artifact_verification_context | isinstance (src/llm_wiki_engine/verif…fact_verification_context) | 352 | `isinstance(knowledge, KnowledgeIndex)` |
-| build_artifact_verification_context | TypeError (src/llm_wiki_engine/verif…fact_verification_context) | 353 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| build_artifact_verification_context | _sha256 | 354 | `_sha256(knowledge_hash, 'knowledge_hash')` |
-| _sha256 | require_sha256 | 1454 | `require_sha256(value, digest_error=VerificationContractError(...))` |
+| build_artifact_verification_context | isinstance (src/llm_wiki_engine/verif…fact_verification_context) | 354 | `isinstance(knowledge, KnowledgeIndex)` |
+| build_artifact_verification_context | TypeError (src/llm_wiki_engine/verif…fact_verification_context) | 355 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| build_artifact_verification_context | _sha256 | 356 | `_sha256(knowledge_hash, 'knowledge_hash')` |
+| _sha256 | require_sha256 | 1456 | `require_sha256(value, digest_error=VerificationContractError(...))` |
 | require_sha256 | isinstance (src/llm_wiki_engine/validation.py:require_sha256) | 1159 | `isinstance(value, str)` |
 | require_sha256 | _validation_error | 1160 | `_validation_error(digest_error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -217,8 +217,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_artifact_verification_context` | `isinstance` | 352 |
-| external_call | `build_artifact_verification_context` | `TypeError` | 353 |
+| external_call | `build_artifact_verification_context` | `isinstance` | 354 |
+| external_call | `build_artifact_verification_context` | `TypeError` | 355 |
 | external_call | `require_sha256` | `isinstance` | 1159 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | unresolved_call | `_validation_error` | `error` | 95 |

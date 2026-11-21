@@ -6,6 +6,8 @@ The plan it executes is the application's verified page transition plan (the
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 from pathlib import Path
@@ -30,7 +32,7 @@ from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine.host import emit
 
 
-RECOVERY_PREFIX = ".llm-wiki-page-moves-"
+RECOVERY_PREFIX = DEFAULT_LAYOUT.page_move_recovery_prefix
 
 
 def assert_no_pending_page_moves(wiki_dir: Path) -> None:

@@ -1,6 +1,6 @@
 # ContextPacketPathPolicyError
 
-**Location:** `src/llm_wiki_engine/context_packet.py:190`
+**Location:** `src/llm_wiki_engine/context_packet.py:191`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -31,7 +31,7 @@ flowchart LR
     n4["_path_policy_receipt (src/llm_wiki_engine/context_packet.py)"]
     n5["_reject_machine_local_path (src/llm_wiki_engine/context_packet.py)"]
     n6["_repository_path (src/llm_wiki_engine/context_packet.py)"]
-    n7["validate_context_packet (src/llm_wiki_engine/context_packet.py)"]
+    n7["_validate_context_packet_bytes (src/llm_wiki_engine/context_packet.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -70,4 +70,4 @@ flowchart LR
 | `_path_policy_receipt` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_reject_machine_local_path` | type_reference | [context_packet](../modules/context_packet.md) | — |
 | `_repository_path` | call | [context_packet](../modules/context_packet.md) | 1 |
-| `validate_context_packet` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `_validate_context_packet_bytes` | call | [context_packet](../modules/context_packet.md) | 1 |

@@ -22,6 +22,7 @@ Read-only classification for wiki bootstrap, sync, and migration routing.
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.host` | `current_host` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component`, `formatted_json_bytes` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.sync_manifest` | `MANIFEST_FILENAME` |
 | `llm_wiki_engine.wiki_surface` | `iter_directory_kinds`, `iter_page_kinds` |
 | `os` | `os` |
@@ -49,17 +50,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (10) |
+| Outbound | `src` (11) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [WikiScaffoldPathError](../entities/WikiScaffoldPathError.md) | Class | 28 | `ValueError` | Raised when a managed scaffold path is redirected or non-regular. |
-| [WikiScaffoldProvision](../entities/WikiScaffoldProvision.md) | Class | 33 | — | Additive scaffold entries created by one guarded provisioning pass. |
-| [WikiLifecycleState](../entities/WikiLifecycleState.md) | Enum | 131 | `str`, `Enum` | One unambiguous lifecycle route for a wiki target. |
+| [WikiScaffoldPathError](../entities/WikiScaffoldPathError.md) | Class | 30 | `ValueError` | Raised when a managed scaffold path is redirected or non-regular. |
+| [WikiScaffoldProvision](../entities/WikiScaffoldProvision.md) | Class | 35 | — | Additive scaffold entries created by one guarded provisioning pass. |
+| [WikiLifecycleState](../entities/WikiLifecycleState.md) | Enum | 133 | `str`, `Enum` | One unambiguous lifecycle route for a wiki target. |
 
 ## Functions
 

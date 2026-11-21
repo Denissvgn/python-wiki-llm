@@ -8,6 +8,8 @@ an unread maintenance ledger.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import base64
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -285,12 +287,12 @@ def current_manifest_format(wiki_dir: str | Path) -> str:
     from .knowledge_storage_io import read_guarded
     from .sync_manifest import MANIFEST_FILENAME
     path = Path(wiki_dir) / MANIFEST_FILENAME
-    adoption = path.parent / ".llm-wiki-maintenance-adoption.json"
+    adoption = path.parent / DEFAULT_LAYOUT.maintenance_adoption
     adopted = adoption.exists() or adoption.is_symlink()
     if not path.exists() and not path.is_symlink():
         if adopted:
             raise KnowledgeStorageError("manifest", "adopted maintenance owner is missing; restore a complete snapshot", code="maintenance-adoption-incomplete")
-        if (path.parent / ".llm-wiki-manifest").exists():
+        if (path.parent / DEFAULT_LAYOUT.manifest_objects).exists():
             raise KnowledgeStorageError("manifest", "indexed manifest root is missing; recover it first")
         return "v5"
     try:
@@ -300,7 +302,7 @@ def current_manifest_format(wiki_dir: str | Path) -> str:
     except (ValueError, UnicodeError):
         if adopted:
             raise KnowledgeStorageError("manifest", "adopted maintenance owner is invalid; restore a complete snapshot", code="maintenance-adoption-incomplete")
-        if (path.parent / ".llm-wiki-manifest").exists():
+        if (path.parent / DEFAULT_LAYOUT.manifest_objects).exists():
             raise KnowledgeStorageError("manifest", "indexed manifest root is invalid; recover it first")
         return "v5"
     version = value.get("version")

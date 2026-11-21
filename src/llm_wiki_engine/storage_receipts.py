@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 from collections.abc import Mapping
 import base64
 import re
@@ -12,7 +14,7 @@ from .knowledge_storage import canonical_bytes
 
 RECEIPT_SCHEMA = "llm-wiki-task-storage/v3"
 _HEX = re.compile(r"[0-9a-f]{64}\Z")
-_FIXED = {1: ".llm-wiki-knowledge.json", 2: ".llm-wiki-manifest.json"}
+_FIXED = {1: DEFAULT_LAYOUT.knowledge_index, 2: DEFAULT_LAYOUT.manifest}
 _CONTENT_ADDRESSED = {
     3: ".llm-wiki-knowledge/pack-index", 4: ".llm-wiki-knowledge/objects",
     5: ".llm-wiki-manifest/objects",

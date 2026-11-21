@@ -1,6 +1,6 @@
 # _RunnableMcpServer
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:237`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:239`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [mcp_server](../modules/mcp_server.md)

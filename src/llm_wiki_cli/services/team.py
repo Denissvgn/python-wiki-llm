@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 import re
@@ -963,7 +965,7 @@ def _merge_conflicted_log(text: str) -> str:
 
 
 def _conflict_target(rel_path: str) -> str | None:
-    if rel_path in {"index.md", ".llm-wiki-manifest.json", "log.md"}:
+    if rel_path in {"index.md", DEFAULT_LAYOUT.manifest, "log.md"}:
         return rel_path
     directory, separator, _ = rel_path.partition("/")
     if separator and (directory == "workflows" or (
@@ -987,7 +989,7 @@ def _resolution_for_target(
         return _index_content(
             wiki_dir, inventory
         ), "rebuilt index from current inventory"
-    if target == ".llm-wiki-manifest.json":
+    if target == DEFAULT_LAYOUT.manifest:
         (
             surfaces,
             generation_inputs,
@@ -1059,7 +1061,7 @@ def resolve_conflicts(
             else None
         )
     except (OSError, TypeError, UnicodeError, ValueError):
-        manifest_path = wiki_path / ".llm-wiki-manifest.json"
+        manifest_path = wiki_path / DEFAULT_LAYOUT.manifest
         try:
             manifest_text = read_md(manifest_path)
         except OSError:

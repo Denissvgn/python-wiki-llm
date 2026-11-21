@@ -81,26 +81,26 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| source_identity | Path(…).expanduser().resolve | 637 | `Path(source_root).expanduser().resolve(data not statically known)` |
-| source_identity | Path(…).expanduser | 637 | `Path(source_root).expanduser(data not statically known)` |
-| source_identity | Path | 637 | `Path(source_root)` |
-| source_identity | subprocess.run | 640 | `subprocess.run([...], capture_output=True, text=True, check=True, timeout=10)` |
-| source_identity | str | 641 | `str(root)` |
-| source_identity | result.stdout.strip | 647 | `result.stdout.strip(data not statically known)` |
+| source_identity | Path(…).expanduser().resolve | 639 | `Path(source_root).expanduser().resolve(data not statically known)` |
+| source_identity | Path(…).expanduser | 639 | `Path(source_root).expanduser(data not statically known)` |
+| source_identity | Path | 639 | `Path(source_root)` |
+| source_identity | subprocess.run | 642 | `subprocess.run([...], capture_output=True, text=True, check=True, timeout=10)` |
+| source_identity | str | 643 | `str(root)` |
+| source_identity | result.stdout.strip | 649 | `result.stdout.strip(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| process | `subprocess.run` | `source_identity` | 640 |
+| process | `subprocess.run` | `source_identity` | 642 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `source_identity` | `Path(source_root).expanduser().resolve` | 637 |
-| unresolved_call | `source_identity` | `Path(source_root).expanduser` | 637 |
-| unresolved_call | `source_identity` | `result.stdout.strip` | 647 |
+| unresolved_call | `source_identity` | `Path(source_root).expanduser().resolve` | 639 |
+| unresolved_call | `source_identity` | `Path(source_root).expanduser` | 639 |
+| unresolved_call | `source_identity` | `result.stdout.strip` | 649 |
 
 ## Behavior
 

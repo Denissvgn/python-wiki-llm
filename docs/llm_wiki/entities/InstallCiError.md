@@ -1,6 +1,6 @@
 # InstallCiError
 
-**Location:** `src/llm_wiki_cli/services/ci_installer.py:54`
+**Location:** `src/llm_wiki_cli/services/ci_installer.py:56`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [ci_installer](../modules/ci_installer.md)

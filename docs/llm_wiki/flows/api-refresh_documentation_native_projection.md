@@ -187,9 +187,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1911; effect analysis evaluated: 1219, partial: 82, unavailable: 610. Counts include steps omitted from the displayed trace.
+Source steps: 1911; effect analysis evaluated: 1216, partial: 85, unavailable: 610. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1301 source steps with known totals: observed: 7620, emitted: 7284, omitted: 336. Unavailable totals are excluded.
+Collector observations for 1301 source steps with known totals: observed: 7625, emitted: 7286, omitted: 339. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -267,7 +267,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | refresh_documentation_native_projection | load_adoption_marker | 315 | `load_adoption_marker(wiki_root)` |
-| load_adoption_marker | _absolute_path | 93 | `_absolute_path(Path(...))` |
+| load_adoption_marker | _absolute_path | 95 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |

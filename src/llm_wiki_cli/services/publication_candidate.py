@@ -6,6 +6,8 @@ owned page and checks the composed tree; GitHub wiki is the built-in target.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from copy import deepcopy
 import json
 from importlib import metadata
@@ -120,8 +122,8 @@ def _target_path(root, value):
                 ".venv",
                 "__pycache__",
                 "node_modules",
-                ".llm-wiki-knowledge",
-                ".llm-wiki-manifest",
+                DEFAULT_LAYOUT.knowledge_store,
+                DEFAULT_LAYOUT.manifest_objects,
             }
             for part in selected.parts
         )

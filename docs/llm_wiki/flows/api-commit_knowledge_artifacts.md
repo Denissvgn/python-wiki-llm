@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 343; effect analysis evaluated: 187, partial: 14, unavailable: 142. Counts include steps omitted from the displayed trace.
+Source steps: 343; effect analysis evaluated: 186, partial: 15, unavailable: 142. Counts include steps omitted from the displayed trace.
 
-Collector observations for 201 source steps with known totals: observed: 1002, emitted: 966, omitted: 36. Unavailable totals are excluded.
+Collector observations for 201 source steps with known totals: observed: 1003, emitted: 966, omitted: 37. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -202,14 +202,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 860 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 861 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 862 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 863 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 864 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 865 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | storage_writer_lock | 871 | `storage_writer_lock(root)` |
-| storage_writer_lock | _absolute_path | 57 | `_absolute_path(Path(...))` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 862 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 863 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 864 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 865 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 866 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 867 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | storage_writer_lock | 873 | `storage_writer_lock(root)` |
+| storage_writer_lock | _absolute_path | 59 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -224,12 +224,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 860 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 861 |
 | external_call | `commit_knowledge_artifacts` | `isinstance` | 862 |
 | external_call | `commit_knowledge_artifacts` | `TypeError` | 863 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 864 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 864 |
 | external_call | `commit_knowledge_artifacts` | `TypeError` | 865 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 866 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 867 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |

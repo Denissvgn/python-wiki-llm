@@ -1,6 +1,6 @@
 # ContextPacketAuthorityError
 
-**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:133`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:135`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet_builder](../modules/context_packet_builder.md)

@@ -177,9 +177,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1419; effect analysis evaluated: 1057, partial: 65, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 1419; effect analysis evaluated: 1053, partial: 69, unavailable: 297. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1122 source steps with known totals: observed: 6568, emitted: 6265, omitted: 303. Unavailable totals are excluded.
+Collector observations for 1122 source steps with known totals: observed: 6586, emitted: 6277, omitted: 309. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -257,14 +257,14 @@ flowchart LR
 | run | _bootstrap_run_options_from_args | 6978 | `_bootstrap_run_options_from_args(args)` |
 | _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4948 | `Path(args.wiki_dir)` |
 | _bootstrap_run_options_from_args | validate_path | 4949 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| validate_path | PathValidationError | 102 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 103 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 102 | `current_host(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 104 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 104 | `current_host(data not statically known)` |
 
 ### Boundary effects
 
@@ -274,11 +274,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 103 |
 | unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
-| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 104 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

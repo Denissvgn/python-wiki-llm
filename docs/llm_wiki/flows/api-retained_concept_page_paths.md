@@ -81,27 +81,27 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| retained_concept_page_paths | root.is_dir | 603 | `root.is_dir(data not statically known)` |
-| retained_concept_page_paths | paths.extend | 605 | `paths.extend(...)` |
-| retained_concept_page_paths | root.glob | 606 | `root.glob('*.md')` |
-| retained_concept_page_paths | path.is_file | 606 | `path.is_file(data not statically known)` |
-| retained_concept_page_paths | tuple | 608 | `tuple(sorted(...))` |
-| retained_concept_page_paths | sorted | 608 | `sorted(paths)` |
+| retained_concept_page_paths | root.is_dir | 605 | `root.is_dir(data not statically known)` |
+| retained_concept_page_paths | paths.extend | 607 | `paths.extend(...)` |
+| retained_concept_page_paths | root.glob | 608 | `root.glob('*.md')` |
+| retained_concept_page_paths | path.is_file | 608 | `path.is_file(data not statically known)` |
+| retained_concept_page_paths | tuple | 610 | `tuple(sorted(...))` |
+| retained_concept_page_paths | sorted | 610 | `sorted(paths)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `paths.extend` | `retained_concept_page_paths` | 605 |
+| mutation | `paths.extend` | `retained_concept_page_paths` | 607 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `retained_concept_page_paths` | `root.is_dir` | 603 |
-| unresolved_call | `retained_concept_page_paths` | `root.glob` | 606 |
-| unresolved_call | `retained_concept_page_paths` | `path.is_file` | 606 |
-| external_call | `retained_concept_page_paths` | `sorted` | 608 |
+| unresolved_call | `retained_concept_page_paths` | `root.is_dir` | 605 |
+| unresolved_call | `retained_concept_page_paths` | `root.glob` | 608 |
+| unresolved_call | `retained_concept_page_paths` | `path.is_file` | 608 |
+| external_call | `retained_concept_page_paths` | `sorted` | 610 |
 
 ## Behavior
 

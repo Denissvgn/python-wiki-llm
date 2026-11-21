@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from contextlib import contextmanager
 import json
 from dataclasses import replace
@@ -207,8 +209,8 @@ def _load_recovery_snapshot(directory, *, allow_captured_preimage=False):
     if marker != metadata["marker"]:
         raise MaintenanceProtocolError("recovery-invalid", "Recovery marker commitment disagrees")
     manifest = SyncManifest.from_payload(json.loads(files[MANIFEST_FILENAME], object_pairs_hook=_pairs, parse_constant=_constant), object_reader=lambda name, maximum: files[name])
-    validated = validate_knowledge_artifacts(surface_index_bytes=files[".llm-wiki-surface.json"],
-        knowledge_index_bytes=files[".llm-wiki-knowledge.json"], manifest=manifest,
+    validated = validate_knowledge_artifacts(surface_index_bytes=files[DEFAULT_LAYOUT.surface_index],
+        knowledge_index_bytes=files[DEFAULT_LAYOUT.knowledge_index], manifest=manifest,
         object_reader=lambda name, maximum: files[name])
     from llm_wiki_engine.maintenance_projection import validate_maintenance_projection
 
@@ -233,7 +235,7 @@ def _load_recovery_snapshot(directory, *, allow_captured_preimage=False):
             raise MaintenanceProtocolError("recovery-invalid", "Recovery authored page differs from committed snapshot")
     # Inventory membership or a generated-looking prefix is insufficient. Only
     # validated roots and the exact referenced physical closure gain ownership.
-    generated = frozenset(validated.storage_objects) | {".llm-wiki-knowledge.json", ".llm-wiki-surface.json"}
+    generated = frozenset(validated.storage_objects) | {DEFAULT_LAYOUT.knowledge_index, DEFAULT_LAYOUT.surface_index}
     return metadata, files, manifest, generated
 
 

@@ -18,6 +18,7 @@ Recover only journaled first-use output before capturing fresh evidence.
 | `llm_wiki_engine.knowledge_governance` | `_governance_lock_root` |
 | `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `canonical_bytes`, `digest` |
 | `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_protocol` | `MaintenanceProtocolError`, `WikiWriteBasis`, `governance_writer_lock`, `storage_writer_lock`, `guard_maintenance_owner`, `save_recovery_snapshot`, `snapshot_wiki` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
@@ -39,10 +40,11 @@ flowchart LR
     n4["src/llm_wiki_engine/knowledge_governance.py"]
     n5["src/llm_wiki_engine/knowledge_storage.py"]
     n6["src/llm_wiki_engine/knowledge_storage_io.py"]
-    n7["src/llm_wiki_engine/maintenance_protocol.py"]
-    n8["src/llm_wiki_engine/request_json.py"]
-    n9["src/llm_wiki_engine/validation.py"]
-    n10["src/llm_wiki_engine/wiki_write_basis.py"]
+    n7["src/llm_wiki_engine/layout.py"]
+    n8["src/llm_wiki_engine/maintenance_protocol.py"]
+    n9["src/llm_wiki_engine/request_json.py"]
+    n10["src/llm_wiki_engine/validation.py"]
+    n11["src/llm_wiki_engine/wiki_write_basis.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
@@ -52,24 +54,29 @@ flowchart LR
     n0 --> n8
     n0 --> n9
     n0 --> n10
+    n0 --> n11
     n1 --> n0
     n1 --> n2
     n1 --> n4
-    n1 --> n7
-    n1 --> n9
+    n1 --> n8
+    n1 --> n10
     n2 --> n3
-    n3 --> n10
-    n4 --> n9
+    n2 --> n7
+    n3 --> n11
+    n4 --> n7
     n4 --> n10
+    n4 --> n11
+    n5 --> n7
     n6 --> n3
     n6 --> n5
-    n6 --> n9
-    n7 --> n3
-    n7 --> n4
-    n7 --> n5
-    n7 --> n6
-    n7 --> n8
-    n7 --> n10
+    n6 --> n10
+    n8 --> n3
+    n8 --> n4
+    n8 --> n5
+    n8 --> n6
+    n8 --> n7
+    n8 --> n9
+    n8 --> n11
     click n0 "../modules/bootstrap_recovery.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/wiki_lifecycle.md"
@@ -77,10 +84,11 @@ flowchart LR
     click n4 "../modules/knowledge_governance.md"
     click n5 "../modules/knowledge_storage.md"
     click n6 "../modules/knowledge_storage_io.md"
-    click n7 "../modules/maintenance_protocol.md"
-    click n8 "../modules/request_json.md"
-    click n9 "../modules/validation.md"
-    click n10 "../modules/wiki_write_basis.md"
+    click n7 "../modules/layout.md"
+    click n8 "../modules/maintenance_protocol.md"
+    click n9 "../modules/request_json.md"
+    click n10 "../modules/validation.md"
+    click n11 "../modules/wiki_write_basis.md"
 ```
 
 ### Internal neighbors
@@ -93,6 +101,7 @@ flowchart LR
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
+| Outbound | [layout](../modules/layout.md) |
 | Outbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Outbound | [request_json](../modules/request_json.md) |
 | Outbound | [validation](../modules/validation.md) |
