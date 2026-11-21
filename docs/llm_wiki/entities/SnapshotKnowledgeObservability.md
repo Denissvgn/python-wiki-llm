@@ -1,6 +1,6 @@
 # SnapshotKnowledgeObservability
 
-**Location:** `src/llm_wiki_engine/knowledge_observability.py:399`
+**Location:** `src/llm_wiki_engine/knowledge_observability.py:401`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_observability](../modules/knowledge_observability.md)

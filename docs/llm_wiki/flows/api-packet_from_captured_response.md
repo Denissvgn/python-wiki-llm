@@ -51,22 +51,22 @@ sequenceDiagram
     participant p11 as _packet_basis
     participant p12 as _source_anchor
     participant p13 as _assert_wiki_integrity
-    participant p14 as _coerce_packet_bytes
+    participant p14 as _validate_context_packet_bytes
     participant p15 as current_pack
     participant p16 as source_snapshot_matches_current_files
     participant p17 as _wiki_anchor
-    participant p18 as _strict_json_payload
-    participant p19 as select_changes
-    participant p20 as _selected_git_changed_files
-    participant p21 as _validate_packet_shape
-    participant p22 as _path_policy_receipt
-    participant p23 as QualifiedContextPacket._from_validated_payload
-    participant p24 as hash_source_snapshot
-    participant p25 as validate_changes
-    participant p26 as _git_changed_files
-    participant p27 as _exact_fields
-    participant p28 as source_snapshot_inputs_match_current_files
-    participant p29 as type (src/llm_wiki_cli/services…es_builtin_context_source)
+    participant p18 as select_changes
+    participant p19 as _selected_git_changed_files
+    participant p20 as _path_policy_receipt
+    participant p21 as hash_source_snapshot
+    participant p22 as validate_changes
+    participant p23 as _git_changed_files
+    participant p24 as _coerce_packet_bytes
+    participant p25 as _strict_json_payload
+    participant p26 as source_snapshot_inputs_match_current_files
+    participant p27 as _git
+    participant p28 as _freshness_basis
+    participant p29 as type
     participant p30 as request.get (src/llm_wiki_cli/services…cket_contract_for_request)
     p0->>p1: uses_builtin_context_source
     p0->>p2: _packet_contract_for_request
@@ -81,28 +81,28 @@ sequenceDiagram
     p3->>p11: _packet_basis
     p4->>p12: _source_anchor
     p5->>p13: _assert_wiki_integrity
-    p9->>p14: _coerce_packet_bytes
+    p9->>p14: _validate_context_packet_bytes
     p1->>p15: current_pack
     p4->>p16: source_snapshot_matches_current_files
     p5->>p17: _wiki_anchor
-    p9->>p18: _strict_json_payload
-    p6->>p19: select_changes
-    p6->>p20: _selected_git_changed_files
-    p9->>p21: _validate_packet_shape
-    p3->>p22: _path_policy_receipt
-    p9->>p23: QualifiedContextPacket._from_validated_payload
-    p11->>p24: hash_source_snapshot
-    p19->>p25: validate_changes
-    p20->>p26: _git_changed_files
-    p21->>p27: _exact_fields
-    p16->>p28: source_snapshot_inputs_match_current_files
-    p1-->>p29: type (src/llm_wiki_cli/services…es_builtin_context_source)(...)
+    p6->>p18: select_changes
+    p6->>p19: _selected_git_changed_files
+    p3->>p20: _path_policy_receipt
+    p11->>p21: hash_source_snapshot
+    p18->>p22: validate_changes
+    p19->>p23: _git_changed_files
+    p14->>p24: _coerce_packet_bytes
+    p14->>p25: _strict_json_payload
+    p16->>p26: source_snapshot_inputs_match_current_files
+    p18->>p27: _git
+    p11->>p28: _freshness_basis
+    p1-->>p29: type(...)
     p2-->>p30: request.get (src/llm_wiki_cli/services…cket_contract_for_request)('protocol')
 ```
 
-> Call sequence diagram shows 30 of 1232 interactions; 1202 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1112 interactions; 1082 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 361 (360 omitted); unresolved 1 of 313 (312 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 303 (302 omitted); unresolved 1 of 298 (297 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -116,7 +116,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_envelope.py:hash_source_snapshot` | 13 | - | unresolved | 3 |
 | `src/llm_wiki_engine/knowledge_envelope.py:_hash_structured` | 22 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_envelope.py:_hash_structured` | 22 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
-> Omission summary shows 8 of 323 groups; 315 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 313 groups; 305 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -129,9 +129,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 559; effect analysis evaluated: 340, partial: 7, unavailable: 212. Counts include steps omitted from the displayed trace.
+Source steps: 512; effect analysis evaluated: 319, partial: 5, unavailable: 188. Counts include steps omitted from the displayed trace.
 
-Collector observations for 347 source steps with known totals: observed: 1579, emitted: 1546, omitted: 33. Unavailable totals are excluded.
+Collector observations for 324 source steps with known totals: observed: 1471, emitted: 1445, omitted: 26. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -141,7 +141,7 @@ Collector observations for 347 source steps with known totals: observed: 1579, e
 |---|---|---|---|---:|---:|---:|
 | `packet_from_captured_response` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `uses_builtin_context_source` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `type (src/llm_wiki_cli/services…es_builtin_context_source)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_pack` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `active_pack` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
 | `_ACTIVE_PACK.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -156,7 +156,7 @@ Collector observations for 347 source steps with known totals: observed: 1579, e
 flowchart LR
     s1["1. packet_from_captured_response"]
     s2["2. uses_builtin_context_source"]
-    s3["3. type (src/llm_wiki_cli/services…es_builtin_context_source)"]
+    s3["3. type"]
     s4["4. current_pack"]
     s5["5. active_pack"]
     s6["6. _ACTIVE_PACK.get"]
@@ -167,7 +167,7 @@ flowchart LR
     s11["11. _packet_body"]
     s12["12. _packet_basis"]
     s1 -->|"uses_builtin_context_source(data not statically known)"| s2
-    s2 -. "type (src/llm_wiki_cli/services…es_builtin_context_source)(...)" .-> s3
+    s2 -. "type(...)" .-> s3
     s2 -->|"current_pack(data not statically known)"| s4
     s4 -->|"active_pack(data not statically known)"| s5
     s5 -. "_ACTIVE_PACK.get(data not statically known)" .-> s6
@@ -194,7 +194,7 @@ flowchart LR
 |---|---|---|---|---|
 | `packet_from_captured_response` | `captured: CapturedContextRead`, `normalized: Mapping[str, Any]`, `response: Mapping[str, Any]` | - | `wiki_options[...]` | `validated.packet` |
 | `uses_builtin_context_source` | - | `CodeContextSource` | - | `...` |
-| `type (src/llm_wiki_cli/services…es_builtin_context_source)` | - | - | - | - |
+| `type` | - | - | - | - |
 | `current_pack` | - | `CODE_DOCS_PACK` | - | `...` |
 | `active_pack` | - | - | - | `_ACTIVE_PACK.get(...)` |
 | `_ACTIVE_PACK.get` | - | - | - | - |
@@ -209,17 +209,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| packet_from_captured_response | uses_builtin_context_source | 1317 | `uses_builtin_context_source(data not statically known)` |
-| uses_builtin_context_source | type (src/llm_wiki_cli/services…es_builtin_context_source) | 231 | `type(...)` |
+| packet_from_captured_response | uses_builtin_context_source | 1319 | `uses_builtin_context_source(data not statically known)` |
+| uses_builtin_context_source | type | 231 | `type(...)` |
 | uses_builtin_context_source | current_pack | 231 | `current_pack(data not statically known)` |
 | current_pack | active_pack | 324 | `active_pack(data not statically known)` |
 | active_pack | _ACTIVE_PACK.get | 643 | `_ACTIVE_PACK.get(data not statically known)` |
-| packet_from_captured_response | ContextPacketUnavailableError | 1319 | `ContextPacketUnavailableError('qualified context packets need the built-in context source; the active domain pack replaces it', field='context_source')` |
-| packet_from_captured_response | _packet_contract_for_request | 1324 | `_packet_contract_for_request(normalized)` |
-| _packet_contract_for_request | request.get (src/llm_wiki_cli/services…cket_contract_for_request) | 261 | `request.get('protocol')` |
-| _packet_contract_for_request | ProtocolRequestError | 266 | `context_service.ProtocolRequestError(..., 'protocol')` |
-| packet_from_captured_response | _packet_body | 1325 | `_packet_body(captured, normalized, response, packet_contract)` |
-| _packet_body | _packet_basis | 1763 | `_packet_basis(captured, packet_contract, request)` |
+| packet_from_captured_response | ContextPacketUnavailableError | 1321 | `ContextPacketUnavailableError('qualified context packets need the built-in context source; the active domain pack replaces it', field='context_source')` |
+| packet_from_captured_response | _packet_contract_for_request | 1326 | `_packet_contract_for_request(normalized)` |
+| _packet_contract_for_request | request.get (src/llm_wiki_cli/services…cket_contract_for_request) | 263 | `request.get('protocol')` |
+| _packet_contract_for_request | ProtocolRequestError | 268 | `context_service.ProtocolRequestError(..., 'protocol')` |
+| packet_from_captured_response | _packet_body | 1327 | `_packet_body(captured, normalized, response, packet_contract)` |
+| _packet_body | _packet_basis | 1765 | `_packet_basis(captured, packet_contract, request)` |
 
 ### Boundary effects
 
@@ -231,7 +231,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `uses_builtin_context_source` | `type` | 231 |
 | unresolved_call | `active_pack` | `_ACTIVE_PACK.get` | 643 |
-| unresolved_call | `_packet_contract_for_request` | `request.get` | 261 |
+| unresolved_call | `_packet_contract_for_request` | `request.get` | 263 |
 | step_limit | `packet_from_captured_response` | `first 12 steps` | 0 |
 | truncated_flow | `packet_from_captured_response` | `depth limit` | 0 |
 

@@ -145,7 +145,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 731; effect analysis evaluated: 434, partial: 37, unavailable: 260. Counts include steps omitted from the displayed trace.
 
-Collector observations for 471 source steps with known totals: observed: 3177, emitted: 2831, omitted: 346. Unavailable totals are excluded.
+Collector observations for 471 source steps with known totals: observed: 3179, emitted: 2833, omitted: 346. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -153,7 +153,7 @@ Collector observations for 471 source steps with known totals: observed: 3177, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `partial` | `available` | `43` | `16` | `27` |
+| `run` | `available` | `partial` | `available` | `44` | `17` | `27` |
 | `getattr (src/llm_wiki_cli/commands/status_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -227,7 +227,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `WikiScaffoldPathError`, `AgentConfigState`, `IDE_AGENTS`, `AgentConfigState`, `LegacyHookError` | - | `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `WikiScaffoldPathError`, `AgentConfigState`, `IDE_AGENTS`, `AgentConfigState`, `LegacyHookError`, `DEFAULT_LAYOUT` | - | `none` |
 | `getattr (src/llm_wiki_cli/commands/status_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -244,42 +244,42 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/status_cmd.py:run) | 855 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 856 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 101 | `current_host(data not statically known)` |
+| run | getattr (src/llm_wiki_cli/commands/status_cmd.py:run) | 857 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 858 | `validate_path(str(...), '--wiki-dir')` |
+| validate_path | PathValidationError | 102 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 103 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 102 | `current_host(data not statically known)` |
-| validate_path | resolved.relative_to | 104 | `resolved.relative_to(cwd)` |
+| validate_path | current_host().cwd().resolve | 104 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 104 | `current_host(data not statically known)` |
+| validate_path | resolved.relative_to | 106 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 874 |
-| output | `print` | `run` | 875 |
-| output | `print` | `run` | 879 |
-| output | `print` | `run` | 884 |
-| output | `print` | `run` | 888 |
-| output | `print` | `run` | 889 |
+| output | `print` | `run` | 876 |
+| output | `print` | `run` | 877 |
+| output | `print` | `run` | 881 |
+| output | `print` | `run` | 886 |
+| output | `print` | `run` | 890 |
 | output | `print` | `run` | 891 |
-| output | `print` | `run` | 894 |
+| output | `print` | `run` | 893 |
+| output | `print` | `run` | 896 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 855 |
-| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| external_call | `run` | `getattr` | 857 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 103 |
 | unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
-| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 104 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 104 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 106 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

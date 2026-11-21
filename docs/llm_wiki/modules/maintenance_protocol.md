@@ -14,6 +14,7 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `.knowledge_packs` | `PACK_NAME`, `index_path`, `index_page_path` |
 | `.knowledge_storage` | `canonical_bytes`, `digest`, `MAX_EXPANDED_BYTES`, `object_path` |
 | `.knowledge_storage_io` | `read_guarded`, `_absolute_path` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `.maintenance_recovery` | `save_recovery_catalog`, `recovery_catalog_key`, `mark_recovery_complete`, `retain_recovery_catalogs` |
 | `.maintenance_state` | `validate_maintenance_adoption`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.manifest_storage` | `object_path` |
@@ -56,17 +57,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (21) |
-| Outbound | `src` (15) |
+| Outbound | `src` (16) |
 
-> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceProtocolError](../entities/MaintenanceProtocolError.md) | 38 | `ValueError` | — |
-| [_StorageStagingAuthority](../entities/StorageStagingAuthority.md) | 179 | — | — |
-| [WikiWriteBasis](../entities/WikiWriteBasis.md) | 201 | — | — |
+| [MaintenanceProtocolError](../entities/MaintenanceProtocolError.md) | 40 | `ValueError` | — |
+| [_StorageStagingAuthority](../entities/StorageStagingAuthority.md) | 181 | — | — |
+| [WikiWriteBasis](../entities/WikiWriteBasis.md) | 203 | — | — |
 
 ## Functions
 

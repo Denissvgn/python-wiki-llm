@@ -33,6 +33,7 @@ remain distinct from findings and annotation bounds.
 | `hashlib` | `hashlib` |
 | `html` | `html` |
 | `json` | `json` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 
 ## Local dependency map
 
@@ -46,6 +47,7 @@ flowchart LR
     n4["src/llm_wiki_cli/services/impact.py"]
     n5["src/llm_wiki_cli/services/review_service.py"]
     n6["src/llm_wiki_cli/services/source_snapshot.py"]
+    n7["src/llm_wiki_engine/layout.py"]
     n0 --> n2
     n0 --> n4
     n0 --> n5
@@ -56,6 +58,7 @@ flowchart LR
     n4 --> n3
     n4 --> n5
     n4 --> n6
+    n4 --> n7
     n5 --> n2
     n5 --> n6
     click n0 "../modules/review_cmd.md"
@@ -65,6 +68,7 @@ flowchart LR
     click n4 "../modules/impact.md"
     click n5 "../modules/review_service.md"
     click n6 "../modules/source_snapshot.md"
+    click n7 "../modules/layout.md"
 ```
 
 ### Internal neighbors
@@ -77,12 +81,13 @@ flowchart LR
 | Outbound | [services_dependencies](../modules/services_dependencies.md) |
 | Outbound | [review_service](../modules/review_service.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [layout](../modules/layout.md) |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_impact` | `(diff_text: str = '', *, src_dir = '.', wiki_dir = 'docs/llm_wiki', changes = None, source_selection = None, helper_cache_dir = None) -> dict` | — | — |
+| `build_impact` | `(diff_text: str = '', *, src_dir = '.', wiki_dir = DEFAULT_LAYOUT.wiki_dir, changes = None, source_selection = None, helper_cache_dir = None) -> dict` | — | — |
 | `_cell` | `(value, limit = 512)` | — | — |
 | `render_summary` | `(impact: dict) -> str` | — | — |
 | `_escape_command` | `(value: str, *, property = False) -> str` | — | — |

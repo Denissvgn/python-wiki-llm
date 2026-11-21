@@ -1,6 +1,6 @@
 # KnowledgeStorePlan
 
-**Location:** `src/llm_wiki_engine/knowledge_storage.py:205`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:207`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)

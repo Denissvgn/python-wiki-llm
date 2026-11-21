@@ -46,7 +46,7 @@ sequenceDiagram
     p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allow_external_src', False)
     p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'comparison_policy', 'auto')
     p0-->>p15: str(source_root)
-    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'wiki_dir', 'docs/llm_wiki')
+    p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'wiki_dir', DEFAULT_LAYOUT.wiki_dir)
     p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'transport', 'stdio')
     p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'host', '127.0.0.1')
     p0-->>p12: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'port', 8765)
@@ -90,14 +90,14 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 30; effect analysis evaluated: 16, partial: 0, unavailable: 14. Counts include steps omitted from the displayed trace.
 
-Collector observations for 16 source steps with known totals: observed: 78, emitted: 78, omitted: 0. Unavailable totals are excluded.
+Collector observations for 16 source steps with known totals: observed: 79, emitted: 79, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `run` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `_mcp_service_export` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `globals().get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `globals` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -150,7 +150,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `sys` | - | - |
+| `run` | `args` | `DEFAULT_LAYOUT`, `sys` | - | - |
 | `_mcp_service_export` | `name: str` | `_MISSING`, `_MISSING` | - | `value`, `value` |
 | `globals().get` | - | - | - | - |
 | `globals` | - | - | - | - |
@@ -167,34 +167,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _mcp_service_export | 45 | `_mcp_service_export('McpServerConfig')` |
-| _mcp_service_export | globals().get | 23 | `globals().get(name, _MISSING)` |
-| _mcp_service_export | globals | 23 | `globals(data not statically known)` |
-| _mcp_service_export | getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export) | 28 | `getattr(mcp_server, name)` |
-| _mcp_service_export | globals | 29 | `globals(data not statically known)` |
-| run | _mcp_service_export | 46 | `_mcp_service_export('MCPDependencyError')` |
-| run | _mcp_service_export | 47 | `_mcp_service_export('McpWikiError')` |
-| run | _mcp_service_export | 48 | `_mcp_service_export('run_mcp_server')` |
-| run | getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 50 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 51 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 51 | `getattr(args, 'allow_external_src', False)` |
+| run | _mcp_service_export | 47 | `_mcp_service_export('McpServerConfig')` |
+| _mcp_service_export | globals().get | 25 | `globals().get(name, _MISSING)` |
+| _mcp_service_export | globals | 25 | `globals(data not statically known)` |
+| _mcp_service_export | getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export) | 30 | `getattr(mcp_server, name)` |
+| _mcp_service_export | globals | 31 | `globals(data not statically known)` |
+| run | _mcp_service_export | 48 | `_mcp_service_export('MCPDependencyError')` |
+| run | _mcp_service_export | 49 | `_mcp_service_export('McpWikiError')` |
+| run | _mcp_service_export | 50 | `_mcp_service_export('run_mcp_server')` |
+| run | getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 52 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 53 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 53 | `getattr(args, 'allow_external_src', False)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 77 |
+| output | `print` | `run` | 79 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_mcp_service_export` | `globals().get` | 23 |
-| external_call | `_mcp_service_export` | `globals` | 23 |
-| external_call | `_mcp_service_export` | `getattr` | 28 |
-| external_call | `_mcp_service_export` | `globals` | 29 |
-| external_call | `run` | `getattr` | 50 |
-| external_call | `run` | `getattr` | 51 |
+| unresolved_call | `_mcp_service_export` | `globals().get` | 25 |
+| external_call | `_mcp_service_export` | `globals` | 25 |
+| external_call | `_mcp_service_export` | `getattr` | 30 |
+| external_call | `_mcp_service_export` | `globals` | 31 |
+| external_call | `run` | `getattr` | 52 |
+| external_call | `run` | `getattr` | 53 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

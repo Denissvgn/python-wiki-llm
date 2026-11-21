@@ -145,7 +145,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 505; effect analysis evaluated: 289, partial: 27, unavailable: 189. Counts include steps omitted from the displayed trace.
 
-Collector observations for 316 source steps with known totals: observed: 2099, emitted: 1900, omitted: 199. Unavailable totals are excluded.
+Collector observations for 316 source steps with known totals: observed: 2102, emitted: 1903, omitted: 199. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -154,7 +154,7 @@ Collector observations for 316 source steps with known totals: observed: 2099, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `build_snapshot_documentation_query_service` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `_wiki_anchor` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `_wiki_anchor` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
 | `str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `directory_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `path.stat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -204,7 +204,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `build_snapshot_documentation_query_service` | `wiki_root: Path`, `limit: int` | - | - | `service` |
-| `_wiki_anchor` | `root: Path`, `reject_all_symlinks: bool`, `max_bytes: int \| None`, `metrics: dict[str, int] \| None`, `integrity_out: dict[str, tuple[int, ...]] \| None`, `guard_windows: bool` | `_WIKI_ANCHOR_DOMAIN`, `GOVERNANCE_LOCK_FILENAME`, `_WIKI_ANCHOR_DOMAIN` | - | `_domain_hash(...)`, `_domain_hash(...)` |
+| `_wiki_anchor` | `root: Path`, `reject_all_symlinks: bool`, `max_bytes: int \| None`, `metrics: dict[str, int] \| None`, `integrity_out: dict[str, tuple[int, ...]] \| None`, `guard_windows: bool` | `_WIKI_ANCHOR_DOMAIN`, `GOVERNANCE_LOCK_FILENAME`, `DEFAULT_LAYOUT`, `_WIKI_ANCHOR_DOMAIN` | - | `_domain_hash(...)`, `_domain_hash(...)` |
 | `str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)` | - | - | - | - |
 | `directory_identity` | `path: Path` | - | - | `(...)`, `(...)` |
 | `path.stat` | - | - | - | - |
@@ -221,16 +221,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_snapshot_documentation_query_service | _wiki_anchor | 267 | `_wiki_anchor(wiki_root)` |
-| _wiki_anchor | str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor) | 2141 | `str(current)` |
-| _wiki_anchor | directory_identity | 2141 | `directory_identity(current)` |
+| _wiki_anchor | str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor) | 2143 | `str(current)` |
+| _wiki_anchor | directory_identity | 2143 | `directory_identity(current)` |
 | directory_identity | path.stat | 688 | `path.stat(follow_symlinks=False)` |
-| _wiki_anchor | current.exists | 2142 | `current.exists(data not statically known)` |
-| _wiki_anchor | root.exists | 2145 | `root.exists(data not statically known)` |
-| _wiki_anchor | _domain_hash | 2146 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
-| _domain_hash | sha256_digest | 3049 | `sha256_bytes(canonical_json_bytes(...))` |
+| _wiki_anchor | current.exists | 2144 | `current.exists(data not statically known)` |
+| _wiki_anchor | root.exists | 2147 | `root.exists(data not statically known)` |
+| _wiki_anchor | _domain_hash | 2148 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
+| _domain_hash | sha256_digest | 3084 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_digest | hashlib.sha256(…).hexdigest | 56 | `hashlib.sha256(data).hexdigest(data not statically known)` |
 | sha256_digest | hashlib.sha256 (src/llm_wiki_engine/canonical_json.py:sha256_digest) | 56 | `hashlib.sha256(data)` |
-| _domain_hash | compact_bytes | 3050 | `canonical_json_bytes({...})` |
+| _domain_hash | compact_bytes | 3085 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
@@ -241,8 +241,8 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `directory_identity` | `path.stat` | 688 |
-| unresolved_call | `_wiki_anchor` | `current.exists` | 2142 |
-| unresolved_call | `_wiki_anchor` | `root.exists` | 2145 |
+| unresolved_call | `_wiki_anchor` | `current.exists` | 2144 |
+| unresolved_call | `_wiki_anchor` | `root.exists` | 2147 |
 | unresolved_call | `sha256_digest` | `hashlib.sha256(data).hexdigest` | 56 |
 | external_call | `sha256_digest` | `hashlib.sha256` | 56 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |

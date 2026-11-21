@@ -1,6 +1,6 @@
 # SourceSelectionPruneResult
 
-**Location:** `src/llm_wiki_engine/sync_manifest.py:76`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:78`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)

@@ -1,6 +1,6 @@
 # _ArtifactValidation
 
-**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:153`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:155`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

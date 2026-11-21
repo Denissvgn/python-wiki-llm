@@ -150,9 +150,9 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5316 interactions; 5286 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5171 interactions; 5141 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1642 (1641 omitted); unresolved 1 of 1803 (1802 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1602 (1601 omitted); unresolved 1 of 1787 (1786 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 9 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 12 | - | external | 13 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 1305 groups; 1297 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1278 groups; 1270 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1872; effect analysis evaluated: 1254, partial: 63, unavailable: 555. Counts include steps omitted from the displayed trace.
+Source steps: 1783; effect analysis evaluated: 1222, partial: 63, unavailable: 498. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1317 source steps with known totals: observed: 7434, emitted: 7072, omitted: 362. Unavailable totals are excluded.
+Collector observations for 1285 source steps with known totals: observed: 7307, emitted: 6945, omitted: 362. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -255,14 +255,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 1255 | `_normalized_request(...)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…er.py:_normalized_request) | 1744 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1745 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy (src/llm_wiki_cli/services…er.py:_normalized_request) | 1749 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…er.py:_normalized_request) | 1749 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1752 | `candidate.setdefault('knowledge_mode', 'auto')` |
-| _normalized_request | candidate.setdefault | 1753 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1754 | `context_service._validate_protocol_request(candidate)` |
+| build_qualified_context | _normalized_request | 1257 | `_normalized_request(...)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…er.py:_normalized_request) | 1746 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1747 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy (src/llm_wiki_cli/services…er.py:_normalized_request) | 1751 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…er.py:_normalized_request) | 1751 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1754 | `candidate.setdefault('knowledge_mode', 'auto')` |
+| _normalized_request | candidate.setdefault | 1755 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1756 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `isinstance(data, dict)` |
 | _validate_protocol_request | data.get (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `data.get('protocol')` |
 | _validate_protocol_request | _validate_protocol_request_impl | 138 | `_validate_protocol_request_impl(data)` |
@@ -275,10 +275,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalized_request` | `isinstance` | 1744 |
-| external_call | `_normalized_request` | `deepcopy` | 1749 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1752 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1753 |
+| external_call | `_normalized_request` | `isinstance` | 1746 |
+| external_call | `_normalized_request` | `deepcopy` | 1751 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1754 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1755 |
 | external_call | `_validate_protocol_request` | `isinstance` | 136 |
 | unresolved_call | `_validate_protocol_request` | `data.get` | 136 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |

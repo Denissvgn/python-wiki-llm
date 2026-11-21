@@ -191,36 +191,36 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | expand_task_storage_receipt | expand_storage_receipt | 1687 | `expand_storage_receipt(receipt)` |
-| expand_storage_receipt | isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 94 | `isinstance(receipt, Mapping)` |
-| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 95 | `ValueError('storage receipt must be an object')` |
-| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 96 | `receipt.get('schema_version')` |
-| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 96 | `receipt.get('layout')` |
-| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 97 | `ValueError('expansion requires a compact version-3 receipt')` |
-| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 98 | `receipt.get('storage_format')` |
-| expand_storage_receipt | required.update | 103 | `required.update({...})` |
-| expand_storage_receipt | set | 104 | `set(receipt)` |
-| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 105 | `ValueError('invalid compact receipt fields')` |
-| expand_storage_receipt | isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 107 | `isinstance(files, list)` |
+| expand_storage_receipt | isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 96 | `isinstance(receipt, Mapping)` |
+| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 97 | `ValueError('storage receipt must be an object')` |
+| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 98 | `receipt.get('schema_version')` |
+| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 98 | `receipt.get('layout')` |
+| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 99 | `ValueError('expansion requires a compact version-3 receipt')` |
+| expand_storage_receipt | receipt.get (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 100 | `receipt.get('storage_format')` |
+| expand_storage_receipt | required.update | 105 | `required.update({...})` |
+| expand_storage_receipt | set | 106 | `set(receipt)` |
+| expand_storage_receipt | ValueError (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 107 | `ValueError('invalid compact receipt fields')` |
+| expand_storage_receipt | isinstance (src/llm_wiki_engine/stora…py:expand_storage_receipt) | 109 | `isinstance(files, list)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `required.update` | `expand_storage_receipt` | 103 |
-| mutation | `result.update` | `expand_storage_receipt` | 110 |
-| mutation | `paths.append` | `expand_storage_receipt` | 135 |
+| mutation | `required.update` | `expand_storage_receipt` | 105 |
+| mutation | `result.update` | `expand_storage_receipt` | 112 |
+| mutation | `paths.append` | `expand_storage_receipt` | 137 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `expand_storage_receipt` | `isinstance` | 94 |
-| external_call | `expand_storage_receipt` | `ValueError` | 95 |
-| unresolved_call | `expand_storage_receipt` | `receipt.get` | 96 |
+| external_call | `expand_storage_receipt` | `isinstance` | 96 |
 | external_call | `expand_storage_receipt` | `ValueError` | 97 |
 | unresolved_call | `expand_storage_receipt` | `receipt.get` | 98 |
-| external_call | `expand_storage_receipt` | `ValueError` | 105 |
-| external_call | `expand_storage_receipt` | `isinstance` | 107 |
+| external_call | `expand_storage_receipt` | `ValueError` | 99 |
+| unresolved_call | `expand_storage_receipt` | `receipt.get` | 100 |
+| external_call | `expand_storage_receipt` | `ValueError` | 107 |
+| external_call | `expand_storage_receipt` | `isinstance` | 109 |
 | step_limit | `expand_task_storage_receipt` | `first 12 steps` | 0 |
 
 ## Behavior

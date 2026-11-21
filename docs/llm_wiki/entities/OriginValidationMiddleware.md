@@ -1,6 +1,6 @@
 # OriginValidationMiddleware
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:372`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:374`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)

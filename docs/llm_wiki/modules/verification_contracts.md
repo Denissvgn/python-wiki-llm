@@ -23,6 +23,7 @@ it is not stored as a timeless boolean.
 |--------|---------|
 | `.knowledge_artifacts` | `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_model` | `KnowledgeIndex`, `RelationshipKind`, `Resolution`, `TargetClass`, `knowledge_index_to_payload`, `parse_knowledge_index` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping`, `Sequence` |
 | `dataclasses` | `InitVar`, `dataclass`, `field` |
@@ -43,102 +44,40 @@ it is not stored as a timeless boolean.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/knowledge_cmd.py"]
-    n1["src/llm_wiki_cli/services/doctor_service.py"]
-    n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n3["src/llm_wiki_cli/services/lint_service.py"]
-    n4["src/llm_wiki_engine/contracts.py"]
-    n5["src/llm_wiki_engine/io.py"]
-    n6["src/llm_wiki_engine/knowledge_artifacts.py"]
-    n7["src/llm_wiki_engine/knowledge_evidence.py"]
-    n8["src/llm_wiki_engine/knowledge_model.py"]
-    n9["src/llm_wiki_engine/knowledge_verification.py"]
-    n10["src/llm_wiki_engine/validation.py"]
-    n11["src/llm_wiki_engine/verification_contracts.py"]
-    n0 --> n5
-    n0 --> n6
-    n0 --> n8
-    n0 --> n11
-    n1 --> n3
-    n1 --> n4
-    n1 --> n6
-    n1 --> n8
-    n1 --> n11
-    n2 --> n4
-    n2 --> n5
-    n2 --> n6
-    n2 --> n10
-    n2 --> n11
-    n3 --> n5
-    n3 --> n6
-    n3 --> n8
-    n3 --> n9
-    n3 --> n10
-    n3 --> n11
-    n5 --> n7
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
-    n6 --> n10
-    n7 --> n10
-    n8 --> n4
-    n8 --> n7
-    n8 --> n10
-    n9 --> n7
-    n9 --> n11
-    n11 --> n4
-    n11 --> n5
-    n11 --> n6
-    n11 --> n7
-    n11 --> n8
-    n11 --> n10
-    click n0 "../modules/knowledge_cmd.md"
-    click n1 "../modules/doctor_service.md"
-    click n2 "../modules/documentation_run_dependencies.md"
-    click n3 "../modules/lint_service.md"
-    click n4 "../modules/llm_wiki_engine_contracts.md"
-    click n5 "../modules/io.md"
-    click n6 "../modules/knowledge_artifacts.md"
-    click n7 "../modules/knowledge_evidence.md"
-    click n8 "../modules/knowledge_model.md"
-    click n9 "../modules/knowledge_verification.md"
-    click n10 "../modules/validation.md"
-    click n11 "../modules/verification_contracts.md"
+    n0["src"]
+    n1["src/llm_wiki_engine/verification_contracts.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/verification_contracts.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| Inbound | [doctor_service](../modules/doctor_service.md) |
-| Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Inbound | [lint_service](../modules/lint_service.md) |
-| Inbound | [knowledge_verification](../modules/knowledge_verification.md) |
-| Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| Outbound | [knowledge_model](../modules/knowledge_model.md) |
-| Outbound | [validation](../modules/validation.md) |
+| Inbound | `src` (5) |
+| Outbound | `src` (7) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [VerificationContractError](../entities/VerificationContractError.md) | Class | 75 | `ValueError` | Base error for verification inputs, checkers, and receipts. |
-| [UnknownVerificationCheckerError](../entities/UnknownVerificationCheckerError.md) | Class | 79 | `VerificationContractError` | Raised before execution when a requested checker is not registered. |
-| [VerificationReceiptError](../entities/VerificationReceiptError.md) | Class | 87 | `VerificationContractError` | Field-specific failure for a verification receipt. |
-| [VerificationResult](../entities/VerificationResult.md) | Enum | 96 | `str`, `Enum` | A recorded checker result at one evaluated snapshot. |
-| [VerificationInvalidationReason](../entities/VerificationInvalidationReason.md) | Enum | 103 | `str`, `Enum` | Reasons a syntactically valid receipt is not current. |
-| [VerificationDiagnostic](../entities/VerificationDiagnostic.md) | Class | 115 | — | One bounded, path-safe machine diagnostic. |
-| [DiagnosticCoverage](../entities/DiagnosticCoverage.md) | Class | 139 | — | Disclosure for deterministic diagnostic truncation. |
-| [VerificationCheckResult](../entities/VerificationCheckResult.md) | Class | 187 | — | Normalized output from one application-owned checker. |
-| [VerificationContext](../entities/VerificationContext.md) | Class | 244 | — | All already evaluated inputs available to pure checkers. |
-| [CheckerContract](../entities/CheckerContract.md) | Class | 446 | — | One immutable application-owned checker registration. |
-| [VerificationReceipt](../entities/VerificationReceipt.md) | Class | 482 | — | Deterministic recorded evidence from one explicit verification run. |
-| [VerificationReceiptEvaluation](../entities/VerificationReceiptEvaluation.md) | Class | 566 | — | Live validity of one recorded receipt against current anchors. |
+| [VerificationContractError](../entities/VerificationContractError.md) | Class | 77 | `ValueError` | Base error for verification inputs, checkers, and receipts. |
+| [UnknownVerificationCheckerError](../entities/UnknownVerificationCheckerError.md) | Class | 81 | `VerificationContractError` | Raised before execution when a requested checker is not registered. |
+| [VerificationReceiptError](../entities/VerificationReceiptError.md) | Class | 89 | `VerificationContractError` | Field-specific failure for a verification receipt. |
+| [VerificationResult](../entities/VerificationResult.md) | Enum | 98 | `str`, `Enum` | A recorded checker result at one evaluated snapshot. |
+| [VerificationInvalidationReason](../entities/VerificationInvalidationReason.md) | Enum | 105 | `str`, `Enum` | Reasons a syntactically valid receipt is not current. |
+| [VerificationDiagnostic](../entities/VerificationDiagnostic.md) | Class | 117 | — | One bounded, path-safe machine diagnostic. |
+| [DiagnosticCoverage](../entities/DiagnosticCoverage.md) | Class | 141 | — | Disclosure for deterministic diagnostic truncation. |
+| [VerificationCheckResult](../entities/VerificationCheckResult.md) | Class | 189 | — | Normalized output from one application-owned checker. |
+| [VerificationContext](../entities/VerificationContext.md) | Class | 246 | — | All already evaluated inputs available to pure checkers. |
+| [CheckerContract](../entities/CheckerContract.md) | Class | 448 | — | One immutable application-owned checker registration. |
+| [VerificationReceipt](../entities/VerificationReceipt.md) | Class | 484 | — | Deterministic recorded evidence from one explicit verification run. |
+| [VerificationReceiptEvaluation](../entities/VerificationReceiptEvaluation.md) | Class | 568 | — | Live validity of one recorded receipt against current anchors. |
 
 ## Functions
 

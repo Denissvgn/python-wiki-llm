@@ -34,7 +34,8 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 | `.implementation_summary` | `validate_implementation_summary` |
 | `.integrations` | `IntegrationUnavailable`, `provider` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Mapping`, `Sequence` |
+| `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
+| `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `llm_wiki_engine` | `context_request_format`, `wiki_surface` |
@@ -82,19 +83,20 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 124 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 171 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 177 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 190 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 219 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 256 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 125 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 172 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 178 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 191 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 220 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 257 | — | Successful structural validation with explicitly unevaluated freshness. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_packet_contract_for_schema` | `(schema_version: object) -> _PacketWireContract` | — | — |
-| `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | — | Strictly validate canonical bytes without performing live reads. |
+| `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview, *, accepted_generators: Iterable[str] \| None = None) -> ContextPacketValidation` | — | Strictly validate canonical bytes without performing live reads. |
+| `_validate_context_packet_bytes` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | — | — |
 | `_packet_limitations` | `(response: Mapping[str, Any], basis: Mapping[str, Any]) -> list[str]` | — | — |
 | `_context_policy_digest` | `(schema_version: str = CONTEXT_PACKET_SCHEMA_VERSION) -> str` | — | — |
 | `_path_policy_digest` | `() -> str` | — | — |

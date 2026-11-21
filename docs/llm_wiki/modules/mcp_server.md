@@ -52,6 +52,7 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `llm_wiki_engine.io` | `read_md` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `llm_wiki_engine.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.request_json` | `MAX_REQUEST_BYTES` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `llm_wiki_engine.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
@@ -91,7 +92,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (34) |
+| Outbound | `src` (35) |
 
 ### External packages
 
@@ -99,23 +100,23 @@ flowchart LR
 |---|---:|---:|
 | python | 3 | 0 |
 
-> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 120 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 124 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 221 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 225 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 229 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 237 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 244 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 266 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 285 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 372 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 436 | — | Workspace read/check operations with managed helper provisioning. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 122 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 126 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 223 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 227 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 231 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 239 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 246 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 268 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 287 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 374 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 438 | — | Workspace read/check operations with managed helper provisioning. |
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # KnowledgeSlice
 
-**Location:** `src/llm_wiki_engine/knowledge_storage.py:498`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:500`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)

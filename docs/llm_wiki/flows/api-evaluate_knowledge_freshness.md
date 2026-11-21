@@ -202,10 +202,10 @@ flowchart LR
 |---|---|---:|---|
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_engine/knowl…luate_knowledge_freshness) | 271 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
 | evaluate_knowledge_freshness | require_validated_artifacts | 270 | `require_validated_artifacts(knowledge)` |
-| require_validated_artifacts | isinstance (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 185 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 186 | `TypeError('expected validator-issued knowledge artifacts')` |
-| require_validated_artifacts | isinstance (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 189 | `isinstance(validation, _ArtifactValidation)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 204 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 187 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 188 | `TypeError('expected validator-issued knowledge artifacts')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 191 | `isinstance(validation, _ArtifactValidation)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 206 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_engine/knowl…luate_knowledge_freshness) | 277 | `isinstance(knowledge, KnowledgeIndex)` |
 | evaluate_knowledge_freshness | parse_knowledge_index | 276 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 553 | `_record(payload, '', {...}, required={...})` |
@@ -221,10 +221,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 271 |
-| external_call | `require_validated_artifacts` | `isinstance` | 185 |
-| external_call | `require_validated_artifacts` | `TypeError` | 186 |
-| external_call | `require_validated_artifacts` | `isinstance` | 189 |
-| external_call | `require_validated_artifacts` | `TypeError` | 204 |
+| external_call | `require_validated_artifacts` | `isinstance` | 187 |
+| external_call | `require_validated_artifacts` | `TypeError` | 188 |
+| external_call | `require_validated_artifacts` | `isinstance` | 191 |
+| external_call | `require_validated_artifacts` | `TypeError` | 206 |
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 277 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |

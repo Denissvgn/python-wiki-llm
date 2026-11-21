@@ -1,6 +1,6 @@
 # SyncRecoveryError
 
-**Location:** `src/llm_wiki_engine/sync_recovery.py:44`
+**Location:** `src/llm_wiki_engine/sync_recovery.py:46`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_recovery](../modules/sync_recovery.md)

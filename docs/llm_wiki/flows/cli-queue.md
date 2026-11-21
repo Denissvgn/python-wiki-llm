@@ -194,7 +194,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1542; effect analysis evaluated: 1157, partial: 69, unavailable: 316. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1226 source steps with known totals: observed: 7517, emitted: 7173, omitted: 344. Unavailable totals are excluded.
+Collector observations for 1226 source steps with known totals: observed: 7522, emitted: 7178, omitted: 344. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -275,36 +275,36 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | build_maintenance_queue | 9 | `build_maintenance_queue(args.src_dir, args.wiki_dir, limit=args.limit, allow_external_src=args.allow_external_src, source_selection=args.source_selection, helper_cache_dir=args.helper_cache_dir)` |
-| build_maintenance_queue | validate_queue_limit | 478 | `validate_queue_limit(limit)` |
-| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 58 | `isinstance(limit, bool)` |
-| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
-| validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
-| build_maintenance_queue | capture_context_read | 479 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 568 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 569 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 570 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 571 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 572 | `callable(plan_reporter)` |
+| build_maintenance_queue | validate_queue_limit | 480 | `validate_queue_limit(limit)` |
+| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 60 | `isinstance(limit, bool)` |
+| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 61 | `isinstance(limit, int)` |
+| validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 64 | `ValueError(...)` |
+| build_maintenance_queue | capture_context_read | 481 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 570 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 571 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 572 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 573 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 574 | `callable(plan_reporter)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | output | `print` | `run` | 17 |
-| mutation | `global_issues.append` | `build_maintenance_queue` | 537 |
+| mutation | `global_issues.append` | `build_maintenance_queue` | 539 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_queue_limit` | `isinstance` | 58 |
-| external_call | `validate_queue_limit` | `isinstance` | 59 |
-| external_call | `validate_queue_limit` | `ValueError` | 62 |
-| external_call | `capture_context_read` | `isinstance` | 568 |
-| external_call | `capture_context_read` | `TypeError` | 569 |
+| external_call | `validate_queue_limit` | `isinstance` | 60 |
+| external_call | `validate_queue_limit` | `isinstance` | 61 |
+| external_call | `validate_queue_limit` | `ValueError` | 64 |
 | external_call | `capture_context_read` | `isinstance` | 570 |
 | external_call | `capture_context_read` | `TypeError` | 571 |
-| external_call | `capture_context_read` | `callable` | 572 |
+| external_call | `capture_context_read` | `isinstance` | 572 |
+| external_call | `capture_context_read` | `TypeError` | 573 |
+| external_call | `capture_context_read` | `callable` | 574 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # ObsidianReport
 
-**Location:** `src/llm_wiki_cli/services/obsidian.py:172`
+**Location:** `src/llm_wiki_cli/services/obsidian.py:174`
 **Kind:** Class
 **Bases:** —
 **Module:** [obsidian](../modules/obsidian.md)

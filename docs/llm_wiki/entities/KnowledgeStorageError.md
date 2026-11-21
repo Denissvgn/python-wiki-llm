@@ -1,6 +1,6 @@
 # KnowledgeStorageError
 
-**Location:** `src/llm_wiki_engine/knowledge_storage.py:47`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:49`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)

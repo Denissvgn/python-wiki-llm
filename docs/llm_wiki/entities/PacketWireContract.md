@@ -1,6 +1,6 @@
 # _PacketWireContract
 
-**Location:** `src/llm_wiki_engine/context_packet.py:124`
+**Location:** `src/llm_wiki_engine/context_packet.py:125`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)

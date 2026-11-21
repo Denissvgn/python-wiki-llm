@@ -195,7 +195,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1648; effect analysis evaluated: 1230, partial: 57, unavailable: 361. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1287 source steps with known totals: observed: 7440, emitted: 7099, omitted: 341. Unavailable totals are excluded.
+Collector observations for 1287 source steps with known totals: observed: 7442, emitted: 7101, omitted: 341. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -203,7 +203,7 @@ Collector observations for 1287 source steps with known totals: observed: 7440, 
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `run` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `run` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `RuntimeOutputError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -269,7 +269,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `print_extraction_job_plan`, `sys`, `sys` | - | - |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `print_extraction_job_plan`, `DEFAULT_LAYOUT`, `sys`, `sys` | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `RuntimeOutputError` | - | - | - | - |
@@ -286,41 +286,41 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 120 | `getattr(args, 'storage_git_base', None)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 121 | `getattr(args, 'storage_git_head', None)` |
-| run | RuntimeOutputError | 123 | `RuntimeOutputError('Storage Git checks require both --storage-git-base and --storage-git-head')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 124 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 125 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 126 | `getattr(args, 'format', 'text')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 127 | `getattr(args, 'report_schema', 'auto')` |
-| run | RuntimeOutputError | 129 | `RuntimeOutputError('--report-schema must be auto, v1, v2, v3 or v4')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 130 | `getattr(args, 'helper_cache_dir', None)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 131 | `getattr(args, 'include_tests', None)` |
-| run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 132 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 122 | `getattr(args, 'storage_git_base', None)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 123 | `getattr(args, 'storage_git_head', None)` |
+| run | RuntimeOutputError | 125 | `RuntimeOutputError('Storage Git checks require both --storage-git-base and --storage-git-head')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 126 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 127 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 128 | `getattr(args, 'format', 'text')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 129 | `getattr(args, 'report_schema', 'auto')` |
+| run | RuntimeOutputError | 131 | `RuntimeOutputError('--report-schema must be auto, v1, v2, v3 or v4')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 132 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 133 | `getattr(args, 'include_tests', None)` |
+| run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 134 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `report.issues.append` | `run` | 174 |
-| mutation | `report.issues.append` | `run` | 177 |
-| mutation | `report.diagnostics.append` | `run` | 180 |
-| output | `print` | `run` | 205 |
-| output | `print` | `run` | 219 |
-| output | `print` | `run` | 226 |
+| mutation | `report.issues.append` | `run` | 176 |
+| mutation | `report.issues.append` | `run` | 179 |
+| mutation | `report.diagnostics.append` | `run` | 182 |
+| output | `print` | `run` | 207 |
+| output | `print` | `run` | 221 |
+| output | `print` | `run` | 228 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 120 |
-| external_call | `run` | `getattr` | 121 |
-| external_call | `run` | `getattr` | 124 |
-| external_call | `run` | `getattr` | 125 |
+| external_call | `run` | `getattr` | 122 |
+| external_call | `run` | `getattr` | 123 |
 | external_call | `run` | `getattr` | 126 |
 | external_call | `run` | `getattr` | 127 |
-| external_call | `run` | `getattr` | 130 |
-| external_call | `run` | `getattr` | 131 |
+| external_call | `run` | `getattr` | 128 |
+| external_call | `run` | `getattr` | 129 |
+| external_call | `run` | `getattr` | 132 |
+| external_call | `run` | `getattr` | 133 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

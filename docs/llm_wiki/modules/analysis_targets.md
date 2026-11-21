@@ -27,6 +27,7 @@ Fresh target-native proof remains required. A known mismatch points to the proje
 | `llm_wiki_engine.knowledge_packs` | `parse_packed_root` |
 | `llm_wiki_engine.knowledge_storage` | `parse_store_root` |
 | `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -46,7 +47,8 @@ flowchart LR
     n6["src/llm_wiki_engine/knowledge_packs.py"]
     n7["src/llm_wiki_engine/knowledge_storage.py"]
     n8["src/llm_wiki_engine/knowledge_storage_io.py"]
-    n9["src/llm_wiki_engine/sync_manifest.py"]
+    n9["src/llm_wiki_engine/layout.py"]
+    n10["src/llm_wiki_engine/sync_manifest.py"]
     n0 --> n2
     n1 --> n4
     n2 --> n1
@@ -57,13 +59,16 @@ flowchart LR
     n2 --> n7
     n2 --> n8
     n2 --> n9
+    n2 --> n10
     n3 --> n4
     n5 --> n4
     n6 --> n7
     n7 --> n5
+    n7 --> n9
     n8 --> n7
-    n9 --> n7
-    n9 --> n8
+    n10 --> n7
+    n10 --> n8
+    n10 --> n9
     click n0 "../modules/doctor_cmd.md"
     click n1 "../modules/analysis_capture.md"
     click n2 "../modules/analysis_targets.md"
@@ -73,7 +78,8 @@ flowchart LR
     click n6 "../modules/knowledge_packs.md"
     click n7 "../modules/knowledge_storage.md"
     click n8 "../modules/knowledge_storage_io.md"
-    click n9 "../modules/sync_manifest.md"
+    click n9 "../modules/layout.md"
+    click n10 "../modules/sync_manifest.md"
 ```
 
 ### Internal neighbors
@@ -88,6 +94,7 @@ flowchart LR
 | Outbound | [knowledge_packs](../modules/knowledge_packs.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
+| Outbound | [layout](../modules/layout.md) |
 | Outbound | [sync_manifest](../modules/sync_manifest.md) |
 
 ## Functions

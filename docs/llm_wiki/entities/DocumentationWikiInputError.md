@@ -1,6 +1,6 @@
 # DocumentationWikiInputError
 
-**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:213`
+**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:215`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [documentation_wiki_input](../modules/documentation_wiki_input.md)

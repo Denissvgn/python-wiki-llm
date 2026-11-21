@@ -1,6 +1,6 @@
 # McpServerConfig
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:244`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:246`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -16,7 +16,7 @@ _Auto-generated from `McpServerConfig` in `src/llm_wiki_cli/services/mcp_server.
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `src_dir` | `str` | `'.'` | — |
-| `wiki_dir` | `str` | `'docs/llm_wiki'` | — |
+| `wiki_dir` | `str` | `DEFAULT_LAYOUT.wiki_dir` | — |
 | `transport` | `str` | `'stdio'` | — |
 | `host` | `str` | `'127.0.0.1'` | — |
 | `port` | `int` | `8765` | — |

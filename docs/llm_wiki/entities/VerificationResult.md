@@ -1,6 +1,6 @@
 # VerificationResult
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:96`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:98`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [verification_contracts](../modules/verification_contracts.md)

@@ -221,7 +221,7 @@ flowchart LR
 | _roots | source.is_dir | 128 | `source.is_dir(data not statically known)` |
 | _roots | WikiOperationError | 129 | `WikiOperationError(...)` |
 | lint | SyncManifest.load | 408 | `SyncManifest.load(wiki)` |
-| SyncManifest.load | manifest_path.exists | 1031 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | manifest_path.exists | 1033 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
 
@@ -230,7 +230,7 @@ flowchart LR
 | mutation | `issues.append` | `lint` | 423 |
 | mutation | `issues.append` | `lint` | 425 |
 | mutation | `issues.append` | `lint` | 429 |
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1052 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1054 |
 
 ### Static analysis gaps
 
@@ -238,7 +238,7 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `active_pack` | `_ACTIVE_PACK.get` | 643 |
 | unresolved_call | `_roots` | `source.is_dir` | 128 |
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1031 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1033 |
 | step_limit | `lint` | `first 12 steps` | 0 |
 | truncated_flow | `lint` | `depth limit` | 0 |
 

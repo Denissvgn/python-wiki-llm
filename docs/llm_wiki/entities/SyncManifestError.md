@@ -1,6 +1,6 @@
 # SyncManifestError
 
-**Location:** `src/llm_wiki_engine/sync_manifest.py:65`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:67`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_manifest](../modules/sync_manifest.md)

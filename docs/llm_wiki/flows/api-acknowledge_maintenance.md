@@ -178,9 +178,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1334; effect analysis evaluated: 933, partial: 54, unavailable: 347. Counts include steps omitted from the displayed trace.
+Source steps: 1334; effect analysis evaluated: 930, partial: 57, unavailable: 347. Counts include steps omitted from the displayed trace.
 
-Collector observations for 987 source steps with known totals: observed: 5816, emitted: 5556, omitted: 260. Unavailable totals are excluded.
+Collector observations for 987 source steps with known totals: observed: 5826, emitted: 5563, omitted: 263. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

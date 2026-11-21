@@ -170,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1239; effect analysis evaluated: 849, partial: 57, unavailable: 333. Counts include steps omitted from the displayed trace.
+Source steps: 1239; effect analysis evaluated: 846, partial: 60, unavailable: 333. Counts include steps omitted from the displayed trace.
 
-Collector observations for 906 source steps with known totals: observed: 5443, emitted: 5196, omitted: 247. Unavailable totals are excluded.
+Collector observations for 906 source steps with known totals: observed: 5459, emitted: 5208, omitted: 251. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -273,7 +273,7 @@ flowchart LR
 | adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1857 | `ValueError('Unsupported maintenance adoption options')` |
 | adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1858 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
 | adopt_maintenance | adopt_maintenance_authority | 1858 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| adopt_maintenance_authority | _absolute_path | 93 | `_absolute_path(wiki_dir)` |
+| adopt_maintenance_authority | _absolute_path | 95 | `_absolute_path(wiki_dir)` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -288,8 +288,8 @@ flowchart LR
 | output | `print` | `run` | 122 |
 | output | `print` | `run` | 134 |
 | output | `print` | `run` | 136 |
-| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 120 |
-| mutation | `extensions.pop` | `adopt_maintenance_authority` | 123 |
+| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 122 |
+| mutation | `extensions.pop` | `adopt_maintenance_authority` | 125 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps

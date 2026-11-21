@@ -1,6 +1,6 @@
 # SitePublicationSelection
 
-**Location:** `src/llm_wiki_cli/services/site_export.py:122`
+**Location:** `src/llm_wiki_cli/services/site_export.py:124`
 **Kind:** Class
 **Bases:** —
 **Module:** [site_export](../modules/site_export.md)

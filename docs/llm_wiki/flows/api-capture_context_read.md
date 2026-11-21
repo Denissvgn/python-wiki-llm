@@ -181,7 +181,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1832; effect analysis evaluated: 1236, partial: 75, unavailable: 521. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1311 source steps with known totals: observed: 7388, emitted: 7018, omitted: 370. Unavailable totals are excluded.
+Collector observations for 1311 source steps with known totals: observed: 7392, emitted: 7022, omitted: 370. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -251,17 +251,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 568 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 569 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 570 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 571 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 572 | `callable(plan_reporter)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 573 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 574 | `isinstance(allow_selection_mismatch, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 575 | `TypeError('allow_selection_mismatch must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 576 | `isinstance(strict_wiki_symlinks, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 577 | `TypeError('strict_wiki_symlinks must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 578 | `isinstance(capture_implementation_observations, bool)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 570 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 571 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 572 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 573 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…r.py:capture_context_read) | 574 | `callable(plan_reporter)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 575 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 576 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 577 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 578 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…r.py:capture_context_read) | 579 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…r.py:capture_context_read) | 580 | `isinstance(capture_implementation_observations, bool)` |
 
 ### Boundary effects
 
@@ -271,17 +271,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `capture_context_read` | `isinstance` | 568 |
-| external_call | `capture_context_read` | `TypeError` | 569 |
 | external_call | `capture_context_read` | `isinstance` | 570 |
 | external_call | `capture_context_read` | `TypeError` | 571 |
-| external_call | `capture_context_read` | `callable` | 572 |
+| external_call | `capture_context_read` | `isinstance` | 572 |
 | external_call | `capture_context_read` | `TypeError` | 573 |
-| external_call | `capture_context_read` | `isinstance` | 574 |
+| external_call | `capture_context_read` | `callable` | 574 |
 | external_call | `capture_context_read` | `TypeError` | 575 |
 | external_call | `capture_context_read` | `isinstance` | 576 |
 | external_call | `capture_context_read` | `TypeError` | 577 |
 | external_call | `capture_context_read` | `isinstance` | 578 |
+| external_call | `capture_context_read` | `TypeError` | 579 |
+| external_call | `capture_context_read` | `isinstance` | 580 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 
 ## Behavior

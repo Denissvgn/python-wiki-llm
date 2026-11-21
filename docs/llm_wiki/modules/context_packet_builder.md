@@ -55,6 +55,7 @@ lives in :mod:`context_packet`, which loads none of the builders.
 | `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_disclosure` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.knowledge_verification` | `verification_summaries_for_concepts` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
 | `llm_wiki_engine.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path` |
@@ -86,20 +87,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (12) |
-| Outbound | `src` (32) |
+| Outbound | `src` (33) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 43 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 111 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
-| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 123 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 133 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 273 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 326 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 352 | — | Consumer-time comparison against one fresh official read. |
+| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 113 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
+| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 125 | `ContextPacketError` | A required read-only packet capability is unavailable. |
+| [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 135 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 275 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 328 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 354 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 

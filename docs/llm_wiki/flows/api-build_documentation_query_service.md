@@ -140,7 +140,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 703; effect analysis evaluated: 423, partial: 21, unavailable: 259. Counts include steps omitted from the displayed trace.
 
-Collector observations for 444 source steps with known totals: observed: 2389, emitted: 2285, omitted: 104. Unavailable totals are excluded.
+Collector observations for 444 source steps with known totals: observed: 2392, emitted: 2288, omitted: 104. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -226,7 +226,7 @@ flowchart LR
 | normalize_documentation_query_limit | DocumentationQueryError | 42 | `DocumentationQueryError('limit must be a positive integer.')` |
 | normalize_documentation_query_limit | min (src/llm_wiki_engine/query…documentation_query_limit) | 43 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
 | build_documentation_query_service | validate_source_root | 2200 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 125 | `validate_path(path, label)` |
+| validate_source_root | validate_path | 127 | `validate_path(path, label)` |
 
 ### Boundary effects
 

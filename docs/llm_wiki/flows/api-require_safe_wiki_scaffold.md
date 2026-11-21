@@ -167,12 +167,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_safe_wiki_scaffold | Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 44 | `Path(wiki_dir)` |
-| require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 45 | `tuple(...)` |
-| require_safe_wiki_scaffold | iter_directory_kinds | 47 | `iter_directory_kinds(data not statically known)` |
+| require_safe_wiki_scaffold | Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 46 | `Path(wiki_dir)` |
+| require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 47 | `tuple(...)` |
+| require_safe_wiki_scaffold | iter_directory_kinds | 49 | `iter_directory_kinds(data not statically known)` |
 | iter_directory_kinds | tuple (src/llm_wiki_engine/wiki_…ce.py:iter_directory_kinds) | 224 | `tuple(...)` |
-| require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 50 | `tuple(...)` |
-| require_safe_wiki_scaffold | first_unsafe_path_component | 55 | `first_unsafe_path_component(path)` |
+| require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 52 | `tuple(...)` |
+| require_safe_wiki_scaffold | first_unsafe_path_component | 57 | `first_unsafe_path_component(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |

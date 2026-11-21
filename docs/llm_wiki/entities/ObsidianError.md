@@ -1,6 +1,6 @@
 # ObsidianError
 
-**Location:** `src/llm_wiki_cli/services/obsidian.py:106`
+**Location:** `src/llm_wiki_cli/services/obsidian.py:108`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [obsidian](../modules/obsidian.md)

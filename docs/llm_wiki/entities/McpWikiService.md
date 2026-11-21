@@ -1,6 +1,6 @@
 # McpWikiService
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:436`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:438`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -17,7 +17,7 @@ Workspace read/check operations with managed helper provisioning.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', *, source_selection: str \| None = None, comparison_policy: str = 'auto', allow_external_src: bool = False, counter: TokenCounter \| None = None, workflow_policy: WorkflowPolicy \| None = None, workflow_profile: WorkflowProfile \| None = None, enable_sessions: bool = True, max_sessions: int = 8, helper_preparation: str = 'auto', helper_cache_dir: str \| None = None)` | — | — |
+| `__init__` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_LAYOUT.wiki_dir, *, source_selection: str \| None = None, comparison_policy: str = 'auto', allow_external_src: bool = False, counter: TokenCounter \| None = None, workflow_policy: WorkflowPolicy \| None = None, workflow_profile: WorkflowProfile \| None = None, enable_sessions: bool = True, max_sessions: int = 8, helper_preparation: str = 'auto', helper_cache_dir: str \| None = None)` | — | — |
 | `_assert_source_selection_pin_current` | `() -> SourceSelectionPolicy \| None` | — | — |
 | `_assert_source_selection_current` | `() -> SourceSnapshot` | — | — |
 | `_source_selection_options` | `() -> _SourceSelectionOptions` | — | — |

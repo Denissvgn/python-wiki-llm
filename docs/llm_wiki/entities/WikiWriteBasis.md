@@ -1,6 +1,6 @@
 # WikiWriteBasis
 
-**Location:** `src/llm_wiki_engine/maintenance_protocol.py:201`
+**Location:** `src/llm_wiki_engine/maintenance_protocol.py:203`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)

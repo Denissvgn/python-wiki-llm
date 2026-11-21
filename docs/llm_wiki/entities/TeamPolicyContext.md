@@ -1,6 +1,6 @@
 # TeamPolicyContext
 
-**Location:** `src/llm_wiki_cli/services/team.py:77`
+**Location:** `src/llm_wiki_cli/services/team.py:79`
 **Kind:** Class
 **Bases:** —
 **Module:** [team](../modules/team.md)

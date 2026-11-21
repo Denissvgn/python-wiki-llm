@@ -1,6 +1,6 @@
 # SurfaceIndexEvaluation
 
-**Location:** `src/llm_wiki_engine/wiki_surface_index.py:39`
+**Location:** `src/llm_wiki_engine/wiki_surface_index.py:41`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface_index](../modules/wiki_surface_index.md)

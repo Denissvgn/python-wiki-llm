@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1860`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1862`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)

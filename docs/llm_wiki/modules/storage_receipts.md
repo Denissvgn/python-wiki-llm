@@ -12,6 +12,7 @@ Encodes and expands versioned selected-storage receipts without removing their c
 |--------|---------|
 | `.knowledge_packs` | `PACK_NAME`, `INDEX_PAGE_NAME`, `pack_path`, `index_page_path` |
 | `.knowledge_storage` | `canonical_bytes` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
 | `collections.abc` | `Mapping` |
@@ -28,25 +29,30 @@ flowchart LR
     n1["src/llm_wiki_cli/services/task_context_v2.py"]
     n2["src/llm_wiki_engine/knowledge_packs.py"]
     n3["src/llm_wiki_engine/knowledge_storage.py"]
-    n4["src/llm_wiki_engine/storage_receipts.py"]
-    n5["src/llm_wiki_engine/validation.py"]
+    n4["src/llm_wiki_engine/layout.py"]
+    n5["src/llm_wiki_engine/storage_receipts.py"]
+    n6["src/llm_wiki_engine/validation.py"]
     n0 --> n3
-    n0 --> n4
     n0 --> n5
+    n0 --> n6
     n1 --> n2
     n1 --> n3
     n1 --> n4
     n1 --> n5
+    n1 --> n6
     n2 --> n3
-    n4 --> n2
-    n4 --> n3
-    n4 --> n5
+    n3 --> n4
+    n5 --> n2
+    n5 --> n3
+    n5 --> n4
+    n5 --> n6
     click n0 "../modules/api.md"
     click n1 "../modules/task_context_v2.md"
     click n2 "../modules/knowledge_packs.md"
     click n3 "../modules/knowledge_storage.md"
-    click n4 "../modules/storage_receipts.md"
-    click n5 "../modules/validation.md"
+    click n4 "../modules/layout.md"
+    click n5 "../modules/storage_receipts.md"
+    click n6 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -57,6 +63,7 @@ flowchart LR
 | Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Outbound | [knowledge_packs](../modules/knowledge_packs.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
+| Outbound | [layout](../modules/layout.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Functions

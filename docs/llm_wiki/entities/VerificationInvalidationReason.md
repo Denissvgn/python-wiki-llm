@@ -1,6 +1,6 @@
 # VerificationInvalidationReason
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:103`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:105`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [verification_contracts](../modules/verification_contracts.md)

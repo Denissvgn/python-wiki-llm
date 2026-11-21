@@ -22,6 +22,7 @@ Setup distinguishes untouched scaffolds from established canonical wikis and inc
 | `llm_wiki_engine.knowledge_artifacts` | `current_knowledge_format` |
 | `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
 | `llm_wiki_engine.knowledge_storage_lifecycle` | `_committed_inputs`, `migrate_knowledge_storage`, `_absolute_path` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_protocol` | `load_adoption_marker`, `guard_maintenance_owner`, `snapshot_wiki`, `save_recovery_snapshot` |
 | `llm_wiki_engine.manifest_storage` | `current_manifest_format` |
 | `pathlib` | `Path` |
@@ -46,9 +47,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

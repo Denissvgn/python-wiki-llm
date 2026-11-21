@@ -1,6 +1,6 @@
 # SiteExportError
 
-**Location:** `src/llm_wiki_cli/services/site_export.py:109`
+**Location:** `src/llm_wiki_cli/services/site_export.py:111`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [site_export](../modules/site_export.md)

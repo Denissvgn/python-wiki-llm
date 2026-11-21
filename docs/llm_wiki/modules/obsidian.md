@@ -27,6 +27,7 @@ the packaged Obsidian plugin into a vault on explicit request.
 | `llm_wiki_engine` | `wiki_surface` |
 | `llm_wiki_engine.filesystem_guard` | `fresh_no_follow_stat` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component`, `read_md`, `write_md` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `llm_wiki_engine.validation` | `path_is_within`, `paths_overlap`, `require_existing_directory`, `require_portable_relative_path`, `require_safe_base_path`, `resolve_portable_workspace_path` |
 | `os` | `os` |
@@ -56,26 +57,26 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (11) |
+| Outbound | `src` (12) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ObsidianError](../entities/ObsidianError.md) | 106 | `ValueError` | Raised for invalid Obsidian export/check requests. |
-| [WikiPage](../entities/obsidian_WikiPage.md) | 153 | — | — |
-| [ObsidianOperation](../entities/ObsidianOperation.md) | 165 | — | — |
-| [ObsidianReport](../entities/ObsidianReport.md) | 172 | — | — |
+| [ObsidianError](../entities/ObsidianError.md) | 108 | `ValueError` | Raised for invalid Obsidian export/check requests. |
+| [WikiPage](../entities/obsidian_WikiPage.md) | 155 | — | — |
+| [ObsidianOperation](../entities/ObsidianOperation.md) | 167 | — | — |
+| [ObsidianReport](../entities/ObsidianReport.md) | 174 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `validate_obsidian_export_source_selection` | `(*, src_dir: str \| Path, wiki_dir: str \| Path, source_selection: str \| Path \| None) -> SourceSnapshot` | — | Freeze and validate the live profile before any persisted wiki read. |
-| `export_obsidian_vault` | `(*, src_dir: str = '.', wiki_dir: str \| Path = 'docs/llm_wiki', vault_dir: str \| Path, notes_dir: str \| Path = DEFAULT_NOTES_DIR, dry_run: bool = False, source_selection: str \| Path \| None = None, knowledge_metadata: str \| None = None, knowledge_projection: KnowledgeProjection \| None = None) -> ObsidianReport` | — | Export an Obsidian-friendly mirror and sidecar notes. |
-| `check_obsidian_vault` | `(*, wiki_dir: str \| Path = 'docs/llm_wiki', vault_dir: str \| Path, knowledge_metadata: str \| None = None, knowledge_projection: KnowledgeProjection \| None = None) -> ObsidianReport` | — | Check whether the Obsidian mirror is present and internally linked. |
+| `export_obsidian_vault` | `(*, src_dir: str = '.', wiki_dir: str \| Path = DEFAULT_LAYOUT.wiki_dir, vault_dir: str \| Path, notes_dir: str \| Path = DEFAULT_NOTES_DIR, dry_run: bool = False, source_selection: str \| Path \| None = None, knowledge_metadata: str \| None = None, knowledge_projection: KnowledgeProjection \| None = None) -> ObsidianReport` | — | Export an Obsidian-friendly mirror and sidecar notes. |
+| `check_obsidian_vault` | `(*, wiki_dir: str \| Path = DEFAULT_LAYOUT.wiki_dir, vault_dir: str \| Path, knowledge_metadata: str \| None = None, knowledge_projection: KnowledgeProjection \| None = None) -> ObsidianReport` | — | Check whether the Obsidian mirror is present and internally linked. |
 | `install_obsidian_plugin` | `(*, vault_dir: str \| Path, plugin_dir: str \| Path = DEFAULT_PLUGIN_SOURCE) -> ObsidianReport` | — | Copy the bundled companion plugin into a vault's plugin directory. |
 | `collect_wiki_pages` | `(wiki_dir: str \| Path, *, content_cache: dict[str, str] \| None = None) -> list[WikiPage]` | — | Collect active canonical wiki pages in deterministic order. |
 | `_obsidian_kind` | `(kind: wiki_surface.PageKind) -> str` | — | — |
