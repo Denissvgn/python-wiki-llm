@@ -44,7 +44,8 @@ def test_capabilities_follow_the_published_format():
     jsonschema.validate(document, schema)
     assert document["helper_preparation"] == "never"
     assert document["publication_targets"] == {"kinds": []}
-    assert document["pack"]["page_namer"] == "llm_wiki_engine.pack_interfaces.StemPageNamer"
+    pack = document["pack"]
+    assert isinstance(pack, dict) and pack["page_namer"] == "llm_wiki_engine.pack_interfaces.StemPageNamer"
 
 
 def test_an_operation_applies_the_pack_and_integrations():

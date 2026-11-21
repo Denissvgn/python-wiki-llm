@@ -24,7 +24,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from pathlib import PurePath
 from types import MappingProxyType
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, Self, runtime_checkable
 
 from .integrations import DEFAULT_INTEGRATIONS, IntegrationSet
 from .validation import portable_page_component, portable_path_key
@@ -585,36 +585,36 @@ class DomainPack:
             self, "reference_providers", _check_reference_providers(self.reference_providers)
         )
 
-    def with_classifier(self, classifier: SourceClassifier) -> DomainPack:
+    def with_classifier(self, classifier: SourceClassifier) -> Self:
         """A copy of this pack that classifies sources with ``classifier``."""
         return replace(self, classifier=classifier)
 
-    def with_page_namer(self, page_namer: PageNamer) -> DomainPack:
+    def with_page_namer(self, page_namer: PageNamer) -> Self:
         """A copy of this pack that names pages with ``page_namer``."""
         return replace(self, page_namer=page_namer)
 
-    def with_page_renderer(self, page_renderer: PageRenderer) -> DomainPack:
+    def with_page_renderer(self, page_renderer: PageRenderer) -> Self:
         """A copy of this pack that writes pages with ``page_renderer``."""
         return replace(self, page_renderer=page_renderer)
 
-    def with_context_source(self, context_source: ContextSource) -> DomainPack:
+    def with_context_source(self, context_source: ContextSource) -> Self:
         """A copy of this pack that builds budgeted context with ``context_source``."""
         return replace(self, context_source=context_source)
 
-    def with_reference_provider(self, provider: Any) -> DomainPack:
+    def with_reference_provider(self, provider: Any) -> Self:
         """A copy of this pack that also serves ``provider``, replacing one of the same kind."""
         kept = tuple(item for item in self.reference_providers if item.kind != provider.kind)
         return replace(self, reference_providers=(*kept, provider))
 
-    def with_extractor(self, source_kind: str, entry_point: str) -> DomainPack:
+    def with_extractor(self, source_kind: str, entry_point: str) -> Self:
         """A copy of this pack that extracts ``source_kind`` with ``entry_point``."""
         return replace(self, extractors={**self.extractors, source_kind: entry_point})
 
-    def with_helper_toolchain(self, helper_toolchain: HelperToolchain) -> DomainPack:
+    def with_helper_toolchain(self, helper_toolchain: HelperToolchain) -> Self:
         """A copy of this pack that prepares analysis helpers with ``helper_toolchain``."""
         return replace(self, helper_toolchain=helper_toolchain)
 
-    def with_integrations(self, integrations: IntegrationSet) -> DomainPack:
+    def with_integrations(self, integrations: IntegrationSet) -> Self:
         """A copy of this pack whose knowledge core uses ``integrations``."""
         return replace(self, integrations=integrations)
 
