@@ -7,6 +7,8 @@ surface that does not require an MCP runtime.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from llm_wiki_engine import analysis_compatibility as ac
 
 import ipaddress
@@ -243,7 +245,7 @@ class _RunnableMcpServer(Protocol):
 @dataclass(frozen=True)
 class McpServerConfig:
     src_dir: str = "."
-    wiki_dir: str = "docs/llm_wiki"
+    wiki_dir: str = DEFAULT_LAYOUT.wiki_dir
     transport: str = "stdio"
     host: str = "127.0.0.1"
     port: int = 8765
@@ -439,7 +441,7 @@ class McpWikiService:
     def __init__(
         self,
         src_dir: str = ".",
-        wiki_dir: str = "docs/llm_wiki",
+        wiki_dir: str = DEFAULT_LAYOUT.wiki_dir,
         *,
         source_selection: str | None = None,
         comparison_policy: str = "auto",

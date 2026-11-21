@@ -14,6 +14,8 @@ Workflow:
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
 from contextlib import nullcontext
@@ -2354,8 +2356,8 @@ def _print_dry_run_plan(
     ancillary = [
         "index.md",
         "log.md",
-        ".llm-wiki-surface.json",
-        ".llm-wiki-knowledge.json",
+        DEFAULT_LAYOUT.surface_index,
+        DEFAULT_LAYOUT.knowledge_index,
         MANIFEST_FILENAME,
     ]
     emit(f"  ancillary files considered: {', '.join(ancillary)}")
@@ -2475,7 +2477,7 @@ def sync_request_from_args(args) -> SyncRequest:
 
     return SyncRequest(
         source_root=getattr(args, "src_dir", "."),
-        wiki_root=getattr(args, "wiki_dir", "docs/llm_wiki"),
+        wiki_root=getattr(args, "wiki_dir", DEFAULT_LAYOUT.wiki_dir),
         dry_run=bool(getattr(args, "dry_run", False)),
         force=bool(getattr(args, "force", False)),
         plugins=not bool(getattr(args, "no_plugins", False)),

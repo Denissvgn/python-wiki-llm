@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from .dependencies import *
 from .contracts import *
 from .schema import *
@@ -18,8 +20,8 @@ def capture_generated_ownership(wiki_root: str | Path) -> dict[str, str]:
     root = Path(wiki_root).expanduser().resolve()
     fingerprints: dict[str, str] = {}
     for name in (
-        ".llm-wiki-manifest.json",
-        ".llm-wiki-surface.json",
+        DEFAULT_LAYOUT.manifest,
+        DEFAULT_LAYOUT.surface_index,
         KNOWLEDGE_INDEX_FILENAME,
         GOVERNANCE_FILENAME,
         VERIFICATION_RECEIPT_FILENAME,

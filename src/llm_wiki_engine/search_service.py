@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import re
 from collections.abc import Callable, Iterable
 from pathlib import Path
@@ -115,7 +117,7 @@ def normalize_discovery(discovery):
     return discovery
 
 
-def search_wiki(query, *, src_dir=".", wiki_dir="docs/llm_wiki", kinds=None,
+def search_wiki(query, *, src_dir=".", wiki_dir=DEFAULT_LAYOUT.wiki_dir, kinds=None,
                 limit=20, mode="ranked", source_selection=None, allow_external_src=False,
                 include_source=False, reader=read_md, discovery=None):
     normalize_discovery(discovery)
@@ -183,7 +185,7 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
         try:
             manifest = captured_manifest(wiki_reads)
         except KnowledgeStorageError as exc:
-            if exc.code != "storage-missing" or (wiki_root / ".llm-wiki-manifest.json").exists():
+            if exc.code != "storage-missing" or (wiki_root / DEFAULT_LAYOUT.manifest).exists():
                 raise
             if policy is not None or include_source:
                 raise ValueError("Selected search requires a valid committed ownership manifest") from exc

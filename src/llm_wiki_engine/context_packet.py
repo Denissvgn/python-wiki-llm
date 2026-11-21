@@ -17,8 +17,9 @@ from __future__ import annotations
 import json
 import math
 import re
+from contextvars import ContextVar
 from urllib.parse import urlsplit
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
@@ -295,11 +296,42 @@ class ContextPacketValidation:
         }
 
 
+#: The packet producers a validator accepts unless its caller names others.
+DEFAULT_ACCEPTED_GENERATORS: frozenset[str] = frozenset({"agent-wiki-cli"})
+_ACCEPTED_GENERATORS: ContextVar[frozenset[str]] = ContextVar(
+    "context_packet_accepted_generators", default=DEFAULT_ACCEPTED_GENERATORS,
+)
+
+
 def validate_context_packet(
     packet_bytes: bytes | bytearray | memoryview,
+    *,
+    accepted_generators: Iterable[str] | None = None,
 ) -> ContextPacketValidation:
-    """Strictly validate canonical bytes without performing live reads."""
+    """Strictly validate canonical bytes without performing live reads.
 
+    ``basis.generator.component`` must name an accepted producer: by default
+    only ``agent-wiki-cli``. A consumer that trusts packets from other
+    producers names them in ``accepted_generators``.
+    """
+
+    if accepted_generators is None:
+        return _validate_context_packet_bytes(packet_bytes)
+    if isinstance(accepted_generators, (str, bytes)):
+        raise TypeError("accepted_generators must be a collection of producer names")
+    accepted = frozenset(accepted_generators)
+    if not accepted or not all(isinstance(name, str) and name for name in accepted):
+        raise ValueError("accepted_generators must name at least one producer")
+    token = _ACCEPTED_GENERATORS.set(accepted)
+    try:
+        return _validate_context_packet_bytes(packet_bytes)
+    finally:
+        _ACCEPTED_GENERATORS.reset(token)
+
+
+def _validate_context_packet_bytes(
+    packet_bytes: bytes | bytearray | memoryview,
+) -> ContextPacketValidation:
     raw = _coerce_packet_bytes(packet_bytes)
     payload = _strict_json_payload(raw)
     packet_contract = _packet_contract_for_schema(payload.get("schema_version"))
@@ -2533,10 +2565,13 @@ def _validate_basis(value: Any, packet_contract: _PacketWireContract) -> None:
         {"component", "version", "context_protocol", "policy_digest"},
         "basis.generator",
     )
-    if generator["component"] != "agent-wiki-cli":
+    accepted = _ACCEPTED_GENERATORS.get()
+    if generator["component"] not in accepted:
         raise ContextPacketMalformedError(
             "basis.generator.component",
-            "must be 'agent-wiki-cli'",
+            "must be 'agent-wiki-cli'"
+            if accepted == DEFAULT_ACCEPTED_GENERATORS
+            else "must name an accepted producer",
         )
     if (
         not isinstance(generator["version"], str)
@@ -3157,6 +3192,7 @@ def __getattr__(name: str) -> Any:
 
 
 __all__ = [
+    "DEFAULT_ACCEPTED_GENERATORS",
     "CONTEXT_PACKET_ASSURANCE_LEVEL",
     "CONTEXT_PACKET_KNOWLEDGE_POLICY_VERSION",
     "CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION",

@@ -378,6 +378,7 @@
     "llm_wiki_engine/knowledge_stream_audit.py",
     "llm_wiki_engine/knowledge_validators.py",
     "llm_wiki_engine/knowledge_verification.py",
+    "llm_wiki_engine/layout.py",
     "llm_wiki_engine/lockfile.py",
     "llm_wiki_engine/maintenance_evidence.py",
     "llm_wiki_engine/maintenance_projection.py",

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from collections import Counter
 from collections.abc import Mapping
 from typing import Any
@@ -304,7 +306,7 @@ def inspect_targets(wiki_dir, targets):
     records, binding, reason = {}, None, None
     try:
         session = StorageReadSession(Path(wiki_dir))
-        raw = session.read(".llm-wiki-knowledge.json", 64 * 1024 * 1024)
+        raw = session.read(DEFAULT_LAYOUT.knowledge_index, 64 * 1024 * 1024)
         data = strict_json(raw)
         schema = data.get("schema_version")
         if schema in {"llm-wiki-knowledge/v3", "llm-wiki-knowledge/v4"}:
@@ -313,10 +315,10 @@ def inspect_targets(wiki_dir, targets):
             bundle = _parse_bundle(parse_store_root(raw)["store"]["bundle"], "bundle")
         else:
             bundle = parse_knowledge_index(data).bundle
-        session.read(".llm-wiki-manifest.json", 64 * 1024 * 1024)
+        session.read(DEFAULT_LAYOUT.manifest, 64 * 1024 * 1024)
         manifest = SyncManifest.load(Path(wiki_dir))
         hashes = manifest.artifact_hashes
-        surface = session.read(".llm-wiki-surface.json", 64 * 1024 * 1024)
+        surface = session.read(DEFAULT_LAYOUT.surface_index, 64 * 1024 * 1024)
         if (
             hashes is None
             or hashes.knowledge_index_hash != digest(raw)

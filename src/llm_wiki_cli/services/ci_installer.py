@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import hmac
 import json
@@ -222,7 +224,7 @@ def render_managed_workflow(
     *,
     action_ref: str,
     src_dir: str = ".",
-    wiki_dir: str = "docs/llm_wiki",
+    wiki_dir: str = DEFAULT_LAYOUT.wiki_dir,
 ) -> bytes:
     """Render deterministic workflow bytes with a self-verifying owner marker."""
 
@@ -310,7 +312,7 @@ def install_ci_workflow(
     *,
     action_ref: str,
     src_dir: str = ".",
-    wiki_dir: str = "docs/llm_wiki",
+    wiki_dir: str = DEFAULT_LAYOUT.wiki_dir,
     dry_run: bool = False,
     force: bool = False,
     project_root: str | Path | None = None,

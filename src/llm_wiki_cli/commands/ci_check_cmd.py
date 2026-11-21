@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import json
 import sys
 import time
@@ -171,7 +173,7 @@ def run(args) -> None:
         except ValueError as exc:
             storage = {"ok": False, "failures": [{"reason": str(exc)}]}
         for finding in storage.get("failures", []):
-            report.issues.append(LintIssue(category="knowledge-storage", path=finding.get("path", ".llm-wiki-knowledge.json"),
+            report.issues.append(LintIssue(category="knowledge-storage", path=finding.get("path", DEFAULT_LAYOUT.knowledge_index),
                 message="Storage check failed: " + finding.get("reason", "invalid storage")))
         if storage.get("git", {}).get("ok") is False:
             report.issues.append(LintIssue(category="knowledge-storage", path=".git",

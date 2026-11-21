@@ -6,6 +6,8 @@ Markdown mirror for static-site tooling without invoking external builders.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 import os
@@ -3295,7 +3297,7 @@ def _validate_knowledge_metadata_mode(value: str) -> None:
 
 
 def _load_surface_index_sources(wiki: Path) -> dict[str, str]:
-    path = wiki / ".llm-wiki-surface.json"
+    path = wiki / DEFAULT_LAYOUT.surface_index
     if not path.is_file():
         return {}
     try:
