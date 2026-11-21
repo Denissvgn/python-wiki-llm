@@ -451,11 +451,17 @@ def test_pack_interfaces_live_in_the_engine_and_stay_importable_here():
     # The CLI keeps its own subclasses (with today's defaults) of these names.
     specialized = {"BuiltInPageRenderer", "DomainPack", "StemPageNamer"}
     for name in engine_side.__all__:
+        if name == "current_pack":
+            continue
         if name in specialized:
             assert issubclass(getattr(cli_side, name), getattr(engine_side, name)), name
         elif hasattr(cli_side, name):
             assert getattr(cli_side, name) is getattr(engine_side, name), name
     assert cli_side.using_pack is engine_side.using_pack
+    # The CLI's current pack defaults to the code-documentation pack; the engine has none.
+    assert cli_side.current_pack() is cli_side.CODE_DOCS_PACK
+    with pytest.raises(LookupError):
+        engine_side.current_pack()
     # The code-documentation pack and its defaults stay with the CLI.
     assert cli_side.CODE_DOCS_PACK.classifier.__class__.__module__ == cli_side.__name__
     assert not hasattr(engine_side, "CODE_DOCS_PACK")

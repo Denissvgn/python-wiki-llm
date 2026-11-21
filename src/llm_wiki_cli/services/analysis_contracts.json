@@ -427,6 +427,7 @@
     "llm_wiki_engine/validation.py",
     "llm_wiki_engine/verification_contracts.py",
     "llm_wiki_engine/wiki_media.py",
+    "llm_wiki_engine/wiki_operations.py",
     "llm_wiki_engine/wiki_surface.py",
     "llm_wiki_engine/wiki_surface_index.py",
     "llm_wiki_engine/wiki_write_basis.py",

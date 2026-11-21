@@ -643,6 +643,18 @@ def active_pack() -> DomainPack | None:
     return _ACTIVE_PACK.get()
 
 
+def current_pack() -> DomainPack:
+    """The pack chosen for this context, as the ``domain_packs`` integration reads it.
+
+    The engine has no default pack, so outside a chosen pack this raises
+    :class:`LookupError`.
+    """
+    pack = _ACTIVE_PACK.get()
+    if pack is None:
+        raise LookupError("no domain pack is active")
+    return pack
+
+
 @contextmanager
 def using_pack(pack: DomainPack) -> Iterator[DomainPack]:
     """Classify, name, render and build context inside the block with ``pack``."""
@@ -674,5 +686,6 @@ __all__ = [
     "SourceClassifier",
     "StemPageNamer",
     "active_pack",
+    "current_pack",
     "using_pack",
 ]

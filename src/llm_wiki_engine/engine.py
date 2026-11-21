@@ -9,6 +9,11 @@ custom kinds and the :class:`~.integrations.IntegrationSet` of knowledge-core
 providers (the pack's, with the engine's own on top). Every call runs inside
 one :class:`Operation` that applies those choices to all work beneath it.
 
+Use cases run on the engine and write progress to the host's streams:
+:meth:`Engine.bootstrap`, :meth:`Engine.sync` and :meth:`Engine.lint` (see
+:mod:`.wiki_operations`). They take a typed request, return a typed result
+and never exit the process.
+
 This engine never prepares analysis helpers and serves no publication
 targets; an application that needs them builds on its own engine.
 Importing this module loads no application code.
@@ -30,9 +35,21 @@ from .integrations import DEFAULT_INTEGRATIONS, IntegrationSet, using_integratio
 from .knowledge_kinds import DEFAULT_KINDS, KindRegistry, using_kinds
 from .knowledge_validators import DEFAULT_VALIDATORS, ValidatorRegistry, using_validators
 from .pack_interfaces import DomainPack, using_pack
+from . import wiki_operations
+from .wiki_operations import (
+    BootstrapRequest,
+    BootstrapResult,
+    LintReport,
+    LintRequest,
+    SyncRequest,
+    SyncResult,
+)
 
 #: The format :meth:`Engine.capabilities` returns.
 ENGINE_CAPABILITIES_SCHEMA_VERSION = "llm-wiki-engine-capabilities/v1"
+# The knowledge core reads the active pack through ``domain_packs``; this
+# engine answers it from its own pack scope unless the pack names another.
+_ENGINE_INTEGRATIONS = IntegrationSet({"domain_packs": "llm_wiki_engine.pack_interfaces"})
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
 
@@ -79,7 +96,7 @@ class Engine:
         self._validators = validators
         self._kinds = kinds
         # The engine's own choices win over the pack's.
-        self._integrations = pack.integrations.merged(integrations)
+        self._integrations = _ENGINE_INTEGRATIONS.merged(pack.integrations).merged(integrations)
 
     @property
     def host(self) -> Host:
@@ -148,6 +165,29 @@ class Engine:
     ) -> None:
         if self._host.reports_events:
             self._host.publish(EngineEvent(kind, name, operation_id, data()))
+
+
+    def bootstrap(self, request: BootstrapRequest) -> BootstrapResult:
+        """Create a wiki from the pack's sources; progress goes to the host's streams.
+
+        Raises :class:`~.wiki_operations.WikiOperationError` when it cannot.
+        """
+        return self._run("bootstrap", request, lambda: wiki_operations.bootstrap(request), _to_dict)
+
+    def sync(self, request: SyncRequest) -> SyncResult:
+        """Update the wiki from changed sources, keeping reviewed text."""
+        return self._run("sync", request, lambda: wiki_operations.sync(request), _to_dict)
+
+    def lint(self, request: LintRequest) -> LintReport:
+        """Check the wiki against its sources; ``report.passed`` is the verdict."""
+        return self._run(
+            "lint", request, lambda: wiki_operations.lint(request),
+            lambda report: {"passed": report.passed, "issue_count": report.issue_count},
+        )
+
+
+def _to_dict(result: Any) -> Mapping[str, Any]:
+    return result.to_dict()
 
 
 def _request_data(request: object) -> dict[str, str]:

@@ -13,7 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   host, a domain pack, validators, kinds and integrations to each operation
   and reports engine events, like `llm_wiki_cli.engine.Engine`, but never
   prepares helpers and serves no publication targets. Importing it loads no
-  application code.
+  application code. `Engine.bootstrap()`, `Engine.sync()` and `Engine.lint()`
+  (`llm_wiki_engine.wiki_operations`) run a wiki through the pack alone: the
+  pack's classifier and in-process extractors read the sources, its page
+  namer and renderer write module and entity pages, and the engine writes
+  `index.md`, `log.md` and the sync manifest. Sync keeps each page's reviewed
+  `Description` and retires pages of removed sources; lint reports missing,
+  unowned and stale pages and broken links.
 - `llm_wiki_engine.pack_interfaces` now holds a `DomainPack` that needs no
   application parts: by default it names pages with `StemPageNamer`, writes
   the built-in Markdown with `BuiltInPageRenderer`, relates no sources
