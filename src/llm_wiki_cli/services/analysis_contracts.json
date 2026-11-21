@@ -341,6 +341,7 @@
     "llm_wiki_engine/context_request_format.py",
     "llm_wiki_engine/context_response_format.py",
     "llm_wiki_engine/contracts.py",
+    "llm_wiki_engine/engine.py",
     "llm_wiki_engine/engine_events.py",
     "llm_wiki_engine/extract_format.py",
     "llm_wiki_engine/filesystem_guard.py",

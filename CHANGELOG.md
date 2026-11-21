@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `llm_wiki_engine.Engine` runs with no `llm_wiki_cli` code: it applies a
+  host, a domain pack, validators, kinds and integrations to each operation
+  and reports engine events, like `llm_wiki_cli.engine.Engine`, but never
+  prepares helpers and serves no publication targets. Importing it loads no
+  application code.
+- `llm_wiki_engine.pack_interfaces` now holds a `DomainPack` that needs no
+  application parts: by default it names pages with `StemPageNamer`, writes
+  the built-in Markdown with `BuiltInPageRenderer`, relates no sources
+  (`NoContextSource`), serves no references and prepares no helpers. Its
+  `using_pack()` and `active_pack()` choose the pack for a block of code.
+  `llm_wiki_cli`'s `DomainPack`, `StemPageNamer` and `BuiltInPageRenderer`
+  are subclasses that keep today's code-documentation defaults, so packs
+  describe themselves exactly as before.
 - Engines in one process can use different knowledge-core providers. An
   `IntegrationSet` names providers for some capabilities; a `DomainPack`
   carries one (`integrations`, `with_integrations()`), and

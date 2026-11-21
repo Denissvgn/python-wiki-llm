@@ -13,3 +13,12 @@ modules remain available as aliases of the same module objects.
 """
 
 __version__ = "5.0.0"
+
+
+def __getattr__(name: str):
+    # The Engine loads its modules on first use, so importing the package stays cheap.
+    if name == "Engine":
+        from .engine import Engine
+
+        return Engine
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
