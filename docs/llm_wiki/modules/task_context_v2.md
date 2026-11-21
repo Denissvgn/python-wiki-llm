@@ -20,7 +20,6 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `.python_implementation` | `analysis_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
 | `.task_context` | `TaskRead`, `_LIVE_FACETS`, `_NATIVE_FACETS`, `_cancel`, `_counter`, `_result_body`, `plan_source_read`, `_result_fields` |
-| `.task_contract` | `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `.task_evidence` | `declaration_records`, `observe_requirement` |
 | `.task_implementation` | `attach_capture`, `attach_bindings`, `native_bindings` |
 | `__future__` | `annotations` |
@@ -40,6 +39,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `llm_wiki_engine.section_ownership` | `observe_page_sections` |
 | `llm_wiki_engine.source_selection` | `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.storage_receipts` | `compact_storage_receipt`, `compact_storage_receipt`, `expand_storage_receipt` |
+| `llm_wiki_engine.task_contract` | `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `pathlib` | `Path` |

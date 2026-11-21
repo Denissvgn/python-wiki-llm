@@ -1,9 +1,9 @@
 # DocumentationQueryError
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:138`
+**Location:** `src/llm_wiki_engine/query_request_format.py:30`
 **Kind:** Class
 **Bases:** `ValueError`
-**Module:** [documentation_queries](../modules/documentation_queries.md)
+**Module:** [query_request_format](../modules/query_request_format.md)
 
 ## Description
 
@@ -24,20 +24,20 @@ Raised when a documentation graph query request is invalid.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["DocumentationQueryError (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n0["DocumentationQueryError (src/llm_wiki_engine/query_request_format.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/api.py"]
-    n3["src/llm_wiki_cli/services/context_packet_builder.py"]
-    n4["src/llm_wiki_cli/services/context_service.py"]
-    n5["src/llm_wiki_cli/services/documentation_claim_evidence.py"]
-    n6["_attach_query_result_byte_bound (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n7["_fit_query_result (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n8["_normalise_source_path (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n9["_query_identity_within_limit (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n10["_require_query (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n11["DocumentationGraphQueryService.__init__ (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n12["DocumentationGraphQueryService._build_knowledge_indexes (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n13["DocumentationGraphQueryService._build_section_ownership_indexes (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n2["_attach_query_result_byte_bound (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n3["_fit_query_result (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n4["_normalise_source_path (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n5["_query_identity_within_limit (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n6["_require_query (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n7["DocumentationGraphQueryService.__init__ (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n8["DocumentationGraphQueryService._build_knowledge_indexes (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n9["DocumentationGraphQueryService._build_section_ownership_indexes (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n10["DocumentationGraphQueryService._build_typed_graph_indexes (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n11["DocumentationGraphQueryService._knowledge_direction (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n12["DocumentationGraphQueryService._knowledge_kinds (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n13["DocumentationGraphQueryService._record_bound (src/llm_wiki_cli/services/documentation_queries.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -51,11 +51,11 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     n13 --> n0
-    click n0 "../modules/documentation_queries.md"
-    click n2 "../modules/api.md"
-    click n3 "../modules/context_packet_builder.md"
-    click n4 "../modules/context_service.md"
-    click n5 "../modules/documentation_claim_evidence.md"
+    click n0 "../modules/query_request_format.md"
+    click n2 "../modules/documentation_queries.md"
+    click n3 "../modules/documentation_queries.md"
+    click n4 "../modules/documentation_queries.md"
+    click n5 "../modules/documentation_queries.md"
     click n6 "../modules/documentation_queries.md"
     click n7 "../modules/documentation_queries.md"
     click n8 "../modules/documentation_queries.md"
@@ -70,7 +70,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_queries](../modules/documentation_queries.md) | 1 | — |
+| [query_request_format](../modules/query_request_format.md) | 1 | — |
 
 ### Structure
 
@@ -82,10 +82,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `api` | import | [api](../modules/api.md) | — |
-| `context_packet_builder` | import | [context_packet_builder](../modules/context_packet_builder.md) | — |
-| `context_service` | import | [context_service](../modules/context_service.md) | — |
-| `documentation_claim_evidence` | import | [documentation_claim_evidence](../modules/documentation_claim_evidence.md) | — |
 | `_attach_query_result_byte_bound` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |
 | `_fit_query_result` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |
 | `_normalise_source_path` | call | [documentation_queries](../modules/documentation_queries.md) | 5 |
@@ -94,5 +90,9 @@ flowchart LR
 | `DocumentationGraphQueryService.__init__` | call | [documentation_queries](../modules/documentation_queries.md) | 4 |
 | `DocumentationGraphQueryService._build_knowledge_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 | `DocumentationGraphQueryService._build_section_ownership_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
+| `DocumentationGraphQueryService._build_typed_graph_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 3 |
+| `DocumentationGraphQueryService._knowledge_direction` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |
+| `DocumentationGraphQueryService._knowledge_kinds` | call | [documentation_queries](../modules/documentation_queries.md) | 5 |
+| `DocumentationGraphQueryService._record_bound` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |
 
-> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.
+> References: showing 12 of 30 logical references; 18 omitted by the 12-row generated summary limit.

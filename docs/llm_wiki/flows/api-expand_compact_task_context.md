@@ -11,7 +11,7 @@
 - [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
 - [context_request_format](../modules/context_request_format.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [query_request_format](../modules/query_request_format.md)
 - [task_compact](../modules/task_compact.md)
 - [task_compact_readable](../modules/task_compact_readable.md)
 - [task_context](../modules/task_context.md)
@@ -102,12 +102,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 4 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | - | unresolved | 22 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 17 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 4 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | - | unresolved | 22 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | - | external | 10 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 17 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/task_contract.py](../modules/task_contract.md) | internal | 4 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 > Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

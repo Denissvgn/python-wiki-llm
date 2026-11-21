@@ -1,6 +1,6 @@
 # _Ownership
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:133`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:130`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)

@@ -1,7 +1,7 @@
 # retained_page_repairs
 
 **Entry point:** `sync_transitions._retained_page_repairs`
-**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [markdown_sections](../modules/markdown_sections.md), [sync_retained_links](../modules/sync_retained_links.md), [sync_transitions](../modules/sync_transitions.md), [validation](../modules/validation.md)
+**Modules involved:** [knowledge_storage_io](../modules/knowledge_storage_io.md), [markdown_sections](../modules/markdown_sections.md), [sync_ownership](../modules/sync_ownership.md), [sync_retained_links](../modules/sync_retained_links.md), [sync_transitions](../modules/sync_transitions.md), [validation](../modules/validation.md)
 
 ## Sequence
 
@@ -10,14 +10,17 @@
 2. `validation.portable_path_key`
 3. `validation.portable_path_key`
 4. `knowledge_storage_io.StorageReadSession`
-5. `knowledge_storage_io.StorageReadSession.read`
-6. `markdown_sections.normalize_markdown`
-7. `sync_retained_links.repair_retained_page_links`
+5. `sync_ownership.PageTransitionError`
+6. `knowledge_storage_io.StorageReadSession.read`
+7. `markdown_sections.normalize_markdown`
+8. `sync_retained_links.repair_retained_page_links`
+9. `sync_ownership.PageTransitionError`
 
 ## Touches
 
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [sync_retained_links](../modules/sync_retained_links.md)
 - [sync_transitions](../modules/sync_transitions.md)
 - [validation](../modules/validation.md)

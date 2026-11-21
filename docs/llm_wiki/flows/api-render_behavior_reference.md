@@ -195,10 +195,10 @@ flowchart LR
 | render_behavior_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_behavior_reference) | 3763 | `isinstance(contract, Mapping)` |
 | render_behavior_reference (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:render_behavior_reference) | 3764 | `ValueError('Behavior facts must be a mapping')` |
 | render_behavior_reference (src/llm_wiki_cli/api.py) | render_behavior_reference (src/llm_wiki_cli/services/behavior_reference.py) | 3765 | `render(dict(...))` |
-| render_behavior_reference (src/llm_wiki_cli/services/behavior_reference.py) | validate_behavior_facts | 230 | `validate_behavior_facts(contract)` |
-| validate_behavior_facts | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 150 | `isinstance(contract, Mapping)` |
-| validate_behavior_facts | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `dict(contract)` |
-| validate_behavior_facts | _json_tree | 152 | `cli_reference._json_tree(contract)` |
+| render_behavior_reference (src/llm_wiki_cli/services/behavior_reference.py) | validate_behavior_facts | 231 | `validate_behavior_facts(contract)` |
+| validate_behavior_facts | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `isinstance(contract, Mapping)` |
+| validate_behavior_facts | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 152 | `dict(contract)` |
+| validate_behavior_facts | _json_tree | 153 | `cli_reference._json_tree(contract)` |
 | _json_tree | CLIReferenceError | 291 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
 | _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 292 | `type(value)` |
 | _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 294 | `type(value)` |
@@ -208,7 +208,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.extend` | `render_behavior_reference` | 359 |
+| mutation | `lines.extend` | `render_behavior_reference` | 360 |
 
 ### Static analysis gaps
 
@@ -216,7 +216,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `render_behavior_reference` | `isinstance` | 3763 |
 | external_call | `render_behavior_reference` | `ValueError` | 3764 |
-| external_call | `validate_behavior_facts` | `isinstance` | 150 |
+| external_call | `validate_behavior_facts` | `isinstance` | 151 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |
 | external_call | `_json_tree` | `math.isfinite` | 294 |

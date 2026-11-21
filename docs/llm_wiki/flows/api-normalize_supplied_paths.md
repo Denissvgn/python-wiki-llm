@@ -1,8 +1,8 @@
 # normalize_supplied_paths
 
 **Entry point:** `normalize_supplied_paths` (`api`)
-**Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), [validation](../modules/validation.md)
+**Source:** [query_request_format](../modules/query_request_format.md)
+**Modules touched:** [query_request_format](../modules/query_request_format.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -27,11 +27,11 @@ sequenceDiagram
     participant p13 as tuple
     participant p14 as item.casefold
     participant p15 as sorted
-    participant p16 as isinstance (src/llm_wiki_cli/services…r.py:_supplied_path_values)
+    participant p16 as isinstance (src/llm_wiki_engine/query…t.py:_supplied_path_values)
     participant p17 as list
     participant p18 as islice
     participant p19 as iter
-    participant p20 as len (src/llm_wiki_cli/services…r.py:_supplied_path_values)
+    participant p20 as len (src/llm_wiki_engine/query…t.py:_supplied_path_values)
     participant p21 as isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)
     participant p22 as os.fspath
     participant p23 as raw.encode
@@ -55,12 +55,12 @@ sequenceDiagram
     p0-->>p13: tuple(sorted(...))
     p0-->>p14: item.casefold
     p0-->>p15: sorted(normalized, key=...)
-    p2-->>p16: isinstance (src/llm_wiki_cli/services…r.py:_supplied_path_values)(values, (...))
-    p2-->>p16: isinstance (src/llm_wiki_cli/services…r.py:_supplied_path_values)(values, Iterable)
+    p2-->>p16: isinstance (src/llm_wiki_engine/query…t.py:_supplied_path_values)(values, (...))
+    p2-->>p16: isinstance (src/llm_wiki_engine/query…t.py:_supplied_path_values)(values, Iterable)
     p2-->>p17: list(islice(...))
     p2-->>p18: islice(iter(...), ...)
     p2-->>p19: iter(values)
-    p2-->>p20: len (src/llm_wiki_cli/services…r.py:_supplied_path_values)(requested)
+    p2-->>p20: len (src/llm_wiki_engine/query…t.py:_supplied_path_values)(requested)
     p3-->>p21: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(value, (...))
     p3-->>p22: os.fspath(value)
     p3-->>p21: isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path)(raw, str)
@@ -147,9 +147,9 @@ flowchart LR
     s4 -->|"_default_path_error(value)"| s10
     s4 -->|"_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)"| s11
     s11 -. "type(value)" .-> s12
-    click s1 "../modules/documentation_query_builder.md"
-    click s2 "../modules/documentation_query_builder.md"
-    click s3 "../modules/documentation_queries.md"
+    click s1 "../modules/query_request_format.md"
+    click s2 "../modules/query_request_format.md"
+    click s3 "../modules/query_request_format.md"
     click s4 "../modules/validation.md"
     click s6 "../modules/validation.md"
     click s7 "../modules/validation.md"
@@ -178,9 +178,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
-| _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
-| _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
+| normalize_supplied_paths | _portable_supplied_path | 124 | `_portable_supplied_path(value)` |
+| _portable_supplied_path | DocumentationQueryError | 102 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
+| _portable_supplied_path | require_portable_relative_path | 105 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
 | require_portable_relative_path | isinstance (src/llm_wiki_engine/valid…ire_portable_relative_path) | 221 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 222 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 118 | `SharedValidationError(...)` |

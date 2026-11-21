@@ -28,62 +28,62 @@ flowchart LR
     n0["src/llm_wiki_cli/api.py"]
     n1["src/llm_wiki_cli/services/context_session.py"]
     n2["src/llm_wiki_cli/services/mcp_server.py"]
-    n3["src/llm_wiki_cli/services/search_service.py"]
-    n4["src/llm_wiki_cli/services/task_compact.py"]
-    n5["src/llm_wiki_cli/services/task_context.py"]
-    n6["src/llm_wiki_cli/services/task_context_v2.py"]
-    n7["src/llm_wiki_cli/services/task_contract.py"]
-    n8["src/llm_wiki_cli/services/task_evidence.py"]
-    n9["src/llm_wiki_engine/canonical_json.py"]
-    n10["src/llm_wiki_engine/request_json.py"]
+    n3["src/llm_wiki_cli/services/task_compact.py"]
+    n4["src/llm_wiki_cli/services/task_context.py"]
+    n5["src/llm_wiki_cli/services/task_context_v2.py"]
+    n6["src/llm_wiki_cli/services/task_evidence.py"]
+    n7["src/llm_wiki_engine/canonical_json.py"]
+    n8["src/llm_wiki_engine/request_json.py"]
+    n9["src/llm_wiki_engine/search_service.py"]
+    n10["src/llm_wiki_engine/task_contract.py"]
     n11["src/llm_wiki_engine/workflow_profile.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4
-    n0 --> n5
-    n0 --> n7
+    n0 --> n9
+    n0 --> n10
     n0 --> n11
+    n1 --> n3
     n1 --> n4
     n1 --> n5
-    n1 --> n6
-    n1 --> n7
+    n1 --> n10
     n1 --> n11
     n2 --> n0
-    n2 --> n3
-    n2 --> n5
-    n2 --> n7
+    n2 --> n4
+    n2 --> n8
+    n2 --> n9
     n2 --> n10
     n2 --> n11
+    n3 --> n4
+    n3 --> n8
+    n3 --> n10
     n3 --> n11
     n4 --> n5
-    n4 --> n7
+    n4 --> n6
+    n4 --> n8
+    n4 --> n9
     n4 --> n10
     n4 --> n11
-    n5 --> n3
+    n5 --> n4
     n5 --> n6
-    n5 --> n7
-    n5 --> n8
     n5 --> n10
     n5 --> n11
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
     n6 --> n11
-    n7 --> n11
-    n8 --> n11
-    n11 --> n9
-    n11 --> n10
+    n9 --> n11
+    n10 --> n11
+    n11 --> n7
+    n11 --> n8
     click n0 "../modules/api.md"
     click n1 "../modules/context_session.md"
     click n2 "../modules/mcp_server.md"
-    click n3 "../modules/search_service.md"
-    click n4 "../modules/task_compact.md"
-    click n5 "../modules/task_context.md"
-    click n6 "../modules/task_context_v2.md"
-    click n7 "../modules/task_contract.md"
-    click n8 "../modules/task_evidence.md"
-    click n9 "../modules/canonical_json.md"
-    click n10 "../modules/request_json.md"
+    click n3 "../modules/task_compact.md"
+    click n4 "../modules/task_context.md"
+    click n5 "../modules/task_context_v2.md"
+    click n6 "../modules/task_evidence.md"
+    click n7 "../modules/canonical_json.md"
+    click n8 "../modules/request_json.md"
+    click n9 "../modules/search_service.md"
+    click n10 "../modules/task_contract.md"
     click n11 "../modules/workflow_profile.md"
 ```
 
@@ -94,12 +94,12 @@ flowchart LR
 | Inbound | [api](../modules/api.md) |
 | Inbound | [context_session](../modules/context_session.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |
-| Inbound | [search_service](../modules/search_service.md) |
 | Inbound | [task_compact](../modules/task_compact.md) |
 | Inbound | [task_context](../modules/task_context.md) |
 | Inbound | [task_context_v2](../modules/task_context_v2.md) |
-| Inbound | [task_contract](../modules/task_contract.md) |
 | Inbound | [task_evidence](../modules/task_evidence.md) |
+| Inbound | [search_service](../modules/search_service.md) |
+| Inbound | [task_contract](../modules/task_contract.md) |
 | Outbound | [canonical_json](../modules/canonical_json.md) |
 | Outbound | [request_json](../modules/request_json.md) |
 

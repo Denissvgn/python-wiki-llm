@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 770 | [Open section](#entities) |
-| Modules | 313 | [Open section](#modules) |
-| Workflows | 317 | [Open section](#workflows) |
+| Modules | 315 | [Open section](#modules) |
+| Workflows | 318 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 507 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -1012,6 +1012,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [python_observations](modules/python_observations.md) - Canonical Python observation envelopes and per-source cache validation.
 - [python_stdlib](modules/python_stdlib.md) - Shared, interpreter-compatible Python standard-library module names.
 - [query_cmd](modules/query_cmd.md) - Exact documentation queries from bounded, explicit JSON input.
+- [query_request_format](modules/query_request_format.md) - Request checks shared by documentation query services.
 - [query_result_format](modules/query_result_format.md) - Format checks for documentation query results and wiki search results.
 - [queue_cmd](modules/queue_cmd.md) - Read-only managed-wiki maintenance triage.
 - [record](modules/record.md) - Documentation-run record services.
@@ -1063,6 +1064,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_analysis_storage](modules/sync_analysis_storage.md) - Bounded content-addressed persistence for advisory sync analysis captures.
 - [sync_generated_sections](modules/sync_generated_sections.md) - Source-grounded repairs of retained entity/module generated sections.
 - [sync_manifest](modules/sync_manifest.md) - Persistent sync state with explicit versioned maintenance adoption.
+- [sync_ownership](modules/sync_ownership.md) - Errors raised when a sync cannot keep verified page ownership.
 - [sync_recovery](modules/sync_recovery.md) - Explicit recovery of unchanged new Markdown pages from a rejected sync.
 - [sync_retained_links](modules/sync_retained_links.md) - Pure, ownership-scoped link repairs for retained source pages.
 - [sync_runtime](modules/sync_runtime.md) - Incremental wiki sync — update only pages whose source has changed.
@@ -1160,6 +1162,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
 - [build_dependency_graph](workflows/build_dependency_graph.md) - entry: `dependencies.build_dependency_graph`
 - [build_doctor_report](workflows/build_doctor_report.md) - entry: `doctor_service.build_doctor_report`
+- [build_documentation_query_service](workflows/build_documentation_query_service.md) - entry: `api.build_documentation_query_service`
 - [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
 - [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_runtime._build_generated_section_context`
 - [build_impact](workflows/build_impact.md) - entry: `impact.build_impact`
@@ -1294,6 +1297,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [native_prose_coherent](workflows/native_prose_coherent.md) - entry: `maintenance_service._native_prose_coherent`
 - [normalize_task_request](workflows/normalize_task_request.md) - entry: `task_contract.normalize_task_request`
 - [observe_requirement](workflows/observe_requirement.md) - entry: `task_evidence.observe_requirement`
+- [plan_generated_source_repairs](workflows/plan_generated_source_repairs.md) - entry: `sync_generated_sections.plan_generated_source_repairs`
 - [plan_page_transitions](workflows/plan_page_transitions.md) - entry: `sync_transitions.plan_page_transitions`
 - [plan_rollback](workflows/plan_rollback.md) - entry: `publication_delivery.plan_rollback`
 - [plan_source_page_transitions](workflows/plan_source_page_transitions.md) - entry: `sync_runtime._plan_source_page_transitions`
@@ -1399,7 +1403,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
 - [validate_implementation_evidence](workflows/validate_implementation_evidence.md) - entry: `implementation_evidence.validate_implementation_evidence`
 - [validate_knowledge_artifacts](workflows/validate_knowledge_artifacts.md) - entry: `knowledge_artifacts.validate_knowledge_artifacts`
-- [validate_live_query_source_selection](workflows/validate_live_query_source_selection.md) - entry: `documentation_query_builder.validate_live_query_source_selection`
 - [validate_maintenance_concept_projection](workflows/validate_maintenance_concept_projection.md) - entry: `maintenance_projection.validate_maintenance_concept_projection`
 - [validate_maintenance_input_authority](workflows/validate_maintenance_input_authority.md) - entry: `documentation_wiki_input._validate_maintenance_input_authority`
 - [validate_maintenance_prose](workflows/validate_maintenance_prose.md) - entry: `maintenance_projection.validate_maintenance_prose`

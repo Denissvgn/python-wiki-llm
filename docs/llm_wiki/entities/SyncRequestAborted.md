@@ -1,6 +1,6 @@
 # SyncRequestAborted
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:274`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:271`
 **Kind:** Class
 **Bases:** `SyncAborted`
 **Module:** [sync_runtime](../modules/sync_runtime.md)

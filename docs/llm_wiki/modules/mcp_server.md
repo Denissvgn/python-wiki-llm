@@ -34,10 +34,8 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.helper_runtime` | `helper_operation` |
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.maintenance_queue` | `validate_queue_limit` |
-| `.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.task_context` | `_counter` |
-| `.task_contract` | `normalize_task_request` |
 | `.token_counting` | `TokenCounter`, `LocalTokenizerCounter` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
@@ -56,8 +54,10 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `llm_wiki_engine.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
 | `llm_wiki_engine.request_json` | `MAX_REQUEST_BYTES` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `llm_wiki_engine.task_compact_readable` | `readable_session_metadata` |
+| `llm_wiki_engine.task_contract` | `normalize_task_request` |
 | `llm_wiki_engine.validation` | `posix_path_text`, `require_portable_relative_path` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |
 | `mcp` | `mcp` |

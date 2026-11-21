@@ -15,10 +15,8 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render`, `fit_payload`, `validate_request` |
 | `.documentation_query_builder` | `build_documentation_query_service_from_view`, `normalize_supplied_paths` |
-| `.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
 | `.source_snapshot` | `SourceSnapshotError` |
 | `.task_context_v2` | `build_scoped_task_read`, `validate_scoped_bindings` |
-| `.task_contract` | `FACETS`, `MAX_SELECTORS`, `TASK_RESULT_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `.task_evidence` | `coverage`, `declaration_records`, `match_declarations`, `observe_requirement`, `query_service` |
 | `.task_implementation` | `attach_bindings`, `native_bindings`, `attach_capture`, `attach_bindings`, `validate_task_implementations` |
 | `.token_counting` | `EstimatedCounter`, `TokenCounter` |
@@ -33,6 +31,8 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `llm_wiki_engine.knowledge_loader` | `KnowledgeStateLoadError` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
+| `llm_wiki_engine.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
+| `llm_wiki_engine.task_contract` | `FACETS`, `MAX_SELECTORS`, `TASK_RESULT_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
 | `llm_wiki_engine.workflow_profile` | `SCOPES`, `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `pathlib` | `Path` |

@@ -95,4 +95,4 @@ flowchart LR
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_source_snapshot_for_inventory_request` | call | [extraction_service](../modules/extraction_service.md) | 2 |
 
-> References: showing 12 of 49 logical references; 37 omitted by the 12-row generated summary limit.
+> References: showing 12 of 50 logical references; 38 omitted by the 12-row generated summary limit.

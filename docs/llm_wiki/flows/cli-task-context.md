@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), and 49 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), and 50 more
 
 **Complete modules touched:**
 
@@ -37,6 +37,7 @@
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_implementation](../modules/python_implementation.md)
+- [query_request_format](../modules/query_request_format.md)
 - [request_json](../modules/request_json.md)
 - [search_lexical](../modules/search_lexical.md)
 - [search_rank](../modules/search_rank.md)

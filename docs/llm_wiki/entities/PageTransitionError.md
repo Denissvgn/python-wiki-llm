@@ -1,9 +1,9 @@
 # PageTransitionError
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:23`
+**Location:** `src/llm_wiki_engine/sync_ownership.py:10`
 **Kind:** Class
 **Bases:** `SyncOwnershipError`
-**Module:** [sync_transitions](../modules/sync_transitions.md)
+**Module:** [sync_ownership](../modules/sync_ownership.md)
 
 ## Description
 
@@ -22,20 +22,20 @@ The intended page writes cannot preserve verified ownership.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageTransitionError (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n1["SyncOwnershipError (src/llm_wiki_cli/services/sync_analysis.py)"]
+    n0["PageTransitionError (src/llm_wiki_engine/sync_ownership.py)"]
+    n1["SyncOwnershipError (src/llm_wiki_engine/sync_ownership.py)"]
     n2["_preserve_cells (src/llm_wiki_cli/services/sync_generated_sections.py)"]
     n3["_source_markdown (src/llm_wiki_cli/services/sync_generated_sections.py)"]
     n4["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
     n5["repair_source_sections (src/llm_wiki_cli/services/sync_generated_sections.py)"]
-    n6["assert_no_pending_page_moves (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n7["PageTransitionExecution.__exit__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n8["PageTransitionExecution._cleanup (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n9["PageTransitionExecution._expected (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n10["PageTransitionExecution._verified_recovery_manifest (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n11["PageTransitionExecution.apply (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n12["PageTransitionExecution.read_text (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n13["PageTransitionExecution.write (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n6["_current_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n7["_existing_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n8["_Ownership.resolve (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n9["_page_path (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n10["_prior_ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n11["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n12["find_missing_source_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n13["plan_page_transitions (src/llm_wiki_cli/services/sync_transitions.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -49,33 +49,33 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     n13 --> n0
-    click n0 "../modules/sync_transitions.md"
-    click n1 "../modules/sync_analysis.md"
+    click n0 "../modules/sync_ownership.md"
+    click n1 "../modules/sync_ownership.md"
     click n2 "../modules/sync_generated_sections.md"
     click n3 "../modules/sync_generated_sections.md"
     click n4 "../modules/sync_generated_sections.md"
     click n5 "../modules/sync_generated_sections.md"
-    click n6 "../modules/sync_transition_execution.md"
-    click n7 "../modules/sync_transition_execution.md"
-    click n8 "../modules/sync_transition_execution.md"
-    click n9 "../modules/sync_transition_execution.md"
-    click n10 "../modules/sync_transition_execution.md"
-    click n11 "../modules/sync_transition_execution.md"
-    click n12 "../modules/sync_transition_execution.md"
-    click n13 "../modules/sync_transition_execution.md"
+    click n6 "../modules/sync_transitions.md"
+    click n7 "../modules/sync_transitions.md"
+    click n8 "../modules/sync_transitions.md"
+    click n9 "../modules/sync_transitions.md"
+    click n10 "../modules/sync_transitions.md"
+    click n11 "../modules/sync_transitions.md"
+    click n12 "../modules/sync_transitions.md"
+    click n13 "../modules/sync_transitions.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_transitions](../modules/sync_transitions.md) | 0 | — |
+| [sync_ownership](../modules/sync_ownership.md) | 0 | — |
 
 ### Structure
 
 | Kind | Entity | Module |
 |---|---|---|
-| Base | `SyncOwnershipError` | [sync_analysis](../modules/sync_analysis.md) |
+| Base | `SyncOwnershipError` | [sync_ownership](../modules/sync_ownership.md) |
 
 ### References
 
@@ -85,13 +85,13 @@ flowchart LR
 | `_source_markdown` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
 | `plan_generated_source_repairs` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
 | `repair_source_sections` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 3 |
-| `assert_no_pending_page_moves` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `PageTransitionExecution.__exit__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `PageTransitionExecution._cleanup` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `PageTransitionExecution._expected` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `PageTransitionExecution._verified_recovery_manifest` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 2 |
-| `PageTransitionExecution.apply` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 3 |
-| `PageTransitionExecution.read_text` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 3 |
-| `PageTransitionExecution.write` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
+| `_current_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 3 |
+| `_existing_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
+| `_Ownership.resolve` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
+| `_page_path` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
+| `_prior_ownership` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
+| `_retained_page_repairs` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
+| `find_missing_source_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
+| `plan_page_transitions` | call | [sync_transitions](../modules/sync_transitions.md) | 9 |
 
 > References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

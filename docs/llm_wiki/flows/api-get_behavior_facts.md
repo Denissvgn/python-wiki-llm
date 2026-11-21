@@ -2,7 +2,7 @@
 
 **Entry point:** `get_behavior_facts` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), and 15 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), and 14 more
 
 **Complete modules touched:**
 
@@ -13,12 +13,11 @@
 - [cli_reference](../modules/cli_reference.md)
 - [context_request_format](../modules/context_request_format.md)
 - [current_contracts](../modules/current_contracts.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
+- [query_request_format](../modules/query_request_format.md)
 - [skills](../modules/skills.md)
 - [task_compact](../modules/task_compact.md)
 - [task_contract](../modules/task_contract.md)
@@ -112,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | external | 24 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | unresolved | 14 |
-> Omission summary shows 8 of 132 groups; 124 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 131 groups; 123 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -205,7 +204,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | get_behavior_facts (src/llm_wiki_cli/api.py) | get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3745 | `get_facts(data not statically known)` |
-| get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | get_cli_contract | 89 | `cli_reference.get_cli_contract(data not statically known)` |
+| get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | get_cli_contract | 90 | `cli_reference.get_cli_contract(data not statically known)` |
 | get_cli_contract | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |

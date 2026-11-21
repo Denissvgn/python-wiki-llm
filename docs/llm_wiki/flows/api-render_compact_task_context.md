@@ -2,7 +2,7 @@
 
 **Entry point:** `render_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 27 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 26 more
 
 **Complete modules touched:**
 
@@ -13,8 +13,6 @@
 - [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
 - [context_request_format](../modules/context_request_format.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [implementation_summary](../modules/implementation_summary.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -25,6 +23,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
+- [query_request_format](../modules/query_request_format.md)
 - [storage_receipts](../modules/storage_receipts.md)
 - [task_compact](../modules/task_compact.md)
 - [task_compact_readable](../modules/task_compact_readable.md)
@@ -120,11 +119,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 3 | - | external | 2 |
 | `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 9 | - | external | 5 |
 | `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 9 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | unresolved | 22 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 8 | - | unresolved | 22 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
 | `src/llm_wiki_engine/workflow_profile.py:bounded_text` | 20 | - | external | 2 |
-> Omission summary shows 8 of 165 groups; 157 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 164 groups; 156 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

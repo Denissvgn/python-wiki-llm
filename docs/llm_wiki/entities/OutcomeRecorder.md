@@ -1,6 +1,6 @@
 # _OutcomeRecorder
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:279`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:276`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)

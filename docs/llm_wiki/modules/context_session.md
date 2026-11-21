@@ -15,7 +15,6 @@ Provides bounded context reuse with private workspace ownership and authoritativ
 | `.task_compact` | `CompactTaskContext`, `_CheckedCounter`, `normalize_view_options`, `render_compact_task_context` |
 | `.task_context` | `TaskCancelledError`, `TaskRead`, `_counter`, `build_task_read`, `plan_source_read`, `validate_task_context` |
 | `.task_context_v2` | `ScopedTaskState` |
-| `.task_contract` | `TaskContext`, `normalize_task_request`, `TASK_REQUEST_SCHEMA_V2`, `TASK_RESULT_SCHEMA_V2` |
 | `__future__` | `annotations` |
 | `collections` | `OrderedDict` |
 | `collections.abc` | `Callable`, `Mapping` |
@@ -27,6 +26,7 @@ Provides bounded context reuse with private workspace ownership and authoritativ
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `llm_wiki_engine.task_contract` | `TaskContext`, `normalize_task_request`, `TASK_REQUEST_SCHEMA_V2`, `TASK_RESULT_SCHEMA_V2` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowRequestError`, `bounded_int`, `canonical_json`, `content_id`, `exact_fields` |
 | `math` | `math` |
 | `os` | `os` |
