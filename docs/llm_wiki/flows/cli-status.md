@@ -2,12 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [circuit_breaker](../modules/circuit_breaker.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 34 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 33 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
-- [circuit_breaker](../modules/circuit_breaker.md)
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [host](../modules/host.md)
@@ -63,24 +62,24 @@ sequenceDiagram
     participant p8 as inspect_config
     participant p9 as _print_managed_lifecycle
     participant p10 as inspect_legacy_hooks
-    participant p11 as load_state
-    participant p12 as breaker_ttl_seconds
-    participant p13 as iter_page_kinds
-    participant p14 as _status_label
-    participant p15 as _configured_agent
-    participant p16 as shell_quote
-    participant p17 as first_unsafe_path_component
-    participant p18 as load_snapshot_knowledge_observability
-    participant p19 as _hook_directories
-    participant p20 as knowledge_status_payload
-    participant p21 as _diagnostic_schema_target
-    participant p22 as canonical_path
-    participant p23 as verify_reference_skill
-    participant p24 as classify_lifecycle_status
-    participant p25 as windows_current_user_sid
-    participant p26 as inspect_config_path
-    participant p27 as is_managed_hook_content
-    participant p28 as _print_reference_summary
+    participant p11 as iter_page_kinds
+    participant p12 as _status_label
+    participant p13 as _configured_agent
+    participant p14 as shell_quote
+    participant p15 as first_unsafe_path_component
+    participant p16 as load_snapshot_knowledge_observability
+    participant p17 as _hook_directories
+    participant p18 as knowledge_status_payload
+    participant p19 as _diagnostic_schema_target
+    participant p20 as canonical_path
+    participant p21 as verify_reference_skill
+    participant p22 as classify_lifecycle_status
+    participant p23 as windows_current_user_sid
+    participant p24 as inspect_config_path
+    participant p25 as is_managed_hook_content
+    participant p26 as _print_reference_summary
+    participant p27 as _recovery_guidance
+    participant p28 as _entry_for
     participant p29 as getattr (src/llm_wiki_cli/commands/status_cmd.py:run)
     participant p30 as wiki_path.exists
     p0->>p1: validate_path
@@ -93,31 +92,31 @@ sequenceDiagram
     p0->>p8: inspect_config
     p0->>p9: _print_managed_lifecycle
     p0->>p10: inspect_legacy_hooks
-    p0->>p11: load_state
-    p0->>p12: breaker_ttl_seconds
-    p0->>p13: iter_page_kinds
-    p0->>p14: _status_label
-    p0->>p15: _configured_agent
-    p0->>p16: shell_quote
-    p0->>p17: first_unsafe_path_component
-    p7->>p18: load_snapshot_knowledge_observability
-    p10->>p19: _hook_directories
-    p7->>p20: knowledge_status_payload
-    p9->>p21: _diagnostic_schema_target
-    p5->>p22: canonical_path
-    p9->>p23: verify_reference_skill
-    p9->>p24: classify_lifecycle_status
-    p3->>p25: windows_current_user_sid
-    p8->>p26: inspect_config_path
-    p10->>p27: is_managed_hook_content
-    p9->>p28: _print_reference_summary
+    p0->>p11: iter_page_kinds
+    p0->>p12: _status_label
+    p0->>p13: _configured_agent
+    p0->>p14: shell_quote
+    p0->>p15: first_unsafe_path_component
+    p7->>p16: load_snapshot_knowledge_observability
+    p10->>p17: _hook_directories
+    p7->>p18: knowledge_status_payload
+    p9->>p19: _diagnostic_schema_target
+    p5->>p20: canonical_path
+    p9->>p21: verify_reference_skill
+    p9->>p22: classify_lifecycle_status
+    p3->>p23: windows_current_user_sid
+    p8->>p24: inspect_config_path
+    p10->>p25: is_managed_hook_content
+    p9->>p26: _print_reference_summary
+    p9->>p27: _recovery_guidance
+    p20->>p28: _entry_for
     p0-->>p29: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0-->>p30: wiki_path.exists
 ```
 
-> Call sequence diagram shows 30 of 1824 interactions; 1794 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1802 interactions; 1772 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 633 (632 omitted); unresolved 1 of 456 (455 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 618 (617 omitted); unresolved 1 of 454 (453 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -131,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | - | external | 3 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 15 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_engine/wiki_surface.py:iter_directory_kinds` | 18 | - | external | 1 |
-> Omission summary shows 8 of 465 groups; 457 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 458 groups; 450 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -144,9 +143,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 736; effect analysis evaluated: 439, partial: 37, unavailable: 260. Counts include steps omitted from the displayed trace.
+Source steps: 731; effect analysis evaluated: 434, partial: 37, unavailable: 260. Counts include steps omitted from the displayed trace.
 
-Collector observations for 476 source steps with known totals: observed: 3212, emitted: 2866, omitted: 346. Unavailable totals are excluded.
+Collector observations for 471 source steps with known totals: observed: 3177, emitted: 2831, omitted: 346. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

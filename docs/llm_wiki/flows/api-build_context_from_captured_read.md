@@ -17,7 +17,7 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_status](../modules/maintenance_status.md)
-- [wiki_surface](../modules/wiki_surface.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 
 ## Call sequence
 
@@ -53,8 +53,8 @@ sequenceDiagram
     participant p24 as _fit_explicit_knowledge_response
     participant p25 as _surface_filter_payload
     participant p26 as _append_knowledge_context_warning
-    participant p27 as _build_entry
-    participant p28 as _entry_tokens
+    participant p27 as current_pack
+    participant p28 as _build_entry
     participant p29 as isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
     participant p30 as warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)
     p0->>p1: _normalized_request
@@ -83,15 +83,15 @@ sequenceDiagram
     p14->>p24: _fit_explicit_knowledge_response
     p6->>p25: _surface_filter_payload
     p6->>p26: _append_knowledge_context_warning
-    p16->>p27: _build_entry
-    p16->>p28: _entry_tokens
+    p15->>p27: current_pack
+    p16->>p28: _build_entry
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)
     p2-->>p30: warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)('Could not get changed files from git. Treating all files as high priority.')
 ```
 
-> Call sequence diagram shows 30 of 672 interactions; 642 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 673 interactions; 643 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 288 (287 omitted); unresolved 1 of 217 (216 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 288 (287 omitted); unresolved 1 of 218 (217 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -105,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 166 groups; 158 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 167 groups; 159 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -120,7 +120,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 168; effect analysis evaluated: 128, partial: 2, unavailable: 38. Counts include steps omitted from the displayed trace.
 
-Collector observations for 130 source steps with known totals: observed: 797, emitted: 794, omitted: 3. Unavailable totals are excluded.
+Collector observations for 130 source steps with known totals: observed: 796, emitted: 793, omitted: 3. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

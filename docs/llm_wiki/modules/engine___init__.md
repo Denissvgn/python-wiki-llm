@@ -104,8 +104,8 @@ flowchart LR
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
 | [HelperPreparation](../entities/HelperPreparation.md) | Type alias | 234 | `Literal['auto', 'never']` | — |
-| [Operation](../entities/Operation.md) | Class | 243 | — | The settings in force for one engine call and everything beneath it. |
-| [Engine](../entities/Engine.md) | Class | 257 | — | One configured engine; independent engines may run side by side. |
+| [Operation](../entities/engine_init_Operation.md) | Class | 243 | — | The settings in force for one engine call and everything beneath it. |
+| [Engine](../entities/engine_init_Engine.md) | Class | 257 | — | One configured engine; independent engines may run side by side. |
 
 ## Functions
 

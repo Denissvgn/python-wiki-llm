@@ -124,9 +124,9 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [_LintProfiler](../entities/LintProfiler.md) | 208 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 247 | — | — |
+| [LintIssue](../entities/lint_service_LintIssue.md) | 247 | — | — |
 | [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 258 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 296 | — | — |
+| [LintReport](../entities/lint_service_LintReport.md) | 296 | — | — |
 | [_WikiPageIndex](../entities/WikiPageIndex.md) | 337 | — | — |
 | [_LintInputs](../entities/LintInputs.md) | 344 | — | — |
 | [_LintPreflight](../entities/LintPreflight.md) | 358 | — | — |

@@ -95,4 +95,4 @@ flowchart LR
 | `source_retirement` | import | [source_retirement](../modules/source_retirement.md) | — |
 | `_basis_from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 
-> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [domain_pack](../modules/domain_pack.md), and 30 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [domain_pack](../modules/domain_pack.md), and 31 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [metrics_cmd](../modules/metrics_cmd.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
@@ -113,7 +114,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 1010 interactions; 980 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 363 (362 omitted); unresolved 1 of 266 (265 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 363 (362 omitted); unresolved 1 of 265 (264 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -140,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 382; effect analysis evaluated: 260, partial: 8, unavailable: 114. Counts include steps omitted from the displayed trace.
+Source steps: 383; effect analysis evaluated: 261, partial: 8, unavailable: 114. Counts include steps omitted from the displayed trace.
 
-Collector observations for 268 source steps with known totals: observed: 1537, emitted: 1517, omitted: 20. Unavailable totals are excluded.
+Collector observations for 269 source steps with known totals: observed: 1538, emitted: 1518, omitted: 20. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

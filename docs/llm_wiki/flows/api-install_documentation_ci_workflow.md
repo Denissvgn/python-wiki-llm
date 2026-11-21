@@ -2,7 +2,7 @@
 
 **Entry point:** `install_documentation_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 17 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 18 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [publication_config](../modules/publication_config.md)
 - [publication_targets](../modules/publication_targets.md)
@@ -100,7 +101,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 1479 interactions; 1449 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 533 (532 omitted); unresolved 1 of 317 (316 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 533 (532 omitted); unresolved 1 of 316 (315 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,9 +128,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 630; effect analysis evaluated: 329, partial: 21, unavailable: 280. Counts include steps omitted from the displayed trace.
+Source steps: 631; effect analysis evaluated: 330, partial: 21, unavailable: 280. Counts include steps omitted from the displayed trace.
 
-Collector observations for 350 source steps with known totals: observed: 1953, emitted: 1886, omitted: 67. Unavailable totals are excluded.
+Collector observations for 351 source steps with known totals: observed: 1954, emitted: 1887, omitted: 67. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

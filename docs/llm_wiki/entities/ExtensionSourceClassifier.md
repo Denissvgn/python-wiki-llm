@@ -1,6 +1,6 @@
 # ExtensionSourceClassifier
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:212`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:218`
 **Kind:** Class
 **Bases:** —
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)

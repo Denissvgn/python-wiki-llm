@@ -43,20 +43,20 @@ sequenceDiagram
     participant p12 as _locator (src/llm_wiki_engine/knowledge_model.py)
     participant p13 as _parse_snapshot
     participant p14 as typed_graph_from_knowledge_extensions
-    participant p15 as mcp_uri
-    participant p16 as _parse_producer
-    participant p17 as _parse_relationship_target
-    participant p18 as _open_enum_value
-    participant p19 as _parse_extensions
-    participant p20 as validate_section_ownership
-    participant p21 as _parse_relationship_evidence
-    participant p22 as concept_kind_for_page_kind
-    participant p23 as _parse_facets
-    participant p24 as _validate_relationship_shape
-    participant p25 as attributes
-    participant p26 as provider
-    participant p27 as _section_object
-    participant p28 as require_mapping
+    participant p15 as _parse_producer
+    participant p16 as _parse_relationship_target
+    participant p17 as _open_enum_value
+    participant p18 as _parse_extensions
+    participant p19 as validate_section_ownership
+    participant p20 as _parse_relationship_evidence
+    participant p21 as concept_kind_for_page_kind
+    participant p22 as _parse_facets
+    participant p23 as _validate_relationship_shape
+    participant p24 as attributes
+    participant p25 as provider
+    participant p26 as _section_object
+    participant p27 as require_mapping
+    participant p28 as _repository_identity
     participant p29 as tuple (src/llm_wiki_engine/knowl….py:parse_knowledge_index)
     participant p30 as current_validators().run
     p0->>p1: parse_knowledge_index
@@ -73,27 +73,27 @@ sequenceDiagram
     p4->>p12: _locator (src/llm_wiki_engine/knowledge_model.py)
     p3->>p13: _parse_snapshot
     p6->>p14: typed_graph_from_knowledge_extensions
-    p4->>p15: mcp_uri
-    p3->>p16: _parse_producer
-    p5->>p17: _parse_relationship_target
-    p4->>p18: _open_enum_value
-    p2->>p19: _parse_extensions
-    p6->>p20: validate_section_ownership
-    p5->>p21: _parse_relationship_evidence
-    p4->>p22: concept_kind_for_page_kind
-    p4->>p23: _parse_facets
-    p5->>p24: _validate_relationship_shape
-    p4->>p25: attributes
-    p25->>p26: provider
-    p20->>p27: _section_object
-    p8->>p28: require_mapping
+    p3->>p15: _parse_producer
+    p5->>p16: _parse_relationship_target
+    p4->>p17: _open_enum_value
+    p2->>p18: _parse_extensions
+    p6->>p19: validate_section_ownership
+    p5->>p20: _parse_relationship_evidence
+    p4->>p21: concept_kind_for_page_kind
+    p4->>p22: _parse_facets
+    p5->>p23: _validate_relationship_shape
+    p4->>p24: attributes
+    p24->>p25: provider
+    p19->>p26: _section_object
+    p8->>p27: require_mapping
+    p11->>p28: _repository_identity
     p1-->>p29: tuple (src/llm_wiki_engine/knowl….py:parse_knowledge_index)(...)
     p1-->>p30: current_validators().run(model)
 ```
 
-> Call sequence diagram shows 30 of 806 interactions; 776 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 791 interactions; 761 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 177 (176 omitted); unresolved 1 of 129 (128 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 175 (174 omitted); unresolved 1 of 130 (129 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:require_mapping` | 6 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_record` | 3 | - | external | 4 |
 | `src/llm_wiki_engine/knowledge_model.py:_record` | 3 | [src/llm_wiki_engine/knowledge_model.py](../modules/knowledge_model.md) | internal | 5 |
-> Omission summary shows 8 of 179 groups; 171 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 172 groups; 164 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -120,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 501; effect analysis evaluated: 330, partial: 8, unavailable: 163. Counts include steps omitted from the displayed trace.
+Source steps: 487; effect analysis evaluated: 323, partial: 8, unavailable: 156. Counts include steps omitted from the displayed trace.
 
-Collector observations for 338 source steps with known totals: observed: 1597, emitted: 1470, omitted: 127. Unavailable totals are excluded.
+Collector observations for 331 source steps with known totals: observed: 1571, emitted: 1444, omitted: 127. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

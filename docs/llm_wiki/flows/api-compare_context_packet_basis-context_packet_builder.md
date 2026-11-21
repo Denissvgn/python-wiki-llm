@@ -2,14 +2,13 @@
 
 **Entry point:** `compare_context_packet_basis` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), and 5 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), and 4 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
 - [context_packet_builder](../modules/context_packet_builder.md)
-- [context_request_format](../modules/context_request_format.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
@@ -44,13 +43,13 @@ sequenceDiagram
     participant p19 as _validate_delivery
     participant p20 as _validate_path_policy_shape
     participant p21 as _mapping
-    participant p22 as _validate_protocol_request
-    participant p23 as _path_policy_digest
-    participant p24 as _validate_repository_basis
-    participant p25 as _validate_knowledge_basis
-    participant p26 as _validate_explicit_ranking_policy
-    participant p27 as _context_policy_digest
-    participant p28 as _validate_freshness_basis
+    participant p22 as _path_policy_digest
+    participant p23 as _validate_repository_basis
+    participant p24 as _validate_knowledge_basis
+    participant p25 as _validate_explicit_ranking_policy
+    participant p26 as _context_policy_digest
+    participant p27 as _validate_freshness_basis
+    participant p28 as _string_list
     participant p29 as isinstance (src/llm_wiki_cli/services…pare_context_packet_basis)
     participant p30 as validation.packet.to_payload
     p0->>p1: validate_context_packet
@@ -74,20 +73,20 @@ sequenceDiagram
     p7->>p19: _validate_delivery
     p7->>p20: _validate_path_policy_shape
     p14->>p21: _mapping
-    p15->>p22: _validate_protocol_request
-    p20->>p23: _path_policy_digest
-    p17->>p24: _validate_repository_basis
-    p17->>p25: _validate_knowledge_basis
-    p16->>p26: _validate_explicit_ranking_policy
-    p17->>p27: _context_policy_digest
-    p17->>p28: _validate_freshness_basis
+    p20->>p22: _path_policy_digest
+    p17->>p23: _validate_repository_basis
+    p17->>p24: _validate_knowledge_basis
+    p16->>p25: _validate_explicit_ranking_policy
+    p17->>p26: _context_policy_digest
+    p17->>p27: _validate_freshness_basis
+    p16->>p28: _string_list
     p0-->>p29: isinstance (src/llm_wiki_cli/services…pare_context_packet_basis)(expected_basis, Mapping)
     p0-->>p30: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 583 interactions; 553 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 546 interactions; 516 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 185 (184 omitted); unresolved 1 of 108 (107 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 170 (169 omitted); unresolved 1 of 101 (100 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
 | `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
 | `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 115 groups; 107 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 109 groups; 101 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -114,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 291; effect analysis evaluated: 134, partial: 4, unavailable: 153. Counts include steps omitted from the displayed trace.
+Source steps: 276; effect analysis evaluated: 130, partial: 3, unavailable: 143. Counts include steps omitted from the displayed trace.
 
-Collector observations for 138 source steps with known totals: observed: 599, emitted: 585, omitted: 14. Unavailable totals are excluded.
+Collector observations for 133 source steps with known totals: observed: 549, emitted: 537, omitted: 12. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

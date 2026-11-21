@@ -2,12 +2,11 @@
 
 **Entry point:** `finalize_runtime_knowledge` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 45 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -44,6 +43,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -126,9 +126,9 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for (src/llm_wiki_cli/services…inalize_runtime_knowledge)(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3246 interactions; 3216 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3212 interactions; 3182 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1042 (1041 omitted); unresolved 1 of 701 (700 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1016 (1015 omitted); unresolved 1 of 698 (697 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -142,7 +142,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-> Omission summary shows 8 of 739 groups; 731 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 729 groups; 721 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -155,9 +155,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1504; effect analysis evaluated: 880, partial: 64, unavailable: 560. Counts include steps omitted from the displayed trace.
+Source steps: 1499; effect analysis evaluated: 875, partial: 64, unavailable: 560. Counts include steps omitted from the displayed trace.
 
-Collector observations for 944 source steps with known totals: observed: 5653, emitted: 5337, omitted: 316. Unavailable totals are excluded.
+Collector observations for 939 source steps with known totals: observed: 5626, emitted: 5310, omitted: 316. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [reference_cmd](../modules/reference_cmd.md)
-**Modules touched:** [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), [cli_reference](../modules/cli_reference.md), and 17 more
+**Modules touched:** [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), [cli_reference](../modules/cli_reference.md), and 13 more
 
 **Complete modules touched:**
 
@@ -10,7 +10,6 @@
 - [canonical_json](../modules/canonical_json.md)
 - [cli_declarations](../modules/cli_declarations.md)
 - [cli_reference](../modules/cli_reference.md)
-- [context_request_format](../modules/context_request_format.md)
 - [current_contracts](../modules/current_contracts.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_runtime](../modules/helper_runtime.md)
@@ -20,13 +19,10 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
-- [query_request_format](../modules/query_request_format.md)
 - [reference_cmd](../modules/reference_cmd.md)
 - [skills](../modules/skills.md)
 - [task_compact](../modules/task_compact.md)
-- [task_contract](../modules/task_contract.md)
 - [validation](../modules/validation.md)
-- [workflow_profile](../modules/workflow_profile.md)
 
 ## Call sequence
 
@@ -59,11 +55,11 @@ sequenceDiagram
     participant p21 as verify_windows_restrictive_dacl
     participant p22 as _restore_posix_quarantined_entry
     participant p23 as build_cli_contract
-    participant p24 as normalize_task_request
-    participant p25 as _validate_range
-    participant p26 as build_cli_parser
-    participant p27 as _provider_package_identity
-    participant p28 as normalize_view_options
+    participant p24 as _validate_range
+    participant p25 as build_cli_parser
+    participant p26 as _provider_package_identity
+    participant p27 as normalize_view_options
+    participant p28 as guard_windows_directory_chain
     participant p29 as json.dumps (src/llm_wiki_cli/commands/reference_cmd.py:run)
     participant p30 as content.encode
     p0->>p1: _reference
@@ -89,18 +85,18 @@ sequenceDiagram
     p9->>p21: verify_windows_restrictive_dacl
     p10->>p22: _restore_posix_quarantined_entry
     p11->>p23: build_cli_contract
-    p16->>p24: normalize_task_request
-    p14->>p25: _validate_range
-    p11->>p26: build_cli_parser
-    p11->>p27: _provider_package_identity
-    p16->>p28: normalize_view_options
+    p14->>p24: _validate_range
+    p11->>p25: build_cli_parser
+    p11->>p26: _provider_package_identity
+    p16->>p27: normalize_view_options
+    p14->>p28: guard_windows_directory_chain
     p0-->>p29: json.dumps (src/llm_wiki_cli/commands/reference_cmd.py:run)(contract, indent=2, sort_keys=True, ensure_ascii=False)
     p0-->>p30: content.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 863 interactions; 833 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 741 interactions; 711 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 406 (405 omitted); unresolved 1 of 172 (171 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 370 (369 omitted); unresolved 1 of 138 (137 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | external | 24 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 26 | - | unresolved | 14 |
-> Omission summary shows 8 of 175 groups; 167 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 145 groups; 137 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -127,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 286; effect analysis evaluated: 191, partial: 16, unavailable: 79. Counts include steps omitted from the displayed trace.
+Source steps: 234; effect analysis evaluated: 162, partial: 13, unavailable: 59. Counts include steps omitted from the displayed trace.
 
-Collector observations for 207 source steps with known totals: observed: 1144, emitted: 1110, omitted: 34. Unavailable totals are excluded.
+Collector observations for 175 source steps with known totals: observed: 951, emitted: 923, omitted: 28. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

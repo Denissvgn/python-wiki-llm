@@ -4,7 +4,7 @@
 **Source:** [provider](../modules/provider.md)
 **Modules touched:** [provider](../modules/provider.md)
 
-**Related modules:** [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
+**Related modules:** [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md), [llm_wiki_engine___init__](../modules/llm_wiki_engine___init__.md)
 
 ## Call sequence
 

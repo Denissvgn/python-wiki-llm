@@ -198,7 +198,7 @@ flowchart LR
 | [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 276 | — | — |
 | [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 337 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
 | [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 341 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 673 | — | — |
+| [SyncResult](../entities/sync_runtime_SyncResult.md) | 673 | — | — |
 | [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 712 | — | — |
 | [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 734 | — | — |
 | [_SyncRunOptions](../entities/SyncRunOptions.md) | 1753 | — | — |

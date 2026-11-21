@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 68 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 69 more
 
 **Complete modules touched:**
 
@@ -58,6 +58,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_coverage](../modules/module_coverage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -107,14 +108,14 @@ sequenceDiagram
     participant p18 as parse_knowledge_index
     participant p19 as SyncManifest.load
     participant p20 as render_capability_doctor.<locals>.command
-    participant p21 as component_record
-    participant p22 as _render_doctor_payload
-    participant p23 as compare_targets
-    participant p24 as _require_relative_name
-    participant p25 as _record
-    participant p26 as decode_bytes
-    participant p27 as validate_source_root
-    participant p28 as _fields
+    participant p21 as _render_doctor_payload
+    participant p22 as compare_targets
+    participant p23 as _require_relative_name
+    participant p24 as _record
+    participant p25 as decode_bytes
+    participant p26 as validate_source_root
+    participant p27 as _fields
+    participant p28 as _absolute_path
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     p0->>p1: validate_path
@@ -137,21 +138,21 @@ sequenceDiagram
     p2->>p18: parse_knowledge_index
     p2->>p19: SyncManifest.load
     p7->>p20: render_capability_doctor.<locals>.command
-    p2->>p21: component_record
-    p7->>p22: _render_doctor_payload
-    p2->>p23: compare_targets
-    p15->>p24: _require_relative_name
-    p16->>p25: _record
-    p17->>p26: decode_bytes
-    p12->>p27: validate_source_root
-    p17->>p28: _fields
+    p7->>p21: _render_doctor_payload
+    p2->>p22: compare_targets
+    p15->>p23: _require_relative_name
+    p16->>p24: _record
+    p17->>p25: decode_bytes
+    p12->>p26: validate_source_root
+    p17->>p27: _fields
+    p14->>p28: _absolute_path
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 3157 interactions; 3127 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3100 interactions; 3070 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 964 (963 omitted); unresolved 1 of 770 (769 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 940 (939 omitted); unresolved 1 of 771 (770 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 1 |
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 19 | - | external | 7 |
-> Omission summary shows 8 of 794 groups; 786 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 769 groups; 761 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1424; effect analysis evaluated: 1006, partial: 49, unavailable: 369. Counts include steps omitted from the displayed trace.
+Source steps: 1390; effect analysis evaluated: 975, partial: 48, unavailable: 367. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1055 source steps with known totals: observed: 5812, emitted: 5557, omitted: 255. Unavailable totals are excluded.
+Collector observations for 1023 source steps with known totals: observed: 5639, emitted: 5385, omitted: 254. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

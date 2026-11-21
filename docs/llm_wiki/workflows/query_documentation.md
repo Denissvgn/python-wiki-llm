@@ -1,7 +1,7 @@
 # query_documentation
 
 **Entry point:** `api.query_documentation`
-**Modules involved:** [api](../modules/api.md), [evidence_explanation](../modules/evidence_explanation.md), [path_policy](../modules/path_policy.md), [query_request_format](../modules/query_request_format.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules involved:** [api](../modules/api.md), [evidence_explanation](../modules/evidence_explanation.md), [path_policy](../modules/path_policy.md), [query_request_format](../modules/query_request_format.md)
 
 > Dispatch one exact bounded read-only documentation query.
 
@@ -14,9 +14,8 @@
 4. `evidence_explanation.explain_source`
 5. `evidence_explanation.explanation_provenance`
 6. `query_request_format.normalize_concept_coordinate`
-7. `wiki_surface.validate_exact_page_coordinate`
-8. `query_request_format.normalize_supplied_paths`
-9. `query_request_format.normalize_documentation_query_text`
+7. `query_request_format.normalize_supplied_paths`
+8. `query_request_format.normalize_documentation_query_text`
 
 ## Touches
 
@@ -24,7 +23,6 @@
 - [evidence_explanation](../modules/evidence_explanation.md)
 - [path_policy](../modules/path_policy.md)
 - [query_request_format](../modules/query_request_format.md)
-- [wiki_surface](../modules/wiki_surface.md)
 
 ## Behavior
 

@@ -33,9 +33,12 @@ Install the provider packaged with the pinned action and attest its bytes.
 flowchart LR
     n0["integrations/wiki-candidate/provider.py"]
     n1["src/llm_wiki_cli/__init__.py"]
+    n2["src/llm_wiki_engine/__init__.py"]
     n0 --> n1
+    n0 --> n2
     click n0 "../modules/provider.md"
     click n1 "../modules/llm_wiki_cli___init__.md"
+    click n2 "../modules/llm_wiki_engine___init__.md"
 ```
 
 ### Internal neighbors
@@ -43,12 +46,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Outbound | [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md) |
-
-### External packages
-
-| Language | Used packages | Undeclared packages |
-|---|---:|---:|
-| python | 1 | 1 |
+| Outbound | [llm_wiki_engine___init__](../modules/llm_wiki_engine___init__.md) |
 
 ## Functions
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 60 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 61 more
 
 **Complete modules touched:**
 
@@ -48,6 +48,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
 - [path_policy](../modules/path_policy.md)
@@ -140,9 +141,9 @@ sequenceDiagram
     p0-->>p30: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 3990 interactions; 3960 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4044 interactions; 4014 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1317 (1316 omitted); unresolved 1 of 1325 (1324 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1336 (1335 omitted); unresolved 1 of 1334 (1333 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
 | `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
 | `src/llm_wiki_engine/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 917 groups; 909 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 922 groups; 914 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -169,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1349; effect analysis evaluated: 909, partial: 50, unavailable: 390. Counts include steps omitted from the displayed trace.
+Source steps: 1375; effect analysis evaluated: 917, partial: 50, unavailable: 408. Counts include steps omitted from the displayed trace.
 
-Collector observations for 959 source steps with known totals: observed: 5765, emitted: 5445, omitted: 320. Unavailable totals are excluded.
+Collector observations for 967 source steps with known totals: observed: 5785, emitted: 5465, omitted: 320. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

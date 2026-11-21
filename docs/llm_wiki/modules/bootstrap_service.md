@@ -60,5 +60,5 @@ flowchart LR
 | [BootstrapExtractionError](../entities/BootstrapExtractionError.md) | 14 | `BootstrapServiceError` | Raised when one or more required extractors fail. |
 | [BootstrapContractError](../entities/BootstrapContractError.md) | 18 | `BootstrapServiceError` | Raised when bootstrap input or generated contracts are invalid. |
 | [BootstrapRequestError](../entities/BootstrapRequestError.md) | 22 | `BootstrapContractError` | Raised when caller-supplied bootstrap options violate the contract. |
-| [BootstrapRequest](../entities/BootstrapRequest.md) | 27 | — | Deterministic bootstrap inputs shared by CLI and library callers. |
-| [BootstrapResult](../entities/BootstrapResult.md) | 59 | — | Typed bootstrap result shared by the CLI and Python API. |
+| [BootstrapRequest](../entities/bootstrap_service_BootstrapRequest.md) | 27 | — | Deterministic bootstrap inputs shared by CLI and library callers. |
+| [BootstrapResult](../entities/bootstrap_service_BootstrapResult.md) | 59 | — | Typed bootstrap result shared by the CLI and Python API. |

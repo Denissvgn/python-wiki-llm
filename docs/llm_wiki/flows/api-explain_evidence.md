@@ -2,7 +2,7 @@
 
 **Entry point:** `explain_evidence` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 25 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 24 more
 
 **Complete modules touched:**
 
@@ -34,7 +34,6 @@
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
-- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -51,27 +50,27 @@ sequenceDiagram
     participant p5 as _query_service
     participant p6 as normalize_documentation_query_text
     participant p7 as _normalize_query_limit
-    participant p8 as validate_exact_page_coordinate
-    participant p9 as build_documentation_query_service
-    participant p10 as normalize_documentation_query_limit
-    participant p11 as validate_source_root
-    participant p12 as _validate_wiki_dir
-    participant p13 as _matches_directory_path
-    participant p14 as _matches_directory_uri
-    participant p15 as build_live_documentation_query_service
-    participant p16 as validate_path
-    participant p17 as normalize_supplied_paths
-    participant p18 as is_safe_page_id
-    participant p19 as resolve_source_selection
-    participant p20 as canonical_path
-    participant p21 as mcp_uri
-    participant p22 as capture_source_selection_inputs
-    participant p23 as validate_live_query_source_selection
-    participant p24 as windows_current_user_sid
-    participant p25 as _source_anchor
-    participant p26 as _wiki_anchor
-    participant p27 as source_path_diagnostics
-    participant p28 as first_unsafe_path_component
+    participant p8 as build_documentation_query_service
+    participant p9 as normalize_documentation_query_limit
+    participant p10 as validate_source_root
+    participant p11 as _validate_wiki_dir
+    participant p12 as build_live_documentation_query_service
+    participant p13 as validate_path
+    participant p14 as normalize_supplied_paths
+    participant p15 as resolve_source_selection
+    participant p16 as capture_source_selection_inputs
+    participant p17 as validate_live_query_source_selection
+    participant p18 as windows_current_user_sid
+    participant p19 as _source_anchor
+    participant p20 as _wiki_anchor
+    participant p21 as source_path_diagnostics
+    participant p22 as first_unsafe_path_component
+    participant p23 as _live_source_selection_identity
+    participant p24 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
+    participant p25 as attach_implementation_read_view
+    participant p26 as analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
+    participant p27 as read_guarded
+    participant p28 as attach_maintenance_view_from_inputs
     participant p29 as cast
     participant p30 as _query_service(…).explain_evidence
     p0->>p1: _normalize_query_input
@@ -81,34 +80,34 @@ sequenceDiagram
     p0->>p5: _query_service
     p2->>p6: normalize_documentation_query_text
     p3->>p7: _normalize_query_limit
-    p2->>p8: validate_exact_page_coordinate
-    p5->>p9: build_documentation_query_service
-    p7->>p10: normalize_documentation_query_limit
-    p9->>p11: validate_source_root
-    p9->>p12: _validate_wiki_dir
-    p8->>p13: _matches_directory_path
-    p8->>p14: _matches_directory_uri
-    p9->>p15: build_live_documentation_query_service
-    p11->>p16: validate_path
-    p15->>p17: normalize_supplied_paths
-    p13->>p18: is_safe_page_id
-    p15->>p19: resolve_source_selection
-    p13->>p20: canonical_path
-    p14->>p21: mcp_uri
-    p15->>p22: capture_source_selection_inputs
-    p15->>p23: validate_live_query_source_selection
-    p11->>p24: windows_current_user_sid
-    p15->>p25: _source_anchor
-    p15->>p26: _wiki_anchor
-    p15->>p27: source_path_diagnostics
-    p11->>p28: first_unsafe_path_component
+    p5->>p8: build_documentation_query_service
+    p7->>p9: normalize_documentation_query_limit
+    p8->>p10: validate_source_root
+    p8->>p11: _validate_wiki_dir
+    p8->>p12: build_live_documentation_query_service
+    p10->>p13: validate_path
+    p12->>p14: normalize_supplied_paths
+    p12->>p15: resolve_source_selection
+    p12->>p16: capture_source_selection_inputs
+    p12->>p17: validate_live_query_source_selection
+    p10->>p18: windows_current_user_sid
+    p12->>p19: _source_anchor
+    p12->>p20: _wiki_anchor
+    p12->>p21: source_path_diagnostics
+    p10->>p22: first_unsafe_path_component
+    p12->>p23: _live_source_selection_identity
+    p12->>p24: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet_builder.py)
+    p12->>p25: attach_implementation_read_view
+    p12->>p26: analysis_identity (src/llm_wiki_cli/services/python_implementation.py)
+    p12->>p27: read_guarded
+    p12->>p28: attach_maintenance_view_from_inputs
     p0-->>p29: cast(EvidenceExplanationResult, _run_query(...))
     p0-->>p30: _query_service(…).explain_evidence(query)
 ```
 
-> Call sequence diagram shows 30 of 934 interactions; 904 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 885 interactions; 855 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 371 (370 omitted); unresolved 1 of 201 (200 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 355 (354 omitted); unresolved 1 of 194 (193 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -120,9 +119,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 7 | - | external | 2 |
 | `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 7 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 2 |
-| `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
-| `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
-> Omission summary shows 8 of 230 groups; 222 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/query_request_format.py:normalize_concept_coordinate` | 6 | - | unresolved | 2 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_concept_coordinate` | 6 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 1 |
+> Omission summary shows 8 of 207 groups; 199 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -135,9 +134,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 363; effect analysis evaluated: 234, partial: 14, unavailable: 115. Counts include steps omitted from the displayed trace.
+Source steps: 337; effect analysis evaluated: 219, partial: 13, unavailable: 105. Counts include steps omitted from the displayed trace.
 
-Collector observations for 248 source steps with known totals: observed: 1435, emitted: 1352, omitted: 83. Unavailable totals are excluded.
+Collector observations for 232 source steps with known totals: observed: 1363, emitted: 1281, omitted: 82. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -153,9 +152,9 @@ Collector observations for 248 source steps with known totals: observed: 1435, e
 | `normalize_concept_coordinate` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
 | `normalize_documentation_query_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `isinstance (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `len (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
@@ -168,9 +167,9 @@ flowchart LR
     s6["6. normalize_concept_coordinate"]
     s7["7. normalize_documentation_query_text"]
     s8["8. isinstance (src/llm_wiki_engine/query…_documentation_query_text)"]
-    s9["9. value.strip (src/llm_wiki_engine/query…_documentation_query_text)"]
+    s9["9. value.strip"]
     s10["10. DocumentationQueryError"]
-    s11["11. value.strip (src/llm_wiki_engine/query…_documentation_query_text)"]
+    s11["11. value.strip"]
     s12["12. len (src/llm_wiki_engine/query…_documentation_query_text)"]
     s1 -->|"_normalize_query_input(...)"| s2
     s2 -. "callback (src/llm_wiki_cli/api.py:_normalize_query_input)(data not statically known)" .-> s3
@@ -179,9 +178,9 @@ flowchart LR
     s1 -->|"normalize_concept_coordinate(locator_or_exact_route)"| s6
     s6 -->|"normalize_documentation_query_text(value, field='locator_or_exact_route')"| s7
     s7 -. "isinstance (src/llm_wiki_engine/query…_documentation_query_text)(value, str)" .-> s8
-    s7 -. "value.strip (src/llm_wiki_engine/query…_documentation_query_text)(data not statically known)" .-> s9
+    s7 -. "value.strip(data not statically known)" .-> s9
     s7 -->|"DocumentationQueryError(...)"| s10
-    s7 -. "value.strip (src/llm_wiki_engine/query…_documentation_query_text)(data not statically known)" .-> s11
+    s7 -. "value.strip(data not statically known)" .-> s11
     s7 -. "len (src/llm_wiki_engine/query…_documentation_query_text)(selected.encode(...))" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/api.md"
@@ -203,9 +202,9 @@ flowchart LR
 | `normalize_concept_coordinate` | `value: object` | `wiki_surface`, `validate_concept_uid`, `validate_natural_key`, `ConceptIdentityError` | - | `wiki_surface.validate_exact_page_coordinate(...)`, `validator(...)` |
 | `normalize_documentation_query_text` | `value: object`, `field: str` | `QUERY_IDENTITY_BYTE_LIMIT`, `QUERY_IDENTITY_BYTE_LIMIT` | - | `selected` |
 | `isinstance (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
-| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
-| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `len (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
 
 ### Call data
@@ -219,9 +218,9 @@ flowchart LR
 | explain_evidence | normalize_concept_coordinate | 2812 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 62 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | value.strip | 49 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 50 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_engine/query…_documentation_query_text) | 51 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | value.strip | 51 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | len (src/llm_wiki_engine/query…_documentation_query_text) | 52 | `len(selected.encode(...))` |
 
 ### Boundary effects

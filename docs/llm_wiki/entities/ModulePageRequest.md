@@ -1,6 +1,6 @@
 # ModulePageRequest
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:73`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:79`
 **Kind:** Class
 **Bases:** —
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)
@@ -37,18 +37,21 @@ Everything a renderer gets for one module page.
 flowchart LR
     n0["ModulePageRequest (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["_generate_module_md (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n2["BuiltInPageRenderer.render_module (src/llm_wiki_cli/services/domain_pack.py)"]
-    n3["render_with_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["render_with_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n3["BuiltInPageRenderer.render_module (src/llm_wiki_engine/pack_interfaces.py)"]
     n4["PageRenderer.render_module (src/llm_wiki_engine/pack_interfaces.py)"]
+    n5["_render (src/llm_wiki_engine/wiki_operations.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/pack_interfaces.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/domain_pack.md"
-    click n3 "../modules/domain_pack.md"
+    click n3 "../modules/pack_interfaces.md"
     click n4 "../modules/pack_interfaces.md"
+    click n5 "../modules/wiki_operations.md"
 ```
 
 ### Summary
@@ -62,6 +65,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_generate_module_md` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
-| `BuiltInPageRenderer.render_module` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `render_with_pack` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `BuiltInPageRenderer.render_module` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
 | `PageRenderer.render_module` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
+| `_render` | call | [wiki_operations](../modules/wiki_operations.md) | 1 |
