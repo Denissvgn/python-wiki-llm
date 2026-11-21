@@ -2,7 +2,7 @@
 
 **Entry point:** `capture_context_read` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 68 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 69 more
 
 **Complete modules touched:**
 
@@ -57,6 +57,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -149,9 +150,9 @@ sequenceDiagram
     p0-->>p30: source_root.is_dir (src/llm_wiki_cli/services…r.py:capture_context_read)
 ```
 
-> Call sequence diagram shows 30 of 5081 interactions; 5051 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5077 interactions; 5047 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1602 (1601 omitted); unresolved 1 of 1643 (1642 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1600 (1599 omitted); unresolved 1 of 1646 (1645 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 14 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 14 | - | external | 10 |
-> Omission summary shows 8 of 1316 groups; 1308 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1311 groups; 1303 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1837; effect analysis evaluated: 1241, partial: 75, unavailable: 521. Counts include steps omitted from the displayed trace.
+Source steps: 1832; effect analysis evaluated: 1236, partial: 75, unavailable: 521. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1316 source steps with known totals: observed: 7416, emitted: 7046, omitted: 370. Unavailable totals are excluded.
+Collector observations for 1311 source steps with known totals: observed: 7388, emitted: 7018, omitted: 370. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

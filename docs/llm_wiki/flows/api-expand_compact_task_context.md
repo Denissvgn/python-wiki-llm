@@ -2,14 +2,13 @@
 
 **Entry point:** `expand_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), and 11 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [context_budget](../modules/context_budget.md), [context_request_format](../modules/context_request_format.md), and 10 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [canonical_json](../modules/canonical_json.md)
 - [context_budget](../modules/context_budget.md)
-- [context_packet](../modules/context_packet.md)
 - [context_request_format](../modules/context_request_format.md)
 - [query_request_format](../modules/query_request_format.md)
 - [task_compact](../modules/task_compact.md)
@@ -94,7 +93,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 284 interactions; 254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 126 (125 omitted); unresolved 1 of 71 (70 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 126 (125 omitted); unresolved 1 of 73 (72 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/task_contract.py](../modules/task_contract.md) | internal | 4 |
 | `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
 | `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
-> Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 47 groups; 39 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -121,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 88; effect analysis evaluated: 55, partial: 3, unavailable: 30. Counts include steps omitted from the displayed trace.
+Source steps: 86; effect analysis evaluated: 53, partial: 3, unavailable: 30. Counts include steps omitted from the displayed trace.
 
-Collector observations for 58 source steps with known totals: observed: 341, emitted: 336, omitted: 5. Unavailable totals are excluded.
+Collector observations for 56 source steps with known totals: observed: 336, emitted: 331, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

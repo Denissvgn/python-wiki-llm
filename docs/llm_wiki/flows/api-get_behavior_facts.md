@@ -2,7 +2,7 @@
 
 **Entry point:** `get_behavior_facts` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), and 14 more
+**Modules touched:** [api](../modules/api.md), [behavior_reference](../modules/behavior_reference.md), [canonical_json](../modules/canonical_json.md), [cli_declarations](../modules/cli_declarations.md), and 9 more
 
 **Complete modules touched:**
 
@@ -11,19 +11,14 @@
 - [canonical_json](../modules/canonical_json.md)
 - [cli_declarations](../modules/cli_declarations.md)
 - [cli_reference](../modules/cli_reference.md)
-- [context_request_format](../modules/context_request_format.md)
 - [current_contracts](../modules/current_contracts.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
-- [query_request_format](../modules/query_request_format.md)
 - [skills](../modules/skills.md)
 - [task_compact](../modules/task_compact.md)
-- [task_contract](../modules/task_contract.md)
 - [validation](../modules/validation.md)
-- [wiki_surface](../modules/wiki_surface.md)
-- [workflow_profile](../modules/workflow_profile.md)
 
 ## Call sequence
 
@@ -39,28 +34,28 @@ sequenceDiagram
     participant p4 as list_bundled_skills
     participant p5 as validate_behavior_facts
     participant p6 as build_cli_contract
-    participant p7 as normalize_task_request
-    participant p8 as build_cli_parser
-    participant p9 as _provider_package_identity
-    participant p10 as normalize_view_options
-    participant p11 as _request_defaults
-    participant p12 as read_md
-    participant p13 as _validate_paths
-    participant p14 as _build_parser
-    participant p15 as exact_fields
-    participant p16 as require_portable_relative_path
-    participant p17 as _value
-    participant p18 as _command
-    participant p19 as bounded_text
-    participant p20 as hash_json
-    participant p21 as validate_cli_contract
-    participant p22 as _installed_identity
-    participant p23 as _array
-    participant p24 as coordinate
-    participant p25 as compact_line_bytes
-    participant p26 as validate_changes
-    participant p27 as normalize_profile
-    participant p28 as content_id
+    participant p7 as build_cli_parser
+    participant p8 as _provider_package_identity
+    participant p9 as normalize_view_options
+    participant p10 as read_md
+    participant p11 as _validate_paths
+    participant p12 as _build_parser
+    participant p13 as require_portable_relative_path
+    participant p14 as _value
+    participant p15 as _command
+    participant p16 as hash_json
+    participant p17 as validate_cli_contract
+    participant p18 as _installed_identity
+    participant p19 as _json_tree
+    participant p20 as compact_bytes
+    participant p21 as _default_path_error
+    participant p22 as _register_commands
+    participant p23 as _add_helper_preparation_arguments
+    participant p24 as _validate_schema
+    participant p25 as _check_path_collision
+    participant p26 as _validate_command
+    participant p27 as _text
+    participant p28 as _argument (src/llm_wiki_cli/services/cli_reference.py)
     participant p29 as dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)
     participant p30 as skill.to_dict
     p0->>p1: get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)
@@ -69,35 +64,35 @@ sequenceDiagram
     p1->>p4: list_bundled_skills
     p1->>p5: validate_behavior_facts
     p2->>p6: build_cli_contract
-    p3->>p7: normalize_task_request
-    p2->>p8: build_cli_parser
-    p2->>p9: _provider_package_identity
-    p3->>p10: normalize_view_options
-    p3->>p11: _request_defaults
-    p4->>p12: read_md
-    p5->>p13: _validate_paths
-    p8->>p14: _build_parser
-    p7->>p15: exact_fields
-    p13->>p16: require_portable_relative_path
-    p6->>p17: _value
-    p6->>p18: _command
-    p7->>p19: bounded_text
-    p6->>p20: hash_json
-    p6->>p21: validate_cli_contract
-    p9->>p22: _installed_identity
-    p7->>p23: _array
-    p7->>p24: coordinate
-    p7->>p25: compact_line_bytes
-    p7->>p26: validate_changes
-    p7->>p27: normalize_profile
-    p7->>p28: content_id
+    p2->>p7: build_cli_parser
+    p2->>p8: _provider_package_identity
+    p3->>p9: normalize_view_options
+    p4->>p10: read_md
+    p5->>p11: _validate_paths
+    p7->>p12: _build_parser
+    p11->>p13: require_portable_relative_path
+    p6->>p14: _value
+    p6->>p15: _command
+    p6->>p16: hash_json
+    p6->>p17: validate_cli_contract
+    p8->>p18: _installed_identity
+    p17->>p19: _json_tree
+    p16->>p20: compact_bytes
+    p13->>p21: _default_path_error
+    p12->>p22: _register_commands
+    p12->>p23: _add_helper_preparation_arguments
+    p17->>p24: _validate_schema
+    p13->>p25: _check_path_collision
+    p17->>p26: _validate_command
+    p15->>p27: _text
+    p15->>p28: _argument (src/llm_wiki_cli/services/cli_reference.py)
     p1-->>p29: dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)(config._DEFAULT_CONFIG)
     p1-->>p30: skill.to_dict
 ```
 
-> Call sequence diagram shows 30 of 599 interactions; 569 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 447 interactions; 417 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 210 (209 omitted); unresolved 1 of 153 (152 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 161 (160 omitted); unresolved 1 of 112 (111 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -109,9 +104,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | - | external | 9 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | external | 24 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 10 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | unresolved | 14 |
-> Omission summary shows 8 of 131 groups; 123 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 91 groups; 83 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -124,9 +119,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 237; effect analysis evaluated: 166, partial: 5, unavailable: 66. Counts include steps omitted from the displayed trace.
+Source steps: 175; effect analysis evaluated: 130, partial: 2, unavailable: 43. Counts include steps omitted from the displayed trace.
 
-Collector observations for 171 source steps with known totals: observed: 810, emitted: 793, omitted: 17. Unavailable totals are excluded.
+Collector observations for 132 source steps with known totals: observed: 584, emitted: 573, omitted: 11. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

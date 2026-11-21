@@ -36,18 +36,21 @@ scope: the process-wide default (``True``) or nothing (``False``).
 flowchart LR
     n0["IntegrationSet (src/llm_wiki_engine/integrations.py)"]
     n1["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
-    n2["DomainPack.with_integrations (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["Engine.__init__ (src/llm_wiki_engine/engine.py)"]
     n3["IntegrationSet.merged (src/llm_wiki_engine/integrations.py)"]
     n4["using_integrations (src/llm_wiki_engine/integrations.py)"]
+    n5["DomainPack.with_integrations (src/llm_wiki_engine/pack_interfaces.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/integrations.md"
     click n1 "../modules/engine___init__.md"
-    click n2 "../modules/domain_pack.md"
+    click n2 "../modules/engine.md"
     click n3 "../modules/integrations.md"
     click n4 "../modules/integrations.md"
+    click n5 "../modules/pack_interfaces.md"
 ```
 
 ### Summary
@@ -61,7 +64,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `Engine.__init__` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
-| `DomainPack.with_integrations` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `Engine.__init__` | type_reference | [engine](../modules/engine.md) | — |
 | `IntegrationSet.merged` | call | [integrations](../modules/integrations.md) | 1 |
 | `IntegrationSet.merged` | type_reference | [integrations](../modules/integrations.md) | — |
 | `using_integrations` | type_reference | [integrations](../modules/integrations.md) | — |
+| `DomainPack.with_integrations` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |

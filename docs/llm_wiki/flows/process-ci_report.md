@@ -2,17 +2,9 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [ci_report](../modules/ci_report.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), and 1 more
+**Modules touched:** [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), [knowledge_observability](../modules/knowledge_observability.md)
 
-**Complete modules touched:**
-
-- [analysis_compatibility](../modules/analysis_compatibility.md)
-- [ci_report](../modules/ci_report.md)
-- [health_contract](../modules/health_contract.md)
-- [health_summary](../modules/health_summary.md)
-- [knowledge_observability](../modules/knowledge_observability.md)
-
-**Related modules:** [doctor_service](../modules/doctor_service.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), and 3 more
+**Related modules:** [doctor_service](../modules/doctor_service.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), and 4 more
 
 **Complete related modules:**
 
@@ -21,6 +13,7 @@
 - [health_summary](../modules/health_summary.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [lint_service](../modules/lint_service.md)
+- [llm_wiki_engine___init__](../modules/llm_wiki_engine___init__.md)
 - [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md)
 
 ## Call sequence
@@ -47,18 +40,18 @@ sequenceDiagram
     participant p14 as diagnostic_groups
     participant p15 as validate_doctor_payload
     participant p16 as _array
-    participant p17 as captured_analysis_diagnostic
-    participant p18 as _positive_integer
-    participant p19 as _validate_ci_v2
-    participant p20 as _count_mapping
-    participant p21 as _canonical_plan_ids
-    participant p22 as analysis_diagnostic
-    participant p23 as _exact_object
-    participant p24 as captured_components
-    participant p25 as validate_health_details
-    participant p26 as _contract_object
-    participant p27 as _string
-    participant p28 as _validate_doctor
+    participant p17 as _positive_integer
+    participant p18 as _validate_ci_v2
+    participant p19 as _count_mapping
+    participant p20 as _canonical_plan_ids
+    participant p21 as _exact_object
+    participant p22 as validate_health_details
+    participant p23 as _contract_object
+    participant p24 as _string
+    participant p25 as _validate_doctor
+    participant p26 as _nullable_string
+    participant p27 as summary_cell
+    participant p28 as _object (src/llm_wiki_cli/services/ci_report.py)
     participant p29 as Path (src/llm_wiki_cli/services/ci_report.py:main)
     participant p30 as status_path.is_symlink
     p0->>p1: load_ci_check_payload
@@ -77,25 +70,25 @@ sequenceDiagram
     p7->>p14: diagnostic_groups
     p10->>p15: validate_doctor_payload
     p11->>p16: _array
-    p9->>p17: captured_analysis_diagnostic
-    p12->>p18: _positive_integer
-    p10->>p19: _validate_ci_v2
-    p13->>p20: _count_mapping
-    p12->>p21: _canonical_plan_ids
-    p17->>p22: analysis_diagnostic
-    p15->>p23: _exact_object
-    p17->>p24: captured_components
-    p15->>p25: validate_health_details
-    p15->>p26: _contract_object
-    p15->>p27: _string
-    p15->>p28: _validate_doctor
+    p12->>p17: _positive_integer
+    p10->>p18: _validate_ci_v2
+    p13->>p19: _count_mapping
+    p12->>p20: _canonical_plan_ids
+    p15->>p21: _exact_object
+    p15->>p22: validate_health_details
+    p15->>p23: _contract_object
+    p15->>p24: _string
+    p15->>p25: _validate_doctor
+    p18->>p26: _nullable_string
+    p2->>p27: summary_cell
+    p2->>p28: _object (src/llm_wiki_cli/services/ci_report.py)
     p0-->>p29: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.status_path)
     p0-->>p30: status_path.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 636 interactions; 606 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 602 interactions; 572 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 159 (158 omitted); unresolved 1 of 130 (129 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 144 (143 omitted); unresolved 1 of 122 (121 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -109,7 +102,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | external | 9 |
 | `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_report.py:validate_doctor_payload` | 36 | - | external | 2 |
-> Omission summary shows 8 of 92 groups; 84 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 85 groups; 77 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -122,9 +115,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 348; effect analysis evaluated: 246, partial: 6, unavailable: 96. Counts include steps omitted from the displayed trace.
+Source steps: 337; effect analysis evaluated: 236, partial: 5, unavailable: 96. Counts include steps omitted from the displayed trace.
 
-Collector observations for 252 source steps with known totals: observed: 1141, emitted: 1102, omitted: 39. Unavailable totals are excluded.
+Collector observations for 241 source steps with known totals: observed: 1061, emitted: 1023, omitted: 38. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

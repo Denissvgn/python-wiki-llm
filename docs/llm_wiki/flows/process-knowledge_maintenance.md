@@ -2,12 +2,11 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [knowledge_maintenance](../modules/knowledge_maintenance.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 34 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [domain_pack](../modules/domain_pack.md), and 34 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [domain_pack](../modules/domain_pack.md)
@@ -35,6 +34,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
@@ -45,7 +45,7 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
-**Related modules:** [analysis_capture](../modules/analysis_capture.md), [common](../modules/common.md), [extractor_registry](../modules/extractor_registry.md), [health_policy](../modules/health_policy.md), and 15 more
+**Related modules:** [analysis_capture](../modules/analysis_capture.md), [common](../modules/common.md), [extractor_registry](../modules/extractor_registry.md), [health_policy](../modules/health_policy.md), and 16 more
 
 **Complete related modules:**
 
@@ -62,6 +62,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
+- [llm_wiki_engine___init__](../modules/llm_wiki_engine___init__.md)
 - [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md)
 - [path_policy](../modules/path_policy.md)
 - [source_selection](../modules/source_selection.md)
@@ -90,21 +91,21 @@ sequenceDiagram
     participant p11 as parse_knowledge_index
     participant p12 as SyncManifest.load
     participant p13 as validate_persisted_source_selection_identity
-    participant p14 as has_contract
-    participant p15 as capture_analysis
-    participant p16 as _producer_evidence
-    participant p17 as _infrastructure_extractor_component
-    participant p18 as build_producer_record
-    participant p19 as compare_components
-    participant p20 as runtime_generation_options
-    participant p21 as runtime_generation_options_hash
-    participant p22 as get_prepared_typescript_root
-    participant p23 as get_prepared_binary
-    participant p24 as hash_source_snapshot
-    participant p25 as producer_contracts
-    participant p26 as _validate_range
-    participant p27 as _validate_capture_options
-    participant p28 as _require_relative_name
+    participant p14 as capture_analysis
+    participant p15 as _producer_evidence
+    participant p16 as _infrastructure_extractor_component
+    participant p17 as build_producer_record
+    participant p18 as runtime_generation_options
+    participant p19 as runtime_generation_options_hash
+    participant p20 as get_prepared_typescript_root
+    participant p21 as get_prepared_binary
+    participant p22 as hash_source_snapshot
+    participant p23 as _validate_range
+    participant p24 as _validate_capture_options
+    participant p25 as _require_relative_name
+    participant p26 as decode_bytes
+    participant p27 as source_selection_identity_from_generation_inputs
+    participant p28 as _build_component
     participant p29 as argparse.ArgumentParser
     participant p30 as parser.add_subparsers
     p0->>p1: preflight
@@ -120,28 +121,28 @@ sequenceDiagram
     p1->>p11: parse_knowledge_index
     p1->>p12: SyncManifest.load
     p1->>p13: validate_persisted_source_selection_identity
-    p1->>p14: has_contract
-    p1->>p15: capture_analysis
-    p1->>p16: _producer_evidence
-    p1->>p17: _infrastructure_extractor_component
-    p1->>p18: build_producer_record
-    p1->>p19: compare_components
-    p1->>p20: runtime_generation_options
-    p1->>p21: runtime_generation_options_hash
-    p1->>p22: get_prepared_typescript_root
-    p1->>p23: get_prepared_binary
-    p1->>p24: hash_source_snapshot
-    p1->>p25: producer_contracts
-    p2->>p26: _validate_range
-    p6->>p27: _validate_capture_options
-    p9->>p28: _require_relative_name
+    p1->>p14: capture_analysis
+    p1->>p15: _producer_evidence
+    p1->>p16: _infrastructure_extractor_component
+    p1->>p17: build_producer_record
+    p1->>p18: runtime_generation_options
+    p1->>p19: runtime_generation_options_hash
+    p1->>p20: get_prepared_typescript_root
+    p1->>p21: get_prepared_binary
+    p1->>p22: hash_source_snapshot
+    p2->>p23: _validate_range
+    p6->>p24: _validate_capture_options
+    p9->>p25: _require_relative_name
+    p10->>p26: decode_bytes
+    p13->>p27: source_selection_identity_from_generation_inputs
+    p17->>p28: _build_component
     p0-->>p29: argparse.ArgumentParser
     p0-->>p30: parser.add_subparsers(dest='command', required=True)
 ```
 
-> Call sequence diagram shows 30 of 2953 interactions; 2923 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2879 interactions; 2849 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 957 (956 omitted); unresolved 1 of 742 (741 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 921 (920 omitted); unresolved 1 of 750 (749 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -149,13 +150,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:main` | 1 | - | unresolved | 27 |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:main` | 1 | - | external | 10 |
-| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | unresolved | 34 |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | unresolved | 43 |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | external | 13 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 28 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 28 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 28 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 32 | - | unresolved | 1 |
-> Omission summary shows 8 of 699 groups; 691 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 672 groups; 664 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -168,9 +169,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1255; effect analysis evaluated: 818, partial: 32, unavailable: 405. Counts include steps omitted from the displayed trace.
+Source steps: 1209; effect analysis evaluated: 776, partial: 30, unavailable: 403. Counts include steps omitted from the displayed trace.
 
-Collector observations for 850 source steps with known totals: observed: 4398, emitted: 4223, omitted: 175. Unavailable totals are excluded.
+Collector observations for 806 source steps with known totals: observed: 4189, emitted: 4018, omitted: 171. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

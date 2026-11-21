@@ -1,6 +1,6 @@
 # PageRequest
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:123`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:129`
 **Kind:** Class
 **Bases:** —
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)
@@ -51,10 +51,10 @@ Absent optional inputs are ``None``.
 flowchart LR
     n0["PageRequest (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["_render_page (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n2["BuiltInPageRenderer.render_entity (src/llm_wiki_cli/services/domain_pack.py)"]
-    n3["BuiltInPageRenderer.render_module (src/llm_wiki_cli/services/domain_pack.py)"]
-    n4["BuiltInPageRenderer.render_page (src/llm_wiki_cli/services/domain_pack.py)"]
-    n5["render_with_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["render_with_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n3["BuiltInPageRenderer.render_entity (src/llm_wiki_engine/pack_interfaces.py)"]
+    n4["BuiltInPageRenderer.render_module (src/llm_wiki_engine/pack_interfaces.py)"]
+    n5["BuiltInPageRenderer.render_page (src/llm_wiki_engine/pack_interfaces.py)"]
     n6["PageRenderer.render_entity (src/llm_wiki_engine/pack_interfaces.py)"]
     n7["PageRenderer.render_module (src/llm_wiki_engine/pack_interfaces.py)"]
     n8["PageRenderer.render_page (src/llm_wiki_engine/pack_interfaces.py)"]
@@ -69,9 +69,9 @@ flowchart LR
     click n0 "../modules/pack_interfaces.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/domain_pack.md"
-    click n3 "../modules/domain_pack.md"
-    click n4 "../modules/domain_pack.md"
-    click n5 "../modules/domain_pack.md"
+    click n3 "../modules/pack_interfaces.md"
+    click n4 "../modules/pack_interfaces.md"
+    click n5 "../modules/pack_interfaces.md"
     click n6 "../modules/pack_interfaces.md"
     click n7 "../modules/pack_interfaces.md"
     click n8 "../modules/pack_interfaces.md"
@@ -88,10 +88,10 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_render_page` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
-| `BuiltInPageRenderer.render_entity` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
-| `BuiltInPageRenderer.render_module` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
-| `BuiltInPageRenderer.render_page` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `render_with_pack` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `BuiltInPageRenderer.render_entity` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
+| `BuiltInPageRenderer.render_module` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
+| `BuiltInPageRenderer.render_page` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
 | `PageRenderer.render_entity` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
 | `PageRenderer.render_module` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
 | `PageRenderer.render_page` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |

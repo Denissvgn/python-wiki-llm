@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [obsidian_cmd](../modules/obsidian_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 52 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 53 more
 
 **Complete modules touched:**
 
@@ -46,6 +46,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [obsidian](../modules/obsidian.md)
 - [obsidian_cmd](../modules/obsidian_cmd.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
@@ -133,9 +134,9 @@ sequenceDiagram
     p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3089 interactions; 3059 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3090 interactions; 3060 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 913 (912 omitted); unresolved 1 of 837 (836 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 913 (912 omitted); unresolved 1 of 838 (837 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -164,7 +165,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1340; effect analysis evaluated: 909, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
 
-Collector observations for 948 source steps with known totals: observed: 5158, emitted: 4923, omitted: 235. Unavailable totals are excluded.
+Collector observations for 948 source steps with known totals: observed: 5154, emitted: 4919, omitted: 235. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

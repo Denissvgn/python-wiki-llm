@@ -47,28 +47,31 @@ validate the same way for every consumer.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_engine/knowledge_graph.py"]
-    n2["src/llm_wiki_engine/knowledge_index.py"]
-    n3["src/llm_wiki_engine/knowledge_kinds.py"]
-    n4["src/llm_wiki_engine/knowledge_model.py"]
-    n5["src/llm_wiki_engine/wiki_surface.py"]
-    n0 --> n3
-    n1 --> n5
-    n2 --> n3
-    n2 --> n4
-    n2 --> n5
-    n3 --> n1
+    n1["src/llm_wiki_engine/engine.py"]
+    n2["src/llm_wiki_engine/knowledge_graph.py"]
+    n3["src/llm_wiki_engine/knowledge_index.py"]
+    n4["src/llm_wiki_engine/knowledge_kinds.py"]
+    n5["src/llm_wiki_engine/knowledge_model.py"]
+    n6["src/llm_wiki_engine/wiki_surface.py"]
+    n0 --> n4
+    n1 --> n4
+    n2 --> n6
     n3 --> n4
     n3 --> n5
-    n4 --> n1
-    n4 --> n3
+    n3 --> n6
+    n4 --> n2
     n4 --> n5
+    n4 --> n6
+    n5 --> n2
+    n5 --> n4
+    n5 --> n6
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/knowledge_graph.md"
-    click n2 "../modules/knowledge_index.md"
-    click n3 "../modules/knowledge_kinds.md"
-    click n4 "../modules/knowledge_model.md"
-    click n5 "../modules/wiki_surface.md"
+    click n1 "../modules/engine.md"
+    click n2 "../modules/knowledge_graph.md"
+    click n3 "../modules/knowledge_index.md"
+    click n4 "../modules/knowledge_kinds.md"
+    click n5 "../modules/knowledge_model.md"
+    click n6 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
@@ -76,6 +79,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
+| Inbound | [engine](../modules/engine.md) |
 | Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Inbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [knowledge_graph](../modules/knowledge_graph.md) |

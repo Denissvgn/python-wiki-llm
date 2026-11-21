@@ -2,12 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 68 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api_contracts](../modules/api_contracts.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 67 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -56,6 +55,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_maps](../modules/module_maps.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -150,7 +150,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 3523 interactions; 3493 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1175 (1174 omitted); unresolved 1 of 928 (927 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1175 (1174 omitted); unresolved 1 of 930 (929 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -164,7 +164,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | - | external | 10 |
-> Omission summary shows 8 of 894 groups; 886 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 893 groups; 885 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -177,9 +177,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1421; effect analysis evaluated: 1059, partial: 65, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 1419; effect analysis evaluated: 1057, partial: 65, unavailable: 297. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1124 source steps with known totals: observed: 6573, emitted: 6270, omitted: 303. Unavailable totals are excluded.
+Collector observations for 1122 source steps with known totals: observed: 6568, emitted: 6265, omitted: 303. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

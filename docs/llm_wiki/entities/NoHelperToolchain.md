@@ -1,6 +1,6 @@
 # NoHelperToolchain
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:300`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:306`
 **Kind:** Class
 **Bases:** `HelperToolchain`
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)

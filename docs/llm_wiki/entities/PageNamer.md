@@ -1,6 +1,6 @@
 # PageNamer
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:56`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:62`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)
@@ -29,11 +29,14 @@ Names the generated module and entity pages for an inventory.
 flowchart LR
     n0["PageNamer (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["Protocol"]
-    n2["DomainPack.with_page_namer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["src/llm_wiki_cli/services/domain_pack.py"]
+    n3["DomainPack.with_page_namer (src/llm_wiki_engine/pack_interfaces.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/pack_interfaces.md"
     click n2 "../modules/domain_pack.md"
+    click n3 "../modules/pack_interfaces.md"
 ```
 
 ### Summary
@@ -52,4 +55,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `DomainPack.with_page_namer` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |
+| `DomainPack.with_page_namer` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |

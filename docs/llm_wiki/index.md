@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 770 | [Open section](#entities) |
-| Modules | 316 | [Open section](#modules) |
-| Workflows | 318 | [Open section](#workflows) |
+| Entities | 784 | [Open section](#entities) |
+| Modules | 319 | [Open section](#modules) |
+| Workflows | 313 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 507 | [Open section](#entry-point-flows) |
+| Entry-point flows | 512 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -41,9 +41,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [BootstrapExtractionError](entities/BootstrapExtractionError.md)
 - [BootstrapGenerationResult](entities/BootstrapGenerationResult.md)
 - [BootstrapPageMaps](entities/BootstrapPageMaps.md)
-- [BootstrapRequest](entities/BootstrapRequest.md)
 - [BootstrapRequestError](entities/BootstrapRequestError.md)
-- [BootstrapResult](entities/BootstrapResult.md)
 - [BootstrapRunOptions](entities/BootstrapRunOptions.md)
 - [BootstrapRunState](entities/BootstrapRunState.md)
 - [BootstrapServiceError](entities/BootstrapServiceError.md)
@@ -54,7 +52,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [BudgetedContext](entities/BudgetedContext.md)
 - [BudgetedContextResponseError](entities/BudgetedContextResponseError.md)
 - [BuildContext](entities/BuildContext.md)
-- [BuiltInPageRenderer](entities/BuiltInPageRenderer.md)
 - [BundleRecord](entities/BundleRecord.md)
 - [BundledHelperToolchain](entities/BundledHelperToolchain.md)
 - [BundledSkill](entities/BundledSkill.md)
@@ -190,10 +187,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DocumentationWorkItem](entities/DocumentationWorkItem.md)
 - [DocumentationWorklist](entities/DocumentationWorklist.md)
 - [DocumentationWorklistError](entities/DocumentationWorklistError.md)
-- [DomainPack](entities/DomainPack.md)
 - [EdgeAccumulator](entities/EdgeAccumulator.md)
 - [Encoder](entities/Encoder.md)
-- [Engine](entities/Engine.md)
 - [EngineEvent](entities/EngineEvent.md)
 - [EntityModuleResult](entities/EntityModuleResult.md)
 - [EntityPageRequest](entities/EntityPageRequest.md)
@@ -391,11 +386,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [LinkObservation](entities/LinkObservation.md)
 - [LinkSyntax](entities/LinkSyntax.md)
 - [LintInputs](entities/LintInputs.md)
-- [LintIssue](entities/LintIssue.md)
 - [LintPreflight](entities/LintPreflight.md)
 - [LintProfiler](entities/LintProfiler.md)
-- [LintReport](entities/LintReport.md)
-- [LintRequest](entities/LintRequest.md)
 - [LintRequestError](entities/LintRequestError.md)
 - [LiveKnowledgeEvaluation](entities/LiveKnowledgeEvaluation.md)
 - [LlmWikiApiError](entities/LlmWikiApiError.md)
@@ -469,6 +461,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [NativeInspectionMaintenance](entities/NativeInspectionMaintenance.md)
 - [NativeInspectionResult](entities/NativeInspectionResult.md)
 - [NewPageJournal](entities/NewPageJournal.md)
+- [NoContextSource](entities/NoContextSource.md)
 - [NoHelperToolchain](entities/NoHelperToolchain.md)
 - [NoProcessHost](entities/NoProcessHost.md)
 - [NormalizationDiagnostic](entities/NormalizationDiagnostic.md)
@@ -493,7 +486,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [OciResourceLimits](entities/OciResourceLimits.md)
 - [OciRuntimeConfig](entities/OciRuntimeConfig.md)
 - [OciStreamEvidence](entities/OciStreamEvidence.md)
-- [Operation](entities/Operation.md)
 - [OperationIdentity](entities/OperationIdentity.md)
 - [Origin](entities/Origin.md)
 - [OriginValidationMiddleware](entities/OriginValidationMiddleware.md)
@@ -668,7 +660,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SpooledArtifactWrite](entities/SpooledArtifactWrite.md)
 - [StagedPageMove](entities/StagedPageMove.md)
 - [StaticCallQueryOptions](entities/StaticCallQueryOptions.md)
-- [StemPageNamer](entities/StemPageNamer.md)
 - [StorageReadSession](entities/StorageReadSession.md)
 - [StorageStagingAuthority](entities/StorageStagingAuthority.md)
 - [Stream](entities/Stream.md)
@@ -693,10 +684,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SyncOwnershipError](entities/SyncOwnershipError.md)
 - [SyncPageMaps](entities/SyncPageMaps.md)
 - [SyncRecoveryError](entities/SyncRecoveryError.md)
-- [SyncRequest](entities/SyncRequest.md)
 - [SyncRequestAborted](entities/SyncRequestAborted.md)
 - [SyncRequestError](entities/SyncRequestError.md)
-- [SyncResult](entities/SyncResult.md)
 - [SyncRunOptions](entities/SyncRunOptions.md)
 - [SyncRuntimeRefreshError](entities/SyncRuntimeRefreshError.md)
 - [SyncStatus](entities/SyncStatus.md)
@@ -755,6 +744,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [WikiGitPolicy](entities/WikiGitPolicy.md)
 - [WikiLifecycleState](entities/WikiLifecycleState.md)
 - [WikiLock](entities/WikiLock.md)
+- [WikiOperationError](entities/WikiOperationError.md)
 - [WikiPageCounts](entities/WikiPageCounts.md)
 - [WikiPageIndex](entities/WikiPageIndex.md)
 - [WikiPagesResult](entities/WikiPagesResult.md)
@@ -783,11 +773,35 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [WriteBasis](entities/WriteBasis.md)
 - [api_ContextSession](entities/api_ContextSession.md)
 - [api_types_WikiPage](entities/api_types_WikiPage.md)
+- [bootstrap_service_BootstrapRequest](entities/bootstrap_service_BootstrapRequest.md)
+- [bootstrap_service_BootstrapResult](entities/bootstrap_service_BootstrapResult.md)
 - [context_session_ContextSession](entities/context_session_ContextSession.md)
+- [domain_pack_BuiltInPageRenderer](entities/domain_pack_BuiltInPageRenderer.md)
+- [domain_pack_DomainPack](entities/domain_pack_DomainPack.md)
+- [domain_pack_StemPageNamer](entities/domain_pack_StemPageNamer.md)
+- [engine_Engine](entities/engine_Engine.md)
+- [engine_Operation](entities/engine_Operation.md)
+- [engine_init_Engine](entities/engine_init_Engine.md)
+- [engine_init_Operation](entities/engine_init_Operation.md)
 - [health_policy_MaintenanceError](entities/health_policy_MaintenanceError.md)
+- [lint_request_LintRequest](entities/lint_request_LintRequest.md)
+- [lint_service_LintIssue](entities/lint_service_LintIssue.md)
+- [lint_service_LintReport](entities/lint_service_LintReport.md)
 - [maintenance_shapes_MaintenanceError](entities/maintenance_shapes_MaintenanceError.md)
 - [mcp_server_WikiPage](entities/mcp_server_WikiPage.md)
 - [obsidian_WikiPage](entities/obsidian_WikiPage.md)
+- [pack_interfaces_BuiltInPageRenderer](entities/pack_interfaces_BuiltInPageRenderer.md)
+- [pack_interfaces_DomainPack](entities/pack_interfaces_DomainPack.md)
+- [pack_interfaces_StemPageNamer](entities/pack_interfaces_StemPageNamer.md)
+- [sync_runtime_SyncResult](entities/sync_runtime_SyncResult.md)
+- [sync_service_SyncRequest](entities/sync_service_SyncRequest.md)
+- [wiki_operations_BootstrapRequest](entities/wiki_operations_BootstrapRequest.md)
+- [wiki_operations_BootstrapResult](entities/wiki_operations_BootstrapResult.md)
+- [wiki_operations_LintIssue](entities/wiki_operations_LintIssue.md)
+- [wiki_operations_LintReport](entities/wiki_operations_LintReport.md)
+- [wiki_operations_LintRequest](entities/wiki_operations_LintRequest.md)
+- [wiki_operations_SyncRequest](entities/wiki_operations_SyncRequest.md)
+- [wiki_operations_SyncResult](entities/wiki_operations_SyncResult.md)
 
 ## Modules
 
@@ -857,6 +871,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [documentation_wiki_input](modules/documentation_wiki_input.md) - Read-only adoption of an existing canonical LLM Wiki.
 - [documentation_worklist](modules/documentation_worklist.md) - Deterministic semantic worklists for standalone documentation runs.
 - [domain_pack](modules/domain_pack.md) - Domain packs: the replaceable parts of turning sources into wiki pages.
+- [engine](modules/engine.md) - An engine that runs wiki use cases with no application code.
 - [engine___init__](modules/engine___init__.md) - Embeddable engine: run wiki operations on behalf of a host application.
 - [engine_events](modules/engine_events.md) - Structured events an engine reports to its host while an operation runs.
 - [entrypoints](modules/entrypoints.md) - Entry-point detection and user-flow assembly.
@@ -945,6 +960,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
 - [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
 - [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
+- [llm_wiki_engine___init__](modules/llm_wiki_engine___init__.md) - Standard-library-only core of the LLM Wiki engine.
 - [llm_wiki_engine_contracts](modules/llm_wiki_engine_contracts.md) - Stable machine-readable contracts exposed by source-adapter commands.
 - [lockfile](modules/lockfile.md) - `src/llm_wiki_engine/lockfile.py`
 - [maintenance_cmd](modules/maintenance_cmd.md) - CLI adapter for explicit ordinary maintenance review operations.
@@ -1099,6 +1115,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [wiki_git_policy](modules/wiki_git_policy.md) - Read-only Git policy for handing generated wiki files to version control.
 - [wiki_lifecycle](modules/wiki_lifecycle.md) - Read-only classification for wiki bootstrap, sync, and migration routing.
 - [wiki_media](modules/wiki_media.md) - Media reference parsing for wiki pages and agent-owned assets.
+- [wiki_operations](modules/wiki_operations.md) - Bootstrap, sync and lint a wiki through a domain pack alone.
 - [wiki_scaffold](modules/wiki_scaffold.md) - Canonical bytes for a pristine wiki scaffold.
 - [wiki_surface](modules/wiki_surface.md) - Canonical wiki page surface registry.
 - [wiki_surface_index](modules/wiki_surface_index.md) - Machine-readable index for generated wiki surfaces.
@@ -1116,10 +1133,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DigestSession_read](workflows/DigestSession_read.md) - entry: `knowledge_stream_audit._DigestSession.read`
 - [DocumentationGraphQueryService__build_knowledge_indexes](workflows/DocumentationGraphQueryService__build_knowledge_indexes.md) - entry: `documentation_queries.DocumentationGraphQueryService._build_knowledge_indexes`
 - [DocumentationGraphQueryService__build_typed_graph_indexes](workflows/DocumentationGraphQueryService__build_typed_graph_indexes.md) - entry: `documentation_queries.DocumentationGraphQueryService._build_typed_graph_indexes`
-- [Engine_operation](workflows/Engine_operation.md) - entry: `__init__.Engine.operation`
+- [Engine___init__](workflows/Engine___init__.md) - entry: `engine.Engine.__init__`
+- [Engine_operation](workflows/Engine_operation.md) - entry: `engine.Engine.operation`
 - [MaintenanceReconciliation_apply](workflows/MaintenanceReconciliation_apply.md) - entry: `maintenance_state._MaintenanceReconciliation.apply`
 - [McpWikiService_build_task_context](workflows/McpWikiService_build_task_context.md) - entry: `mcp_server.McpWikiService.build_task_context`
-- [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
 - [NewPageJournal__persist](workflows/NewPageJournal__persist.md) - entry: `sync_recovery.NewPageJournal._persist`
 - [NewPageJournal_before_write](workflows/NewPageJournal_before_write.md) - entry: `sync_recovery.NewPageJournal.before_write`
 - [NewPageJournal_discard_committed](workflows/NewPageJournal_discard_committed.md) - entry: `sync_recovery.NewPageJournal.discard_committed`
@@ -1158,11 +1175,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
 - [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`
-- [build_ci_check_payload](workflows/build_ci_check_payload.md) - entry: `ci_report.build_ci_check_payload`
 - [build_context_impl](workflows/build_context_impl.md) - entry: `context_service._build_context_impl`
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
 - [build_dependency_graph](workflows/build_dependency_graph.md) - entry: `dependencies.build_dependency_graph`
-- [build_doctor_report](workflows/build_doctor_report.md) - entry: `doctor_service.build_doctor_report`
 - [build_documentation_query_service](workflows/build_documentation_query_service.md) - entry: `api.build_documentation_query_service`
 - [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
 - [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_runtime._build_generated_section_context`
@@ -1203,7 +1218,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [check_data_flow_diagnostics](workflows/check_data_flow_diagnostics.md) - entry: `lint_service._check_data_flow_diagnostics`
 - [check_duplicate_removal_custody](workflows/check_duplicate_removal_custody.md) - entry: `source_retirement._check_duplicate_removal_custody`
 - [check_knowledge_concepts](workflows/check_knowledge_concepts.md) - entry: `lint_service._check_knowledge_concepts`
-- [check_site_mirror](workflows/check_site_mirror.md) - entry: `site_export.check_site_mirror`
 - [check_sync_manifest](workflows/check_sync_manifest.md) - entry: `lint_service._check_sync_manifest`
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
 - [checked_artifact](workflows/checked_artifact.md) - entry: `publish.checked_artifact`
@@ -1412,7 +1426,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validate_scoped_bindings](workflows/validate_scoped_bindings.md) - entry: `task_context_v2.validate_scoped_bindings`
 - [validate_selected_record](workflows/validate_selected_record.md) - entry: `knowledge_storage._validate_selected_record`
 - [validate_source_root](workflows/validate_source_root.md) - entry: `path_policy.validate_source_root`
-- [validate_task_claims](workflows/validate_task_claims.md) - entry: `task_context._validate_task_claims`
 - [validate_task_context](workflows/validate_task_context.md) - entry: `task_context.validate_task_context`
 - [validate_task_implementations](workflows/validate_task_implementations.md) - entry: `task_implementation.validate_task_implementations`
 - [validate_workspace](workflows/validate_workspace.md) - entry: `publication_maintenance._validate_workspace`
@@ -1421,7 +1434,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validated_prompt_snapshot](workflows/validated_prompt_snapshot.md) - entry: `generate_prompt_cmd._validated_prompt_snapshot`
 - [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
 - [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
-- [validator_identity](workflows/validator_identity.md) - entry: `knowledge_index._validator_identity`
 - [verify_target_blobs](workflows/verify_target_blobs.md) - entry: `checkout._verify_target_blobs`
 - [wiki_anchor](workflows/wiki_anchor.md) - entry: `context_packet_builder._wiki_anchor`
 - [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
@@ -1450,6 +1462,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 **api**
 
 - [api-acknowledge_maintenance](flows/api-acknowledge_maintenance.md) - entry: `acknowledge_maintenance`
+- [api-active_pack](flows/api-active_pack.md) - entry: `active_pack`
 - [api-add_alias](flows/api-add_alias.md) - entry: `add_alias`
 - [api-add_identity_alias](flows/api-add_identity_alias.md) - entry: `add_identity_alias`
 - [api-add_review_event](flows/api-add_review_event.md) - entry: `add_review_event`
@@ -1469,6 +1482,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-attach_routes_to_entry_points](flows/api-attach_routes_to_entry_points.md) - entry: `attach_routes_to_entry_points`
 - [api-authored_event_time](flows/api-authored_event_time.md) - entry: `authored_event_time`
 - [api-bool_or_none](flows/api-bool_or_none.md) - entry: `bool_or_none`
+- [api-bootstrap](flows/api-bootstrap.md) - entry: `bootstrap`
 - [api-bootstrap_guidance](flows/api-bootstrap_guidance.md) - entry: `bootstrap_guidance`
 - [api-bootstrap_wiki](flows/api-bootstrap_wiki.md) - entry: `bootstrap_wiki`
 - [api-build_api_contracts](flows/api-build_api_contracts.md) - entry: `build_api_contracts`
@@ -1550,7 +1564,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-current_kinds](flows/api-current_kinds.md) - entry: `current_kinds`
 - [api-current_lifecycle](flows/api-current_lifecycle.md) - entry: `current_lifecycle`
 - [api-current_operation](flows/api-current_operation.md) - entry: `current_operation`
-- [api-current_pack](flows/api-current_pack.md) - entry: `current_pack`
+- [api-current_pack-domain_pack](flows/api-current_pack-domain_pack.md) - entry: `current_pack`
+- [api-current_pack-pack_interfaces](flows/api-current_pack-pack_interfaces.md) - entry: `current_pack`
 - [api-current_publication_targets](flows/api-current_publication_targets.md) - entry: `current_publication_targets`
 - [api-current_reference_providers](flows/api-current_reference_providers.md) - entry: `current_reference_providers`
 - [api-current_review_evidence](flows/api-current_review_evidence.md) - entry: `current_review_evidence`
@@ -1639,6 +1654,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-knowledge_status_payload](flows/api-knowledge_status_payload.md) - entry: `knowledge_status_payload`
 - [api-lifecycle_state_by_uid](flows/api-lifecycle_state_by_uid.md) - entry: `lifecycle_state_by_uid`
 - [api-link_entry_point_flows](flows/api-link_entry_point_flows.md) - entry: `link_entry_point_flows`
+- [api-lint](flows/api-lint.md) - entry: `lint`
 - [api-lint_wiki](flows/api-lint_wiki.md) - entry: `lint_wiki`
 - [api-list_concept_sections](flows/api-list_concept_sections.md) - entry: `list_concept_sections`
 - [api-list_wiki_pages](flows/api-list_wiki_pages.md) - entry: `list_wiki_pages`
@@ -1826,6 +1842,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-strip_governance_projection](flows/api-strip_governance_projection.md) - entry: `strip_governance_projection`
 - [api-summarize_knowledge_view](flows/api-summarize_knowledge_view.md) - entry: `summarize_knowledge_view`
 - [api-supplied_paths_from_unified_diff](flows/api-supplied_paths_from_unified_diff.md) - entry: `supplied_paths_from_unified_diff`
+- [api-sync](flows/api-sync.md) - entry: `sync`
 - [api-sync_guidance](flows/api-sync_guidance.md) - entry: `sync_guidance`
 - [api-sync_wiki](flows/api-sync_wiki.md) - entry: `sync_wiki`
 - [api-table_description_cells](flows/api-table_description_cells.md) - entry: `table_description_cells`

@@ -1,6 +1,6 @@
 # ContextSource
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:182`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:188`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)
@@ -29,11 +29,14 @@ How sources relate and appear in budgeted context.
 flowchart LR
     n0["ContextSource (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["Protocol"]
-    n2["DomainPack.with_context_source (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["src/llm_wiki_cli/services/domain_pack.py"]
+    n3["DomainPack.with_context_source (src/llm_wiki_engine/pack_interfaces.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/pack_interfaces.md"
     click n2 "../modules/domain_pack.md"
+    click n3 "../modules/pack_interfaces.md"
 ```
 
 ### Summary
@@ -52,4 +55,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `DomainPack.with_context_source` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |
+| `DomainPack.with_context_source` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |

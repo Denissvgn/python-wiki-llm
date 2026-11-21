@@ -1,7 +1,7 @@
 # inspect_targets
 
 **Entry point:** `analysis_targets.inspect_targets`
-**Modules involved:** [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [analysis_targets](../modules/analysis_targets.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [sync_manifest](../modules/sync_manifest.md)
 
 > Read committed producer headers, without source discovery or extraction.
 
@@ -18,12 +18,10 @@
 8. `knowledge_storage_io.StorageReadSession.read`
 9. `sync_manifest.SyncManifest.load`
 10. `knowledge_storage_io.StorageReadSession.read`
-11. `analysis_compatibility.component_record`
-12. `knowledge_storage_io.StorageReadSession.recheck`
+11. `knowledge_storage_io.StorageReadSession.recheck`
 
 ## Touches
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [analysis_targets](../modules/analysis_targets.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)

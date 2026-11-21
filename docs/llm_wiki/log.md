@@ -4875,3 +4875,24 @@ Existing permissions, validation bounds and native authority remain separate.
 - Pages deprecated: 0
 - Semantic fields preserved: 4
 - Moved entities: `EstimatedCounter` (src/llm_wiki_cli/services/token_counting.py → src/llm_wiki_engine/token_counters.py), `TokenCounter` (src/llm_wiki_cli/services/token_counting.py → src/llm_wiki_engine/token_counters.py)
+
+## 2026-11-21
+
+### Wiki sync
+- Source: `.`
+- Generator version: `5.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:a6b9254c8aa1c314aa4b4539a64a62dd9236c2f935d3ad5231500ca1100a2f3a`
+- Pages created: 24
+- Pages updated: 174
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1732
+- Pages deprecated: 7
+- Semantic fields preserved: 4
+- Moved entities: none
+- Flow pages initialized: 6 (api=6)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Generated surface pages retired: 7

@@ -1,6 +1,6 @@
 # CodeSourceClassifier
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:242`
+**Location:** `src/llm_wiki_cli/services/domain_pack.py:234`
 **Kind:** Class
 **Bases:** `ExtensionSourceClassifier`
 **Module:** [domain_pack](../modules/domain_pack.md)

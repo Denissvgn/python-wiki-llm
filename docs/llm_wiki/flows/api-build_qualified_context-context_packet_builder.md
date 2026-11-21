@@ -2,7 +2,7 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 69 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), and 70 more
 
 **Complete modules touched:**
 
@@ -57,6 +57,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
@@ -149,9 +150,9 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5315 interactions; 5285 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5316 interactions; 5286 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1642 (1641 omitted); unresolved 1 of 1799 (1798 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1642 (1641 omitted); unresolved 1 of 1803 (1802 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 9 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 12 | - | external | 13 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 1306 groups; 1298 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1305 groups; 1297 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1875; effect analysis evaluated: 1257, partial: 63, unavailable: 555. Counts include steps omitted from the displayed trace.
+Source steps: 1872; effect analysis evaluated: 1254, partial: 63, unavailable: 555. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1320 source steps with known totals: observed: 7453, emitted: 7091, omitted: 362. Unavailable totals are excluded.
+Collector observations for 1317 source steps with known totals: observed: 7434, emitted: 7072, omitted: 362. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

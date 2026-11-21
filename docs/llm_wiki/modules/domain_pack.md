@@ -67,16 +67,10 @@ ranking, so packets refuse to seal under a pack that replaces it.
 | `.reference_providers` | `BUILTIN_REFERENCE_PROVIDERS`, `ReferenceProvider`, `check_reference_providers` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
-| `collections` | `Counter`, `defaultdict` |
-| `collections.abc` | `Iterable`, `Iterator`, `Mapping` |
-| `contextlib` | `contextmanager` |
-| `contextvars` | `ContextVar` |
-| `dataclasses` | `dataclass`, `field`, `replace` |
-| `llm_wiki_engine.integrations` | `DEFAULT_INTEGRATIONS`, `IntegrationSet` |
-| `llm_wiki_engine.pack_interfaces` | `PAGE_REQUEST_KINDS`, `ContextDetail`, `ContextSource`, `EntityOccurrenceKey`, `EntityPageRequest`, `ExtensionSourceClassifier`, `HelperToolchain`, `ModulePageRequest`, `NoHelperToolchain`, `PageNamer`, `PageRenderer`, `PageRequest`, `SourceClassifier` |
-| `llm_wiki_engine.validation` | `portable_page_component`, `portable_path_key` |
+| `collections.abc` | `Iterable`, `Mapping` |
+| `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine.pack_interfaces` | `BuiltInPageRenderer`, `DomainPack`, `NoContextSource`, `StemPageNamer`, `_qualified_type_name`, `active_pack`, `using_pack`, `PAGE_REQUEST_KINDS`, `ContextDetail`, `ContextSource`, `EntityOccurrenceKey`, `EntityPageRequest`, `ExtensionSourceClassifier`, `HelperToolchain`, `ModulePageRequest`, `NoHelperToolchain`, `PageNamer`, `PageRenderer`, `PageRequest`, `SourceClassifier` |
 | `pathlib` | `PurePath` |
-| `re` | `re` |
 | `types` | `MappingProxyType` |
 | `typing` | `TYPE_CHECKING`, `Any` |
 
@@ -99,20 +93,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (8) |
+| Outbound | `src` (6) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [BuiltInPageRenderer](../entities/BuiltInPageRenderer.md) | 95 | — | Today's code-documentation pages; subclass it to adjust them. |
-| [CodeContextSource](../entities/CodeContextSource.md) | 124 | — | Code context: import neighbors, then classes and functions by detail. |
-| [CodeSourceClassifier](../entities/CodeSourceClassifier.md) | 242 | `ExtensionSourceClassifier` | The built-in languages; Go ``_test.go`` files are opt-in. |
-| [StemPageNamer](../entities/StemPageNamer.md) | 366 | — | Module pages take the source file stem, entity pages the entity name. |
-| [BundledHelperToolchain](../entities/BundledHelperToolchain.md) | 429 | `HelperToolchain` | The bundled Go, Rust, TypeScript and Haskell helpers and their cache. |
-| [DomainPack](../entities/DomainPack.md) | 483 | — | A named set of domain decisions: classification, naming, rendering, context, |
+| [BuiltInPageRenderer](../entities/domain_pack_BuiltInPageRenderer.md) | 96 | `_EngineBuiltInPageRenderer` | Today's code-documentation pages; subclass it to adjust them. |
+| [CodeContextSource](../entities/CodeContextSource.md) | 116 | — | Code context: import neighbors, then classes and functions by detail. |
+| [CodeSourceClassifier](../entities/CodeSourceClassifier.md) | 234 | `ExtensionSourceClassifier` | The built-in languages; Go ``_test.go`` files are opt-in. |
+| [StemPageNamer](../entities/domain_pack_StemPageNamer.md) | 256 | `_EngineStemPageNamer` | Module pages named by source stem, entity pages by entity name. |
+| [BundledHelperToolchain](../entities/BundledHelperToolchain.md) | 260 | `HelperToolchain` | The bundled Go, Rust, TypeScript and Haskell helpers and their cache. |
+| [DomainPack](../entities/domain_pack_DomainPack.md) | 288 | `_EngineDomainPack` | A named set of domain decisions: classification, naming, rendering, context, |
 
 ## Functions
 
@@ -122,16 +116,6 @@ flowchart LR
 | `context_related_sources` | `(inventory: Mapping[str, Mapping[str, Any]]) -> Mapping[str, Iterable[str]]` | — | Related sources from the current pack's context source. |
 | `context_entry` | `(data: Mapping[str, Any], detail: ContextDetail) -> dict[str, Any]` | — | One source's context entry from the current pack's context source. |
 | `uses_builtin_context_source` | `() -> bool` | — | Whether this context ranks and shows sources with :class:`CodeContextSource`. |
-| `_safe_page_component` | `(value: object, *, fallback: str = 'page') -> str` | — | — |
-| `_path_parts` | `(path: str) -> tuple[str, ...]` | — | — |
-| `_page_name_with_extension` | `(filepath: str) -> str` | — | A page-safe path stem that includes the source extension. |
-| `_page_name_from_source_path` | `(filepath: str) -> str` | — | A page-safe stem from the full source path without extension. |
-| `_disambiguate_paths` | `(filepaths: list[str], stem: str) -> dict[str, str]` | — | Add parent directories until every path sharing ``stem`` is unique. |
-| `_globally_disambiguate_module_pages` | `(page_map: dict[str, str]) -> dict[str, str]` | — | Resolve portable filesystem collisions after stem-group disambiguation. |
-| `_entity_occurrences` | `(inventory: Mapping[str, Mapping[str, Any]]) -> list[tuple[EntityOccurrenceKey, Mapping[str, Any]]]` | — | — |
-| `_check_extractors` | `(extractors: object, classifier: SourceClassifier) -> Mapping[str, str]` | — | — |
 | `pack_extractor` | `(source_kind: str, entry_point: str) -> bool` | — | Whether the active pack extracts ``source_kind`` with ``entry_point``. |
-| `_qualified_type_name` | `(value: object) -> str` | — | — |
-| `current_pack` | `() -> DomainPack` | — | The pack chosen for this context, or :data:`CODE_DOCS_PACK`. |
+| `current_pack` | `() -> _EngineDomainPack` | — | The pack chosen for this context, or :data:`CODE_DOCS_PACK`. |
 | `uses_default_pack` | `() -> bool` | — | Whether this context uses :data:`CODE_DOCS_PACK`. |
-| `using_pack` | `(pack: DomainPack) -> Iterator[DomainPack]` | `@contextmanager` | Classify, name, render and build context inside the block with ``pack``. |

@@ -1,6 +1,6 @@
 # HelperToolchain
 
-**Location:** `src/llm_wiki_engine/pack_interfaces.py:274`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:280`
 **Kind:** Class
 **Bases:** —
 **Module:** [pack_interfaces](../modules/pack_interfaces.md)
@@ -35,14 +35,17 @@ flowchart LR
     n0["HelperToolchain (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["BundledHelperToolchain (src/llm_wiki_cli/services/domain_pack.py)"]
     n2["NoHelperToolchain (src/llm_wiki_engine/pack_interfaces.py)"]
-    n3["DomainPack.with_helper_toolchain (src/llm_wiki_cli/services/domain_pack.py)"]
+    n3["src/llm_wiki_cli/services/domain_pack.py"]
+    n4["DomainPack.with_helper_toolchain (src/llm_wiki_engine/pack_interfaces.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/pack_interfaces.md"
     click n1 "../modules/domain_pack.md"
     click n2 "../modules/pack_interfaces.md"
     click n3 "../modules/domain_pack.md"
+    click n4 "../modules/pack_interfaces.md"
 ```
 
 ### Summary
@@ -62,4 +65,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `DomainPack.with_helper_toolchain` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |
+| `DomainPack.with_helper_toolchain` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |

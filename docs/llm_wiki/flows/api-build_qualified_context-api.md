@@ -2,7 +2,7 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), and 60 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), and 61 more
 
 **Complete modules touched:**
 
@@ -49,6 +49,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
 - [path_policy](../modules/path_policy.md)
@@ -172,7 +173,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1216; effect analysis evaluated: 836, partial: 49, unavailable: 331. Counts include steps omitted from the displayed trace.
 
-Collector observations for 885 source steps with known totals: observed: 5463, emitted: 5146, omitted: 317. Unavailable totals are excluded.
+Collector observations for 885 source steps with known totals: observed: 5458, emitted: 5141, omitted: 317. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

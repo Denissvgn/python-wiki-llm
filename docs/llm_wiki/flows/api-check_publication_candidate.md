@@ -2,7 +2,7 @@
 
 **Entry point:** `check_publication_candidate` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [domain_pack](../modules/domain_pack.md), and 16 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [domain_pack](../modules/domain_pack.md), and 17 more
 
 **Complete modules touched:**
 
@@ -15,6 +15,7 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [publication_candidate](../modules/publication_candidate.md)
 - [publication_config](../modules/publication_config.md)
 - [publication_contracts](../modules/publication_contracts.md)
@@ -97,7 +98,7 @@ sequenceDiagram
     p2-->>p30: json.dumps(…).encode (src/llm_wiki_cli/services…idate_publication_receipt)('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 1115 interactions; 1085 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1116 interactions; 1086 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 423 (422 omitted); unresolved 1 of 305 (304 omitted). These counts cover the captured static trace.
 
@@ -113,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/publication_contracts.py:_json_tree` | 9 | [src/llm_wiki_cli/services/publication_contracts.py](../modules/publication_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/publication_candidate.py:validate_publication_receipt` | 5 | [src/llm_wiki_cli/services/publication_candidate.py](../modules/publication_candidate.md) | internal | 8 |
 | `src/llm_wiki_cli/services/publication_candidate.py:_check_hash` | 33 | - | external | 2 |
-> Omission summary shows 8 of 235 groups; 227 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 236 groups; 228 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 388; effect analysis evaluated: 292, partial: 8, unavailable: 88. Counts include steps omitted from the displayed trace.
+Source steps: 389; effect analysis evaluated: 293, partial: 8, unavailable: 88. Counts include steps omitted from the displayed trace.
 
-Collector observations for 300 source steps with known totals: observed: 1401, emitted: 1365, omitted: 36. Unavailable totals are excluded.
+Collector observations for 301 source steps with known totals: observed: 1402, emitted: 1366, omitted: 36. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -63,19 +63,19 @@ sequenceDiagram
     participant p13 as validate_live_query_source_selection
     participant p14 as build_source_snapshot
     participant p15 as search_records
-    participant p16 as page_records
-    participant p17 as _page_membership
-    participant p18 as captured_manifest
-    participant p19 as _windows_sid_string
-    participant p20 as capture_source_index
-    participant p21 as capture_discovery
-    participant p22 as enrich_search
-    participant p23 as compact_line_bytes
-    participant p24 as source_snapshot_matches_current_files
-    participant p25 as SyncManifest.load
-    participant p26 as rank_pages (src/llm_wiki_engine/search_rank.py)
-    participant p27 as _object
-    participant p28 as provider
+    participant p16 as captured_manifest
+    participant p17 as _windows_sid_string
+    participant p18 as capture_source_index
+    participant p19 as capture_discovery
+    participant p20 as enrich_search
+    participant p21 as compact_line_bytes
+    participant p22 as source_snapshot_matches_current_files
+    participant p23 as SyncManifest.load
+    participant p24 as rank_pages (src/llm_wiki_engine/search_rank.py)
+    participant p25 as _object
+    participant p26 as provider
+    participant p27 as rank_pages (src/llm_wiki_engine/search_lexical.py)
+    participant p28 as _decode_json_object
     participant p29 as getattr (src/llm_wiki_cli/commands/search_cmd.py:run)
     participant p30 as Path(…).expanduser
     p0->>p1: validate_source_root
@@ -93,26 +93,26 @@ sequenceDiagram
     p9->>p13: validate_live_query_source_selection
     p9->>p14: build_source_snapshot
     p9->>p15: search_records
-    p9->>p16: page_records
-    p9->>p17: _page_membership
-    p9->>p18: captured_manifest
-    p7->>p19: _windows_sid_string
-    p9->>p20: capture_source_index
-    p9->>p21: capture_discovery
-    p9->>p22: enrich_search
-    p9->>p23: compact_line_bytes
-    p9->>p24: source_snapshot_matches_current_files
-    p13->>p25: SyncManifest.load
-    p15->>p26: rank_pages (src/llm_wiki_engine/search_rank.py)
-    p22->>p27: _object
-    p12->>p28: provider
+    p9->>p16: captured_manifest
+    p7->>p17: _windows_sid_string
+    p9->>p18: capture_source_index
+    p9->>p19: capture_discovery
+    p9->>p20: enrich_search
+    p9->>p21: compact_line_bytes
+    p9->>p22: source_snapshot_matches_current_files
+    p13->>p23: SyncManifest.load
+    p15->>p24: rank_pages (src/llm_wiki_engine/search_rank.py)
+    p20->>p25: _object
+    p12->>p26: provider
+    p15->>p27: rank_pages (src/llm_wiki_engine/search_lexical.py)
+    p16->>p28: _decode_json_object
     p0-->>p29: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'include_source', False)
     p1-->>p30: Path(…).expanduser
 ```
 
-> Call sequence diagram shows 30 of 1076 interactions; 1046 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1068 interactions; 1038 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 433 (432 omitted); unresolved 1 of 307 (306 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 432 (431 omitted); unresolved 1 of 307 (306 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | - | external | 10 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-> Omission summary shows 8 of 180 groups; 172 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 173 groups; 165 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 337; effect analysis evaluated: 245, partial: 11, unavailable: 81. Counts include steps omitted from the displayed trace.
+Source steps: 330; effect analysis evaluated: 238, partial: 11, unavailable: 81. Counts include steps omitted from the displayed trace.
 
-Collector observations for 256 source steps with known totals: observed: 1245, emitted: 1211, omitted: 34. Unavailable totals are excluded.
+Collector observations for 249 source steps with known totals: observed: 1217, emitted: 1183, omitted: 34. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -1,7 +1,7 @@
 # capture_analysis
 
 **Entry point:** `analysis_capture.capture_analysis`
-**Modules involved:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [extractor_helpers](../modules/extractor_helpers.md), [helper_cache](../modules/helper_cache.md), [helper_runtime](../modules/helper_runtime.md)
+**Modules involved:** [analysis_capture](../modules/analysis_capture.md), [extractor_helpers](../modules/extractor_helpers.md), [helper_cache](../modules/helper_cache.md), [helper_runtime](../modules/helper_runtime.md)
 
 > Capture immutable JSON inputs once; unavailable providers stay unknown.
 
@@ -11,18 +11,14 @@
 1. `helper_cache.cache_roots`
 2. `helper_runtime.current_helper_operation`
 3. `helper_runtime.pinned_helper`
-4. `analysis_compatibility.digest`
-5. `analysis_compatibility.digest`
-6. `helper_runtime.pinned_helper`
-7. `helper_cache.validate_handle`
-8. `helper_cache.lookup_helper`
-9. `extractor_helpers.command_output`
-10. `analysis_compatibility.digest`
+4. `helper_runtime.pinned_helper`
+5. `helper_cache.validate_handle`
+6. `helper_cache.lookup_helper`
+7. `extractor_helpers.command_output`
 
 ## Touches
 
 - [analysis_capture](../modules/analysis_capture.md)
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [helper_cache](../modules/helper_cache.md)
 - [helper_runtime](../modules/helper_runtime.md)

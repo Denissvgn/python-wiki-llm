@@ -2,7 +2,7 @@
 
 **Entry point:** `recover_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 35 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 36 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
@@ -116,9 +117,9 @@ sequenceDiagram
     p2-->>p30: intent.get('adoption_id')
 ```
 
-> Call sequence diagram shows 30 of 1886 interactions; 1856 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1887 interactions; 1857 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 595 (594 omitted); unresolved 1 of 418 (417 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 595 (594 omitted); unresolved 1 of 419 (418 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -147,7 +148,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 874; effect analysis evaluated: 553, partial: 30, unavailable: 291. Counts include steps omitted from the displayed trace.
 
-Collector observations for 583 source steps with known totals: observed: 3271, emitted: 3158, omitted: 113. Unavailable totals are excluded.
+Collector observations for 583 source steps with known totals: observed: 3268, emitted: 3155, omitted: 113. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

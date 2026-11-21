@@ -1,6 +1,6 @@
 # BundledHelperToolchain
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:429`
+**Location:** `src/llm_wiki_cli/services/domain_pack.py:260`
 **Kind:** Class
 **Bases:** `HelperToolchain`
 **Module:** [domain_pack](../modules/domain_pack.md)
