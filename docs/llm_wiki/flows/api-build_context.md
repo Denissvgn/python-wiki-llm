@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [context_packet_builder](../modules/context_packet_builder.md), and 47 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [context_packet_builder](../modules/context_packet_builder.md), and 48 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,7 @@
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [implementation_summary](../modules/implementation_summary.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)

@@ -205,3 +205,27 @@ def test_an_engine_choice_wins_over_its_pack(fake_providers):
         Engine(integrations={"source_snapshots": beta})  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="IntegrationSet"):
         CODE_DOCS_PACK.with_integrations({"source_snapshots": beta})  # type: ignore[arg-type]
+
+
+def test_packet_builder_names_resolve_through_the_integration():
+    from llm_wiki_engine import context_packet
+
+    builders = integrations.provider("packet_builders")
+    assert context_packet.capture_context_read is builders.capture_context_read
+    with integrations.using_integrations(integrations.IntegrationSet(inherit=False)):
+        with pytest.raises(AttributeError, match="packet_builders"):
+            context_packet.capture_context_read  # noqa: B018
+        assert not hasattr(context_packet, "reconcile_context_packet")
+    with pytest.raises(AttributeError):
+        context_packet.not_a_builder  # noqa: B018
+
+
+def test_engine_packet_validation_loads_no_application_code():
+    fixture = Path(__file__).resolve().parent / "fixtures" / "context-packet-v1.json"
+    probe = (
+        "import json, sys; from llm_wiki_engine import context_packet; "
+        f"context_packet.validate_context_packet(open({str(fixture)!r}, 'rb').read()); "
+        "print(sorted(m for m in sys.modules if m.split('.')[0] == 'llm_wiki_cli'))"
+    )
+    result = subprocess.run([sys.executable, "-I", "-c", probe], capture_output=True, text=True, check=True)
+    assert result.stdout.strip() == "[]"

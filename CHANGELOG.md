@@ -28,6 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `llm_wiki_cli.services.domain_pack` and `llm_wiki_cli.engine`, but a pack
   description now names `ExtensionSourceClassifier` and `NoHelperToolchain`
   by their engine module.
+- The Qualified Context Packet format moves to `llm_wiki_engine.context_packet`,
+  together with `context_response_format`, `context_budget_format` and the
+  implementation summary check (`llm_wiki_engine.implementation_summary`).
+  Validating a packet now loads no `llm_wiki_cli` code. The
+  `llm_wiki_cli.services` paths of the three modules still work and raise a
+  `DeprecationWarning` naming the engine path. The packet builder names
+  `context_packet` re-exports come from the new `packet_builders` integration,
+  which `llm_wiki_cli` provides.
 - `llm_wiki_engine.integrations.provided()` reports the providers in effect
   where it is called, including an active `IntegrationSet`;
   `integrations.defaults()` reports the process-wide ones.

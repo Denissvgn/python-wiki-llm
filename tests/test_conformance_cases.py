@@ -15,10 +15,11 @@ from jsonschema import Draft202012Validator
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli import api_types
-from llm_wiki_cli.services import context_budget, context_budget_format, context_packet, data_flow, entrypoints, maintenance_queue, search_service
+from llm_wiki_cli.services import context_budget, data_flow, entrypoints, maintenance_queue, search_service
+from llm_wiki_engine import context_budget_format, context_packet
 from llm_wiki_engine import context_request_format, contracts, extract_format, maintenance_projection, maintenance_queue_format, maintenance_state, maintenance_status, maintenance_status_format, query_result_format, search_lexical, search_rank, surface_index_format, wiki_surface, wiki_surface_index
 from llm_wiki_engine.wiki_media import build_asset_index
-from llm_wiki_cli.services.context_packet import (
+from llm_wiki_engine.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     CONTEXT_PACKET_SCHEMA_VERSION,
     validate_context_packet,

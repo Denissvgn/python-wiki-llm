@@ -16,7 +16,8 @@ import urllib.request
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import context_packet as packets, plugins
+from llm_wiki_cli.services import plugins
+from llm_wiki_engine import context_packet as packets
 from llm_wiki_cli.services import context_packet_builder as packet_builder
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from tests.test_context_integration import canonical, cli_context, tree_state

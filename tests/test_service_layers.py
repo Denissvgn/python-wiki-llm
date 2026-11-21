@@ -310,7 +310,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.extraction_service",
         }
     ),
-    "context_packet": frozenset({"services.implementation_evidence"}),
     "context_packet_builder": frozenset(
         {
             "llm_wiki_cli",
@@ -941,7 +940,9 @@ def test_engine_package_loads_without_the_provider_or_third_party_modules() -> N
 
 
 # Engine modules written for the engine, which never had a services path.
-ENGINE_NATIVE_MODULES = frozenset({"infrastructure_state", "integrations", "knowledge_reuse_format", "pack_interfaces"})
+ENGINE_NATIVE_MODULES = frozenset({
+    "implementation_summary", "infrastructure_state", "integrations", "knowledge_reuse_format", "pack_interfaces",
+})
 
 
 def test_engine_native_modules_have_no_services_path() -> None:
@@ -1039,8 +1040,11 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
         import llm_wiki_cli.services.canonical_json
         import llm_wiki_cli.services.circuit_breaker
         import llm_wiki_cli.services.concept_identity
+        import llm_wiki_cli.services.context_budget_format
         import llm_wiki_cli.services.context_knowledge_contract
+        import llm_wiki_cli.services.context_packet
         import llm_wiki_cli.services.context_request_format
+        import llm_wiki_cli.services.context_response_format
         import llm_wiki_cli.services.contracts
         import llm_wiki_cli.services.engine_events
         import llm_wiki_cli.services.extract_format
@@ -1126,8 +1130,11 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
         (llm_wiki_cli.services.canonical_json, "canonical_json"),
         (llm_wiki_cli.services.circuit_breaker, "circuit_breaker"),
         (llm_wiki_cli.services.concept_identity, "concept_identity"),
+        (llm_wiki_cli.services.context_budget_format, "context_budget_format"),
         (llm_wiki_cli.services.context_knowledge_contract, "context_knowledge_contract"),
+        (llm_wiki_cli.services.context_packet, "context_packet"),
         (llm_wiki_cli.services.context_request_format, "context_request_format"),
+        (llm_wiki_cli.services.context_response_format, "context_response_format"),
         (llm_wiki_cli.services.contracts, "contracts"),
         (llm_wiki_cli.services.engine_events, "engine_events"),
         (llm_wiki_cli.services.extract_format, "extract_format"),

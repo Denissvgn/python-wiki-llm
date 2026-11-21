@@ -51,6 +51,10 @@ CAPABILITIES: Mapping[str, str] = MappingProxyType({
     "maintenance_reports": "maintenance_report_from_captured for captured maintenance status",
     "inventory_results": "InventoryResult, one captured source inventory",
     "domain_packs": "current_pack, the active domain pack (classifier and page namer)",
+    "packet_builders": (
+        "the context packet builders and reconciliation (build_context_packet, "
+        "reconcile_context_packet and the other names context_packet re-exports)"
+    ),
 })
 
 _MODULE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*")

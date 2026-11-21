@@ -11,7 +11,7 @@ import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.services import context_budget as budget
-from llm_wiki_cli.services import context_packet as packets
+from llm_wiki_engine import context_packet as packets
 from llm_wiki_cli.services import context_packet_builder as packet_builder
 from llm_wiki_cli.services import context_service as context
 from llm_wiki_cli.services.token_counting import EstimatedCounter

@@ -26,10 +26,10 @@ Field-specific validation failure while constructing an envelope.
 flowchart LR
     n0["KnowledgeEnvelopeError (src/llm_wiki_engine/knowledge_envelope.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
-    n3["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n2["src/llm_wiki_cli/services/documentation_wiki_input.py"]
+    n3["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n5["src/llm_wiki_engine/context_packet.py"]
     n6["_build_component (src/llm_wiki_engine/knowledge_envelope.py)"]
     n7["_canonical_consumed_input_kind (src/llm_wiki_engine/knowledge_envelope.py)"]
     n8["_evaluated_revision (src/llm_wiki_engine/knowledge_envelope.py)"]
@@ -52,10 +52,10 @@ flowchart LR
     n12 --> n0
     n13 --> n0
     click n0 "../modules/knowledge_envelope.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/documentation_wiki_input.md"
-    click n4 "../modules/knowledge_generation.md"
-    click n5 "../modules/knowledge_projection.md"
+    click n2 "../modules/documentation_wiki_input.md"
+    click n3 "../modules/knowledge_generation.md"
+    click n4 "../modules/knowledge_projection.md"
+    click n5 "../modules/context_packet.md"
     click n6 "../modules/knowledge_envelope.md"
     click n7 "../modules/knowledge_envelope.md"
     click n8 "../modules/knowledge_envelope.md"
@@ -82,10 +82,10 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `_build_component` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 5 |
 | `_canonical_consumed_input_kind` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 4 |
 | `_evaluated_revision` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 2 |

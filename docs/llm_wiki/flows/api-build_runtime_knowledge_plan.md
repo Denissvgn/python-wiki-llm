@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 46 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,7 @@
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [implementation_summary](../modules/implementation_summary.md)
 - [infrastructure_state](../modules/infrastructure_state.md)
 - [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
@@ -142,7 +143,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
-> Omission summary shows 8 of 828 groups; 820 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 831 groups; 823 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

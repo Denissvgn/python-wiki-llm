@@ -490,7 +490,7 @@ def _normalize_environment(value: Any) -> dict[str, Any]:
 
 
 def _validated_packet(value: Any, field: str) -> dict[str, Any]:
-    from llm_wiki_cli.services.context_packet import (
+    from llm_wiki_engine.context_packet import (
         ContextPacketError,
         QualifiedContextPacket,
         validate_context_packet,

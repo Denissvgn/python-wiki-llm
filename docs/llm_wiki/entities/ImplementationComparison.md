@@ -1,6 +1,6 @@
 # ImplementationComparison
 
-**Location:** `src/llm_wiki_cli/services/implementation_evidence.py:713`
+**Location:** `src/llm_wiki_cli/services/implementation_evidence.py:665`
 **Kind:** Class
 **Bases:** —
 **Module:** [implementation_evidence](../modules/implementation_evidence.md)

@@ -37,7 +37,6 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 |--------|---------|
 | `.change_selection` | `changes_from_args`, `changes_from_args` |
 | `.context_budget` | `run`, `run` |
-| `.context_packet` | `ContextPacketError` |
 | `.context_packet_builder` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `build_qualified_context` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
@@ -60,6 +59,7 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `json` | `json` |
 | `llm_wiki_engine` | `wiki_surface` |
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
+| `llm_wiki_engine.context_packet` | `ContextPacketError` |
 | `llm_wiki_engine.context_request_format` | `_CONCEPT_FILTER_KEYS`, `_CONTEXT_QUERY_LIMIT`, `_EVIDENCE_FILTER_VALUES`, `_FILTER_KEYS`, `_FOCUS_VALUES`, `_FORMATS`, `_FRESHNESS_FILTER_VALUES`, `_KNOWLEDGE_REFINEMENT_KEYS`, `_normalise_protocol_filters`, `_normalise_protocol_focus`, `_PROTOCOL_REQUEST_KEYS`, `_QUALIFIED_RELATIONSHIP_KIND_RE`, `_RELATIONSHIP_DIRECTIONS`, `_RELATIONSHIP_REFINEMENT_KEYS`, `_V1_REQUEST_KEYS`, `_V2_REQUEST_KEYS`, `_validate_enum_filter`, `_validate_protocol_request`, `_validate_protocol_request_impl`, `_validate_relationship_kind_filter`, `_validate_surface_filter`, `CONTEXT_KNOWLEDGE_CONCEPT_LIMIT`, `CONTEXT_KNOWLEDGE_PAGE_LIMIT`, `CONTEXT_KNOWLEDGE_RELATIONSHIP_LIMIT`, `KNOWLEDGE_PROTOCOL_VERSION`, `PROTOCOL_VERSION`, `ProtocolRequestError` |
 | `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `llm_wiki_engine.host` | `current_host`, `emit` |

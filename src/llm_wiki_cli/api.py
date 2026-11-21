@@ -73,7 +73,7 @@ from .config import (
     validate_path,
     validate_source_root,
 )
-from .services import context_packet as context_packet_service
+from llm_wiki_engine import context_packet as context_packet_service
 from .services import context_packet_builder
 from .services.context_budget import BudgetedContext as BudgetedContext
 from .services.token_counting import TokenCounter as TokenCounter

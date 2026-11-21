@@ -72,26 +72,7 @@ from .source_snapshot import (
     source_snapshot_matches_current_files,
 )
 from llm_wiki_engine.wiki_surface_index import SurfaceIndexEvaluation, evaluate_surface_index
-from .context_packet import (
-    _context_policy_digest,
-    _domain_hash,
-    _encode_packet_payload,
-    _freeze_json,
-    _KNOWLEDGE_PACKET_CONTRACT,
-    _LEGACY_PACKET_CONTRACT,
-    _LIMITATION_RE,
-    _packet_id,
-    _packet_limitations,
-    _PacketWireContract,
-    _path_policy_receipt,
-    _thaw_json,
-    CONTEXT_PACKET_ASSURANCE_LEVEL,
-    ContextPacketError,
-    ContextPacketMalformedError,
-    ContextPacketPathPolicyError,
-    QualifiedContextPacket,
-    validate_context_packet,
-)
+from llm_wiki_engine.context_packet import _context_policy_digest, _domain_hash, _encode_packet_payload, _freeze_json, _KNOWLEDGE_PACKET_CONTRACT, _LEGACY_PACKET_CONTRACT, _LIMITATION_RE, _packet_id, _packet_limitations, _PacketWireContract, _path_policy_receipt, _thaw_json, CONTEXT_PACKET_ASSURANCE_LEVEL, ContextPacketError, ContextPacketMalformedError, ContextPacketPathPolicyError, QualifiedContextPacket, validate_context_packet
 
 
 CONTEXT_PACKET_RECONCILIATION_POLICY = "qualified-context-complete-policy-v1"

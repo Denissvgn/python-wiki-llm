@@ -10,7 +10,7 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service`, `context_packet_builder` |
+| `.` | `context_service`, `context_packet_builder` |
 | `.analysis_capture` | `validate_analysis_diagnostics` |
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render`, `fit_payload`, `validate_request` |
@@ -26,6 +26,7 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass`, `replace` |
 | `json` | `json` |
+| `llm_wiki_engine` | `context_packet` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.knowledge_consumption` | `load_knowledge_read_view` |
 | `llm_wiki_engine.knowledge_envelope` | `hash_source_snapshot` |
@@ -65,8 +66,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TaskCancelledError](../entities/TaskCancelledError.md) | 43 | `RuntimeError` | The trusted host cancelled before a task result was published. |
-| [TaskRead](../entities/TaskRead.md) | 48 | — | Private ownership retained only by an explicit bounded session. |
+| [TaskCancelledError](../entities/TaskCancelledError.md) | 44 | `RuntimeError` | The trusted host cancelled before a task result was published. |
+| [TaskRead](../entities/TaskRead.md) | 49 | — | Private ownership retained only by an explicit bounded session. |
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # TaskCancelledError
 
-**Location:** `src/llm_wiki_cli/services/task_context.py:43`
+**Location:** `src/llm_wiki_cli/services/task_context.py:44`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [task_context](../modules/task_context.md)

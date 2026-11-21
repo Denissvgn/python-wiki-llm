@@ -1,6 +1,6 @@
 # ImplementationReport
 
-**Location:** `src/llm_wiki_cli/services/implementation_evidence.py:738`
+**Location:** `src/llm_wiki_cli/services/implementation_evidence.py:690`
 **Kind:** Class
 **Bases:** —
 **Module:** [implementation_evidence](../modules/implementation_evidence.md)

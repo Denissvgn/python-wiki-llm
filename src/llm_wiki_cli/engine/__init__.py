@@ -43,16 +43,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar
 
-from ..services.context_budget_format import (
-    CONTEXT_BUDGET_RESPONSE_PROTOCOL,
-    BudgetedContextResponseError,
-    validate_budgeted_context_response,
-)
-from ..services.context_response_format import (
-    CONTEXT_RESPONSE_PROTOCOLS,
-    ContextResponseError,
-    validate_context_response,
-)
+from llm_wiki_engine.context_budget_format import CONTEXT_BUDGET_RESPONSE_PROTOCOL, BudgetedContextResponseError, validate_budgeted_context_response
+from llm_wiki_engine.context_response_format import CONTEXT_RESPONSE_PROTOCOLS, ContextResponseError, validate_context_response
 from llm_wiki_engine.query_result_format import (
     DOCUMENTATION_QUERY_SCHEMA_VERSION,
     SEARCH_RESULT_SCHEMA_VERSION,

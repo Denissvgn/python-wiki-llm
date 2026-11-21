@@ -2,7 +2,7 @@
 
 **Entry point:** `build_knowledge_generation_plan` (`api`)
 **Source:** [knowledge_generation](../modules/knowledge_generation.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 40 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 41 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,7 @@
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [implementation_summary](../modules/implementation_summary.md)
 - [infrastructure_state](../modules/infrastructure_state.md)
 - [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
@@ -136,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 15 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 15 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_source_hashes` | 32 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 2 |
-> Omission summary shows 8 of 1038 groups; 1030 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1044 groups; 1036 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

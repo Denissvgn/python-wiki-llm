@@ -10,7 +10,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service`, `context_packet_builder` |
+| `.` | `context_service`, `context_packet_builder` |
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render` |
 | `.dependencies` | `analyze_dependencies` |
@@ -26,6 +26,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine` | `context_packet` |
 | `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY` |
 | `llm_wiki_engine.knowledge_envelope` | `ConsumedInput`, `hash_source_snapshot` |
 | `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `_normalise_edge` |
@@ -73,7 +74,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 276 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 277 | — | — |
 
 ## Functions
 

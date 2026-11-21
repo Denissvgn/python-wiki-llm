@@ -12,14 +12,10 @@ from typing import Any
 import pytest
 
 from llm_wiki_cli import __version__
-from llm_wiki_cli.services import (
-    context_packet,
-    extraction_service,
-    plugins,
-    source_snapshot as source_snapshot_module,
-)
+from llm_wiki_cli.services import extraction_service, plugins, source_snapshot as source_snapshot_module
+from llm_wiki_engine import context_packet
 from llm_wiki_cli.services import context_packet_builder
-from llm_wiki_cli.services.context_packet import (
+from llm_wiki_engine.context_packet import (
     CONTEXT_PACKET_ASSURANCE_LEVEL,
     CONTEXT_PACKET_SCHEMA_VERSION,
     ContextPacketMalformedError,

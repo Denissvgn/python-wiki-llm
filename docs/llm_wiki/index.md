@@ -7,10 +7,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 770 | [Open section](#entities) |
-| Modules | 312 | [Open section](#modules) |
-| Workflows | 316 | [Open section](#workflows) |
+| Modules | 313 | [Open section](#modules) |
+| Workflows | 317 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 506 | [Open section](#entry-point-flows) |
+| Entry-point flows | 507 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -895,6 +895,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
 - [impact](modules/impact.md) - Deterministic advisory change impact and bounded CI presentations.
 - [implementation_evidence](modules/implementation_evidence.md) - Pure, bounded persistence and comparison of captured implementation syntax.
+- [implementation_summary](modules/implementation_summary.md) - The implementation summary a context packet may carry.
 - [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
 - [infrastructure_inventory](modules/infrastructure_inventory.md) - Structured observations for recognized infrastructure YAML formats.
 - [infrastructure_state](modules/infrastructure_state.md) - Persisted infrastructure state: its format and the evidence it projects.
@@ -1396,6 +1397,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validate_artifact_parity](workflows/validate_artifact_parity.md) - entry: `knowledge_artifacts._validate_artifact_parity`
 - [validate_builder_link](workflows/validate_builder_link.md) - entry: `knowledge_index._validate_builder_link`
 - [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
+- [validate_implementation_evidence](workflows/validate_implementation_evidence.md) - entry: `implementation_evidence.validate_implementation_evidence`
 - [validate_knowledge_artifacts](workflows/validate_knowledge_artifacts.md) - entry: `knowledge_artifacts.validate_knowledge_artifacts`
 - [validate_live_query_source_selection](workflows/validate_live_query_source_selection.md) - entry: `documentation_query_builder.validate_live_query_source_selection`
 - [validate_maintenance_concept_projection](workflows/validate_maintenance_concept_projection.md) - entry: `maintenance_projection.validate_maintenance_concept_projection`
@@ -1854,6 +1856,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-validate_governance_ledger](flows/api-validate_governance_ledger.md) - entry: `validate_governance_ledger`
 - [api-validate_governance_projection](flows/api-validate_governance_projection.md) - entry: `validate_governance_projection`
 - [api-validate_identity_registry](flows/api-validate_identity_registry.md) - entry: `validate_identity_registry`
+- [api-validate_implementation_summary](flows/api-validate_implementation_summary.md) - entry: `validate_implementation_summary`
 - [api-validate_knowledge_artifacts](flows/api-validate_knowledge_artifacts.md) - entry: `validate_knowledge_artifacts`
 - [api-validate_knowledge_index](flows/api-validate_knowledge_index.md) - entry: `validate_knowledge_index`
 - [api-validate_knowledge_payload](flows/api-validate_knowledge_payload.md) - entry: `validate_knowledge_payload`
