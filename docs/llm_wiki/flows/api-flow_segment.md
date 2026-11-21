@@ -11,7 +11,6 @@
 - [common](../modules/common.md)
 - [context_packet](../modules/context_packet.md)
 - [context_packet_builder](../modules/context_packet_builder.md)
-- [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -29,6 +28,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [path_policy](../modules/path_policy.md)
 - [python_implementation](../modules/python_implementation.md)
+- [query_request_format](../modules/query_request_format.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -117,11 +117,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 8 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 10 | - | external | 3 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 10 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_limit` | 10 | - | external | 3 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_limit` | 10 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_run_query` | 16 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_run_query` | 16 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
-> Omission summary shows 8 of 203 groups; 195 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 202 groups; 194 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -154,8 +154,8 @@ Collector observations for 230 source steps with known totals: observed: 1352, e
 | `_normalize_query_limit` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_normalize_query_input` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 | `normalize_documentation_query_limit` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `isinstance (src/llm_wiki_cli/services…documentation_query_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…documentation_query_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/query…documentation_query_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/query…documentation_query_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -169,8 +169,8 @@ flowchart LR
     s8["8. _normalize_query_limit"]
     s9["9. _normalize_query_input"]
     s10["10. normalize_documentation_query_limit"]
-    s11["11. isinstance (src/llm_wiki_cli/services…documentation_query_limit)"]
-    s12["12. isinstance (src/llm_wiki_cli/services…documentation_query_limit)"]
+    s11["11. isinstance (src/llm_wiki_engine/query…documentation_query_limit)"]
+    s12["12. isinstance (src/llm_wiki_engine/query…documentation_query_limit)"]
     s1 -->|"_normalize_query_input(...)"| s2
     s2 -. "callback (src/llm_wiki_cli/api.py:_normalize_query_input)(data not statically known)" .-> s3
     s2 -->|"InvalidRequestError(str(...), code='invalid-request', details={...})"| s4
@@ -180,15 +180,15 @@ flowchart LR
     s7 -->|"_normalize_query_limit(value)"| s8
     s8 -->|"_normalize_query_input(..., field='limit')"| s9
     s8 -->|"normalize_documentation_query_limit(value)"| s10
-    s10 -. "isinstance (src/llm_wiki_cli/services…documentation_query_limit)(value, bool)" .-> s11
-    s10 -. "isinstance (src/llm_wiki_cli/services…documentation_query_limit)(value, int)" .-> s12
+    s10 -. "isinstance (src/llm_wiki_engine/query…documentation_query_limit)(value, bool)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_engine/query…documentation_query_limit)(value, int)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/api.md"
     click s4 "../modules/api.md"
     click s7 "../modules/api.md"
     click s8 "../modules/api.md"
     click s9 "../modules/api.md"
-    click s10 "../modules/documentation_query_builder.md"
+    click s10 "../modules/query_request_format.md"
 ```
 
 ### Step data
@@ -205,8 +205,8 @@ flowchart LR
 | `_normalize_query_limit` | `value: object` | - | - | `_normalize_query_input(...)` |
 | `_normalize_query_input` | `callback: Callable[[], _R]`, `field: str` | `DocumentationQueryError` | - | `callback(...)` |
 | `normalize_documentation_query_limit` | `value: object` | `MAX_DOCUMENTATION_QUERY_LIMIT` | - | `min(...)` |
-| `isinstance (src/llm_wiki_cli/services…documentation_query_limit)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…documentation_query_limit)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/query…documentation_query_limit)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/query…documentation_query_limit)` | - | - | - | - |
 
 ### Call data
 
@@ -221,8 +221,8 @@ flowchart LR
 | _effective_query_limit | _normalize_query_limit | 2376 | `_normalize_query_limit(value)` |
 | _normalize_query_limit | _normalize_query_input | 2364 | `_normalize_query_input(..., field='limit')` |
 | _normalize_query_limit | normalize_documentation_query_limit | 2365 | `normalize_documentation_query_limit(value)` |
-| normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 57 | `isinstance(value, bool)` |
-| normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 57 | `isinstance(value, int)` |
+| normalize_documentation_query_limit | isinstance (src/llm_wiki_engine/query…documentation_query_limit) | 41 | `isinstance(value, bool)` |
+| normalize_documentation_query_limit | isinstance (src/llm_wiki_engine/query…documentation_query_limit) | 41 | `isinstance(value, int)` |
 
 ### Boundary effects
 
@@ -234,7 +234,7 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `_normalize_query_input` | `callback` | 2274 |
 | unresolved_call | `flow_segment` | `validate_request` | 2395 |
-| external_call | `normalize_documentation_query_limit` | `isinstance` | 57 |
+| external_call | `normalize_documentation_query_limit` | `isinstance` | 41 |
 | step_limit | `flow_segment` | `first 12 steps` | 0 |
 | truncated_flow | `flow_segment` | `depth limit` | 0 |
 

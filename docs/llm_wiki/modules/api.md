@@ -50,14 +50,12 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.publication_candidate` | `export_publication_candidate`, `check_publication_candidate`, `review_publication_candidate`, `validate_publication_receipt` |
 | `.services.publication_impact` | `capture_publication_basis`, `compare_publication_impact`, `resolve_publication_finding` |
 | `.services.publication_maintenance` | `build_publication_patch`, `prepare_publication_maintenance` |
-| `.services.search_service` | `search_wiki` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
 | `.services.sync_runtime` | `execute_sync` |
 | `.services.sync_service` | `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError` |
 | `.services.task_compact` | `CompactTaskContext`, `render_compact_task_context`, `validate_compact_task_context`, `expand_compact_task_context` |
 | `.services.task_compact_delivery` | `build_compact_task_context` |
 | `.services.task_context` | `build_task_context`, `validate_task_context`, `reconcile_task_context` |
-| `.services.task_contract` | `TaskContext` |
 | `.services.token_counting` | `TokenCounter` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
@@ -79,8 +77,10 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `llm_wiki_engine.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `llm_wiki_engine.search_service` | `search_wiki` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `llm_wiki_engine.storage_receipts` | `expand_storage_receipt` |
+| `llm_wiki_engine.task_contract` | `TaskContext` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |
 | `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |

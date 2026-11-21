@@ -1,14 +1,14 @@
 # impact_query
 
 **Entry point:** `api._impact_query`
-**Modules involved:** [api](../modules/api.md), [documentation_query_builder](../modules/documentation_query_builder.md), [path_policy](../modules/path_policy.md), [source_selection](../modules/source_selection.md)
+**Modules involved:** [api](../modules/api.md), [documentation_query_builder](../modules/documentation_query_builder.md), [path_policy](../modules/path_policy.md), [query_request_format](../modules/query_request_format.md), [source_selection](../modules/source_selection.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `documentation_query_builder.normalize_supplied_paths`
+1. `query_request_format.normalize_supplied_paths`
 2. `documentation_query_builder.supplied_paths_from_unified_diff`
-3. `documentation_query_builder.normalize_supplied_paths`
+3. `query_request_format.normalize_supplied_paths`
 4. `path_policy.validate_source_root`
 5. `source_selection.resolve_source_selection`
 6. `source_selection.path_is_selected`
@@ -20,6 +20,7 @@
 - [api](../modules/api.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [path_policy](../modules/path_policy.md)
+- [query_request_format](../modules/query_request_format.md)
 - [source_selection](../modules/source_selection.md)
 
 ## Behavior

@@ -13,7 +13,7 @@ from llm_wiki_cli.services.current_contracts import current_contract_defaults, u
 from llm_wiki_engine.knowledge_artifacts import current_knowledge_format
 from llm_wiki_engine.manifest_storage import current_manifest_format
 from llm_wiki_cli.services.schema import SCHEMA_FILENAMES
-from llm_wiki_cli.services.task_contract import normalize_task_request
+from llm_wiki_engine.task_contract import normalize_task_request
 
 
 def files(root):

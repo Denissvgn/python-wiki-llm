@@ -33,11 +33,11 @@ flowchart LR
     n6["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
     n7["src/llm_wiki_cli/services/module_coverage.py"]
     n8["_build_snapshot (src/llm_wiki_cli/services/publication_snapshot.py)"]
-    n9["src/llm_wiki_cli/services/search_service.py"]
-    n10["src/llm_wiki_cli/services/sync_analysis_cache.py"]
-    n11["src/llm_wiki_cli/services/sync_generated_sections.py"]
-    n12["src/llm_wiki_cli/services/sync_transition_execution.py"]
-    n13["src/llm_wiki_cli/services/sync_transitions.py"]
+    n9["src/llm_wiki_cli/services/sync_analysis_cache.py"]
+    n10["src/llm_wiki_cli/services/sync_generated_sections.py"]
+    n11["src/llm_wiki_cli/services/sync_transitions.py"]
+    n12["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n13["_blobs (src/llm_wiki_cli/services/wiki_git_delivery.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -59,11 +59,11 @@ flowchart LR
     click n6 "../modules/knowledge_reuse.md"
     click n7 "../modules/module_coverage.md"
     click n8 "../modules/publication_snapshot.md"
-    click n9 "../modules/search_service.md"
-    click n10 "../modules/sync_analysis_cache.md"
-    click n11 "../modules/sync_generated_sections.md"
-    click n12 "../modules/sync_transition_execution.md"
-    click n13 "../modules/sync_transitions.md"
+    click n9 "../modules/sync_analysis_cache.md"
+    click n10 "../modules/sync_generated_sections.md"
+    click n11 "../modules/sync_transitions.md"
+    click n12 "../modules/task_context_v2.md"
+    click n13 "../modules/wiki_git_delivery.md"
 ```
 
 ### Summary
@@ -89,10 +89,10 @@ flowchart LR
 | `maintenance_reuse_check` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 2 |
 | `module_coverage` | import | [module_coverage](../modules/module_coverage.md) | — |
 | `_build_snapshot` | call | [publication_snapshot](../modules/publication_snapshot.md) | 5 |
-| `search_service` | import | [search_service](../modules/search_service.md) | — |
 | `sync_analysis_cache` | import | [sync_analysis_cache](../modules/sync_analysis_cache.md) | — |
 | `sync_generated_sections` | import | [sync_generated_sections](../modules/sync_generated_sections.md) | — |
-| `sync_transition_execution` | import | [sync_transition_execution](../modules/sync_transition_execution.md) | — |
 | `sync_transitions` | import | [sync_transitions](../modules/sync_transitions.md) | — |
+| `ScopedTaskState.revalidate` | call | [task_context_v2](../modules/task_context_v2.md) | 3 |
+| `_blobs` | call | [wiki_git_delivery](../modules/wiki_git_delivery.md) | 4 |
 
 > References: showing 12 of 100 logical references; 88 omitted by the 12-row generated summary limit.

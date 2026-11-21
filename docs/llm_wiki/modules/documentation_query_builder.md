@@ -13,7 +13,7 @@ Shared construction for supported documentation query services.
 | `.` | `context_service`, `extraction_service` |
 | `.context_packet_builder` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor`, `confirmed_missing_source_paths` |
 | `.dependencies` | `analyze_dependencies` |
-| `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `QUERY_IDENTITY_BYTE_LIMIT` |
+| `.documentation_queries` | `DocumentationGraphQueryService` |
 | `.entrypoints` | `build_flow` |
 | `.python_implementation` | `analysis_identity` |
 | `.source_path_diagnostics` | `source_path_diagnostics` |
@@ -21,18 +21,13 @@ Shared construction for supported documentation query services.
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `hashlib` | `hashlib` |
-| `itertools` | `islice` |
-| `llm_wiki_engine` | `wiki_surface` |
-| `llm_wiki_engine.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView`, `attach_implementation_read_view`, `load_knowledge_read_view` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `llm_wiki_engine.maintenance_status` | `attach_maintenance_view_from_inputs` |
-| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
-| `llm_wiki_engine.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `llm_wiki_engine.validation` | `require_portable_relative_path` |
+| `llm_wiki_engine.query_request_format` | `DEFAULT_DOCUMENTATION_QUERY_LIMIT`, `MAX_DOCUMENTATION_QUERY_LIMIT`, `MAX_SUPPLIED_PATHS`, `QUERY_IDENTITY_BYTE_LIMIT`, `DocumentationQueryError`, `_portable_supplied_path`, `_supplied_path_values`, `normalize_concept_coordinate`, `normalize_documentation_query_limit`, `normalize_documentation_query_text`, `normalize_supplied_paths`, `validate_live_query_source_selection` |
+| `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
-| `os` | `os` |
 | `pathlib` | `Path` |
 | `shlex` | `shlex` |
 | `time` | `perf_counter_ns` |
@@ -56,25 +51,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (14) |
-| Outbound | `src` (19) |
+| Inbound | `src` (12) |
+| Outbound | `src` (16) |
 
-> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `normalize_documentation_query_limit` | `(value: object) -> int` | — | Return the shared bounded query limit before any source work starts. |
-| `normalize_documentation_query_text` | `(value: object, *, field: str) -> str` | — | Return one non-empty exact query coordinate. |
-| `normalize_concept_coordinate` | `(value: object) -> str` | — | Validate a concept coordinate without attempting fuzzy resolution. |
-| `_supplied_path_values` | `(values: object) -> list[object]` | — | Consume no more than the declared supplied-path request bound. |
-| `_portable_supplied_path` | `(value: object) -> str` | — | Adapt shared portable-path validation to the query error contract. |
-| `normalize_supplied_paths` | `(values: object) -> tuple[str, ...]` | — | Validate, deduplicate, and deterministically order supplied source paths. |
 | `_diff_metadata_path` | `(value: str, *, prefixed: bool) -> str \| None` | — | — |
 | `supplied_paths_from_unified_diff` | `(value: object) -> tuple[str, ...]` | — | Extract bounded exact paths from supplied unified-diff metadata only. |
-| `_wiki_has_persisted_read_state` | `(wiki_root: Path) -> bool` | — | Return whether a wiki contains anything beyond empty scaffolding. |
-| `validate_live_query_source_selection` | `(*, source_root: Path, wiki_root: Path, live_identity: Mapping[str, object] \| None, live_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_LIVE_SELECTION_INPUTS, operation: str, allow_empty_wiki: bool = False) -> None` | — | Require a live query profile to match the persisted wiki boundary. |
 | `_live_source_selection_identity` | `(source_root: Path, source_selection: str \| Path \| None, inventory_result: object) -> Mapping[str, object] \| None` | — | — |
 | `assemble_documentation_query_service` | `(*, inventory: Mapping[str, Mapping[str, Any]], call_edges: Iterable[Mapping[str, Any]], flows: Iterable[Mapping[str, Any]], data_flows: object, dependency_analysis: Mapping[str, Any] \| None, surface_index: Mapping[str, Any] \| None, limit: int, knowledge_view: object, machine_verification: Mapping[str, Mapping[str, Any]], service_factory: Any = DocumentationGraphQueryService, inventory_result: object \| None = None, snapshot_call_inventory: bool = False) -> DocumentationGraphQueryService` | — | Assemble the shared service with a caller-supplied service factory. |
 | `build_documentation_query_service_from_view` | `(*, wiki_root: Path, knowledge_view: KnowledgeReadView, limit: int, inventory: Mapping[str, Mapping[str, Any]] \| None = None, call_edges: Iterable[Mapping[str, Any]] = (), flows: Iterable[Mapping[str, Any]] = (), data_flows: object = (), dependency_analysis: Mapping[str, Any] \| None = None, surface_index: Mapping[str, Any] \| None = None, inventory_result: object \| None = None, snapshot_call_inventory: bool = False) -> DocumentationGraphQueryService` | — | Assemble one service around an already evaluated native read view. |

@@ -2,19 +2,14 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [search_cmd](../modules/search_cmd.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 34 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 29 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [canonical_json](../modules/canonical_json.md)
-- [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
-- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
@@ -31,6 +26,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [path_policy](../modules/path_policy.md)
+- [query_request_format](../modules/query_request_format.md)
 - [search_cmd](../modules/search_cmd.md)
 - [search_discovery](../modules/search_discovery.md)
 - [search_discovery_capture](../modules/search_discovery_capture.md)
@@ -40,7 +36,6 @@
 - [search_source](../modules/search_source.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
-- [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -56,7 +51,7 @@ sequenceDiagram
     participant p1 as validate_source_root
     participant p2 as search_wiki (src/llm_wiki_cli/api.py)
     participant p3 as validate_path
-    participant p4 as search_wiki (src/llm_wiki_cli/services/search_service.py)
+    participant p4 as search_wiki (src/llm_wiki_engine/search_service.py)
     participant p5 as windows_current_user_sid
     participant p6 as first_unsafe_path_component
     participant p7 as _current_windows_user_sid
@@ -78,15 +73,15 @@ sequenceDiagram
     participant p23 as compact_line_bytes
     participant p24 as source_snapshot_matches_current_files
     participant p25 as SyncManifest.load
-    participant p26 as _validate_capture_options
-    participant p27 as rank_pages (src/llm_wiki_engine/search_rank.py)
-    participant p28 as _object
+    participant p26 as rank_pages (src/llm_wiki_engine/search_rank.py)
+    participant p27 as _object
+    participant p28 as provider
     participant p29 as getattr (src/llm_wiki_cli/commands/search_cmd.py:run)
     participant p30 as Path(…).expanduser
     p0->>p1: validate_source_root
     p0->>p2: search_wiki (src/llm_wiki_cli/api.py)
     p0->>p3: validate_path
-    p2->>p4: search_wiki (src/llm_wiki_cli/services/search_service.py)
+    p2->>p4: search_wiki (src/llm_wiki_engine/search_service.py)
     p1->>p5: windows_current_user_sid
     p1->>p6: first_unsafe_path_component
     p5->>p7: _current_windows_user_sid
@@ -108,16 +103,16 @@ sequenceDiagram
     p9->>p23: compact_line_bytes
     p9->>p24: source_snapshot_matches_current_files
     p13->>p25: SyncManifest.load
-    p14->>p26: _validate_capture_options
-    p15->>p27: rank_pages (src/llm_wiki_engine/search_rank.py)
-    p22->>p28: _object
+    p15->>p26: rank_pages (src/llm_wiki_engine/search_rank.py)
+    p22->>p27: _object
+    p12->>p28: provider
     p0-->>p29: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'include_source', False)
     p1-->>p30: Path(…).expanduser
 ```
 
-> Call sequence diagram shows 30 of 1276 interactions; 1246 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1076 interactions; 1046 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 503 (502 omitted); unresolved 1 of 355 (354 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 433 (432 omitted); unresolved 1 of 307 (306 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -131,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | - | external | 10 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 2 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-> Omission summary shows 8 of 229 groups; 221 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 180 groups; 172 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -144,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 419; effect analysis evaluated: 308, partial: 16, unavailable: 95. Counts include steps omitted from the displayed trace.
+Source steps: 337; effect analysis evaluated: 245, partial: 11, unavailable: 81. Counts include steps omitted from the displayed trace.
 
-Collector observations for 324 source steps with known totals: observed: 1707, emitted: 1651, omitted: 56. Unavailable totals are excluded.
+Collector observations for 256 source steps with known totals: observed: 1245, emitted: 1211, omitted: 34. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -165,7 +160,7 @@ Collector observations for 324 source steps with known totals: observed: 1707, e
 | `current_host().cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `current_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resolved.relative_to` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -180,7 +175,7 @@ flowchart LR
     s9["9. current_host().cwd().resolve"]
     s10["10. current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)"]
     s11["11. current_host"]
-    s12["12. resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)"]
+    s12["12. resolved.relative_to"]
     s1 -->|"validate_source_root(args.src_dir, '--src-dir', allow_external=args.allow_external_src)"| s2
     s2 -->|"validate_path(path, label)"| s3
     s3 -->|"PathValidationError(...)"| s4
@@ -191,7 +186,7 @@ flowchart LR
     s3 -. "current_host().cwd().resolve(data not statically known)" .-> s9
     s3 -. "current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)(data not statically known)" .-> s10
     s3 -->|"current_host(data not statically known)"| s11
-    s3 -. "resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)(cwd)" .-> s12
+    s3 -. "resolved.relative_to(cwd)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -231,7 +226,7 @@ flowchart LR
 | `current_host().cwd().resolve` | - | - | - | - |
 | `current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
 | `current_host` | - | `_DEFAULT` | - | `...` |
-| `resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path)` | - | - | - | - |
+| `resolved.relative_to` | - | - | - | - |
 
 ### Call data
 
@@ -247,7 +242,7 @@ flowchart LR
 | validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
 | validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 102 | `current_host(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `resolved.relative_to(cwd)` |
+| validate_path | resolved.relative_to | 104 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 

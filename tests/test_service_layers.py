@@ -942,6 +942,7 @@ def test_engine_package_loads_without_the_provider_or_third_party_modules() -> N
 # Engine modules written for the engine, which never had a services path.
 ENGINE_NATIVE_MODULES = frozenset({
     "implementation_summary", "infrastructure_state", "integrations", "knowledge_reuse_format", "pack_interfaces",
+    "query_request_format", "sync_ownership",
 })
 
 
@@ -1104,6 +1105,7 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
         import llm_wiki_cli.services.search_discovery_capture
         import llm_wiki_cli.services.search_lexical
         import llm_wiki_cli.services.search_rank
+        import llm_wiki_cli.services.search_service
         import llm_wiki_cli.services.search_source
         import llm_wiki_cli.services.section_ownership
         import llm_wiki_cli.services.secure_file
@@ -1116,7 +1118,9 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
         import llm_wiki_cli.services.sync_manifest
         import llm_wiki_cli.services.sync_recovery
         import llm_wiki_cli.services.sync_retained_links
+        import llm_wiki_cli.services.sync_transition_execution
         import llm_wiki_cli.services.task_compact_readable
+        import llm_wiki_cli.services.task_contract
         import llm_wiki_cli.services.validation
         import llm_wiki_cli.services.verification_contracts
         import llm_wiki_cli.services.wiki_media
@@ -1194,6 +1198,7 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
         (llm_wiki_cli.services.search_discovery_capture, "search_discovery_capture"),
         (llm_wiki_cli.services.search_lexical, "search_lexical"),
         (llm_wiki_cli.services.search_rank, "search_rank"),
+        (llm_wiki_cli.services.search_service, "search_service"),
         (llm_wiki_cli.services.search_source, "search_source"),
         (llm_wiki_cli.services.section_ownership, "section_ownership"),
         (llm_wiki_cli.services.secure_file, "secure_file"),
@@ -1206,7 +1211,9 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
         (llm_wiki_cli.services.sync_manifest, "sync_manifest"),
         (llm_wiki_cli.services.sync_recovery, "sync_recovery"),
         (llm_wiki_cli.services.sync_retained_links, "sync_retained_links"),
+        (llm_wiki_cli.services.sync_transition_execution, "sync_transition_execution"),
         (llm_wiki_cli.services.task_compact_readable, "task_compact_readable"),
+        (llm_wiki_cli.services.task_contract, "task_contract"),
         (llm_wiki_cli.services.validation, "validation"),
         (llm_wiki_cli.services.verification_contracts, "verification_contracts"),
         (llm_wiki_cli.services.wiki_media, "wiki_media"),

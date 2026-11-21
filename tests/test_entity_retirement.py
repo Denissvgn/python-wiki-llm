@@ -714,7 +714,7 @@ def test_symlinked_retirement_candidate_blocks_before_any_owned_page_write(
 
 
 def test_concurrent_authored_edit_during_retirement_is_preserved(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import sync_transition_execution
+    from llm_wiki_engine import sync_transition_execution
     from llm_wiki_engine.maintenance_protocol import MaintenanceProtocolError
     from llm_wiki_engine.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
     from llm_wiki_cli.services.sync_transitions import PageTransitionError
@@ -758,7 +758,7 @@ def test_concurrent_authored_edit_during_retirement_is_preserved(tmp_path, monke
 def test_interrupted_retirement_retains_durable_preimage_and_blocks_blind_retry(
     tmp_path, monkeypatch
 ):
-    from llm_wiki_cli.services import sync_transition_execution
+    from llm_wiki_engine import sync_transition_execution
 
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}

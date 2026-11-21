@@ -2,7 +2,7 @@
 
 **Entry point:** `acknowledge_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 69 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 68 more
 
 **Complete modules touched:**
 
@@ -16,8 +16,6 @@
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -65,6 +63,7 @@
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
+- [query_request_format](../modules/query_request_format.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
@@ -166,7 +165,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/integrations.py:provider` | 13 | [src/llm_wiki_engine/integrations.py](../modules/integrations.md) | internal | 2 |
 | `src/llm_wiki_engine/integrations.py:_resolve` | 15 | - | unresolved | 3 |
 | `src/llm_wiki_engine/integrations.py:attributes` | 12 | - | external | 2 |
-> Omission summary shows 8 of 787 groups; 779 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 786 groups; 778 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

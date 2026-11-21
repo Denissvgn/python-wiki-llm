@@ -33,7 +33,7 @@ from llm_wiki_engine.markdown_sections import parse_markdown_document
 from llm_wiki_engine.section_ownership import observe_page_sections
 from llm_wiki_engine.source_selection import validate_persisted_source_selection_identity
 from .source_snapshot import SourceSnapshot, build_source_snapshot
-from .task_contract import TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
+from llm_wiki_engine.task_contract import TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
 from .task_context import (
     TaskRead, _LIVE_FACETS, _NATIVE_FACETS, _cancel, _counter, _result_body, plan_source_read,
 )

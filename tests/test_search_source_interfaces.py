@@ -12,7 +12,7 @@ from typing import Any, Literal
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services import search_service
+from llm_wiki_engine import search_service
 from llm_wiki_engine import search_source
 from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from llm_wiki_engine.knowledge_storage_io import StorageReadSession

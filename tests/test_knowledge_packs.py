@@ -26,7 +26,7 @@ from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, recover_knowledge_storage, prune_knowledge_storage, export_knowledge_v1,
 )
-from llm_wiki_cli.services.task_contract import TASK_RESULT_SCHEMA_V2
+from llm_wiki_engine.task_contract import TASK_RESULT_SCHEMA_V2
 from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_loader import _committed_state

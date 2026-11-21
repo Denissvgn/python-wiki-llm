@@ -26,16 +26,16 @@ repository or wiki state.
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
     n1["src/llm_wiki_cli/engine/__init__.py"]
-    n2["src/llm_wiki_cli/services/search_service.py"]
-    n3["src/llm_wiki_engine/query_result_format.py"]
+    n2["src/llm_wiki_engine/query_result_format.py"]
+    n3["src/llm_wiki_engine/search_service.py"]
     n0 --> n2
     n0 --> n3
-    n1 --> n3
-    n2 --> n3
+    n1 --> n2
+    n3 --> n2
     click n0 "../modules/api.md"
     click n1 "../modules/engine___init__.md"
-    click n2 "../modules/search_service.md"
-    click n3 "../modules/query_result_format.md"
+    click n2 "../modules/query_result_format.md"
+    click n3 "../modules/search_service.md"
 ```
 
 ### Internal neighbors

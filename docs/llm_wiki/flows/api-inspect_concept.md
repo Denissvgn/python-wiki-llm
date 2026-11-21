@@ -18,7 +18,6 @@
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
-- [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
@@ -58,6 +57,7 @@
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
+- [query_request_format](../modules/query_request_format.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
@@ -151,13 +151,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | external | 1 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | external | 2 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 7 | - | external | 2 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 7 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 2 |
 | `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
 | `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
 | `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 5 |
-> Omission summary shows 8 of 692 groups; 684 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 691 groups; 683 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -187,11 +187,11 @@ Collector observations for 706 source steps with known totals: observed: 4422, e
 | `str (src/llm_wiki_cli/api.py:_normalize_query_input)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `normalize_concept_coordinate` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
 | `normalize_documentation_query_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/query…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -202,28 +202,28 @@ flowchart LR
     s5["5. str (src/llm_wiki_cli/api.py:_normalize_query_input)"]
     s6["6. normalize_concept_coordinate"]
     s7["7. normalize_documentation_query_text"]
-    s8["8. isinstance (src/llm_wiki_cli/services…_documentation_query_text)"]
-    s9["9. value.strip (src/llm_wiki_cli/services…_documentation_query_text)"]
+    s8["8. isinstance (src/llm_wiki_engine/query…_documentation_query_text)"]
+    s9["9. value.strip (src/llm_wiki_engine/query…_documentation_query_text)"]
     s10["10. DocumentationQueryError"]
-    s11["11. value.strip (src/llm_wiki_cli/services…_documentation_query_text)"]
-    s12["12. len (src/llm_wiki_cli/services…_documentation_query_text)"]
+    s11["11. value.strip (src/llm_wiki_engine/query…_documentation_query_text)"]
+    s12["12. len (src/llm_wiki_engine/query…_documentation_query_text)"]
     s1 -->|"_normalize_query_input(...)"| s2
     s2 -. "callback(data not statically known)" .-> s3
     s2 -->|"InvalidRequestError(str(...), code='invalid-request', details={...})"| s4
     s2 -. "str (src/llm_wiki_cli/api.py:_normalize_query_input)(exc)" .-> s5
     s1 -->|"normalize_concept_coordinate(locator_or_exact_route)"| s6
     s6 -->|"normalize_documentation_query_text(value, field='locator_or_exact_route')"| s7
-    s7 -. "isinstance (src/llm_wiki_cli/services…_documentation_query_text)(value, str)" .-> s8
-    s7 -. "value.strip (src/llm_wiki_cli/services…_documentation_query_text)(data not statically known)" .-> s9
+    s7 -. "isinstance (src/llm_wiki_engine/query…_documentation_query_text)(value, str)" .-> s8
+    s7 -. "value.strip (src/llm_wiki_engine/query…_documentation_query_text)(data not statically known)" .-> s9
     s7 -->|"DocumentationQueryError(...)"| s10
-    s7 -. "value.strip (src/llm_wiki_cli/services…_documentation_query_text)(data not statically known)" .-> s11
-    s7 -. "len (src/llm_wiki_cli/services…_documentation_query_text)(selected.encode(...))" .-> s12
+    s7 -. "value.strip (src/llm_wiki_engine/query…_documentation_query_text)(data not statically known)" .-> s11
+    s7 -. "len (src/llm_wiki_engine/query…_documentation_query_text)(selected.encode(...))" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/api.md"
     click s4 "../modules/api.md"
-    click s6 "../modules/documentation_query_builder.md"
-    click s7 "../modules/documentation_query_builder.md"
-    click s10 "../modules/documentation_queries.md"
+    click s6 "../modules/query_request_format.md"
+    click s7 "../modules/query_request_format.md"
+    click s10 "../modules/query_request_format.md"
 ```
 
 ### Step data
@@ -237,11 +237,11 @@ flowchart LR
 | `str (src/llm_wiki_cli/api.py:_normalize_query_input)` | - | - | - | - |
 | `normalize_concept_coordinate` | `value: object` | `wiki_surface`, `validate_concept_uid`, `validate_natural_key`, `ConceptIdentityError` | - | `wiki_surface.validate_exact_page_coordinate(...)`, `validator(...)` |
 | `normalize_documentation_query_text` | `value: object`, `field: str` | `QUERY_IDENTITY_BYTE_LIMIT`, `QUERY_IDENTITY_BYTE_LIMIT` | - | `selected` |
-| `isinstance (src/llm_wiki_cli/services…_documentation_query_text)` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…_documentation_query_text)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
+| `len (src/llm_wiki_engine/query…_documentation_query_text)` | - | - | - | - |
 
 ### Call data
 
@@ -252,12 +252,12 @@ flowchart LR
 | _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
 | _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
 | inspect_concept | normalize_concept_coordinate | 1150 | `normalize_concept_coordinate(locator_or_exact_route)` |
-| normalize_concept_coordinate | normalize_documentation_query_text | 78 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
-| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 67 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 68 | `len(selected.encode(...))` |
+| normalize_concept_coordinate | normalize_documentation_query_text | 62 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
+| normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 50 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_engine/query…_documentation_query_text) | 51 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len (src/llm_wiki_engine/query…_documentation_query_text) | 52 | `len(selected.encode(...))` |
 
 ### Boundary effects
 
@@ -268,9 +268,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `_normalize_query_input` | `callback` | 2274 |
-| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |
 | step_limit | `inspect_concept` | `first 12 steps` | 0 |
 | truncated_flow | `inspect_concept` | `depth limit` | 0 |
 

@@ -56,6 +56,7 @@ retains its full inventory cost.
 | `llm_wiki_engine.knowledge_model` | `knowledge_index_to_payload` |
 | `llm_wiki_engine.knowledge_observability` | `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `knowledge_status_payload` |
 | `llm_wiki_engine.maintenance_status` | `compact_maintenance_summary` |
+| `llm_wiki_engine.query_request_format` | `QUERY_IDENTITY_BYTE_LIMIT`, `DocumentationQueryError` |
 | `llm_wiki_engine.validation` | `normalize_legacy_portable_relative_path`, `require_nonempty_text` |
 | `pathlib` | `PurePosixPath` |
 | `re` | `re` |
@@ -81,17 +82,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (18) |
+| Outbound | `src` (19) |
 
-> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 138 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 358 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 857 | — | Read-only graph query service over already-derived documentation payloads. |
+| [_BoundedResult](../entities/BoundedResult.md) | 353 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 852 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

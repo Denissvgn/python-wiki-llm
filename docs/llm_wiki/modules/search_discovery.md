@@ -30,42 +30,42 @@ Pure bounded discovery presentation over captured exact page observations.
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
     n1["src/llm_wiki_cli/services/mcp_server.py"]
-    n2["src/llm_wiki_cli/services/search_service.py"]
-    n3["src/llm_wiki_engine/concept_identity.py"]
-    n4["src/llm_wiki_engine/markdown_sections.py"]
-    n5["src/llm_wiki_engine/search_discovery.py"]
+    n2["src/llm_wiki_engine/concept_identity.py"]
+    n3["src/llm_wiki_engine/markdown_sections.py"]
+    n4["src/llm_wiki_engine/search_discovery.py"]
+    n5["src/llm_wiki_engine/search_service.py"]
     n6["src/llm_wiki_engine/section_ownership.py"]
     n7["src/llm_wiki_engine/validation.py"]
     n8["src/llm_wiki_engine/wiki_surface.py"]
-    n0 --> n2
+    n0 --> n4
     n0 --> n5
     n0 --> n7
     n0 --> n8
     n1 --> n0
     n1 --> n2
-    n1 --> n3
+    n1 --> n4
     n1 --> n5
     n1 --> n7
     n1 --> n8
-    n2 --> n5
+    n2 --> n7
     n2 --> n8
-    n3 --> n7
-    n3 --> n8
-    n5 --> n3
+    n4 --> n2
+    n4 --> n3
+    n4 --> n6
+    n4 --> n7
+    n4 --> n8
     n5 --> n4
-    n5 --> n6
-    n5 --> n7
     n5 --> n8
-    n6 --> n4
+    n6 --> n3
     n6 --> n7
     n6 --> n8
     n8 --> n7
     click n0 "../modules/api.md"
     click n1 "../modules/mcp_server.md"
-    click n2 "../modules/search_service.md"
-    click n3 "../modules/concept_identity.md"
-    click n4 "../modules/markdown_sections.md"
-    click n5 "../modules/search_discovery.md"
+    click n2 "../modules/concept_identity.md"
+    click n3 "../modules/markdown_sections.md"
+    click n4 "../modules/search_discovery.md"
+    click n5 "../modules/search_service.md"
     click n6 "../modules/section_ownership.md"
     click n7 "../modules/validation.md"
     click n8 "../modules/wiki_surface.md"

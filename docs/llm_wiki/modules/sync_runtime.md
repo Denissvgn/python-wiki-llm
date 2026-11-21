@@ -125,7 +125,6 @@ still stop the operation.
 | `.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
 | `.sync_generated_sections` | `plan_generated_source_repairs` |
 | `.sync_service` | `SYNC_PAGE_COUNTERS`, `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError`, `SyncStatus` |
-| `.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
 | `__future__` | `annotations` |
@@ -155,6 +154,7 @@ still stop the operation.
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
 | `llm_wiki_engine.sync_recovery` | `capture_new_sync_pages`, `SyncRecoveryError` |
+| `llm_wiki_engine.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |
@@ -193,23 +193,23 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAborted](../entities/SyncAborted.md) | 264 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
-| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 274 | `SyncAborted` | The request's options were rejected before any sync work started. |
-| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 279 | — | — |
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 340 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 344 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 676 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 715 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 737 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1756 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1784 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1791 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1797 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1803 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1819 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1863 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1896 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1902 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [SyncAborted](../entities/SyncAborted.md) | 261 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
+| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 271 | `SyncAborted` | The request's options were rejected before any sync work started. |
+| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 276 | — | — |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 337 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 341 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 673 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 712 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 734 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1753 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1781 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1788 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1794 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1800 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1816 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1860 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1893 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1899 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 

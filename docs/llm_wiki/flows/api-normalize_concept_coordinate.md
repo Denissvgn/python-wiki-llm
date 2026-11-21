@@ -1,8 +1,8 @@
 # normalize_concept_coordinate
 
 **Entry point:** `normalize_concept_coordinate` (`api`)
-**Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), [validation](../modules/validation.md), [wiki_surface](../modules/wiki_surface.md)
+**Source:** [query_request_format](../modules/query_request_format.md)
+**Modules touched:** [query_request_format](../modules/query_request_format.md), [validation](../modules/validation.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -27,12 +27,12 @@ sequenceDiagram
     participant p13 as WikiSurfaceError
     participant p14 as PageKind
     participant p15 as SharedValidationError
-    participant p16 as isinstance (src/llm_wiki_cli/services…e_documentation_query_text)
+    participant p16 as isinstance (src/llm_wiki_engine/query…e_documentation_query_text)
     participant p17 as validator
     participant p18 as isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
-    participant p19 as value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
+    participant p19 as value.strip (src/llm_wiki_engine/query…e_documentation_query_text)
     participant p20 as value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
-    participant p21 as len (src/llm_wiki_cli/services…e_documentation_query_text)
+    participant p21 as len (src/llm_wiki_engine/query…e_documentation_query_text)
     participant p22 as any (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
     participant p23 as selected.encode
     participant p24 as ord (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
@@ -54,14 +54,14 @@ sequenceDiagram
     p2->>p13: WikiSurfaceError
     p9->>p14: PageKind
     p12->>p15: SharedValidationError
-    p1-->>p16: isinstance (src/llm_wiki_cli/services…e_documentation_query_text)(value, str)
+    p1-->>p16: isinstance (src/llm_wiki_engine/query…e_documentation_query_text)(value, str)
     p0-->>p17: validator(selected)
     p2-->>p18: isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(value, str)
-    p1-->>p19: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
+    p1-->>p19: value.strip (src/llm_wiki_engine/query…e_documentation_query_text)
     p2-->>p20: value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
-    p1-->>p19: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
+    p1-->>p19: value.strip (src/llm_wiki_engine/query…e_documentation_query_text)
     p2-->>p20: value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)
-    p1-->>p21: len (src/llm_wiki_cli/services…e_documentation_query_text)(selected.encode(...))
+    p1-->>p21: len (src/llm_wiki_engine/query…e_documentation_query_text)(selected.encode(...))
     p2-->>p22: any (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(...)
     p1-->>p23: selected.encode('utf-8')
     p2-->>p24: ord (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(character)
@@ -79,7 +79,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 2 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
+| `src/llm_wiki_engine/query_request_format.py:normalize_documentation_query_text` | 2 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 2 |
 | `src/llm_wiki_engine/wiki_surface.py:validate_exact_page_coordinate` | 10 | [src/llm_wiki_engine/wiki_surface.py](../modules/wiki_surface.md) | internal | 4 |
 | `src/llm_wiki_engine/wiki_surface.py:_matches_directory_path` | 19 | - | external | 3 |
 | `src/llm_wiki_engine/wiki_surface.py:is_safe_page_id` | 25 | - | external | 3 |
@@ -110,11 +110,11 @@ Collector observations for 18 source steps with known totals: observed: 84, emit
 |---|---|---|---|---:|---:|---:|
 | `normalize_concept_coordinate` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
 | `normalize_documentation_query_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
-| `isinstance (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_engine/query…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/query…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `value.strip (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `len (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_engine/query…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_engine/query…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `selected.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `validate_exact_page_coordinate` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
@@ -125,31 +125,31 @@ Collector observations for 18 source steps with known totals: observed: 84, emit
 flowchart LR
     s1["1. normalize_concept_coordinate"]
     s2["2. normalize_documentation_query_text"]
-    s3["3. isinstance (src/llm_wiki_cli/services…e_documentation_query_text)"]
-    s4["4. value.strip (src/llm_wiki_cli/services…e_documentation_query_text)"]
+    s3["3. isinstance (src/llm_wiki_engine/query…e_documentation_query_text)"]
+    s4["4. value.strip (src/llm_wiki_engine/query…e_documentation_query_text)"]
     s5["5. DocumentationQueryError"]
-    s6["6. value.strip (src/llm_wiki_cli/services…e_documentation_query_text)"]
-    s7["7. len (src/llm_wiki_cli/services…e_documentation_query_text)"]
+    s6["6. value.strip (src/llm_wiki_engine/query…e_documentation_query_text)"]
+    s7["7. len (src/llm_wiki_engine/query…e_documentation_query_text)"]
     s8["8. selected.encode"]
     s9["9. DocumentationQueryError"]
     s10["10. validate_exact_page_coordinate"]
     s11["11. isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)"]
     s12["12. value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)"]
     s1 -->|"normalize_documentation_query_text(value, field='locator_or_exact_route')"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…e_documentation_query_text)(value, str)" .-> s3
-    s2 -. "value.strip (src/llm_wiki_cli/services…e_documentation_query_text)(data not statically known)" .-> s4
+    s2 -. "isinstance (src/llm_wiki_engine/query…e_documentation_query_text)(value, str)" .-> s3
+    s2 -. "value.strip (src/llm_wiki_engine/query…e_documentation_query_text)(data not statically known)" .-> s4
     s2 -->|"DocumentationQueryError(...)"| s5
-    s2 -. "value.strip (src/llm_wiki_cli/services…e_documentation_query_text)(data not statically known)" .-> s6
-    s2 -. "len (src/llm_wiki_cli/services…e_documentation_query_text)(selected.encode(...))" .-> s7
+    s2 -. "value.strip (src/llm_wiki_engine/query…e_documentation_query_text)(data not statically known)" .-> s6
+    s2 -. "len (src/llm_wiki_engine/query…e_documentation_query_text)(selected.encode(...))" .-> s7
     s2 -. "selected.encode('utf-8')" .-> s8
     s2 -->|"DocumentationQueryError(...)"| s9
     s1 -->|"validate_exact_page_coordinate(selected)"| s10
     s10 -. "isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(value, str)" .-> s11
     s10 -. "value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate)(data not statically known)" .-> s12
-    click s1 "../modules/documentation_query_builder.md"
-    click s2 "../modules/documentation_query_builder.md"
-    click s5 "../modules/documentation_queries.md"
-    click s9 "../modules/documentation_queries.md"
+    click s1 "../modules/query_request_format.md"
+    click s2 "../modules/query_request_format.md"
+    click s5 "../modules/query_request_format.md"
+    click s9 "../modules/query_request_format.md"
     click s10 "../modules/wiki_surface.md"
 ```
 
@@ -159,11 +159,11 @@ flowchart LR
 |---|---|---|---|---|
 | `normalize_concept_coordinate` | `value: object` | `wiki_surface`, `validate_concept_uid`, `validate_natural_key`, `ConceptIdentityError` | - | `wiki_surface.validate_exact_page_coordinate(...)`, `validator(...)` |
 | `normalize_documentation_query_text` | `value: object`, `field: str` | `QUERY_IDENTITY_BYTE_LIMIT`, `QUERY_IDENTITY_BYTE_LIMIT` | - | `selected` |
-| `isinstance (src/llm_wiki_cli/services…e_documentation_query_text)` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…e_documentation_query_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_engine/query…e_documentation_query_text)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/query…e_documentation_query_text)` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…e_documentation_query_text)` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…e_documentation_query_text)` | - | - | - | - |
+| `value.strip (src/llm_wiki_engine/query…e_documentation_query_text)` | - | - | - | - |
+| `len (src/llm_wiki_engine/query…e_documentation_query_text)` | - | - | - | - |
 | `selected.encode` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
 | `validate_exact_page_coordinate` | `value: object` | `_PAGE_KINDS` | - | `coordinate`, `coordinate` |
@@ -174,15 +174,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_concept_coordinate | normalize_documentation_query_text | 78 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
-| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…e_documentation_query_text) | 65 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…e_documentation_query_text) | 65 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…e_documentation_query_text) | 67 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len (src/llm_wiki_cli/services…e_documentation_query_text) | 68 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 68 | `selected.encode('utf-8')` |
-| normalize_documentation_query_text | DocumentationQueryError | 69 | `DocumentationQueryError(...)` |
-| normalize_concept_coordinate | validate_exact_page_coordinate | 83 | `wiki_surface.validate_exact_page_coordinate(selected)` |
+| normalize_concept_coordinate | normalize_documentation_query_text | 62 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
+| normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…e_documentation_query_text) | 49 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_engine/query…e_documentation_query_text) | 49 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 50 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_engine/query…e_documentation_query_text) | 51 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len (src/llm_wiki_engine/query…e_documentation_query_text) | 52 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 52 | `selected.encode('utf-8')` |
+| normalize_documentation_query_text | DocumentationQueryError | 53 | `DocumentationQueryError(...)` |
+| normalize_concept_coordinate | validate_exact_page_coordinate | 67 | `wiki_surface.validate_exact_page_coordinate(selected)` |
 | validate_exact_page_coordinate | isinstance (src/llm_wiki_engine/wiki_…date_exact_page_coordinate) | 263 | `isinstance(value, str)` |
 | validate_exact_page_coordinate | value.strip (src/llm_wiki_engine/wiki_…date_exact_page_coordinate) | 263 | `value.strip(data not statically known)` |
 
@@ -194,10 +194,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 68 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 52 |
 | external_call | `validate_exact_page_coordinate` | `isinstance` | 263 |
 | unresolved_call | `validate_exact_page_coordinate` | `value.strip` | 263 |
 | step_limit | `normalize_concept_coordinate` | `first 12 steps` | 0 |

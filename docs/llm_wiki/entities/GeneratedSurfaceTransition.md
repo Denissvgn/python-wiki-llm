@@ -1,6 +1,6 @@
 # _GeneratedSurfaceTransition
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1902`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1899`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)

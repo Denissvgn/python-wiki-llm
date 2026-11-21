@@ -4838,3 +4838,24 @@ Existing permissions, validation bounds and native authority remain separate.
 - Workflow pages created: 1
 - Dependency pages initialized: 0
 - Surface policy updated: no
+
+## 2026-11-21
+
+### Wiki sync
+- Source: `.`
+- Generator version: `5.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:c66c2da6e543ce2e4787c934ceed9e44aceacc52f374572993d1ae10abea1b8e`
+- Pages created: 4
+- Pages updated: 148
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1760
+- Pages deprecated: 1
+- Semantic fields preserved: 23
+- Moved entities: `DocumentationQueryError` (src/llm_wiki_cli/services/documentation_queries.py → src/llm_wiki_engine/query_request_format.py), `PageTransitionError` (src/llm_wiki_cli/services/sync_transitions.py → src/llm_wiki_engine/sync_ownership.py), `PageTransitionExecution` (src/llm_wiki_cli/services/sync_transition_execution.py → src/llm_wiki_engine/sync_transition_execution.py), `SyncOwnershipError` (src/llm_wiki_cli/services/sync_analysis.py → src/llm_wiki_engine/sync_ownership.py), `TaskContext` (src/llm_wiki_cli/services/task_contract.py → src/llm_wiki_engine/task_contract.py)
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 2
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Generated surface pages retired: 1

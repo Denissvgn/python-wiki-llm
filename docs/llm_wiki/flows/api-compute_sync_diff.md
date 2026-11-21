@@ -2,7 +2,7 @@
 
 **Entry point:** `compute_sync_diff` (`api`)
 **Source:** [sync_analysis](../modules/sync_analysis.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [domain_pack](../modules/domain_pack.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 2 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [domain_pack](../modules/domain_pack.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 3 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [domain_pack](../modules/domain_pack.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [sync_analysis](../modules/sync_analysis.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
@@ -91,7 +92,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | external | 12 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | unresolved | 14 |
-| `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | [src/llm_wiki_cli/services/sync_analysis.py](../modules/sync_analysis.md) | internal | 2 |
+| `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | [src/llm_wiki_engine/sync_ownership.py](../modules/sync_ownership.md) | internal | 2 |
 | `src/llm_wiki_engine/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | unresolved | 6 |
 | `src/llm_wiki_engine/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | external | 3 |
 | `src/llm_wiki_engine/validation.py:portable_page_component` | 35 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 1 |
@@ -206,42 +207,42 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compute_sync_diff | SyncDiff | 191 | `SyncDiff(data not statically known)` |
-| compute_sync_diff | _recorded_entity_pages | 192 | `_recorded_entity_pages(manifest)` |
-| _recorded_entity_pages | _RecordedEntityPages | 76 | `_RecordedEntityPages(data not statically known)` |
-| _recorded_entity_pages | Counter (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 78 | `Counter(info.get(...))` |
-| _recorded_entity_pages | info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 78 | `info.get('entities', [...])` |
-| _recorded_entity_pages | manifest.sources.items (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 79 | `manifest.sources.items(data not statically known)` |
-| _recorded_entity_pages | sorted (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 96 | `sorted(manifest.sources.items(...))` |
-| _recorded_entity_pages | manifest.sources.items (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 96 | `manifest.sources.items(data not statically known)` |
-| _recorded_entity_pages | info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 97 | `info.get('entity_pages')` |
-| _recorded_entity_pages | isinstance (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 98 | `isinstance(entity_pages, Mapping)` |
-| _recorded_entity_pages | sorted (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 99 | `sorted(entity_pages.items(...))` |
+| compute_sync_diff | SyncDiff | 188 | `SyncDiff(data not statically known)` |
+| compute_sync_diff | _recorded_entity_pages | 189 | `_recorded_entity_pages(manifest)` |
+| _recorded_entity_pages | _RecordedEntityPages | 73 | `_RecordedEntityPages(data not statically known)` |
+| _recorded_entity_pages | Counter (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 75 | `Counter(info.get(...))` |
+| _recorded_entity_pages | info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 75 | `info.get('entities', [...])` |
+| _recorded_entity_pages | manifest.sources.items (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 76 | `manifest.sources.items(data not statically known)` |
+| _recorded_entity_pages | sorted (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 93 | `sorted(manifest.sources.items(...))` |
+| _recorded_entity_pages | manifest.sources.items (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 93 | `manifest.sources.items(data not statically known)` |
+| _recorded_entity_pages | info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 94 | `info.get('entity_pages')` |
+| _recorded_entity_pages | isinstance (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 95 | `isinstance(entity_pages, Mapping)` |
+| _recorded_entity_pages | sorted (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 96 | `sorted(entity_pages.items(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `old_cls_counts.update` | `compute_sync_diff` | 197 |
-| mutation | `diff.new_files.append` | `compute_sync_diff` | 225 |
-| mutation | `diff.unchanged_files.append` | `compute_sync_diff` | 233 |
-| mutation | `diff.metadata_only_files.append` | `compute_sync_diff` | 237 |
-| mutation | `diff.changed_files.append` | `compute_sync_diff` | 239 |
-| mutation | `diff.removed_files.append` | `compute_sync_diff` | 243 |
-| mutation | `recorded.add` | `_recorded_entity_pages` | 133 |
+| mutation | `old_cls_counts.update` | `compute_sync_diff` | 194 |
+| mutation | `diff.new_files.append` | `compute_sync_diff` | 222 |
+| mutation | `diff.unchanged_files.append` | `compute_sync_diff` | 230 |
+| mutation | `diff.metadata_only_files.append` | `compute_sync_diff` | 234 |
+| mutation | `diff.changed_files.append` | `compute_sync_diff` | 236 |
+| mutation | `diff.removed_files.append` | `compute_sync_diff` | 240 |
+| mutation | `recorded.add` | `_recorded_entity_pages` | 130 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_recorded_entity_pages` | `Counter` | 78 |
-| unresolved_call | `_recorded_entity_pages` | `info.get` | 78 |
-| unresolved_call | `_recorded_entity_pages` | `manifest.sources.items` | 79 |
+| external_call | `_recorded_entity_pages` | `Counter` | 75 |
+| unresolved_call | `_recorded_entity_pages` | `info.get` | 75 |
+| unresolved_call | `_recorded_entity_pages` | `manifest.sources.items` | 76 |
+| external_call | `_recorded_entity_pages` | `sorted` | 93 |
+| unresolved_call | `_recorded_entity_pages` | `manifest.sources.items` | 93 |
+| unresolved_call | `_recorded_entity_pages` | `info.get` | 94 |
+| external_call | `_recorded_entity_pages` | `isinstance` | 95 |
 | external_call | `_recorded_entity_pages` | `sorted` | 96 |
-| unresolved_call | `_recorded_entity_pages` | `manifest.sources.items` | 96 |
-| unresolved_call | `_recorded_entity_pages` | `info.get` | 97 |
-| external_call | `_recorded_entity_pages` | `isinstance` | 98 |
-| external_call | `_recorded_entity_pages` | `sorted` | 99 |
 | step_limit | `compute_sync_diff` | `first 12 steps` | 0 |
 | truncated_flow | `compute_sync_diff` | `depth limit` | 0 |
 

@@ -17,14 +17,11 @@ from .bootstrap_runtime import (
 )
 from llm_wiki_engine.knowledge_evidence import hash_file, semantic_hash_for_file
 from llm_wiki_engine.sync_manifest import ManifestPageSource, SyncManifest
+from llm_wiki_engine.sync_ownership import SyncOwnershipError as SyncOwnershipError
 from llm_wiki_engine.validation import is_portable_path_component, portable_path_key
 
 
 EntityOwner = tuple[str, str, int]  # source path, entity name, occurrence
-
-
-class SyncOwnershipError(ValueError):
-    """A page cannot be safely assigned to one recorded source entity."""
 
 
 def _ownership_error(owner: EntityOwner, reason: str) -> SyncOwnershipError:

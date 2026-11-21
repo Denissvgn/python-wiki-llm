@@ -37,7 +37,7 @@ from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult, load_knowledge
 from llm_wiki_engine.knowledge_storage import canonical_bytes
 from llm_wiki_engine.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
 from llm_wiki_engine.knowledge_storage_diagnostics import storage_report, review_storage
-from llm_wiki_cli.services.task_contract import TaskContext
+from llm_wiki_engine.task_contract import TaskContext
 
 T = TypeVar("T")
 FunctionKey = tuple[str, int, str]

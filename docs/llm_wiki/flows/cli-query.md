@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [query_cmd](../modules/query_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 40 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 41 more
 
 **Complete modules touched:**
 
@@ -41,6 +41,7 @@
 - [paths](../modules/paths.md)
 - [python_implementation](../modules/python_implementation.md)
 - [query_cmd](../modules/query_cmd.md)
+- [query_request_format](../modules/query_request_format.md)
 - [request_json](../modules/request_json.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
@@ -137,7 +138,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 19 |
-> Omission summary shows 8 of 434 groups; 426 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 435 groups; 427 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

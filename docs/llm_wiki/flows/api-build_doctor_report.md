@@ -2,7 +2,7 @@
 
 **Entry point:** `build_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 74 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 75 more
 
 **Complete modules touched:**
 
@@ -17,7 +17,6 @@
 - [dependency_versions](../modules/dependency_versions.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [doctor_service](../modules/doctor_service.md)
-- [documentation_queries](../modules/documentation_queries.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
@@ -68,6 +67,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
+- [query_request_format](../modules/query_request_format.md)
 - [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
@@ -75,6 +75,7 @@
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_analysis](../modules/sync_analysis.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [team](../modules/team.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
@@ -170,7 +171,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | external | 10 |
-> Omission summary shows 8 of 935 groups; 927 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 936 groups; 928 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

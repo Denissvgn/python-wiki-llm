@@ -3,7 +3,7 @@
 import pytest
 
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import sync_transition_execution as execution
+from llm_wiki_engine import sync_transition_execution as execution
 from llm_wiki_cli.services import sync_transitions
 from llm_wiki_engine.io import read_md
 from llm_wiki_engine.sync_manifest import SyncManifest

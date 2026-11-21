@@ -1,7 +1,7 @@
 # PageTransitionExecution_write
 
 **Entry point:** `sync_transition_execution.PageTransitionExecution.write`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [markdown_sections](../modules/markdown_sections.md), [sync_transition_execution](../modules/sync_transition_execution.md), [sync_transitions](../modules/sync_transitions.md)
+**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [markdown_sections](../modules/markdown_sections.md), [sync_ownership](../modules/sync_ownership.md), [sync_transition_execution](../modules/sync_transition_execution.md)
 
 ## Sequence
 
@@ -10,14 +10,14 @@
 2. `markdown_sections.normalize_markdown`
 3. `filesystem_guard.ensure_guarded_directory`
 4. `filesystem_guard.atomic_write_guarded_bytes`
-5. `sync_transitions.PageTransitionError`
+5. `sync_ownership.PageTransitionError`
 
 ## Touches
 
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [sync_transition_execution](../modules/sync_transition_execution.md)
-- [sync_transitions](../modules/sync_transitions.md)
 
 ## Behavior
 

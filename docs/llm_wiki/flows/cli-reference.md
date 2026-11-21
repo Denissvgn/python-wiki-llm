@@ -12,7 +12,6 @@
 - [cli_reference](../modules/cli_reference.md)
 - [context_request_format](../modules/context_request_format.md)
 - [current_contracts](../modules/current_contracts.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [host](../modules/host.md)
@@ -21,6 +20,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
+- [query_request_format](../modules/query_request_format.md)
 - [reference_cmd](../modules/reference_cmd.md)
 - [skills](../modules/skills.md)
 - [task_compact](../modules/task_compact.md)
@@ -216,7 +216,7 @@ flowchart LR
 |---|---|---:|---|
 | run | _reference | 49 | `_reference(args)` |
 | _reference | get_behavior_facts | 26 | `get_behavior_facts(data not statically known)` |
-| get_behavior_facts | get_cli_contract | 89 | `cli_reference.get_cli_contract(data not statically known)` |
+| get_behavior_facts | get_cli_contract | 90 | `cli_reference.get_cli_contract(data not statically known)` |
 | get_cli_contract | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |

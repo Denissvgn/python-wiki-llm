@@ -1,8 +1,8 @@
 # normalize_documentation_query_limit
 
 **Entry point:** `normalize_documentation_query_limit` (`api`)
-**Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md)
+**Source:** [query_request_format](../modules/query_request_format.md)
+**Modules touched:** [query_request_format](../modules/query_request_format.md)
 
 ## Call sequence
 
@@ -60,8 +60,8 @@ flowchart LR
     s1 -. "isinstance(value, int)" .-> s3
     s1 -->|"DocumentationQueryError('limit must be a positive integer.')"| s4
     s1 -. "min(value, MAX_DOCUMENTATION_QUERY_LIMIT)" .-> s5
-    click s1 "../modules/documentation_query_builder.md"
-    click s4 "../modules/documentation_queries.md"
+    click s1 "../modules/query_request_format.md"
+    click s4 "../modules/query_request_format.md"
 ```
 
 ### Step data
@@ -78,10 +78,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_documentation_query_limit | isinstance | 57 | `isinstance(value, bool)` |
-| normalize_documentation_query_limit | isinstance | 57 | `isinstance(value, int)` |
-| normalize_documentation_query_limit | DocumentationQueryError | 58 | `DocumentationQueryError('limit must be a positive integer.')` |
-| normalize_documentation_query_limit | min | 59 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
+| normalize_documentation_query_limit | isinstance | 41 | `isinstance(value, bool)` |
+| normalize_documentation_query_limit | isinstance | 41 | `isinstance(value, int)` |
+| normalize_documentation_query_limit | DocumentationQueryError | 42 | `DocumentationQueryError('limit must be a positive integer.')` |
+| normalize_documentation_query_limit | min | 43 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
 
 ### Boundary effects
 
@@ -91,8 +91,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_limit` | `isinstance` | 57 |
-| external_call | `normalize_documentation_query_limit` | `min` | 59 |
+| external_call | `normalize_documentation_query_limit` | `isinstance` | 41 |
+| external_call | `normalize_documentation_query_limit` | `min` | 43 |
 
 ## Behavior
 

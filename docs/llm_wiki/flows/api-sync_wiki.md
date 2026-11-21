@@ -2,7 +2,7 @@
 
 **Entry point:** `sync_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 59 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 60 more
 
 **Complete modules touched:**
 
@@ -59,6 +59,7 @@
 - [sync_analysis_storage](../modules/sync_analysis_storage.md)
 - [sync_generated_sections](../modules/sync_generated_sections.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [sync_recovery](../modules/sync_recovery.md)
 - [sync_runtime](../modules/sync_runtime.md)
 - [sync_service](../modules/sync_service.md)
@@ -156,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | [src/llm_wiki_cli/services/sync_runtime.py](../modules/sync_runtime.md) | internal | 3 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | - | unresolved | 4 |
 | `src/llm_wiki_engine/host.py:recording_errors` | 19 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 3 |
-> Omission summary shows 8 of 474 groups; 466 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 476 groups; 468 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

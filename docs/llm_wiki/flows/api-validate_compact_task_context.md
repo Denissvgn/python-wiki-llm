@@ -12,7 +12,6 @@
 - [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
 - [context_request_format](../modules/context_request_format.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -20,6 +19,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_status](../modules/maintenance_status.md)
+- [query_request_format](../modules/query_request_format.md)
 - [storage_receipts](../modules/storage_receipts.md)
 - [task_compact](../modules/task_compact.md)
 - [task_compact_readable](../modules/task_compact_readable.md)
@@ -114,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 4 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 4 |
 | `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 10 | - | external | 5 |
 | `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 10 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | unresolved | 22 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 9 | - | unresolved | 22 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 9 | - | external | 10 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
 | `src/llm_wiki_engine/workflow_profile.py:bounded_text` | 21 | - | external | 2 |
 > Omission summary shows 8 of 94 groups; 86 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

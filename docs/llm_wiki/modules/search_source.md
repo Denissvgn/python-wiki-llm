@@ -26,41 +26,41 @@ Explicit bounded static-source text indexing for canonical module candidates.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/search_service.py"]
-    n1["src/llm_wiki_engine/knowledge_artifacts.py"]
-    n2["src/llm_wiki_engine/knowledge_storage.py"]
-    n3["src/llm_wiki_engine/knowledge_storage_io.py"]
-    n4["src/llm_wiki_engine/search_discovery_capture.py"]
-    n5["src/llm_wiki_engine/search_rank.py"]
+    n0["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n1["src/llm_wiki_engine/knowledge_storage.py"]
+    n2["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n3["src/llm_wiki_engine/search_discovery_capture.py"]
+    n4["src/llm_wiki_engine/search_rank.py"]
+    n5["src/llm_wiki_engine/search_service.py"]
     n6["src/llm_wiki_engine/search_source.py"]
     n7["src/llm_wiki_engine/sync_manifest.py"]
+    n0 --> n1
     n0 --> n2
-    n0 --> n3
-    n0 --> n4
-    n0 --> n5
-    n0 --> n6
-    n1 --> n2
-    n1 --> n3
-    n1 --> n7
+    n0 --> n7
+    n2 --> n1
+    n3 --> n0
+    n3 --> n1
     n3 --> n2
-    n4 --> n1
-    n4 --> n2
-    n4 --> n3
-    n4 --> n6
-    n4 --> n7
+    n3 --> n6
+    n3 --> n7
+    n5 --> n1
+    n5 --> n2
+    n5 --> n3
+    n5 --> n4
+    n5 --> n6
+    n6 --> n0
     n6 --> n1
     n6 --> n2
-    n6 --> n3
-    n6 --> n5
+    n6 --> n4
     n6 --> n7
+    n7 --> n1
     n7 --> n2
-    n7 --> n3
-    click n0 "../modules/search_service.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_storage.md"
-    click n3 "../modules/knowledge_storage_io.md"
-    click n4 "../modules/search_discovery_capture.md"
-    click n5 "../modules/search_rank.md"
+    click n0 "../modules/knowledge_artifacts.md"
+    click n1 "../modules/knowledge_storage.md"
+    click n2 "../modules/knowledge_storage_io.md"
+    click n3 "../modules/search_discovery_capture.md"
+    click n4 "../modules/search_rank.md"
+    click n5 "../modules/search_service.md"
     click n6 "../modules/search_source.md"
     click n7 "../modules/sync_manifest.md"
 ```
@@ -69,8 +69,8 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | [search_service](../modules/search_service.md) |
 | Inbound | [search_discovery_capture](../modules/search_discovery_capture.md) |
+| Inbound | [search_service](../modules/search_service.md) |
 | Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
