@@ -24,7 +24,7 @@ from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validat
 from . import context_packet_builder as packet_builder
 from llm_wiki_engine.immutable import freeze
 from llm_wiki_engine.io import first_unsafe_path_component
-from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
+from llm_wiki_engine.task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
 from .task_compact import CompactTaskContext, _CheckedCounter, normalize_view_options, render_compact_task_context
 from .task_context import TaskCancelledError, TaskRead, _counter, build_task_read, plan_source_read, validate_task_context
 from llm_wiki_engine.workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields

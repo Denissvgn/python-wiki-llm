@@ -10,7 +10,8 @@ import os
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services import context_budget, search_service
+from llm_wiki_cli.services import context_budget
+from llm_wiki_engine import search_service
 from llm_wiki_cli.services.mcp_server import McpServerConfig, McpWikiError, McpWikiService, create_mcp_server
 from llm_wiki_engine.request_json import MAX_REQUEST_BYTES, parse_request
 from llm_wiki_cli.services.token_counting import EstimatedCounter

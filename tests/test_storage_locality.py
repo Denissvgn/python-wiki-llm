@@ -223,7 +223,7 @@ def test_storage_options_are_rejected_before_reading(tmp_path, monkeypatch, stor
 
 
 def test_storage_options_remain_exclusive_to_task_request_v2():
-    from llm_wiki_cli.services.task_contract import normalize_task_request
+    from llm_wiki_engine.task_contract import normalize_task_request
     from llm_wiki_engine.workflow_profile import WorkflowRequestError
     with pytest.raises(WorkflowRequestError, match='requires task request v2'):
         normalize_task_request({'schema_version': 'llm-wiki-task-request/v1', 'storage_options': {'receipt': 'compact-v1'}})

@@ -36,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DeprecationWarning` naming the engine path. The packet builder names
   `context_packet` re-exports come from the new `packet_builders` integration,
   which `llm_wiki_cli` provides.
+- `task_contract`, `search_service` and `sync_transition_execution` move to
+  `llm_wiki_engine`; their `llm_wiki_cli.services` paths are deprecated
+  aliases. The documentation query request checks (`DocumentationQueryError`,
+  the limit, coordinate and supplied-path normalizers and the live
+  source-selection check) now live in `llm_wiki_engine.query_request_format`,
+  and `SyncOwnershipError` and `PageTransitionError` in
+  `llm_wiki_engine.sync_ownership`. All stay importable from their previous
+  modules as the same objects.
 - `llm_wiki_engine.integrations.provided()` reports the providers in effect
   where it is called, including an active `IntegrationSet`;
   `integrations.defaults()` reports the process-wide ones.

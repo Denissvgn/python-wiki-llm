@@ -187,10 +187,7 @@ from .sync_generated_sections import plan_generated_source_repairs
 from .sync_transitions import (
     PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
 )
-from .sync_transition_execution import (
-    PageTransitionExecution,
-    assert_no_pending_page_moves,
-)
+from llm_wiki_engine.sync_transition_execution import PageTransitionExecution, assert_no_pending_page_moves
 from .wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,

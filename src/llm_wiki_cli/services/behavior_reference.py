@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from .. import config
-from . import cli_reference, current_contracts, skills, task_compact, task_contract
+from . import cli_reference, current_contracts, skills, task_compact
+from llm_wiki_engine import task_contract
 from .helper_runtime import resolve_helper_policy
 from llm_wiki_engine.knowledge_evidence import hash_json
 from llm_wiki_engine.knowledge_storage_io import read_guarded

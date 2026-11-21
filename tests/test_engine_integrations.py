@@ -229,3 +229,25 @@ def test_engine_packet_validation_loads_no_application_code():
     )
     result = subprocess.run([sys.executable, "-I", "-c", probe], capture_output=True, text=True, check=True)
     assert result.stdout.strip() == "[]"
+
+
+def test_moved_query_and_sync_names_stay_the_same_objects():
+    from llm_wiki_cli.services import documentation_queries, documentation_query_builder, sync_analysis, sync_transitions
+    from llm_wiki_engine import query_request_format, sync_ownership
+
+    assert documentation_queries.DocumentationQueryError is query_request_format.DocumentationQueryError
+    for name in query_request_format.__all__:
+        assert getattr(documentation_query_builder, name) is getattr(query_request_format, name), name
+    assert sync_analysis.SyncOwnershipError is sync_ownership.SyncOwnershipError
+    assert sync_transitions.PageTransitionError is sync_ownership.PageTransitionError
+    assert issubclass(sync_ownership.PageTransitionError, sync_ownership.SyncOwnershipError)
+
+
+def test_engine_search_reads_source_snapshots_through_the_integration(tmp_path):
+    from llm_wiki_engine import search_service
+
+    with integrations.using_integrations(integrations.IntegrationSet(inherit=False)):
+        with pytest.raises(integrations.IntegrationUnavailable, match="source_snapshots"):
+            search_service.capture_source_selection_inputs(tmp_path, source_selection=None, selection_policy=None)
+    snapshots = integrations.provider("source_snapshots")
+    assert snapshots.__name__ == "llm_wiki_cli.services.source_snapshot"

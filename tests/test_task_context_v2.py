@@ -18,7 +18,7 @@ from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage
 from llm_wiki_engine.storage_receipts import expand_storage_receipt
 from llm_wiki_cli.services.task_compact import VIEW_REQUEST_SCHEMA
-from llm_wiki_cli.services.task_contract import TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
+from llm_wiki_engine.task_contract import TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
 from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from tests.native_workflow.oracles import source_facts
 from tests.test_knowledge_storage_artifacts import migrate_plan
