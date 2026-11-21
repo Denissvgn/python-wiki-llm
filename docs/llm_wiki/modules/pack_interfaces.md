@@ -35,7 +35,7 @@ handles; the engine passes both through without inspecting them.
 | `pathlib` | `PurePath` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |
-| `typing` | `Any`, `Literal`, `Protocol`, `runtime_checkable` |
+| `typing` | `Any`, `Literal`, `Protocol`, `Self`, `runtime_checkable` |
 
 ## Local dependency map
 

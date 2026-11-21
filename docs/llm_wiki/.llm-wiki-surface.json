@@ -51325,7 +51325,8 @@
       "outgoing_internal_links": [
         "modules/domain_pack.md",
         "modules/engine.md",
-        "modules/pack_interfaces.md"
+        "modules/pack_interfaces.md",
+        "modules/wiki_operations.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_engine/pack_interfaces.py",
@@ -77777,5 +77778,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:2c443c4fc03fca6e28a1c669019d34a4b707dfec5b6ce2486f23a83063c428db"
+  "source_hash": "sha256:18dd6349ab3bc9c593ef3bf1eb9635f585530f3c951473acbe7db0b425511958"
 }

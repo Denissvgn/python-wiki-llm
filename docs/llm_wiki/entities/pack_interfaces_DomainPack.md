@@ -31,14 +31,14 @@ references and analysis helpers.
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__post_init__` | `() -> None` | — | — |
-| `with_classifier` | `(classifier: SourceClassifier) -> DomainPack` | — | A copy of this pack that classifies sources with ``classifier``. |
-| `with_page_namer` | `(page_namer: PageNamer) -> DomainPack` | — | A copy of this pack that names pages with ``page_namer``. |
-| `with_page_renderer` | `(page_renderer: PageRenderer) -> DomainPack` | — | A copy of this pack that writes pages with ``page_renderer``. |
-| `with_context_source` | `(context_source: ContextSource) -> DomainPack` | — | A copy of this pack that builds budgeted context with ``context_source``. |
-| `with_reference_provider` | `(provider: Any) -> DomainPack` | — | A copy of this pack that also serves ``provider``, replacing one of the same kind. |
-| `with_extractor` | `(source_kind: str, entry_point: str) -> DomainPack` | — | A copy of this pack that extracts ``source_kind`` with ``entry_point``. |
-| `with_helper_toolchain` | `(helper_toolchain: HelperToolchain) -> DomainPack` | — | A copy of this pack that prepares analysis helpers with ``helper_toolchain``. |
-| `with_integrations` | `(integrations: IntegrationSet) -> DomainPack` | — | A copy of this pack whose knowledge core uses ``integrations``. |
+| `with_classifier` | `(classifier: SourceClassifier) -> Self` | — | A copy of this pack that classifies sources with ``classifier``. |
+| `with_page_namer` | `(page_namer: PageNamer) -> Self` | — | A copy of this pack that names pages with ``page_namer``. |
+| `with_page_renderer` | `(page_renderer: PageRenderer) -> Self` | — | A copy of this pack that writes pages with ``page_renderer``. |
+| `with_context_source` | `(context_source: ContextSource) -> Self` | — | A copy of this pack that builds budgeted context with ``context_source``. |
+| `with_reference_provider` | `(provider: Any) -> Self` | — | A copy of this pack that also serves ``provider``, replacing one of the same kind. |
+| `with_extractor` | `(source_kind: str, entry_point: str) -> Self` | — | A copy of this pack that extracts ``source_kind`` with ``entry_point``. |
+| `with_helper_toolchain` | `(helper_toolchain: HelperToolchain) -> Self` | — | A copy of this pack that prepares analysis helpers with ``helper_toolchain``. |
+| `with_integrations` | `(integrations: IntegrationSet) -> Self` | — | A copy of this pack whose knowledge core uses ``integrations``. |
 | `describe` | `() -> dict[str, Any]` | — | A JSON-ready summary of the pack. |
 
 ## Relationships
@@ -53,13 +53,12 @@ flowchart LR
     n4["Engine.pack (src/llm_wiki_engine/engine.py)"]
     n5["active_pack (src/llm_wiki_engine/pack_interfaces.py)"]
     n6["current_pack (src/llm_wiki_engine/pack_interfaces.py)"]
-    n7["DomainPack.with_classifier (src/llm_wiki_engine/pack_interfaces.py)"]
-    n8["DomainPack.with_context_source (src/llm_wiki_engine/pack_interfaces.py)"]
-    n9["DomainPack.with_extractor (src/llm_wiki_engine/pack_interfaces.py)"]
-    n10["DomainPack.with_helper_toolchain (src/llm_wiki_engine/pack_interfaces.py)"]
-    n11["DomainPack.with_integrations (src/llm_wiki_engine/pack_interfaces.py)"]
-    n12["DomainPack.with_page_namer (src/llm_wiki_engine/pack_interfaces.py)"]
-    n13["DomainPack.with_page_renderer (src/llm_wiki_engine/pack_interfaces.py)"]
+    n7["using_pack (src/llm_wiki_engine/pack_interfaces.py)"]
+    n8["_classified_sources (src/llm_wiki_engine/wiki_operations.py)"]
+    n9["_extract (src/llm_wiki_engine/wiki_operations.py)"]
+    n10["_pack (src/llm_wiki_engine/wiki_operations.py)"]
+    n11["_render (src/llm_wiki_engine/wiki_operations.py)"]
+    n12["_rendered_entity (src/llm_wiki_engine/wiki_operations.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -72,7 +71,6 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     n12 --> n0
-    n13 --> n0
     click n0 "../modules/pack_interfaces.md"
     click n1 "../modules/domain_pack.md"
     click n2 "../modules/domain_pack.md"
@@ -81,12 +79,11 @@ flowchart LR
     click n5 "../modules/pack_interfaces.md"
     click n6 "../modules/pack_interfaces.md"
     click n7 "../modules/pack_interfaces.md"
-    click n8 "../modules/pack_interfaces.md"
-    click n9 "../modules/pack_interfaces.md"
-    click n10 "../modules/pack_interfaces.md"
-    click n11 "../modules/pack_interfaces.md"
-    click n12 "../modules/pack_interfaces.md"
-    click n13 "../modules/pack_interfaces.md"
+    click n8 "../modules/wiki_operations.md"
+    click n9 "../modules/wiki_operations.md"
+    click n10 "../modules/wiki_operations.md"
+    click n11 "../modules/wiki_operations.md"
+    click n12 "../modules/wiki_operations.md"
 ```
 
 ### Summary
@@ -110,12 +107,9 @@ flowchart LR
 | `Engine.pack` | type_reference | [engine](../modules/engine.md) | — |
 | `active_pack` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
 | `current_pack` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_classifier` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_context_source` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_extractor` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_helper_toolchain` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_integrations` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_page_namer` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-| `DomainPack.with_page_renderer` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
-
-> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.
+| `using_pack` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
+| `_classified_sources` | type_reference | [wiki_operations](../modules/wiki_operations.md) | — |
+| `_extract` | type_reference | [wiki_operations](../modules/wiki_operations.md) | — |
+| `_pack` | type_reference | [wiki_operations](../modules/wiki_operations.md) | — |
+| `_render` | type_reference | [wiki_operations](../modules/wiki_operations.md) | — |
+| `_rendered_entity` | type_reference | [wiki_operations](../modules/wiki_operations.md) | — |
