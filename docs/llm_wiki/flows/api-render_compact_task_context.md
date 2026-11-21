@@ -32,7 +32,7 @@
 - [task_contract](../modules/task_contract.md)
 - [task_evidence](../modules/task_evidence.md)
 - [task_implementation](../modules/task_implementation.md)
-- [token_counting](../modules/token_counting.md)
+- [token_counters](../modules/token_counters.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [workflow_profile](../modules/workflow_profile.md)

@@ -25,11 +25,11 @@
       "infrastructure": 5,
       "load-order": 1,
       "log": 1,
-      "modules": 315,
+      "modules": 316,
       "workflows": 318
     },
     "dependency_architecture": 2,
-    "total": 1930
+    "total": 1931
   },
   "dependency_pages": {
     "count": 2,
@@ -2192,7 +2192,7 @@
             "src/llm_wiki_cli/api.py",
             "src/llm_wiki_cli/services/context_budget.py",
             "src/llm_wiki_engine/context_request_format.py",
-            "src/llm_wiki_cli/services/token_counting.py",
+            "src/llm_wiki_engine/token_counters.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
             "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/host.py",
@@ -10897,7 +10897,7 @@
             "src/llm_wiki_engine/context_request_format.py",
             "src/llm_wiki_engine/query_request_format.py",
             "src/llm_wiki_cli/services/task_context.py",
-            "src/llm_wiki_cli/services/token_counting.py",
+            "src/llm_wiki_engine/token_counters.py",
             "src/llm_wiki_cli/services/task_evidence.py",
             "src/llm_wiki_engine/context_packet.py",
             "src/llm_wiki_cli/services/task_implementation.py",
@@ -24117,7 +24117,7 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/context_request_format.py",
             "src/llm_wiki_cli/services/task_context.py",
-            "src/llm_wiki_cli/services/token_counting.py",
+            "src/llm_wiki_engine/token_counters.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_cli/services/task_evidence.py",
@@ -31940,7 +31940,7 @@
             "src/llm_wiki_engine/canonical_json.py",
             "src/llm_wiki_engine/context_request_format.py",
             "src/llm_wiki_cli/services/task_context.py",
-            "src/llm_wiki_cli/services/token_counting.py",
+            "src/llm_wiki_engine/token_counters.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
             "src/llm_wiki_cli/services/analysis_capture.py",
             "src/llm_wiki_cli/services/task_evidence.py",
@@ -35748,6 +35748,7 @@
             "src/llm_wiki_cli/services/token_counting.py",
             "src/llm_wiki_engine/progress.py",
             "src/llm_wiki_engine/host.py",
+            "src/llm_wiki_engine/token_counters.py",
             "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/io.py",
@@ -39605,6 +39606,7 @@
             "src/llm_wiki_engine/context_request_format.py",
             "src/llm_wiki_engine/query_request_format.py",
             "src/llm_wiki_cli/services/context_packet_builder.py",
+            "src/llm_wiki_engine/token_counters.py",
             "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_cli/services/change_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
@@ -44005,6 +44007,7 @@
         "modules/task_implementation.md",
         "modules/team.md",
         "modules/team_cmd.md",
+        "modules/token_counters.md",
         "modules/token_counting.md",
         "modules/trigger_cmd.md",
         "modules/ts_extractor.md",
@@ -46796,10 +46799,11 @@
       "outgoing_internal_links": [
         "modules/context_budget.md",
         "modules/task_context.md",
+        "modules/token_counters.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/token_counting.py",
+      "source_path": "src/llm_wiki_engine/token_counters.py",
       "title": "EstimatedCounter"
     },
     {
@@ -53661,12 +53665,12 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/TokenCounter",
       "outgoing_internal_links": [
-        "modules/api.md",
-        "modules/context_budget.md",
+        "modules/task_context.md",
+        "modules/token_counters.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/services/token_counting.py",
+      "source_path": "src/llm_wiki_engine/token_counters.py",
       "title": "TokenCounter"
     },
     {
@@ -59659,19 +59663,33 @@
       "title": "team_cmd Module"
     },
     {
+      "canonical_path": "modules/token_counters.md",
+      "id": "token_counters",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/token_counters",
+      "outgoing_internal_links": [
+        "entities/EstimatedCounter.md",
+        "entities/TokenCounter.md",
+        "modules/task_context.md",
+        "modules/token_counters.md",
+        "modules/token_counting.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_engine/token_counters.py",
+      "title": "token_counters Module"
+    },
+    {
       "canonical_path": "modules/token_counting.md",
       "id": "token_counting",
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/token_counting",
       "outgoing_internal_links": [
-        "entities/EstimatedCounter.md",
         "entities/LocalTokenizerCounter.md",
-        "entities/TokenCounter.md",
         "modules/api.md",
         "modules/context_budget.md",
         "modules/mcp_server.md",
         "modules/task_cmd.md",
-        "modules/task_context.md",
+        "modules/token_counters.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
@@ -60481,7 +60499,7 @@
         "modules/context_budget.md",
         "modules/context_packet_builder.md",
         "modules/context_request_format.md",
-        "modules/token_counting.md"
+        "modules/token_counters.md"
       ],
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/context_budget.py",
@@ -66172,7 +66190,7 @@
         "modules/source_selection.md",
         "modules/source_snapshot.md",
         "modules/sync_manifest.md",
-        "modules/token_counting.md",
+        "modules/token_counters.md",
         "modules/validation.md",
         "modules/verification_contracts.md",
         "modules/wiki_media.md",
@@ -68545,7 +68563,7 @@
         "modules/task_contract.md",
         "modules/task_evidence.md",
         "modules/task_implementation.md",
-        "modules/token_counting.md",
+        "modules/token_counters.md",
         "modules/workflow_profile.md"
       ],
       "role": "mixed",
@@ -71949,7 +71967,7 @@
         "modules/task_contract.md",
         "modules/task_evidence.md",
         "modules/task_implementation.md",
-        "modules/token_counting.md",
+        "modules/token_counters.md",
         "modules/validation.md",
         "modules/wiki_surface.md",
         "modules/workflow_profile.md"
@@ -73649,7 +73667,7 @@
         "modules/task_contract.md",
         "modules/task_evidence.md",
         "modules/task_implementation.md",
-        "modules/token_counting.md",
+        "modules/token_counters.md",
         "modules/validation.md",
         "modules/workflow_profile.md"
       ],
@@ -74569,6 +74587,7 @@
         "modules/source_selection.md",
         "modules/source_snapshot.md",
         "modules/sync_manifest.md",
+        "modules/token_counters.md",
         "modules/token_counting.md",
         "modules/wiki_media.md",
         "modules/wiki_surface.md",
@@ -75786,6 +75805,7 @@
         "modules/task_contract.md",
         "modules/task_evidence.md",
         "modules/task_implementation.md",
+        "modules/token_counters.md",
         "modules/token_counting.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
@@ -76814,6 +76834,7 @@
         "modules/task_implementation.md",
         "modules/team.md",
         "modules/team_cmd.md",
+        "modules/token_counters.md",
         "modules/token_counting.md",
         "modules/trigger_cmd.md",
         "modules/ts_extractor.md",
@@ -77141,6 +77162,7 @@
         "modules/task_implementation.md",
         "modules/team.md",
         "modules/team_cmd.md",
+        "modules/token_counters.md",
         "modules/token_counting.md",
         "modules/trigger_cmd.md",
         "modules/ts_extractor.md",
@@ -77172,5 +77194,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:fdab7f6fc3c58d29ac7ee841a9374f9a49718dafc56dbc441e8f740e7fa20d8e"
+  "source_hash": "sha256:26ab717a684d51bb62d8f9c73e1e856ef596bc845cd396421070a4729a28ddfa"
 }

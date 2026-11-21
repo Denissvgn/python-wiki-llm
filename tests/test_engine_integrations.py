@@ -251,3 +251,15 @@ def test_engine_search_reads_source_snapshots_through_the_integration(tmp_path):
             search_service.capture_source_selection_inputs(tmp_path, source_selection=None, selection_policy=None)
     snapshots = integrations.provider("source_snapshots")
     assert snapshots.__name__ == "llm_wiki_cli.services.source_snapshot"
+
+
+def test_token_counters_live_in_the_engine_and_the_exact_counter_in_the_cli():
+    from llm_wiki_cli.services import token_counting
+    from llm_wiki_engine import token_counters
+
+    assert token_counting.EstimatedCounter is token_counters.EstimatedCounter
+    assert token_counting.TokenCounter is token_counters.TokenCounter
+    assert token_counters.EstimatedCounter().count("hello") == 2
+    # The exact counter needs the optional tokenizers package, so the host supplies it.
+    assert not hasattr(token_counters, "LocalTokenizerCounter")
+    assert token_counting.LocalTokenizerCounter.exact
