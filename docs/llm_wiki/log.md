@@ -4859,3 +4859,19 @@ Existing permissions, validation bounds and native authority remain separate.
 - Dependency pages initialized: 0
 - Surface policy updated: no
 - Generated surface pages retired: 1
+
+## 2026-11-21
+
+### Wiki sync
+- Source: `.`
+- Generator version: `5.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:0dfe32e40dc787768064b244cf6086c83bf2a8e87bf22ebb99948a1791f81b45`
+- Pages created: 1
+- Pages updated: 15
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1897
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: `EstimatedCounter` (src/llm_wiki_cli/services/token_counting.py → src/llm_wiki_engine/token_counters.py), `TokenCounter` (src/llm_wiki_cli/services/token_counting.py → src/llm_wiki_engine/token_counters.py)

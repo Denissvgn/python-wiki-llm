@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 770 | [Open section](#entities) |
-| Modules | 315 | [Open section](#modules) |
+| Modules | 316 | [Open section](#modules) |
 | Workflows | 318 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 507 | [Open section](#entry-point-flows) |
@@ -1082,6 +1082,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [task_implementation](modules/task_implementation.md) - Bind optional task implementation comparisons to their captured inputs.
 - [team](modules/team.md) - Shared team policy and conservative wiki conflict resolution.
 - [team_cmd](modules/team_cmd.md) - `src/llm_wiki_cli/commands/team_cmd.py`
+- [token_counters](modules/token_counters.md) - Token counters for budgeted output.
 - [token_counting](modules/token_counting.md) - Trusted host counters. No repository-discovered code or network loading.
 - [trigger_cmd](modules/trigger_cmd.md) - `src/llm_wiki_cli/commands/trigger_cmd.py`
 - [ts_extractor](modules/ts_extractor.md) - TypeScript AST extractor for agent-wiki-cli.

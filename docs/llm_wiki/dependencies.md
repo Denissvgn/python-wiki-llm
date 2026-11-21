@@ -138,7 +138,6 @@ flowchart TD
 | [metrics](modules/metrics.md) | 5 | 9 |
 | [publication_targets](modules/publication_targets.md) | 5 | 2 |
 | [task_context](modules/task_context.md) | 5 | 22 |
-| [token_counting](modules/token_counting.md) | 5 | 0 |
 | [context_knowledge_contract](modules/context_knowledge_contract.md) | 5 | 1 |
 | [gitignore](modules/gitignore.md) | 5 | 1 |
 | [knowledge_index](modules/knowledge_index.md) | 5 | 16 |
@@ -158,6 +157,7 @@ flowchart TD
 | [sync_transitions](modules/sync_transitions.md) | 4 | 11 |
 | [task_compact](modules/task_compact.md) | 4 | 7 |
 | [team](modules/team.md) | 4 | 15 |
+| [token_counting](modules/token_counting.md) | 4 | 1 |
 | [yaml_syntax](modules/yaml_syntax.md) | 4 | 0 |
 | [freshness_wording](modules/freshness_wording.md) | 4 | 0 |
 | [knowledge_reuse_format](modules/knowledge_reuse_format.md) | 4 | 3 |
@@ -255,6 +255,7 @@ flowchart TD
 | [storage_sort](modules/storage_sort.md) | 2 | 1 |
 | [sync_recovery](modules/sync_recovery.md) | 2 | 10 |
 | [task_compact_readable](modules/task_compact_readable.md) | 2 | 0 |
+| [token_counters](modules/token_counters.md) | 2 | 0 |
 | [commands___init__](modules/commands___init__.md) | 1 | 8 |
 | [api_diff_cmd](modules/api_diff_cmd.md) | 1 | 2 |
 | [bump_cmd](modules/bump_cmd.md) | 1 | 1 |
