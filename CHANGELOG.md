@@ -44,6 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `SyncOwnershipError` and `PageTransitionError` in
   `llm_wiki_engine.sync_ownership`. All stay importable from their previous
   modules as the same objects.
+- `TokenCounter` and `EstimatedCounter` now live in
+  `llm_wiki_engine.token_counters` and stay importable from
+  `llm_wiki_cli.services.token_counting`, which keeps `LocalTokenizerCounter`
+  (it needs the optional `tokenizers` package; a host passes it in as the
+  counter).
 - `llm_wiki_engine.integrations.provided()` reports the providers in effect
   where it is called, including an active `IntegrationSet`;
   `integrations.defaults()` reports the process-wide ones.

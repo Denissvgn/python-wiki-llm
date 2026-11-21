@@ -422,6 +422,7 @@
     "llm_wiki_engine/sync_transition_execution.py",
     "llm_wiki_engine/task_compact_readable.py",
     "llm_wiki_engine/task_contract.py",
+    "llm_wiki_engine/token_counters.py",
     "llm_wiki_engine/validation.py",
     "llm_wiki_engine/verification_contracts.py",
     "llm_wiki_engine/wiki_media.py",

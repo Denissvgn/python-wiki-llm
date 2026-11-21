@@ -24,7 +24,7 @@ from llm_wiki_engine.search_service import SEARCH_KINDS, page_records, search_re
 from .source_snapshot import SourceSnapshotError
 from llm_wiki_engine.task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
 from .task_evidence import coverage, declaration_records, match_declarations, observe_requirement, query_service
-from .token_counting import EstimatedCounter, TokenCounter
+from llm_wiki_engine.token_counters import EstimatedCounter, TokenCounter
 from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from llm_wiki_engine.workflow_profile import (
     SCOPES, WorkflowPolicy, WorkflowProfile, WorkflowRequestError, canonical_json, content_id,

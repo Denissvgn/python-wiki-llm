@@ -1,29 +1,21 @@
-"""Trusted host counters. No repository-discovered code or network loading."""
+"""Trusted host counters. No repository-discovered code or network loading.
+
+:class:`TokenCounter` and :class:`EstimatedCounter` live in
+:mod:`llm_wiki_engine.token_counters`; this module adds the exact counter
+backed by the optional ``tokenizers`` package.
+"""
 
 from __future__ import annotations
 
 import hashlib
 from pathlib import Path
 import sys
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
+
+from llm_wiki_engine.token_counters import EstimatedCounter as EstimatedCounter, TokenCounter as TokenCounter
 
 if TYPE_CHECKING:
     from tokenizers import Tokenizer
-
-
-class TokenCounter(Protocol):
-    identity: str
-    exact: bool
-
-    def count(self, text: str) -> int: ...
-
-
-class EstimatedCounter:
-    identity = "utf8-ceil-div4/v1"
-    exact = False
-
-    def count(self, text: str) -> int:
-        return (len(text.encode("utf-8")) + 3) // 4
 
 
 class LocalTokenizerCounter:
