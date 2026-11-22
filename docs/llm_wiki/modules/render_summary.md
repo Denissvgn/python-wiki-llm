@@ -54,6 +54,12 @@ flowchart LR
 | Outbound | [health_summary](../modules/health_summary.md) |
 | Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 1 |
+
 ## Functions
 
 | Function | Signature | Decorators | Description |
