@@ -431,7 +431,10 @@ def test_undecodable_maintained_page_is_refused_by_name(tmp_path, monkeypatch, c
         _sync(wiki_dir, dry_run=dry_run)
 
     error = capsys.readouterr().err
-    assert "modules/model.md" in error and "neither UTF-8 nor Windows-1252" in error
+    assert "neither UTF-8 nor Windows-1252" in error
+    # The page is named where the user can repair it, never in the discarded preview copy.
+    assert str(Path("modules", "model.md")) in error
+    assert "llm-wiki-sync-preview" not in error
     assert _wiki_bytes(wiki_dir) == before
 
 

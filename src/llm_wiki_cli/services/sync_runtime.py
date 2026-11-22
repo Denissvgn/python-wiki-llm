@@ -87,7 +87,7 @@ from .infrastructure_sync import (
     with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
-from llm_wiki_engine.io import read_md, write_md
+from llm_wiki_engine.io import MarkdownEncodingError, read_md, write_md
 from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from llm_wiki_engine.validation import portable_path_key
@@ -5380,14 +5380,17 @@ def _run_sync_dry_run(
             wiki_dir=staged_wiki,
             dry_run=False,
         )
-        with _staged_write_basis(staged_wiki, adopted=prepared.manifest.maintenance_state is not None):
-            _execute_prepared_sync(
-                staged_options, prepared,
-                target_wiki_dir=options.wiki_dir,
-                dry_run=True,
-            )
-        if prepared.repair_boundary is not None:
-            prepared.repair_boundary.validate_markdown(staged_wiki)
+        try:
+            with _staged_write_basis(staged_wiki, adopted=prepared.manifest.maintenance_state is not None):
+                _execute_prepared_sync(
+                    staged_options, prepared,
+                    target_wiki_dir=options.wiki_dir,
+                    dry_run=True,
+                )
+            if prepared.repair_boundary is not None:
+                prepared.repair_boundary.validate_markdown(staged_wiki)
+        except MarkdownEncodingError as exc:
+            raise _live_page_error(exc, staged_wiki, options.wiki_dir) from None
     if requires_force:
         emit(
             "\nPreview completed. After reviewing the page and artifact actions, "
@@ -5403,6 +5406,20 @@ def _run_sync_dry_run(
         prepared.inventory_result.cache_stats,
         enabled=options.cache_stats_enabled,
     )
+
+
+def _live_page_error(exc: MarkdownEncodingError, staged_wiki: Path, live_wiki: Path) -> MarkdownEncodingError:
+    """Name the user's page, not its copy in the discarded preview directory."""
+    if exc.page is None:
+        return exc
+    page = Path(exc.page)
+    for root in (staged_wiki, staged_wiki.resolve()):
+        try:
+            relative = page.relative_to(root)
+        except ValueError:
+            continue
+        return MarkdownEncodingError(str(live_wiki / relative), exc)
+    return exc
 
 
 @contextmanager
@@ -5548,7 +5565,6 @@ def _preflight_on_staged_copy(options: _SyncRunOptions, prepared: _PreparedSyncR
 
 
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
-    from llm_wiki_engine.io import MarkdownEncodingError
     from llm_wiki_engine.sync_recovery import capture_new_sync_pages, SyncRecoveryError
 
     try:
