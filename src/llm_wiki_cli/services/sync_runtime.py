@@ -18,7 +18,7 @@ from llm_wiki_engine.layout import DEFAULT_LAYOUT
 
 from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 
 from llm_wiki_engine.progress import observed_phase, record_counts
@@ -5055,31 +5055,6 @@ def _apply_prepared_sync(
     return result
 
 
-def _transition_preimages(wiki_dir: Path, plan) -> dict[str, bytes] | None:
-    """Current bytes of each page a transition takes over from a previous owner.
-
-    A sync that writes captures these preimages in its write basis before any
-    page changes. A dry run writes nothing and has no write basis, so the
-    pages it would take over are read here, from the unchanged wiki.
-    """
-    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
-
-    if plan is None or ACTIVE_WRITE_BASIS.get() is not None:
-        return None
-    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
-    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
-
-    preimages: dict[str, bytes] = {}
-    with StorageReadSession(wiki_dir).phase() as reader:
-        for item in plan.transitions:
-            if item.previous_owner is None or item.old_path is None or item.source_path is None:
-                continue
-            if not (wiki_dir / item.source_path).is_file():
-                continue
-            preimages[item.old_path] = reader.read(item.source_path, MAX_EXPANDED_BYTES)
-    return preimages
-
-
 def _finalize_prepared_sync(
     options: _SyncRunOptions,
     prepared: _PreparedSyncRun,
@@ -5160,9 +5135,6 @@ def _finalize_prepared_sync(
             _plan_check=prepared.repair_boundary.validate_plan if prepared.repair_boundary is not None else None,
             _publication_check=prepared.repair_boundary.assert_analysis_current if prepared.repair_boundary is not None else None,
             maintenance_page_transitions=prepared.page_transitions,
-            maintenance_previous_raw_content_by_page=_transition_preimages(
-                options.wiki_dir, prepared.page_transitions
-            ),
             inventory=prepared.inventory,
             surface=surface,
             source_snapshot=prepared.source_snapshot,
@@ -5408,11 +5380,12 @@ def _run_sync_dry_run(
             wiki_dir=staged_wiki,
             dry_run=False,
         )
-        _execute_prepared_sync(
-            staged_options, prepared,
-            target_wiki_dir=options.wiki_dir,
-            dry_run=True,
-        )
+        with _staged_write_basis(staged_wiki, adopted=prepared.manifest.maintenance_state is not None):
+            _execute_prepared_sync(
+                staged_options, prepared,
+                target_wiki_dir=options.wiki_dir,
+                dry_run=True,
+            )
         if prepared.repair_boundary is not None:
             prepared.repair_boundary.validate_markdown(staged_wiki)
     if requires_force:
@@ -5430,6 +5403,37 @@ def _run_sync_dry_run(
         prepared.inventory_result.cache_stats,
         enabled=options.cache_stats_enabled,
     )
+
+
+@contextmanager
+def _staged_write_basis(staged_wiki: Path, *, adopted: bool):
+    """Give a dry run's staged copy the write basis a writing sync would have.
+
+    With maintenance adopted, a writing sync captures the whole wiki before
+    any write and plans knowledge against those preimages and the bytes it
+    writes. The staged copy gets the same basis, without recovery data since
+    the copy is discarded, so a dry run plans exactly as the sync would.
+    """
+    if not adopted:
+        yield None
+        return
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import _absolute_path
+    from llm_wiki_engine.maintenance_protocol import WikiWriteBasis, _capture_spooled_wiki
+    from llm_wiki_engine.storage_spool import ByteSpool
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    root = _absolute_path(staged_wiki)
+    with ByteSpool(max_bytes=8_589_934_592, max_index_bytes=67_108_864,
+                   max_entry_bytes=MAX_EXPANDED_BYTES) as files:
+        _capture_spooled_wiki(root, files)
+        basis = WikiWriteBasis(root, files.fork())
+        token = ACTIVE_WRITE_BASIS.set(basis)
+        try:
+            yield basis
+        finally:
+            basis._close_storage_staging()
+            ACTIVE_WRITE_BASIS.reset(token)
 
 
 def _unsafe_dry_run_symlink(wiki_dir: Path) -> str | None:

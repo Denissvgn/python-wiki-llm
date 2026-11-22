@@ -392,21 +392,6 @@ def test_dry_run_previews_a_maintained_module_move_without_writing(tmp_path, mon
     assert "AUTHORED: module purpose." in read_md(wiki_dir / "modules/model.md")
 
 
-def test_unresolved_maintenance_transfer_names_its_pages(tmp_path, monkeypatch):
-    from llm_wiki_cli.services import sync_runtime
-    from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
-
-    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
-    # Without the moved pages' previous text, the transfer cannot be verified.
-    monkeypatch.setattr(sync_runtime, "_transition_preimages", lambda wiki, plan: {})
-
-    with pytest.raises(KnowledgeGenerationError) as raised:
-        _sync(wiki_dir, dry_run=True)
-
-    assert "previous-semantic-preimage-unavailable (entities/Draft.md, modules/model.md)" in str(raised.value)
-
-
-
 def _wiki_bytes(wiki_dir: Path) -> dict[Path, bytes]:
     return {
         path.relative_to(wiki_dir): b"<link>" if path.is_symlink() else path.read_bytes()

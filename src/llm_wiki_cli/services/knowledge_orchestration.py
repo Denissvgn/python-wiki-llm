@@ -456,18 +456,17 @@ def build_runtime_knowledge_plan(
     old_paths = {row["coordinate"]["source_path"] for row in old_observations}
     missing = confirmed_missing_source_paths(inputs.source_snapshot, old_paths) if previous_maintenance is not None else frozenset()
     old_targets = {row["target"]["canonical_path"] for row in (previous_maintenance["observations"].values() if previous_maintenance is not None else ())}
-    target_root = Path(inputs.target_wiki_dir)
-    # A page this run writes is present even before a dry run would write it.
-    written_pages = inputs.surface.content_by_path
-    absent_pages = {
-        path for path in old_targets
-        if path not in written_pages
-        and not (target_root / path).exists() and not (target_root / path).is_symlink()
-    }
     from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
     operation_basis = ACTIVE_WRITE_BASIS.get()
     raw_content = operation_basis.expected if operation_basis is not None else None
+    # Presence follows the wiki this run wrote: the live wiki for a writing
+    # sync, the staged copy for a dry run (its write basis covers that copy).
+    written_root = Path(operation_basis.root) if operation_basis is not None else Path(inputs.target_wiki_dir)
+    absent_pages = {
+        path for path in old_targets
+        if not (written_root / path).exists() and not (written_root / path).is_symlink()
+    }
     return _stabilize_revision_only_noop(
         inputs,
         KnowledgeGenerationInputs(
