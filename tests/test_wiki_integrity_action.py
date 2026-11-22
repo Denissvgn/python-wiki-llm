@@ -160,15 +160,18 @@ def test_full_integrity_action_uses_its_own_locked_implementation() -> None:
     assert setup_python["with"] == {"python-version": "3.13.18"}
 
     install = _named_step(action, "Install the action package")["run"]
-    assert shlex.split(install) == [
-        "${{ steps.setup-python.outputs.python-path }}",
-        "-I",
-        "-m",
-        "pip",
-        "install",
-        "--no-cache-dir",
-        "${GITHUB_ACTION_PATH}/../../src",
-        "${GITHUB_ACTION_PATH}/../..",
+    commands = [
+        shlex.split(line.replace("\\\n", " "))
+        for line in install.replace("\\\n", " ").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    python = "${{ steps.setup-python.outputs.python-path }}"
+    assert commands == [
+        ["set", "-euo", "pipefail"],
+        [python, "-I", "-m", "pip", "install", "--no-cache-dir",
+         "--require-hashes", "-r", "${GITHUB_ACTION_PATH}/../action-requirements.txt"],
+        [python, "-I", "-m", "pip", "install", "--no-cache-dir", "--no-deps",
+         "${GITHUB_ACTION_PATH}/../../src", "${GITHUB_ACTION_PATH}/../.."],
     ]
 
     setup_contracts = (
@@ -358,8 +361,9 @@ def test_full_integrity_action_cache_is_exact_validated_and_fork_read_only() -> 
 def test_full_integrity_action_isolates_python_modules_from_candidate_source() -> None:
     run_text = _run_text(_action())
 
-    assert run_text.count("-I -m pip") == 1
-    assert run_text.count("-m pip") == 1
+    # The locked dependencies, then the action's own packages.
+    assert run_text.count("-I -m pip") == 2
+    assert run_text.count("-m pip") == 2
     assert run_text.count("-I -m llm_wiki_cli.cli") == 4
     assert run_text.count("-m llm_wiki_cli.cli") == 4
     assert "python -m pip" not in run_text

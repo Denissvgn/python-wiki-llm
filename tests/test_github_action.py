@@ -277,8 +277,35 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
     )
     assert "-I -m pip install" in install["run"]
     assert "--no-cache-dir" in install["run"]
-    assert '"${GITHUB_ACTION_PATH}/../.."' in install["run"]
+    command = " ".join(install["run"].replace("\\\n", " ").split())
+    assert '--require-hashes -r "${GITHUB_ACTION_PATH}/../action-requirements.txt"' in command
+    assert '--no-deps "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."' in command
     assert "agent-wiki-cli==" not in install["run"]
+    setup = next(step for step in steps if step.get("id") == "setup-python")
+    # The infrastructure extractor's runtime identity includes the exact Python.
+    assert setup["with"] == {"python-version": "3.13.18"}
+
+
+def _locked_requirement(path: Path, name: str) -> tuple[str, frozenset[str]]:
+    text = path.read_text(encoding="utf-8").replace("\\\n", " ")
+    line = next(line for line in text.splitlines() if line.startswith(name + "=="))
+    return line.split()[0], frozenset(re.findall(r"--hash=(sha256:[0-9a-f]{64})", line))
+
+
+def test_action_runtime_lock_matches_the_reviewed_capture_lock() -> None:
+    # Sources must be observed with the parser versions the reviewed wiki
+    # capture used, or verification reports the wiki as basis-incompatible.
+    action_lock = ROOT / "integrations" / "action-requirements.txt"
+    capture_lock = ROOT / "release" / "validation-requirements.txt"
+    pinned, hashes = _locked_requirement(action_lock, "pyyaml")
+    assert hashes
+    assert (pinned, hashes) == _locked_requirement(capture_lock, "pyyaml")
+    requirements = [
+        line.split("==")[0]
+        for line in action_lock.read_text(encoding="utf-8").splitlines()
+        if line and not line[0].isspace() and not line.startswith("#")
+    ]
+    assert requirements == ["pyyaml"]
 
 
 def test_action_couples_to_doctor_json_without_scraping_text() -> None:

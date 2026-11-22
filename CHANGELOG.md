@@ -94,6 +94,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The knowledge health and full integrity GitHub Actions now install their
+  runtime dependencies from a hash-pinned lock
+  (`integrations/action-requirements.txt`, matching
+  `release/validation-requirements.txt`) and run on Python 3.13.18. A new
+  PyYAML or Python patch release therefore no longer makes infrastructure
+  pages of a wiki captured with the locked versions read as
+  basis-incompatible, which failed strict health.
 - `llm-wiki sync --dry-run` no longer stops with "Unresolved maintenance
   transfer prevents publication: previous-semantic-preimage-unavailable" in a
   wiki with adopted maintenance when a module moved, was renamed or was
