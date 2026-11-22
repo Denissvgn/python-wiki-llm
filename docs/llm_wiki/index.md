@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 786 | [Open section](#entities) |
+| Entities | 785 | [Open section](#entities) |
 | Modules | 320 | [Open section](#modules) |
-| Workflows | 314 | [Open section](#workflows) |
+| Workflows | 313 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 512 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -431,7 +431,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ManifestStoreReader](entities/ManifestStoreReader.md)
 - [ManifestTombstone](entities/ManifestTombstone.md)
 - [MarkdownContextResult](entities/MarkdownContextResult.md)
-- [MarkdownEncodingError](entities/MarkdownEncodingError.md)
 - [MarkdownHeading](entities/MarkdownHeading.md)
 - [MarkdownInspection](entities/MarkdownInspection.md)
 - [MarkdownLink](entities/MarkdownLink.md)
@@ -1406,7 +1405,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`
 - [stage_publication_documents](workflows/stage_publication_documents.md) - entry: `publication._stage_publication_documents`
-- [staged_write_basis](workflows/staged_write_basis.md) - entry: `sync_runtime._staged_write_basis`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
 - [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics._storage_report`
 - [sync_run_options_from_request](workflows/sync_run_options_from_request.md) - entry: `sync_runtime._sync_run_options_from_request`

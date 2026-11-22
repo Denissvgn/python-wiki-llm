@@ -54,7 +54,7 @@ ROOT = Path.cwd()
 WIKI = ROOT / "docs/llm_wiki"
 OUT = ROOT / "reports/knowledge-storage-performance"
 PAGE = "entities/KnowledgeStorePlan.md"
-SELECTORS = {"concept": "page:" + PAGE, "module": "source:src/llm_wiki_cli/services/workflow_profile.py"}
+SELECTORS = {"concept": "page:" + PAGE, "module": "source:src/llm_wiki_engine/workflow_profile.py"}
 
 
 def rss():

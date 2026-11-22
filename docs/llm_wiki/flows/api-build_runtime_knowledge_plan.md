@@ -127,15 +127,15 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3435 interactions; 3405 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3425 interactions; 3395 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1063 (1062 omitted); unresolved 1 of 776 (775 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1058 (1057 omitted); unresolved 1 of 771 (770 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_knowledge_plan` | 1 | - | external | 8 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_knowledge_plan` | 1 | - | external | 7 |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | unresolved | 7 |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | external | 3 |
 | `src/llm_wiki_engine/maintenance_protocol.py:guard_maintenance_owner` | 7 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
@@ -158,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1597; effect analysis evaluated: 925, partial: 67, unavailable: 605. Counts include steps omitted from the displayed trace.
 
-Collector observations for 992 source steps with known totals: observed: 5833, emitted: 5514, omitted: 319. Unavailable totals are excluded.
+Collector observations for 992 source steps with known totals: observed: 5832, emitted: 5513, omitted: 319. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

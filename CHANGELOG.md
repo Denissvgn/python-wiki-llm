@@ -83,6 +83,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   where it is called, including an active `IntegrationSet`;
   `integrations.defaults()` reports the process-wide ones.
 
+### Removed
+
+- The 85 `llm_wiki_cli.services.<module>` aliases of engine modules that
+  have raised a `DeprecationWarning` since 5.0.0 are removed. Import those
+  modules from `llm_wiki_engine.<module>` instead. The aliases added after
+  5.0.0 (`context_packet`, `context_response_format`, `context_budget_format`,
+  `search_service`, `sync_transition_execution` and `task_contract`) still
+  work and warn.
+
 ### Fixed
 
 - `llm-wiki sync --dry-run` no longer stops with "Unresolved maintenance
@@ -102,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A wiki page whose bytes are neither UTF-8 nor Windows-1252 now stops sync
   (and other readers) with an error that names the page, the byte and its
   offset and says how to repair it, instead of a bare codec error.
+
 ## [5.0.0] - 2026-11-19
 
 ### Added

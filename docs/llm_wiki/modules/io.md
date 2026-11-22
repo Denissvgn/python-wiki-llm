@@ -53,19 +53,13 @@ flowchart LR
 
 > All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
-## Classes
-
-| Class | Line | Bases | Description |
-|-------|------|-------|-------------|
-| [MarkdownEncodingError](../entities/MarkdownEncodingError.md) | 134 | `UnicodeDecodeError` | A Markdown page whose bytes are neither UTF-8 nor Windows-1252. |
-
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `first_unsafe_path_component` | `(path: str \| Path, *, trusted_symlink_uids: Set[int] \| None = None, trusted_symlink_owner: Callable[[Path], bool] \| None = None) -> Path \| None` | — | Return the first traversal, symlink, or reparse component of a path. |
 | `read_md` | `(path: Path) -> str` | — | Read a markdown file, tolerating non-UTF-8 encodings. |
-| `decode_markdown_bytes` | `(data: bytes, *, page: str \| None = None) -> str` | — | Decode exact captured Markdown using the established reader policy. |
+| `decode_markdown_bytes` | `(data: bytes) -> str` | — | Decode exact captured Markdown using the established reader policy. |
 | `write_md` | `(path: Path, text: str) -> None` | — | Write *text* to *path* as UTF-8 with Unix line-endings. |
 | `_write_utf8_text` | `(path: Path, text: str) -> None` | — | Atomically write UTF-8 text with Unix line endings. |
 | `write_bytes_atomic` | `(path: str \| Path, content: bytes) -> Path` | — | Atomically replace *path* with exact bytes staged in the same directory. |

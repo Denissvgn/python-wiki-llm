@@ -98,7 +98,9 @@ def test_freshness_producers_select_the_publication_consumer_on_native_lanes():
         "knowledge_coverage",
         "documentation_native",
     ):
-        path = f"src/llm_wiki_cli/services/{name}.py"
+        # The freshness producers live in the engine; documentation_native stays in the CLI.
+        package = "llm_wiki_cli/services" if name == "documentation_native" else "llm_wiki_engine"
+        path = f"src/{package}/{name}.py"
         groups = {
             g
             for rule in policy["rules"]

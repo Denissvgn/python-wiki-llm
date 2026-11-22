@@ -126,9 +126,9 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for (src/llm_wiki_cli/services…inalize_runtime_knowledge)(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3222 interactions; 3192 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3212 interactions; 3182 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1021 (1020 omitted); unresolved 1 of 703 (702 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1016 (1015 omitted); unresolved 1 of 698 (697 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1499; effect analysis evaluated: 873, partial: 66, unavailable: 560. Counts include steps omitted from the displayed trace.
 
-Collector observations for 939 source steps with known totals: observed: 5630, emitted: 5312, omitted: 318. Unavailable totals are excluded.
+Collector observations for 939 source steps with known totals: observed: 5629, emitted: 5311, omitted: 318. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -238,9 +238,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 871 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 872 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| finalize_runtime_knowledge | capture_committed_knowledge | 875 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 866 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 867 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| finalize_runtime_knowledge | capture_committed_knowledge | 870 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |
@@ -261,8 +261,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `finalize_runtime_knowledge` | `isinstance` | 871 |
-| external_call | `finalize_runtime_knowledge` | `TypeError` | 872 |
+| external_call | `finalize_runtime_knowledge` | `isinstance` | 866 |
+| external_call | `finalize_runtime_knowledge` | `TypeError` | 867 |
 | unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 242 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `finalize_runtime_knowledge` | `first 12 steps` | 0 |

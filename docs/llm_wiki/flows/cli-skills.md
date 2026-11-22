@@ -39,18 +39,18 @@ sequenceDiagram
     participant p14 as _ensure_regular_directory
     participant p15 as _is_regular_file
     participant p16 as write_md
-    participant p17 as decode_markdown_bytes
-    participant p18 as _write_utf8_text
-    participant p19 as _skill_tree_matches
-    participant p20 as write_bytes_atomic
-    participant p21 as _directory_ancestry_is_safe
-    participant p22 as _tree_entries
-    participant p23 as _nearest_existing_directory
-    participant p24 as _tree_snapshot
-    participant p25 as PathValidationError
-    participant p26 as render_report_json
-    participant p27 as get_agent_config_path
-    participant p28 as render_report_text
+    participant p17 as _write_utf8_text
+    participant p18 as _skill_tree_matches
+    participant p19 as write_bytes_atomic
+    participant p20 as _directory_ancestry_is_safe
+    participant p21 as _tree_entries
+    participant p22 as _nearest_existing_directory
+    participant p23 as _tree_snapshot
+    participant p24 as PathValidationError
+    participant p25 as render_report_json
+    participant p26 as get_agent_config_path
+    participant p27 as render_report_text
+    participant p28 as current_host
     participant p29 as getattr
     participant p30 as root.is_dir
     p0->>p1: list_bundled_skills
@@ -69,25 +69,25 @@ sequenceDiagram
     p2->>p14: _ensure_regular_directory
     p2->>p15: _is_regular_file
     p2->>p16: write_md
-    p13->>p17: decode_markdown_bytes
-    p16->>p18: _write_utf8_text
-    p12->>p19: _skill_tree_matches
-    p18->>p20: write_bytes_atomic
-    p19->>p21: _directory_ancestry_is_safe
-    p19->>p22: _tree_entries
-    p21->>p23: _nearest_existing_directory
-    p22->>p24: _tree_snapshot
-    p5->>p25: PathValidationError
-    p3->>p26: render_report_json
-    p4->>p27: get_agent_config_path
-    p3->>p28: render_report_text
+    p16->>p17: _write_utf8_text
+    p12->>p18: _skill_tree_matches
+    p17->>p19: write_bytes_atomic
+    p18->>p20: _directory_ancestry_is_safe
+    p18->>p21: _tree_entries
+    p20->>p22: _nearest_existing_directory
+    p21->>p23: _tree_snapshot
+    p5->>p24: PathValidationError
+    p3->>p25: render_report_json
+    p4->>p26: get_agent_config_path
+    p3->>p27: render_report_text
+    p5->>p28: current_host
     p0-->>p29: getattr(args, 'skills_action', None)
     p1-->>p30: root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 315 interactions; 285 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 313 interactions; 283 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 101 (100 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 100 (99 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -98,10 +98,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/skills.py](../modules/skills.md) | internal | 3 |
 | `src/llm_wiki_cli/services/skills.py:_parse_skill_frontmatter` | 10 | - | unresolved | 10 |
+| `src/llm_wiki_engine/io.py:read_md` | 21 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_engine/io.py:decode_markdown_bytes` | 22 | - | unresolved | 4 |
-| `src/llm_wiki_engine/io.py:decode_markdown_bytes` | 22 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_engine/io.py:read_md` | 21 | - | unresolved | 1 |
-> Omission summary shows 8 of 74 groups; 66 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 73 groups; 65 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -114,9 +114,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 98; effect analysis evaluated: 79, partial: 1, unavailable: 18. Counts include steps omitted from the displayed trace.
+Source steps: 97; effect analysis evaluated: 79, partial: 1, unavailable: 17. Counts include steps omitted from the displayed trace.
 
-Collector observations for 80 source steps with known totals: observed: 467, emitted: 466, omitted: 1. Unavailable totals are excluded.
+Collector observations for 80 source steps with known totals: observed: 466, emitted: 465, omitted: 1. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

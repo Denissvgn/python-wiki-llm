@@ -1,4 +1,4 @@
-"""Tests for services/lockfile.py"""
+"""Tests for llm_wiki_engine/lockfile.py"""
 
 import errno
 import os

@@ -81,12 +81,11 @@ flowchart LR
     n2["_apply_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
     n3["_enforce_sync_write_safety (src/llm_wiki_cli/services/sync_runtime.py)"]
     n4["_finalize_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n5["_preflight_on_staged_copy (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n6["_prepare_sync_run (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n7["_print_selection_prune_summary (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n8["_run_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n9["_run_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n10["_selection_pruning_has_changes (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n5["_prepare_sync_run (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n6["_print_selection_prune_summary (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n7["_run_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n8["_run_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n9["_selection_pruning_has_changes (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -96,7 +95,6 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
-    n10 --> n0
     click n0 "../modules/sync_runtime.md"
     click n1 "../modules/sync_runtime.md"
     click n2 "../modules/sync_runtime.md"
@@ -107,7 +105,6 @@ flowchart LR
     click n7 "../modules/sync_runtime.md"
     click n8 "../modules/sync_runtime.md"
     click n9 "../modules/sync_runtime.md"
-    click n10 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -124,7 +121,6 @@ flowchart LR
 | `_apply_prepared_sync` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_enforce_sync_write_safety` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_finalize_prepared_sync` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
-| `_preflight_on_staged_copy` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_prepare_sync_run` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_prepare_sync_run` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_print_selection_prune_summary` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
