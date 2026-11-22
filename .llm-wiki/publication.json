@@ -181,7 +181,7 @@
       "depends_on": [
         {"architecture_page": "flows/cli-ci-check.md"},
         {"reference": "llm-wiki", "command": ["ci-check"]},
-        {"source_file": "src/llm_wiki_cli/services/analysis_compatibility.py"}
+        {"source_file": "src/llm_wiki_engine/analysis_compatibility.py"}
       ]
     },
     {
@@ -495,7 +495,7 @@
         {"reference": "llm-wiki", "command": ["sync"]},
         {"reference": "llm-wiki", "command": ["knowledge"]},
         {"source_file": "docs/knowledge-storage.md"},
-        {"source_file": "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"}
+        {"source_file": "src/llm_wiki_engine/knowledge_storage_lifecycle.py"}
       ]
     },
     {
