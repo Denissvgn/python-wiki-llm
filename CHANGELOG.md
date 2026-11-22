@@ -89,8 +89,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   transfer prevents publication: previous-semantic-preimage-unavailable" in a
   wiki with adopted maintenance when a module moved, was renamed or was
   split. A dry run now reads the pages it would hand to a new owner from the
-  unchanged wiki, as a writing sync captures them before it writes. When a
-  transfer still cannot be verified, the error names the affected pages.
+  unchanged wiki, as a writing sync captures them before it writes. A dry
+  run also no longer counts a deleted page it would recreate as both present
+  and absent. A transfer that cannot be verified, for example because the
+  maintained page was deleted, is still refused by both, and the error names
+  the affected pages.
 ## [5.0.0] - 2026-11-19
 
 ### Added

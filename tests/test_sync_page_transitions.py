@@ -406,6 +406,67 @@ def test_unresolved_maintenance_transfer_names_its_pages(tmp_path, monkeypatch):
     assert "previous-semantic-preimage-unavailable (entities/Draft.md, modules/model.md)" in str(raised.value)
 
 
+
+def _wiki_bytes(wiki_dir: Path) -> dict[Path, bytes]:
+    return {
+        path.relative_to(wiki_dir): b"<link>" if path.is_symlink() else path.read_bytes()
+        for path in sorted(wiki_dir.rglob("*"))
+        if path.is_symlink() or path.is_file()
+    }
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+def test_moved_module_whose_page_was_removed_is_refused(tmp_path, monkeypatch, dry_run):
+    from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    # The maintained page is gone, so its prose cannot be carried to the new owner.
+    (wiki_dir / "modules/model.md").unlink()
+    before = _wiki_bytes(wiki_dir)
+
+    with pytest.raises(KnowledgeGenerationError) as raised:
+        _sync(wiki_dir, dry_run=dry_run)
+
+    assert "previous-semantic-preimage-unavailable (modules/model.md)" in str(raised.value)
+    if dry_run:
+        assert _wiki_bytes(wiki_dir) == before
+    else:
+        # A writing sync commits its machine state last; refused, it keeps the last good state.
+        state = {Path(name) for name in (
+            ".llm-wiki-manifest.json", ".llm-wiki-knowledge.json",
+            ".llm-wiki-surface.json", ".llm-wiki-maintenance-adoption.json",
+        )}
+        after = _wiki_bytes(wiki_dir)
+        assert {name: after[name] for name in state} == {name: before[name] for name in state}
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+@pytest.mark.parametrize("linked", ["page", "folder"])
+def test_moved_module_page_behind_a_link_is_never_read(tmp_path, monkeypatch, linked, dry_run):
+    import os
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    page = wiki_dir / "modules/model.md"
+    if linked == "page":
+        outside = tmp_path / "outside.md"
+        outside.write_bytes(page.read_bytes())
+        page.unlink()
+        os.symlink(outside, page)
+    else:
+        outside = tmp_path / "outside-modules"
+        (wiki_dir / "modules").rename(outside)
+        os.symlink(outside, wiki_dir / "modules", target_is_directory=True)
+    before = _wiki_bytes(wiki_dir)
+    outside_before = outside.read_bytes() if outside.is_file() else _wiki_bytes(outside)
+
+    with pytest.raises(BaseException) as raised:
+        _sync(wiki_dir, dry_run=dry_run)
+
+    assert not isinstance(raised.value, (KeyboardInterrupt, AssertionError))
+    assert _wiki_bytes(wiki_dir) == before
+    assert (outside.read_bytes() if outside.is_file() else _wiki_bytes(outside)) == outside_before
+
+
 @pytest.mark.parametrize("leaves_alias", [False, True])
 def test_shared_class_name_moved_with_its_module_keeps_its_page(
     tmp_path, monkeypatch, leaves_alias
