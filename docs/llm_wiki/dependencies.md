@@ -357,9 +357,9 @@ flowchart TD
 
 ### python
 
-- **Used:** `checkout`, `markdown-it`, `mcp`, `pydantic`, `pyyaml`, `tokenizers`, `tomli`, `uvicorn`
-- ⚠️ **Undeclared:** `checkout`, `markdown-it`
-- **Unused (declared, not imported):** `llm-wiki-engine`
+- **Used:** `agent-wiki-cli`, `checkout`, `markdown-it`, `mcp`, `pydantic`, `pyyaml`, `tokenizers`, `tomli`, `uvicorn`
+- ⚠️ **Undeclared:** `agent-wiki-cli`, `checkout`, `markdown-it`
+- **Unused (declared, not imported):** `llm-wiki-engine`, `pyyaml`
 
 ### typescript
 
