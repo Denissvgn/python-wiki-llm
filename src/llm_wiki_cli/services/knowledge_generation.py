@@ -499,8 +499,18 @@ def _build_knowledge_generation_plan(
             previous_raw_content_by_page=inputs.maintenance_previous_raw_content_by_page,
         )
         if transfers.issues:
-            reasons = sorted({issue["reason"] for issue in transfers.issues})
-            raise KnowledgeGenerationError("maintenance.moves", "Unresolved maintenance transfer prevents publication: " + ", ".join(reasons))
+            pages_by_reason: dict[str, list[str]] = {}
+            for issue in transfers.issues:
+                pages_by_reason.setdefault(issue["reason"], []).append(issue["canonical_path"])
+            details = []
+            for reason, pages in sorted(pages_by_reason.items()):
+                shown = sorted(set(pages))
+                listed = ", ".join(shown[:5]) + (f" and {len(shown) - 5} more" if len(shown) > 5 else "")
+                details.append(f"{reason} ({listed})")
+            raise KnowledgeGenerationError(
+                "maintenance.moves",
+                "Unresolved maintenance transfer prevents publication: " + "; ".join(details),
+            )
         state = reconcile_pending_maintenance(manifest.maintenance_state, inputs.maintenance_adoption, capture,
             confirmed_transfers=transfers.confirmed, ambiguous_transfers=transfers.ambiguous)
         manifest = manifest.with_maintenance_state(state)

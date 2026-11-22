@@ -18,7 +18,7 @@ from llm_wiki_engine.layout import DEFAULT_LAYOUT
 
 from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 
 from llm_wiki_engine.progress import observed_phase, record_counts
@@ -87,7 +87,7 @@ from .infrastructure_sync import (
     with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
-from llm_wiki_engine.io import read_md, write_md
+from llm_wiki_engine.io import MarkdownEncodingError, read_md, write_md
 from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from llm_wiki_engine.validation import portable_path_key
@@ -5380,13 +5380,17 @@ def _run_sync_dry_run(
             wiki_dir=staged_wiki,
             dry_run=False,
         )
-        _execute_prepared_sync(
-            staged_options, prepared,
-            target_wiki_dir=options.wiki_dir,
-            dry_run=True,
-        )
-        if prepared.repair_boundary is not None:
-            prepared.repair_boundary.validate_markdown(staged_wiki)
+        try:
+            with _staged_write_basis(staged_wiki, adopted=prepared.manifest.maintenance_state is not None):
+                _execute_prepared_sync(
+                    staged_options, prepared,
+                    target_wiki_dir=options.wiki_dir,
+                    dry_run=True,
+                )
+            if prepared.repair_boundary is not None:
+                prepared.repair_boundary.validate_markdown(staged_wiki)
+        except MarkdownEncodingError as exc:
+            raise _live_page_error(exc, staged_wiki, options.wiki_dir) from None
     if requires_force:
         emit(
             "\nPreview completed. After reviewing the page and artifact actions, "
@@ -5402,6 +5406,51 @@ def _run_sync_dry_run(
         prepared.inventory_result.cache_stats,
         enabled=options.cache_stats_enabled,
     )
+
+
+def _live_page_error(exc: MarkdownEncodingError, staged_wiki: Path, live_wiki: Path) -> MarkdownEncodingError:
+    """Name the user's page, not its copy in the discarded preview directory."""
+    if exc.page is None:
+        return exc
+    page = Path(exc.page)
+    for root in (staged_wiki, staged_wiki.resolve()):
+        try:
+            relative = page.relative_to(root)
+        except ValueError:
+            continue
+        return MarkdownEncodingError(str(live_wiki / relative), exc)
+    return exc
+
+
+@contextmanager
+def _staged_write_basis(staged_wiki: Path, *, adopted: bool):
+    """Give a dry run's staged copy the write basis a writing sync would have.
+
+    With maintenance adopted, a writing sync captures the whole wiki before
+    any write and plans knowledge against those preimages and the bytes it
+    writes. The staged copy gets the same basis, without recovery data since
+    the copy is discarded, so a dry run plans exactly as the sync would.
+    """
+    if not adopted:
+        yield None
+        return
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import _absolute_path
+    from llm_wiki_engine.maintenance_protocol import WikiWriteBasis, _capture_spooled_wiki
+    from llm_wiki_engine.storage_spool import ByteSpool
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    root = _absolute_path(staged_wiki)
+    with ByteSpool(max_bytes=8_589_934_592, max_index_bytes=67_108_864,
+                   max_entry_bytes=MAX_EXPANDED_BYTES) as files:
+        _capture_spooled_wiki(root, files)
+        basis = WikiWriteBasis(root, files.fork())
+        token = ACTIVE_WRITE_BASIS.set(basis)
+        try:
+            yield basis
+        finally:
+            basis._close_storage_staging()
+            ACTIVE_WRITE_BASIS.reset(token)
 
 
 def _unsafe_dry_run_symlink(wiki_dir: Path) -> str | None:
@@ -5499,6 +5548,22 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
         _record_outcome("synced", result)
 
 
+def _preflight_on_staged_copy(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    """Run the dry run exactly as a standalone one would, before any live write.
+
+    The live wiki's write basis describes the live pages; the staged copy is
+    planned without it, as ``sync --dry-run`` plans.
+    """
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    token = ACTIVE_WRITE_BASIS.set(None)
+    try:
+        with discarding_stdout():
+            _run_sync_dry_run(options, prepared)
+    finally:
+        ACTIVE_WRITE_BASIS.reset(token)
+
+
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
     from llm_wiki_engine.sync_recovery import capture_new_sync_pages, SyncRecoveryError
 
@@ -5525,9 +5590,16 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             with discarding_stdout():
                 _run_sync_dry_run(options, prepared)
             prepared.repair_boundary.assert_current()
+        elif prepared.manifest.maintenance_state is not None:
+            # With maintenance adopted, pages and machine state must agree. The
+            # same run on a staged copy first, so a refusal from planning
+            # (an unverifiable transfer, an unreadable page) leaves the wiki
+            # untouched instead of after some pages were rewritten.
+            emit("Preflighting the sync on an isolated wiki copy.")
+            _preflight_on_staged_copy(options, prepared)
         with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
             _execute_prepared_sync(options, prepared)
-    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
+    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError, MarkdownEncodingError) as exc:
         emit(f"Error: {exc}", stream="stderr")
         raise SyncAborted(2)
 

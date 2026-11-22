@@ -320,6 +320,7 @@ def test_failed_preview_does_not_offer_completed_review_route(tmp_path, monkeypa
         'runtime_provenance_changed', 'generator_refresh_required', 'prior_generator_version',
         'evidence_refresh_sources',
     ]))
+    prepared.manifest = SimpleNamespace(maintenance_state=None)
     monkeypatch.chdir(tmp_path)
     with pytest.raises(ValueError, match='staged failure'):
         sync_cmd._run_sync_dry_run(_options('--dry-run'), cast(sync_cmd._PreparedSyncRun, prepared))
@@ -372,6 +373,7 @@ def test_preview_omits_only_root_runtime_locks(tmp_path, monkeypatch, deny_autho
         'runtime_provenance_changed', 'generator_refresh_required', 'prior_generator_version',
         'evidence_refresh_sources', 'repair_boundary',
     ]), inventory_result=SimpleNamespace(cache_stats=None))
+    prepared.manifest = SimpleNamespace(maintenance_state=None)
     if deny_authored:
         with pytest.raises(shutil.Error, match='authored read denied'):
             sync_cmd._run_sync_dry_run(_options('--dry-run'), cast(sync_cmd._PreparedSyncRun, prepared))

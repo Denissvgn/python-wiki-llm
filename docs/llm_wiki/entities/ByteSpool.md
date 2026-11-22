@@ -37,16 +37,17 @@ Owns one private temporary file and a bounded index of immutable byte captures. 
 flowchart LR
     n0["ByteSpool (src/llm_wiki_engine/storage_spool.py)"]
     n1["MutableMapping[str, bytes]"]
-    n2["src/llm_wiki_engine/knowledge_audit.py"]
-    n3["build_packed_store (src/llm_wiki_engine/knowledge_packs.py)"]
-    n4["prune_knowledge_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
-    n5["restore_pruned_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
-    n6["src/llm_wiki_engine/knowledge_stream_audit.py"]
-    n7["_capture_spooled_wiki (src/llm_wiki_engine/maintenance_protocol.py)"]
-    n8["maintenance_write_operation (src/llm_wiki_engine/maintenance_protocol.py)"]
-    n9["ByteSpool.fork (src/llm_wiki_engine/storage_spool.py)"]
-    n10["JsonSpool.__init__ (src/llm_wiki_engine/storage_spool.py)"]
-    n11["spool_write (src/llm_wiki_engine/storage_spool.py)"]
+    n2["_staged_write_basis (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n3["src/llm_wiki_engine/knowledge_audit.py"]
+    n4["build_packed_store (src/llm_wiki_engine/knowledge_packs.py)"]
+    n5["prune_knowledge_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
+    n6["restore_pruned_storage (src/llm_wiki_engine/knowledge_storage_lifecycle.py)"]
+    n7["src/llm_wiki_engine/knowledge_stream_audit.py"]
+    n8["_capture_spooled_wiki (src/llm_wiki_engine/maintenance_protocol.py)"]
+    n9["maintenance_write_operation (src/llm_wiki_engine/maintenance_protocol.py)"]
+    n10["ByteSpool.fork (src/llm_wiki_engine/storage_spool.py)"]
+    n11["JsonSpool.__init__ (src/llm_wiki_engine/storage_spool.py)"]
+    n12["spool_write (src/llm_wiki_engine/storage_spool.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -58,17 +59,19 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/storage_spool.md"
-    click n2 "../modules/knowledge_audit.md"
-    click n3 "../modules/knowledge_packs.md"
-    click n4 "../modules/knowledge_storage_lifecycle.md"
+    click n2 "../modules/sync_runtime.md"
+    click n3 "../modules/knowledge_audit.md"
+    click n4 "../modules/knowledge_packs.md"
     click n5 "../modules/knowledge_storage_lifecycle.md"
-    click n6 "../modules/knowledge_stream_audit.md"
-    click n7 "../modules/maintenance_protocol.md"
+    click n6 "../modules/knowledge_storage_lifecycle.md"
+    click n7 "../modules/knowledge_stream_audit.md"
     click n8 "../modules/maintenance_protocol.md"
-    click n9 "../modules/storage_spool.md"
+    click n9 "../modules/maintenance_protocol.md"
     click n10 "../modules/storage_spool.md"
     click n11 "../modules/storage_spool.md"
+    click n12 "../modules/storage_spool.md"
 ```
 
 ### Summary
@@ -87,6 +90,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_staged_write_basis` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `knowledge_audit` | import | [knowledge_audit](../modules/knowledge_audit.md) | — |
 | `build_packed_store` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `prune_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

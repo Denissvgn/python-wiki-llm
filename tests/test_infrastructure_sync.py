@@ -651,7 +651,9 @@ def test_infrastructure_dry_run_and_interrupted_finalize_are_recoverable(
 
     real_finalize = sync_cmd._finalize_prepared_sync
 
-    def interrupt(*_args, **_kwargs):
+    def interrupt(*args, **kwargs):
+        if kwargs.get("dry_run"):  # the adopted-wiki preflight writes nothing
+            return real_finalize(*args, **kwargs)
         raise RuntimeError("simulated interrupted finalization")
 
     monkeypatch.setattr(sync_cmd, "_finalize_prepared_sync", interrupt)

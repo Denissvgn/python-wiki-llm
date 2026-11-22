@@ -92,6 +92,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `search_service`, `sync_transition_execution` and `task_contract`) still
   work and warn.
 
+### Fixed
+
+- `llm-wiki sync --dry-run` no longer stops with "Unresolved maintenance
+  transfer prevents publication: previous-semantic-preimage-unavailable" in a
+  wiki with adopted maintenance when a module moved, was renamed or was
+  split. A dry run now reads the pages it would hand to a new owner from the
+  unchanged wiki, as a writing sync captures them before it writes. A dry
+  run also no longer counts a deleted page it would recreate as both present
+  and absent. A transfer that cannot be verified, for example because the
+  maintained page was deleted, is still refused by both, and the error names
+  the affected pages.
+- A writing sync in a wiki with adopted maintenance no longer leaves
+  rewritten pages next to the previous manifest when it is refused while
+  planning knowledge. It first runs the same sync on a staged copy of the
+  wiki and writes nothing if that is refused. This adds one staged pass to
+  each such sync.
+- A wiki page whose bytes are neither UTF-8 nor Windows-1252 now stops sync
+  (and other readers) with an error that names the page, the byte and its
+  offset and says how to repair it, instead of a bare codec error.
+
 ## [5.0.0] - 2026-11-19
 
 ### Added
