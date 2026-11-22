@@ -30,7 +30,7 @@ its message names the page and how to repair it.
 flowchart LR
     n0["MarkdownEncodingError (src/llm_wiki_engine/io.py)"]
     n1["UnicodeDecodeError"]
-    n2["src/llm_wiki_cli/services/sync_runtime.py"]
+    n2["_live_page_error (src/llm_wiki_cli/services/sync_runtime.py)"]
     n3["decode_markdown_bytes (src/llm_wiki_engine/io.py)"]
     n0 --> n1
     n2 --> n0
@@ -56,5 +56,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `sync_runtime` | import | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_live_page_error` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `_live_page_error` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `decode_markdown_bytes` | call | [io](../modules/io.md) | 1 |

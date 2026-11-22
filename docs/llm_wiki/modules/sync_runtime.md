@@ -136,7 +136,7 @@ still stop the operation.
 | `json` | `json` |
 | `llm_wiki_engine.contracts` | `INITIALIZABLE_SURFACES` |
 | `llm_wiki_engine.host` | `current_host`, `discarding_stdout`, `emit`, `recording_errors` |
-| `llm_wiki_engine.io` | `read_md`, `write_md`, `MarkdownEncodingError` |
+| `llm_wiki_engine.io` | `MarkdownEncodingError`, `read_md`, `write_md` |
 | `llm_wiki_engine.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
 | `llm_wiki_engine.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
@@ -354,6 +354,7 @@ flowchart LR
 | `_print_selection_prune_summary` | `(prepared: _PreparedSyncRun) -> None` | — | — |
 | `_print_sync_artifact_actions` | `(result: KnowledgeCommitResult) -> None` | — | — |
 | `_run_sync_dry_run` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | — |
+| `_live_page_error` | `(exc: MarkdownEncodingError, staged_wiki: Path, live_wiki: Path) -> MarkdownEncodingError` | — | Name the user's page, not its copy in the discarded preview directory. |
 | `_staged_write_basis` | `(staged_wiki: Path, *, adopted: bool)` | `@contextmanager` | Give a dry run's staged copy the write basis a writing sync would have. |
 | `_unsafe_dry_run_symlink` | `(wiki_dir: Path) -> str \| None` | — | Return the first symlink that would escape an isolated preview tree. |
 | `_enforce_sync_write_safety` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | Require write authorization before a prepared sync can mutate the wiki. |

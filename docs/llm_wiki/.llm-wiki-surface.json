@@ -30739,7 +30739,7 @@
             "src/llm_wiki_engine/knowledge_packs.py",
             "src/llm_wiki_engine/manifest_storage.py"
           ],
-          "step_count": 1637,
+          "step_count": 1638,
           "truncated": true
         }
       },
@@ -77803,5 +77803,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:c7f0ccaa52496dbcb67e419af5ec41383808426f4ff021a09c427f57acf5ca2b"
+  "source_hash": "sha256:88c554faff900b5dc791edd94baff838b476ccb74c8233935a693b2bdc5770ad"
 }
