@@ -83,6 +83,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   where it is called, including an active `IntegrationSet`;
   `integrations.defaults()` reports the process-wide ones.
 
+### Fixed
+
+- `llm-wiki sync --dry-run` no longer stops with "Unresolved maintenance
+  transfer prevents publication: previous-semantic-preimage-unavailable" in a
+  wiki with adopted maintenance when a module moved, was renamed or was
+  split. A dry run now reads the pages it would hand to a new owner from the
+  unchanged wiki, as a writing sync captures them before it writes. When a
+  transfer still cannot be verified, the error names the affected pages.
 ## [5.0.0] - 2026-11-19
 
 ### Added

@@ -361,6 +361,51 @@ def test_module_moved_to_another_directory_keeps_its_page(
     assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == stable
 
 
+def _adopted_moved_module(tmp_path, monkeypatch) -> tuple[Path, Path]:
+    from llm_wiki_cli import api
+
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    _author_description(
+        wiki_dir / "modules/model.md",
+        "_Auto-generated from `pkg/model.py`._",
+        "AUTHORED: module purpose.",
+    )
+    _sync(wiki_dir)
+    api.adopt_maintenance(".", "docs/llm_wiki", recovery_dir=tmp_path / "recovery")
+    _sync(wiki_dir)
+    (project / "engine").mkdir()
+    (project / "pkg/model.py").rename(project / "engine/model.py")
+    return project, wiki_dir
+
+
+def test_dry_run_previews_a_maintained_module_move_without_writing(tmp_path, monkeypatch):
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    before = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+
+    _sync(wiki_dir, dry_run=True)
+
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == before
+    _sync(wiki_dir)
+    _assert_module_page(wiki_dir, "model", "engine/model.py")
+    assert "AUTHORED: module purpose." in read_md(wiki_dir / "modules/model.md")
+
+
+def test_unresolved_maintenance_transfer_names_its_pages(tmp_path, monkeypatch):
+    from llm_wiki_cli.services import sync_runtime
+    from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    # Without the moved pages' previous text, the transfer cannot be verified.
+    monkeypatch.setattr(sync_runtime, "_transition_preimages", lambda wiki, plan: {})
+
+    with pytest.raises(KnowledgeGenerationError) as raised:
+        _sync(wiki_dir, dry_run=True)
+
+    assert "previous-semantic-preimage-unavailable (entities/Draft.md, modules/model.md)" in str(raised.value)
+
+
 @pytest.mark.parametrize("leaves_alias", [False, True])
 def test_shared_class_name_moved_with_its_module_keeps_its_page(
     tmp_path, monkeypatch, leaves_alias

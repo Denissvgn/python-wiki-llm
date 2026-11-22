@@ -5055,6 +5055,31 @@ def _apply_prepared_sync(
     return result
 
 
+def _transition_preimages(wiki_dir: Path, plan) -> dict[str, bytes] | None:
+    """Current bytes of each page a transition takes over from a previous owner.
+
+    A sync that writes captures these preimages in its write basis before any
+    page changes. A dry run writes nothing and has no write basis, so the
+    pages it would take over are read here, from the unchanged wiki.
+    """
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    if plan is None or ACTIVE_WRITE_BASIS.get() is not None:
+        return None
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+
+    preimages: dict[str, bytes] = {}
+    with StorageReadSession(wiki_dir).phase() as reader:
+        for item in plan.transitions:
+            if item.previous_owner is None or item.old_path is None or item.source_path is None:
+                continue
+            if not (wiki_dir / item.source_path).is_file():
+                continue
+            preimages[item.old_path] = reader.read(item.source_path, MAX_EXPANDED_BYTES)
+    return preimages
+
+
 def _finalize_prepared_sync(
     options: _SyncRunOptions,
     prepared: _PreparedSyncRun,
@@ -5135,6 +5160,9 @@ def _finalize_prepared_sync(
             _plan_check=prepared.repair_boundary.validate_plan if prepared.repair_boundary is not None else None,
             _publication_check=prepared.repair_boundary.assert_analysis_current if prepared.repair_boundary is not None else None,
             maintenance_page_transitions=prepared.page_transitions,
+            maintenance_previous_raw_content_by_page=_transition_preimages(
+                options.wiki_dir, prepared.page_transitions
+            ),
             inventory=prepared.inventory,
             surface=surface,
             source_snapshot=prepared.source_snapshot,
