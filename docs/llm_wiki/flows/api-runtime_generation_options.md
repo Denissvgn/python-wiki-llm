@@ -144,17 +144,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options | surface_value | 1183 | `surface_value('flows', 'categories', None)` |
-| runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 1186 | `isinstance(raw_categories, (...))` |
-| runtime_generation_options | sorted (src/llm_wiki_cli/services…runtime_generation_options) | 1185 | `sorted(...)` |
-| runtime_generation_options | str | 1185 | `str(value)` |
-| runtime_generation_options | _runtime_policy_from_generation_inputs | 1189 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
-| _runtime_policy_from_generation_inputs | isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs) | 1271 | `isinstance(raw_policy, Mapping)` |
-| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1272 | `KnowledgeGenerationError(..., 'must be an object')` |
-| _runtime_policy_from_generation_inputs | dict | 1276 | `dict(raw_policy)` |
-| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1277 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 1282 | `set(policy)` |
-| _validate_runtime_policy | sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy) | 1284 | `sorted(...)` |
+| runtime_generation_options | surface_value | 1182 | `surface_value('flows', 'categories', None)` |
+| runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 1185 | `isinstance(raw_categories, (...))` |
+| runtime_generation_options | sorted (src/llm_wiki_cli/services…runtime_generation_options) | 1184 | `sorted(...)` |
+| runtime_generation_options | str | 1184 | `str(value)` |
+| runtime_generation_options | _runtime_policy_from_generation_inputs | 1188 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
+| _runtime_policy_from_generation_inputs | isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs) | 1270 | `isinstance(raw_policy, Mapping)` |
+| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1271 | `KnowledgeGenerationError(..., 'must be an object')` |
+| _runtime_policy_from_generation_inputs | dict | 1275 | `dict(raw_policy)` |
+| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1276 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1281 | `set(policy)` |
+| _validate_runtime_policy | sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy) | 1283 | `sorted(...)` |
 
 ### Boundary effects
 
@@ -164,11 +164,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `runtime_generation_options` | `surface_value` | 1183 |
-| external_call | `runtime_generation_options` | `isinstance` | 1186 |
-| external_call | `runtime_generation_options` | `sorted` | 1185 |
-| external_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1271 |
-| external_call | `_validate_runtime_policy` | `sorted` | 1284 |
+| unresolved_call | `runtime_generation_options` | `surface_value` | 1182 |
+| external_call | `runtime_generation_options` | `isinstance` | 1185 |
+| external_call | `runtime_generation_options` | `sorted` | 1184 |
+| external_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1270 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1283 |
 | step_limit | `runtime_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

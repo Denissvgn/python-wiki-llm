@@ -96,4 +96,4 @@ flowchart LR
 | `_target_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
 | `capture_publication_basis` | call | [publication_impact](../modules/publication_impact.md) | 2 |
 
-> References: showing 12 of 32 logical references; 20 omitted by the 12-row generated summary limit.
+> References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.

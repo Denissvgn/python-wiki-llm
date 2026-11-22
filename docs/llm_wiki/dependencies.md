@@ -122,6 +122,7 @@ flowchart TD
 | [publication_impact](modules/publication_impact.md) | 7 | 8 |
 | [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 7 | 19 |
 | [maintenance_projection](modules/maintenance_projection.md) | 7 | 3 |
+| [storage_spool](modules/storage_spool.md) | 7 | 1 |
 | [task_contract](modules/task_contract.md) | 7 | 3 |
 | [api_contracts](modules/api_contracts.md) | 6 | 5 |
 | [context_budget](modules/context_budget.md) | 6 | 11 |
@@ -129,7 +130,6 @@ flowchart TD
 | [reference_providers](modules/reference_providers.md) | 6 | 4 |
 | [gitignore](modules/gitignore.md) | 6 | 1 |
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
-| [storage_spool](modules/storage_spool.md) | 6 | 1 |
 | [bootstrap_service](modules/bootstrap_service.md) | 5 | 0 |
 | [current_contracts](modules/current_contracts.md) | 5 | 9 |
 | [doctor_service](modules/doctor_service.md) | 5 | 18 |
@@ -192,7 +192,7 @@ flowchart TD
 | [site_export](modules/site_export.md) | 3 | 10 |
 | [sync_analysis](modules/sync_analysis.md) | 3 | 5 |
 | [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 20 |
-| [sync_runtime](modules/sync_runtime.md) | 3 | 50 |
+| [sync_runtime](modules/sync_runtime.md) | 3 | 51 |
 | [circuit_breaker](modules/circuit_breaker.md) | 3 | 2 |
 | [engine_events](modules/engine_events.md) | 3 | 0 |
 | [knowledge_audit](modules/knowledge_audit.md) | 3 | 4 |

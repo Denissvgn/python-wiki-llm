@@ -127,15 +127,15 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3434 interactions; 3404 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3435 interactions; 3405 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1062 (1061 omitted); unresolved 1 of 776 (775 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1063 (1062 omitted); unresolved 1 of 776 (775 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_knowledge_plan` | 1 | - | external | 7 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_knowledge_plan` | 1 | - | external | 8 |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | unresolved | 7 |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | external | 3 |
 | `src/llm_wiki_engine/maintenance_protocol.py:guard_maintenance_owner` | 7 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |

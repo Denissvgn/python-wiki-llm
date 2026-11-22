@@ -40,22 +40,22 @@ sequenceDiagram
     participant p10 as read_md
     participant p11 as _validate_paths
     participant p12 as _build_parser
-    participant p13 as require_portable_relative_path
-    participant p14 as _value
-    participant p15 as _command
-    participant p16 as hash_json
-    participant p17 as validate_cli_contract
-    participant p18 as _installed_identity
-    participant p19 as _json_tree
-    participant p20 as compact_bytes
-    participant p21 as _default_path_error
-    participant p22 as _register_commands
-    participant p23 as _add_helper_preparation_arguments
-    participant p24 as _validate_schema
-    participant p25 as _check_path_collision
-    participant p26 as _validate_command
-    participant p27 as _text
-    participant p28 as _argument (src/llm_wiki_cli/services/cli_reference.py)
+    participant p13 as decode_markdown_bytes
+    participant p14 as require_portable_relative_path
+    participant p15 as _value
+    participant p16 as _command
+    participant p17 as hash_json
+    participant p18 as validate_cli_contract
+    participant p19 as _installed_identity
+    participant p20 as _json_tree
+    participant p21 as compact_bytes
+    participant p22 as _default_path_error
+    participant p23 as _register_commands
+    participant p24 as _add_helper_preparation_arguments
+    participant p25 as _validate_schema
+    participant p26 as _check_path_collision
+    participant p27 as _validate_command
+    participant p28 as _text
     participant p29 as dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)
     participant p30 as skill.to_dict
     p0->>p1: get_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py)
@@ -70,29 +70,29 @@ sequenceDiagram
     p4->>p10: read_md
     p5->>p11: _validate_paths
     p7->>p12: _build_parser
-    p11->>p13: require_portable_relative_path
-    p6->>p14: _value
-    p6->>p15: _command
-    p6->>p16: hash_json
-    p6->>p17: validate_cli_contract
-    p8->>p18: _installed_identity
-    p17->>p19: _json_tree
-    p16->>p20: compact_bytes
-    p13->>p21: _default_path_error
-    p12->>p22: _register_commands
-    p12->>p23: _add_helper_preparation_arguments
-    p17->>p24: _validate_schema
-    p13->>p25: _check_path_collision
-    p17->>p26: _validate_command
-    p15->>p27: _text
-    p15->>p28: _argument (src/llm_wiki_cli/services/cli_reference.py)
+    p10->>p13: decode_markdown_bytes
+    p11->>p14: require_portable_relative_path
+    p6->>p15: _value
+    p6->>p16: _command
+    p6->>p17: hash_json
+    p6->>p18: validate_cli_contract
+    p8->>p19: _installed_identity
+    p18->>p20: _json_tree
+    p17->>p21: compact_bytes
+    p14->>p22: _default_path_error
+    p12->>p23: _register_commands
+    p12->>p24: _add_helper_preparation_arguments
+    p18->>p25: _validate_schema
+    p14->>p26: _check_path_collision
+    p18->>p27: _validate_command
+    p16->>p28: _text
     p1-->>p29: dict (src/llm_wiki_cli/services…nce.py:get_behavior_facts)(config._DEFAULT_CONFIG)
     p1-->>p30: skill.to_dict
 ```
 
-> Call sequence diagram shows 30 of 447 interactions; 417 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 449 interactions; 419 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 161 (160 omitted); unresolved 1 of 112 (111 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 162 (161 omitted); unresolved 1 of 112 (111 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -104,9 +104,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | - | external | 9 |
 | `src/llm_wiki_cli/services/cli_reference.py:_value` | 7 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | external | 24 |
-| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 8 |
+| `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | [src/llm_wiki_cli/services/cli_reference.py](../modules/cli_reference.md) | internal | 9 |
 | `src/llm_wiki_cli/services/cli_reference.py:_command` | 25 | - | unresolved | 14 |
-> Omission summary shows 8 of 91 groups; 83 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 92 groups; 84 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -119,9 +119,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 175; effect analysis evaluated: 130, partial: 2, unavailable: 43. Counts include steps omitted from the displayed trace.
+Source steps: 176; effect analysis evaluated: 130, partial: 2, unavailable: 44. Counts include steps omitted from the displayed trace.
 
-Collector observations for 132 source steps with known totals: observed: 584, emitted: 573, omitted: 11. Unavailable totals are excluded.
+Collector observations for 132 source steps with known totals: observed: 585, emitted: 574, omitted: 11. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

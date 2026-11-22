@@ -116,4 +116,4 @@ flowchart LR
 | `_canonical_sync_surface_flow_targets` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_compute_sync_diff` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 
-> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.
+> References: showing 12 of 45 logical references; 33 omitted by the 12-row generated summary limit.
