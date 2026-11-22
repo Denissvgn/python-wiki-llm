@@ -701,11 +701,11 @@ def actual_command_case(tmp_path, *, selection=False, **options):
     source_files = [
         "src/llm_wiki_cli/commands/search_cmd.py", "src/llm_wiki_cli/api.py",
         "src/llm_wiki_cli/services/search_service.py",
-        "src/llm_wiki_cli/services/search_lexical.py",
-        "src/llm_wiki_cli/services/search_rank.py",
-        "src/llm_wiki_cli/services/source_selection.py",
+        "src/llm_wiki_engine/search_lexical.py",
+        "src/llm_wiki_engine/search_rank.py",
+        "src/llm_wiki_engine/source_selection.py",
         "src/llm_wiki_cli/services/source_snapshot.py",
-        "src/llm_wiki_cli/services/search_source.py",
+        "src/llm_wiki_engine/search_source.py",
     ]
     provenance = {path: sha((root / path).read_bytes()) for path in source_files}
     request = dict(
