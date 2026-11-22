@@ -5527,7 +5527,24 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
         _record_outcome("synced", result)
 
 
+def _preflight_on_staged_copy(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    """Run the dry run exactly as a standalone one would, before any live write.
+
+    The live wiki's write basis describes the live pages; the staged copy is
+    planned without it, as ``sync --dry-run`` plans.
+    """
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    token = ACTIVE_WRITE_BASIS.set(None)
+    try:
+        with discarding_stdout():
+            _run_sync_dry_run(options, prepared)
+    finally:
+        ACTIVE_WRITE_BASIS.reset(token)
+
+
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    from llm_wiki_engine.io import MarkdownEncodingError
     from llm_wiki_engine.sync_recovery import capture_new_sync_pages, SyncRecoveryError
 
     try:
@@ -5553,9 +5570,16 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             with discarding_stdout():
                 _run_sync_dry_run(options, prepared)
             prepared.repair_boundary.assert_current()
+        elif prepared.manifest.maintenance_state is not None:
+            # With maintenance adopted, pages and machine state must agree. The
+            # same run on a staged copy first, so a refusal from planning
+            # (an unverifiable transfer, an unreadable page) leaves the wiki
+            # untouched instead of after some pages were rewritten.
+            emit("Preflighting the sync on an isolated wiki copy.")
+            _preflight_on_staged_copy(options, prepared)
         with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
             _execute_prepared_sync(options, prepared)
-    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
+    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError, MarkdownEncodingError) as exc:
         emit(f"Error: {exc}", stream="stderr")
         raise SyncAborted(2)
 

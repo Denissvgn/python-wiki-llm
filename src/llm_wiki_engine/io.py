@@ -131,21 +131,51 @@ def first_unsafe_path_component(
     return None
 
 
+class MarkdownEncodingError(UnicodeDecodeError):
+    """A Markdown page whose bytes are neither UTF-8 nor Windows-1252.
+
+    It is a :class:`UnicodeDecodeError`, so existing handlers still catch it;
+    its message names the page and how to repair it.
+    """
+
+    def __init__(self, page: str | None, cause: UnicodeDecodeError) -> None:
+        super().__init__(cause.encoding, cause.object, cause.start, cause.end, cause.reason)
+        self.page = page
+
+    def __str__(self) -> str:
+        where = f"wiki page {self.page}" if self.page else "Markdown page"
+        value = self.object[self.start:self.start + 1]
+        byte = f"0x{value[0]:02x}" if value else "a byte"
+        return (
+            f"Cannot read {where}: byte {byte} at offset {self.start} is neither UTF-8 "
+            "nor Windows-1252 (cp1252). Save the page as UTF-8, or restore it from "
+            "version control, then run the command again."
+        )
+
+
 def read_md(path: Path) -> str:
     """Read a markdown file, tolerating non-UTF-8 encodings.
 
     Tries UTF-8 first; if that fails, falls back to cp1252 which covers
     common Windows-encoded punctuation (en-dash, em-dash, smart quotes).
+    Bytes that are neither raise :class:`MarkdownEncodingError` naming *path*.
     """
-    return decode_markdown_bytes(path.read_bytes())
+    return decode_markdown_bytes(path.read_bytes(), page=str(path))
 
 
-def decode_markdown_bytes(data: bytes) -> str:
-    """Decode exact captured Markdown using the established reader policy."""
+def decode_markdown_bytes(data: bytes, *, page: str | None = None) -> str:
+    """Decode exact captured Markdown using the established reader policy.
+
+    Raises :class:`MarkdownEncodingError` (naming *page* when given) for bytes
+    that are neither UTF-8 nor Windows-1252.
+    """
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
-        text = data.decode("cp1252")
+        try:
+            text = data.decode("cp1252")
+        except UnicodeDecodeError as exc:
+            raise MarkdownEncodingError(page, exc) from None
     return text.replace("\r\n", "\n").replace("\r", "\n")
 
 

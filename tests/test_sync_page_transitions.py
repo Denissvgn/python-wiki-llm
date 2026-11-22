@@ -428,16 +428,51 @@ def test_moved_module_whose_page_was_removed_is_refused(tmp_path, monkeypatch, d
         _sync(wiki_dir, dry_run=dry_run)
 
     assert "previous-semantic-preimage-unavailable (modules/model.md)" in str(raised.value)
-    if dry_run:
-        assert _wiki_bytes(wiki_dir) == before
-    else:
-        # A writing sync commits its machine state last; refused, it keeps the last good state.
-        state = {Path(name) for name in (
-            ".llm-wiki-manifest.json", ".llm-wiki-knowledge.json",
-            ".llm-wiki-surface.json", ".llm-wiki-maintenance-adoption.json",
-        )}
-        after = _wiki_bytes(wiki_dir)
-        assert {name: after[name] for name in state} == {name: before[name] for name in state}
+    # A writing sync preflights on a staged copy, so a refusal writes nothing.
+    assert _wiki_bytes(wiki_dir) == before
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+def test_undecodable_maintained_page_is_refused_by_name(tmp_path, monkeypatch, capsys, dry_run):
+    from llm_wiki_cli.services.sync_runtime import SyncAborted
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    page = wiki_dir / "modules/model.md"
+    # 0x81 is undefined in both UTF-8 (as a lead byte) and Windows-1252.
+    page.write_bytes(page.read_bytes().replace(b"AUTHORED: module purpose.", b"AUTHORED \x81 purpose."))
+    before = _wiki_bytes(wiki_dir)
+
+    with pytest.raises(SyncAborted):
+        _sync(wiki_dir, dry_run=dry_run)
+
+    error = capsys.readouterr().err
+    assert "modules/model.md" in error and "neither UTF-8 nor Windows-1252" in error
+    assert _wiki_bytes(wiki_dir) == before
+
+
+def test_adopted_writing_sync_preflights_once_and_plain_sync_does_not(tmp_path, monkeypatch):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services import sync_runtime
+
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    calls = []
+    original = sync_runtime._run_sync_dry_run
+
+    def counted(options, prepared):
+        calls.append(options.dry_run)
+        return original(options, prepared)
+
+    monkeypatch.setattr(sync_runtime, "_run_sync_dry_run", counted)
+    (project / "pkg/model.py").write_text(_draft_source("Changed once."), encoding="utf-8")
+    _sync(wiki_dir)
+    assert calls == []
+    api.adopt_maintenance(".", "docs/llm_wiki", recovery_dir=tmp_path / "recovery")
+    (project / "pkg/model.py").write_text(_draft_source("Changed twice."), encoding="utf-8")
+    _sync(wiki_dir)
+    assert calls == [False]
+    assert "Changed twice." in read_md(wiki_dir / "entities/Draft.md")
 
 
 @pytest.mark.parametrize("dry_run", [True, False])
