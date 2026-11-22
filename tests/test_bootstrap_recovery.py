@@ -444,7 +444,7 @@ import os
 from pathlib import Path
 import sys
 from llm_wiki_cli import cli
-from llm_wiki_cli.services import wiki_write_basis
+from llm_wiki_engine import wiki_write_basis
 original = wiki_write_basis.after_wiki_write
 def stop(path, content):
     if Path(path).name == 'Greeter.md':
