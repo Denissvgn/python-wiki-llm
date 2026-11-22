@@ -278,7 +278,7 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
     assert "-I -m pip install" in install["run"]
     assert "--no-cache-dir" in install["run"]
     command = " ".join(install["run"].replace("\\\n", " ").split())
-    assert '--require-hashes -r "${GITHUB_ACTION_PATH}/../action-requirements.txt"' in command
+    assert '--require-hashes -r "${GITHUB_ACTION_PATH}/requirements.txt"' in command
     assert '--no-deps "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."' in command
     assert "agent-wiki-cli==" not in install["run"]
     setup = next(step for step in steps if step.get("id") == "setup-python")
@@ -292,10 +292,11 @@ def _locked_requirement(path: Path, name: str) -> tuple[str, frozenset[str]]:
     return line.split()[0], frozenset(re.findall(r"--hash=(sha256:[0-9a-f]{64})", line))
 
 
-def test_action_runtime_lock_matches_the_reviewed_capture_lock() -> None:
+@pytest.mark.parametrize("action", ["github-action", "wiki-integrity"])
+def test_action_runtime_lock_matches_the_reviewed_capture_lock(action: str) -> None:
     # Sources must be observed with the parser versions the reviewed wiki
     # capture used, or verification reports the wiki as basis-incompatible.
-    action_lock = ROOT / "integrations" / "action-requirements.txt"
+    action_lock = ROOT / "integrations" / action / "requirements.txt"
     capture_lock = ROOT / "release" / "validation-requirements.txt"
     pinned, hashes = _locked_requirement(action_lock, "pyyaml")
     assert hashes

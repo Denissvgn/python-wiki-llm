@@ -169,7 +169,7 @@ def test_full_integrity_action_uses_its_own_locked_implementation() -> None:
     assert commands == [
         ["set", "-euo", "pipefail"],
         [python, "-I", "-m", "pip", "install", "--no-cache-dir",
-         "--require-hashes", "-r", "${GITHUB_ACTION_PATH}/../action-requirements.txt"],
+         "--require-hashes", "-r", "${GITHUB_ACTION_PATH}/requirements.txt"],
         [python, "-I", "-m", "pip", "install", "--no-cache-dir", "--no-deps",
          "${GITHUB_ACTION_PATH}/../../src", "${GITHUB_ACTION_PATH}/../.."],
     ]

@@ -1,4 +1,4 @@
-# Runtime dependencies of the bundled GitHub Actions, pinned with hashes.
+# Runtime dependencies of this GitHub Action, pinned with hashes.
 # They match release/validation-requirements.txt, which the reviewed wiki
 # capture installs, so an action observes sources exactly as the capture did.
 pyyaml==6.0.3 \

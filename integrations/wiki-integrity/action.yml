@@ -65,7 +65,7 @@ runs:
         # Locked runtime dependencies first, so sources are observed with the
         # same parser versions as the reviewed wiki capture.
         "${{ steps.setup-python.outputs.python-path }}" -I -m pip install --no-cache-dir \
-          --require-hashes -r "${GITHUB_ACTION_PATH}/../action-requirements.txt"
+          --require-hashes -r "${GITHUB_ACTION_PATH}/requirements.txt"
         "${{ steps.setup-python.outputs.python-path }}" -I -m pip install --no-cache-dir --no-deps \
           "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."
 
