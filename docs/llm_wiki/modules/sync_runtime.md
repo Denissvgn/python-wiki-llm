@@ -142,8 +142,8 @@ still stop the operation.
 | `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `llm_wiki_engine.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
-| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
-| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `StorageReadSession`, `StorageReadSession` |
 | `llm_wiki_engine.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
 | `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
@@ -159,7 +159,7 @@ still stop the operation.
 | `llm_wiki_engine.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |
-| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -349,6 +349,7 @@ flowchart LR
 | `_apply_deselected_infrastructure_pages` | `(options: _SyncRunOptions, plan: InfrastructureSyncPlan, result: SyncResult) -> None` | — | — |
 | `_apply_current_infrastructure_plan` | `(options: _SyncRunOptions, plan: InfrastructureSyncPlan, result: SyncResult, *, page_maps: _SyncPageMaps, source_snapshot: SourceSnapshot) -> None` | — | — |
 | `_apply_prepared_sync` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> SyncResult` | — | — |
+| `_transition_preimages` | `(wiki_dir: Path, plan) -> dict[str, bytes] \| None` | — | Current bytes of each page a transition takes over from a previous owner. |
 | `_finalize_prepared_sync` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun, result: SyncResult, *, target_wiki_dir: Path \| None = None, dry_run: bool = False) -> KnowledgeCommitResult` | — | — |
 | `_print_selection_prune_summary` | `(prepared: _PreparedSyncRun) -> None` | — | — |
 | `_print_sync_artifact_actions` | `(result: KnowledgeCommitResult) -> None` | — | — |

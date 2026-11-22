@@ -4191,7 +4191,7 @@
             "src/llm_wiki_engine/knowledge_kinds.py",
             "src/llm_wiki_engine/immutable.py"
           ],
-          "step_count": 4368,
+          "step_count": 4377,
           "truncated": true
         }
       },
@@ -5239,7 +5239,7 @@
             "src/llm_wiki_engine/maintenance_evidence.py",
             "src/llm_wiki_engine/storage_spool.py"
           ],
-          "step_count": 3426,
+          "step_count": 3435,
           "truncated": true
         }
       },
@@ -5258,42 +5258,6 @@
         "data_flow": {
           "boundary_effects": [],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 602,
-              "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
-              "line": 603,
-              "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
-            },
-            {
-              "kind": "external_call",
-              "line": 604,
-              "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
-              "line": 605,
-              "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
-            },
-            {
-              "kind": "external_call",
-              "line": 606,
-              "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
-              "line": 607,
-              "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
-            },
             {
               "kind": "external_call",
               "line": 608,
@@ -5321,6 +5285,42 @@
             {
               "kind": "external_call",
               "line": 612,
+              "step": "build_runtime_live_evaluation",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 613,
+              "step": "build_runtime_live_evaluation",
+              "target": "TypeError"
+            },
+            {
+              "kind": "external_call",
+              "line": 614,
+              "step": "build_runtime_live_evaluation",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 615,
+              "step": "build_runtime_live_evaluation",
+              "target": "TypeError"
+            },
+            {
+              "kind": "external_call",
+              "line": 616,
+              "step": "build_runtime_live_evaluation",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 617,
+              "step": "build_runtime_live_evaluation",
+              "target": "TypeError"
+            },
+            {
+              "kind": "external_call",
+              "line": 618,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
@@ -6974,7 +6974,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1053,
+              "line": 1059,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "selected_paths.add"
@@ -6982,7 +6982,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1054,
+              "line": 1060,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "selected_paths.update"
@@ -6990,15 +6990,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1069,
-              "step": "collect_runtime_repository_evidence",
-              "step_index": 1,
-              "target": "package_roots.add"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 1071,
+              "line": 1075,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "package_roots.add"
@@ -7009,49 +7001,57 @@
               "line": 1077,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
+              "target": "package_roots.add"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 1083,
+              "step": "collect_runtime_repository_evidence",
+              "step_index": 1,
               "target": "helper_excludes.add"
             }
           ],
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1036,
+              "line": 1042,
               "step": "collect_runtime_repository_evidence",
               "target": "Path(source_root).resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 1037,
+              "line": 1043,
               "step": "collect_runtime_repository_evidence",
               "target": "Path(target_wiki_dir).resolve"
             },
             {
               "kind": "external_call",
-              "line": 1042,
+              "line": 1048,
               "step": "collect_runtime_repository_evidence",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1043,
+              "line": 1049,
               "step": "collect_runtime_repository_evidence",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1044,
+              "line": 1050,
               "step": "collect_runtime_repository_evidence",
               "target": "source_snapshot.root.resolve"
             },
             {
               "kind": "external_call",
-              "line": 1045,
+              "line": 1051,
               "step": "collect_runtime_repository_evidence",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1056,
+              "line": 1062,
               "step": "collect_runtime_repository_evidence",
               "target": "source_snapshot.captured_input_kinds.items"
             },
@@ -11861,13 +11861,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 866,
+              "line": 872,
               "step": "finalize_runtime_knowledge",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 867,
+              "line": 873,
               "step": "finalize_runtime_knowledge",
               "target": "TypeError"
             },
@@ -11953,7 +11953,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_engine/maintenance_evidence.py"
           ],
-          "step_count": 3213,
+          "step_count": 3222,
           "truncated": true
         }
       },
@@ -20862,25 +20862,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1278,
+              "line": 1284,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
             {
               "kind": "external_call",
-              "line": 1283,
+              "line": 1289,
               "step": "_validate_runtime_policy",
               "target": "min"
             },
             {
               "kind": "external_call",
-              "line": 1290,
+              "line": 1296,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1296,
+              "line": 1302,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             }
@@ -28076,31 +28076,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1496,
+              "line": 1502,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1497,
+              "line": 1503,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1498,
+              "line": 1504,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1499,
+              "line": 1505,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1501,
+              "line": 1507,
               "step": "runtime_consumed_inputs",
               "target": "source_snapshot.to_consumed_inputs"
             },
@@ -28156,31 +28156,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1177,
+              "line": 1183,
               "step": "runtime_generation_options",
               "target": "surface_value"
             },
             {
               "kind": "external_call",
-              "line": 1180,
+              "line": 1186,
               "step": "runtime_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1179,
+              "line": 1185,
               "step": "runtime_generation_options",
               "target": "sorted"
             },
             {
               "kind": "external_call",
-              "line": 1265,
+              "line": 1271,
               "step": "_runtime_policy_from_generation_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1278,
+              "line": 1284,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
@@ -77769,5 +77769,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:31ae74cf2b9cccf325c699717bc2300c537d8c7a43d31521a28c0df36f7660b2"
+  "source_hash": "sha256:b1f91c12e9560cc39ea21fe230cbcd6bbfc36c90a3d9631ca20c9d7f68678fcd"
 }
