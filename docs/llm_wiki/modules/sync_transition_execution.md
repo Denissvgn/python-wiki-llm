@@ -99,13 +99,13 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PageTransitionExecution](../entities/PageTransitionExecution.md) | 129 | — | Keep rename originals until the surrounding generation/commit succeeds. |
+| [PageTransitionExecution](../entities/PageTransitionExecution.md) | 131 | — | Keep rename originals until the surrounding generation/commit succeeds. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `preview_maintenance_preimages` | `(live_wiki: Path, staged_wiki: Path, plan, *, max_bytes: int = MAX_EXPANDED_BYTES) -> Iterator[dict[str, bytes]]` | `@contextmanager` | Hold the verified prior owners' live Markdown stable while simulating their transfer. |
+| `preview_maintenance_preimages` | `(live_wiki: Path, staged_wiki: Path, plan, *, max_bytes: int = MAX_EXPANDED_BYTES) -> Iterator[dict[str, bytes]]` | `@contextmanager` | Verify the prior owners' live Markdown before and after simulating their transfer. |
 | `_bounded_page_digest` | `(path: Path, size: int)` | — | Hash a regular file at its expected size, holding at most one chunk and its identity. |
 | `assert_no_pending_page_moves` | `(wiki_dir: Path) -> None` | — | — |
 | `_decode` | `(content: bytes) -> str` | — | — |
