@@ -373,6 +373,7 @@ def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_pa
     project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"alpha.py": source})
     adopt_maintenance_authority(project, wiki, recovery_dir=tmp_path / "owner-recovery")
     prior = SyncManifest.load(wiki).maintenance_state
+    assert prior is not None
     old_target = "entities/Bookmark.md"
     original_ids = {
         record_id for record_id, row in prior["observations"].items()
@@ -392,6 +393,7 @@ def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_pa
     assert before == {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
     _sync(wiki)
     committed = SyncManifest.load(wiki).maintenance_state
+    assert committed is not None
     # The dry run, the writing sync's preflight and the write itself.
     preview, preflight, written = projected
     assert written == committed

@@ -38,11 +38,12 @@ from llm_wiki_engine.host import emit
 def preview_maintenance_preimages(
     live_wiki: Path, staged_wiki: Path, plan, *, max_bytes: int = MAX_EXPANDED_BYTES
 ) -> Iterator[dict[str, bytes]]:
-    """Hold the verified prior owners' live Markdown stable while simulating their transfer.
+    """Verify the prior owners' live Markdown before and after simulating their transfer.
 
     *plan* is the application's page transition plan. Each prior page is read
     from the live wiki and must match its staged copy; after the preview, every
     original is checked again, so a concurrent edit invalidates the preview.
+    No file handle is held while the preview runs.
     """
     preimages = {}
     commitments = {}
@@ -79,15 +80,16 @@ def preview_maintenance_preimages(
             preimages[item.old_path] = original
             observed = live.observations[item.source_path]
             commitments[item.source_path] = (len(original), digest, (observed.identity, observed.directories))
-        yield preimages
-        # A phase can evict handles. Recheck every original, including evicted pages.
-        for relative, (size, digest, identity) in commitments.items():
-            try:
-                current = _bounded_page_digest(live.root / relative, size)
-            except KnowledgeStorageError as exc:
-                raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation") from exc
-            if current != (digest, identity):
-                raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation")
+    # Release the read handles before simulating, so the live pages stay
+    # writable on every platform; the commitments detect any change instead.
+    yield preimages
+    for relative, (size, digest, identity) in commitments.items():
+        try:
+            current = _bounded_page_digest(live_wiki / relative, size)
+        except KnowledgeStorageError as exc:
+            raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation") from exc
+        if current != (digest, identity):
+            raise KnowledgeStorageError(relative, "prior page changed during preview", code="storage-mutation")
 
 
 def _bounded_page_digest(path: Path, size: int):
