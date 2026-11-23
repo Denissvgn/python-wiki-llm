@@ -34,6 +34,7 @@ ownership. Ordinary callers retain the same publication protocol.
 | `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS`, `EXTRACTOR_REGISTRY` |
 | `..extractors.common` | `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `is_bundled_helper_implementation_path` |
 | `.analysis_capture` | `attach`, `attach`, `attach` |
+| `.historical_retirement` | `confirm_absence` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_EXTRACTOR_REF`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `current_infrastructure_bases`, `infrastructure_evidence_by_page` |
 | `.knowledge_generation` | `KnowledgeGenerationError`, `KnowledgeGenerationInputs`, `build_knowledge_generation_plan` |
 | `.python_implementation` | `analysis_identity` |
@@ -46,6 +47,7 @@ ownership. Ordinary callers retain the same publication protocol.
 | `json` | `json` |
 | `llm_wiki_engine.analysis_compatibility` | `has_contract` |
 | `llm_wiki_engine.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `llm_wiki_engine.historical_sources` | `read_records`, `read_records` |
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts`, `require_validated_artifacts`, `validated_artifact_bytes`, `_decode_json_object` |
 | `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
@@ -82,10 +84,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (10) |
-| Outbound | `src` (26) |
+| Inbound | `src` (11) |
+| Outbound | `src` (28) |
 
-> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

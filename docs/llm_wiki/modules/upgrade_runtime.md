@@ -39,9 +39,11 @@ evidence: diagnosis and an authorized owning writer retain distinct roles.
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
+| `llm_wiki_engine.historical_sources` | `bound_records` |
 | `llm_wiki_engine.host` | `current_host`, `emit`, `recording_errors` |
 | `llm_wiki_engine.knowledge_evidence` | `formatted_json_bytes` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
+| `llm_wiki_engine.sync_manifest` | `SyncManifest` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `shutil` | `shutil` |
@@ -66,9 +68,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (14) |
+| Outbound | `src` (16) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

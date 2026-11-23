@@ -53,4 +53,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_resolve_agent` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 2 |
-| `run_request` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 26 |
+| `run_request` | call | [upgrade_runtime](../modules/upgrade_runtime.md) | 28 |

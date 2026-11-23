@@ -212,15 +212,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| flow_segment | _normalize_query_input | 2395 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2274 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
-| flow_segment | validate_request | 2395 | `validate_request(value, basis, offset)` |
-| flow_segment | _effective_query_limit | 2396 | `_effective_query_limit(service, limit)` |
-| _effective_query_limit | _normalize_query_limit | 2376 | `_normalize_query_limit(value)` |
-| _normalize_query_limit | _normalize_query_input | 2364 | `_normalize_query_input(..., field='limit')` |
-| _normalize_query_limit | normalize_documentation_query_limit | 2365 | `normalize_documentation_query_limit(value)` |
+| flow_segment | _normalize_query_input | 2403 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2282 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2284 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2285 | `str(exc)` |
+| flow_segment | validate_request | 2403 | `validate_request(value, basis, offset)` |
+| flow_segment | _effective_query_limit | 2404 | `_effective_query_limit(service, limit)` |
+| _effective_query_limit | _normalize_query_limit | 2384 | `_normalize_query_limit(value)` |
+| _normalize_query_limit | _normalize_query_input | 2372 | `_normalize_query_input(..., field='limit')` |
+| _normalize_query_limit | normalize_documentation_query_limit | 2373 | `normalize_documentation_query_limit(value)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_engine/query…documentation_query_limit) | 41 | `isinstance(value, bool)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_engine/query…documentation_query_limit) | 41 | `isinstance(value, int)` |
 
@@ -232,8 +232,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2274 |
-| unresolved_call | `flow_segment` | `validate_request` | 2395 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2282 |
+| unresolved_call | `flow_segment` | `validate_request` | 2403 |
 | external_call | `normalize_documentation_query_limit` | `isinstance` | 41 |
 | step_limit | `flow_segment` | `first 12 steps` | 0 |
 | truncated_flow | `flow_segment` | `depth limit` | 0 |

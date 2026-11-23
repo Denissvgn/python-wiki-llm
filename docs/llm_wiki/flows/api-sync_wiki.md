@@ -2,7 +2,7 @@
 
 **Entry point:** `sync_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 60 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 69 more
 
 **Complete modules touched:**
 
@@ -19,9 +19,13 @@
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_runtime](../modules/helper_runtime.md)
+- [historical_release](../modules/historical_release.md)
+- [historical_retirement](../modules/historical_retirement.md)
+- [historical_sources](../modules/historical_sources.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_state](../modules/infrastructure_state.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [integrations](../modules/integrations.md)
 - [inventory_cache](../modules/inventory_cache.md)
@@ -31,6 +35,9 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_links](../modules/knowledge_links.md)
+- [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
@@ -43,12 +50,14 @@
 - [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
 - [runtime_output](../modules/runtime_output.md)
 - [scoped_sync_repair](../modules/scoped_sync_repair.md)
+- [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
@@ -89,24 +98,24 @@ sequenceDiagram
     participant p8 as _sync_run_options_from_request
     participant p9 as _outside_tree
     participant p10 as maintenance_write_operation
-    participant p11 as _run_sync_options
-    participant p12 as finalize_knowledge_storage
-    participant p13 as _absolute_path
-    participant p14 as _prepare_sync_run
-    participant p15 as cache_options_for
-    participant p16 as guard_maintenance_owner
-    participant p17 as governance_writer_lock
-    participant p18 as storage_writer_lock
-    participant p19 as prepare_boundary
-    participant p20 as storage_report
-    participant p21 as _job_request
-    participant p22 as _surface_args
-    participant p23 as _capture_spooled_wiki
-    participant p24 as prune_knowledge_storage
-    participant p25 as _flow_category_args
-    participant p26 as repair_paths
-    participant p27 as _recovery_directory
-    participant p28 as report_capture
+    participant p11 as run_release
+    participant p12 as _run_sync_options
+    participant p13 as finalize_knowledge_storage
+    participant p14 as _absolute_path
+    participant p15 as _prepare_sync_run
+    participant p16 as cache_options_for
+    participant p17 as guard_maintenance_owner
+    participant p18 as governance_writer_lock
+    participant p19 as capture_committed_knowledge
+    participant p20 as storage_writer_lock
+    participant p21 as prepare_boundary
+    participant p22 as storage_report
+    participant p23 as _job_request
+    participant p24 as _surface_args
+    participant p25 as _capture_spooled_wiki
+    participant p26 as prune_knowledge_storage
+    participant p27 as _flow_category_args
+    participant p28 as repair_paths
     participant p29 as str (src/llm_wiki_cli/api.py:sync_wiki)
     participant p30 as current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)
     p0->>p1: discarding_output
@@ -119,31 +128,31 @@ sequenceDiagram
     p7->>p8: _sync_run_options_from_request
     p7->>p9: _outside_tree
     p7->>p10: maintenance_write_operation
-    p7->>p11: _run_sync_options
-    p7->>p12: finalize_knowledge_storage
-    p9->>p13: _absolute_path
-    p11->>p14: _prepare_sync_run
-    p8->>p15: cache_options_for
-    p10->>p16: guard_maintenance_owner
-    p10->>p17: governance_writer_lock
-    p10->>p18: storage_writer_lock
-    p11->>p19: prepare_boundary
-    p12->>p20: storage_report
-    p8->>p21: _job_request
-    p8->>p22: _surface_args
-    p10->>p23: _capture_spooled_wiki
-    p12->>p24: prune_knowledge_storage
-    p8->>p25: _flow_category_args
-    p8->>p26: repair_paths
-    p10->>p27: _recovery_directory
-    p11->>p28: report_capture
+    p7->>p11: run_release
+    p7->>p12: _run_sync_options
+    p7->>p13: finalize_knowledge_storage
+    p9->>p14: _absolute_path
+    p12->>p15: _prepare_sync_run
+    p8->>p16: cache_options_for
+    p10->>p17: guard_maintenance_owner
+    p10->>p18: governance_writer_lock
+    p11->>p19: capture_committed_knowledge
+    p10->>p20: storage_writer_lock
+    p12->>p21: prepare_boundary
+    p13->>p22: storage_report
+    p8->>p23: _job_request
+    p8->>p24: _surface_args
+    p10->>p25: _capture_spooled_wiki
+    p13->>p26: prune_knowledge_storage
+    p8->>p27: _flow_category_args
+    p8->>p28: repair_paths
     p0-->>p29: str (src/llm_wiki_cli/api.py:sync_wiki)(exc)
     p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 1631 interactions; 1601 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2300 interactions; 2270 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 515 (514 omitted); unresolved 1 of 399 (398 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 658 (657 omitted); unresolved 1 of 599 (598 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | [src/llm_wiki_cli/services/sync_runtime.py](../modules/sync_runtime.md) | internal | 3 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | - | unresolved | 4 |
 | `src/llm_wiki_engine/host.py:recording_errors` | 19 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 3 |
-> Omission summary shows 8 of 476 groups; 468 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 645 groups; 637 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -170,9 +179,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 718; effect analysis evaluated: 506, partial: 41, unavailable: 171. Counts include steps omitted from the displayed trace.
+Source steps: 1044; effect analysis evaluated: 724, partial: 57, unavailable: 263. Counts include steps omitted from the displayed trace.
 
-Collector observations for 547 source steps with known totals: observed: 3721, emitted: 3453, omitted: 268. Unavailable totals are excluded.
+Collector observations for 781 source steps with known totals: observed: 5219, emitted: 4888, omitted: 331. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -180,7 +189,7 @@ Collector observations for 547 source steps with known totals: observed: 3721, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `sync_wiki` | `available` | `partial` | `available` | `19` | `11` | `8` |
+| `sync_wiki` | `available` | `partial` | `available` | `23` | `11` | `12` |
 | `SyncRequest` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `discarding_output` | `available` | `evaluated` | `available` | `0` | `0` | `0` |
 | `using_host` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
@@ -247,8 +256,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| sync_wiki | SyncRequest | 1273 | `SyncRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, force=force, plugins=trust_source_plugins, preserve_semantic=preserve_semantic, initialize_surfaces=initialize_surfaces, flow_categories=flow_categories, exclude_tests=exclude_tests, include_tests=include_tests, openapi_file=openapi_file, clear_openapi_file=clear_openapi_file, helper_cache_dir=helper_cache_dir, source_selection=source_selection, knowledge_format=knowledge_format, rebuild_knowledge=rebuild_knowledge)` |
-| sync_wiki | discarding_output | 1292 | `discarding_output(data not statically known)` |
+| sync_wiki | SyncRequest | 1277 | `SyncRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, force=force, plugins=trust_source_plugins, preserve_semantic=preserve_semantic, initialize_surfaces=initialize_surfaces, flow_categories=flow_categories, exclude_tests=exclude_tests, include_tests=include_tests, openapi_file=openapi_file, clear_openapi_file=clear_openapi_file, helper_cache_dir=helper_cache_dir, source_selection=source_selection, knowledge_format=knowledge_format, rebuild_knowledge=rebuild_knowledge, retire_missing_sources=retire_missing_sources, retire_missing_pages=retire_missing_pages, release_historical_pages=release_historical_pages, expected_historical_release=expected_historical_release)` |
+| sync_wiki | discarding_output | 1300 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 282 | `using_host(...)` |
 | using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
 | using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |

@@ -427,6 +427,113 @@ roots and selection. A subsequent sync with unchanged inputs should be a no-op.
 If publication is rejected, follow its explicit recovery diagnostic before
 retrying; do not delete authority files or reinitialize an established wiki.
 
+Use `--retire-missing-source` when the original documentation for a deliberately
+removed source file should remain accessible at its established module and
+entity URLs. Start with the intact wiki that still records that source. Preview
+the selection before applying it with an otherwise identical invocation.
+
+```bash
+llm-wiki sync --src-dir src --wiki-dir wiki --retire-missing-source reports/legacy.py --dry-run
+llm-wiki sync --src-dir src --wiki-dir wiki --retire-missing-source reports/legacy.py
+```
+
+Repeat the option for each exact, repository-relative path under `--src-dir`.
+When a removed file has both obsolete pages and declarations that continue
+elsewhere, add one `--retire-missing-page=modules/example.md` or
+`--retire-missing-page=entities/Example.md` for each exact historical page.
+Every chosen page must belong to a named source and have no competing live
+owner. Other pages follow the ordinary sync plan. Without page selectors,
+a competing transfer must have a uniquely matched exact source fingerprint.
+The command requires a complete source scan that confirms absence, an original
+native source and producer binding, unique page ownership and an exact prior
+Markdown commitment. Verified transfers to current declarations keep their
+existing owners. The generated Historical source files list in the index links
+to the retained pages. Their native `llm-wiki/historical-source-file` records
+preserve historical proof separately from the structural evidence available
+with the current producer. Authored page bodies and prior maintenance
+acknowledgments retain their original attribution.
+
+If a previous ordinary sync has already dropped the active source basis, use a
+complete, verified wiki snapshot from before that change and preview the same
+source transition again. Missing proof, a current source, a conflicting target,
+or an intervening Markdown edit stops enrollment. Once enrolled, ordinary sync
+retains the registry. If the exact source file returns with its original bytes
+and declaration coordinates, ordinary sync restores current-source coverage.
+Exact revival preserves the entire archived body, including custom sections.
+Omit `--no-preserve-semantic` for that operation. A changed replacement at
+the same path requires an explicit release and separate archival decision.
+
+Use a release preview to return selected pages to ordinary lint and source
+ownership policy. It validates the current native snapshot and exact Markdown,
+proposes only a registry/index change, and prints a digest for that selection.
+Set `RELEASE_DIGEST` to the complete value printed by that preview.
+
+```bash
+llm-wiki sync --src-dir src --wiki-dir wiki --release-historical-page entities/Example.md --dry-run
+llm-wiki sync --src-dir src --wiki-dir wiki --release-historical-page entities/Example.md \
+  --expected-historical-release "$RELEASE_DIGEST"
+```
+
+Release leaves the original pages and acknowledged maintenance history intact,
+appends their original evidence and measured page hashes to the native release
+ledger, and removes the selected historical list entries and exemptions.
+Source changes remain pending until ordinary sync. Stale, orphan and missing
+evidence findings can therefore be expected for released pages. Partial
+release leaves other enrolled pages protected. A different selection or
+changed native snapshot needs a new preview. If a protected file or index
+was deleted or edited, restore its exact bytes from a verified earlier
+commit or backup before releasing it. Release requires the complete canonical
+wiki Markdown to match the native snapshot. Re-anchor unrelated Markdown
+changes separately, or restore the prior complete snapshot. A released page
+whose original source remains absent cannot be re-enrolled from that
+already-released generation. Use the prior intact wiki where the source was
+live, or wait for a genuine revival and subsequent removal.
+
+Keep a verified pre-release copy of the native wiki, including the original
+`index.md`, before applying. The native writer rechecks Markdown immediately
+before replacing its manifest. A direct external edit can still occur between
+that check and the replacement or after publication. Re-read the committed
+native state and run strict lint and CI after release. An adopted release never
+rewrites the maintenance adoption marker. A hard process or machine stop
+between the index write and native manifest publication leaves a pending
+change. Restore the complete verified pre-release native snapshot and original
+index from Git or a backup (or use the matching adopted recovery catalogue),
+verify it, then obtain a fresh preview before retrying. Preserve concurrent
+authored edits separately before restoring a snapshot.
+
+If a replacement needs a released page's URL, separately move the measured
+old Markdown to a tracked history path outside the generated wiki. For example,
+after releasing `wiki/entities/Example.md`, choose a destination in the
+repository's history documentation, use `git mv`, and verify its byte digest
+against the release event. Ordinary sync can then create a fresh source page.
+For an ordinary generated-link repair, retaining the released file in place
+lets the next sync perform the native repair. Legacy migration, optional
+surface initialization and managed upgrade require the active registry to be
+released first. Regular sync, a full `--rebuild-knowledge`, an otherwise
+supported `--knowledge-format` conversion and scoped `--repair-evidence`
+on eligible live source preserve the enrolled registry. Ordinary scoped
+repair still requires its original prerequisites, including `--no-plugins`.
+Bootstrap remains a first-use operation.
+
+`ValidatedKnowledgeArtifacts.retired_locators` contains both retained
+declarations from live files and explicitly enrolled pages from missing source
+files. Each retains its own native evidence contract. A released page receives
+ordinary checks. The URL remains protected only while the most recently
+released original owner and its measured original page are still there. If
+that exact source returns with its original bytes and canonical coordinate,
+ordinary sync can revive its own page in place. Once a separate live owner
+acquires the URL, subsequent syncs use that owner's native source and page
+evidence. Its own documented file can disappear and return without inheriting
+the earlier owner's authorship.
+
+A release digest identifies a verified historical operation.
+After native storage pruning, it remains a commitment to the predecessor.
+Recovering the full earlier source, wiki or native artifact requires a retained
+backup or Git revision. Cross-platform checkouts must preserve the original
+Markdown bytes. For tracked UTF-8 files with canonical LF, a repository
+`.gitattributes` policy such as `wiki/**/*.md text eol=lf` prevents platform
+checkout conversion. Restore exact original bytes when a working copy differs.
+
 Add `--prune-storage` to validate and clean unreferenced native storage after
 successful sync. The writer uses a fresh generation-bound plan and verified
 recovery copies. `--storage-recovery-dir` selects a directory outside the wiki.

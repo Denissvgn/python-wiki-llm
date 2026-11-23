@@ -33,9 +33,9 @@ flowchart LR
     n8["_Ownership.resolve (src/llm_wiki_cli/services/sync_transitions.py)"]
     n9["_page_path (src/llm_wiki_cli/services/sync_transitions.py)"]
     n10["_prior_ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n11["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n12["find_missing_source_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n13["plan_page_transitions (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n11["_released_revivals (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n12["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n13["find_missing_source_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -90,8 +90,8 @@ flowchart LR
 | `_Ownership.resolve` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
 | `_page_path` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 | `_prior_ownership` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
+| `_released_revivals` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 | `_retained_page_repairs` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
 | `find_missing_source_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
-| `plan_page_transitions` | call | [sync_transitions](../modules/sync_transitions.md) | 9 |
 
-> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.
+> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.

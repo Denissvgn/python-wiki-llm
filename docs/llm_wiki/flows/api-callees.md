@@ -210,11 +210,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| callees | _normalize_query_input | 2522 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2274 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
-| callees | normalize_documentation_query_text | 2523 | `normalize_documentation_query_text(symbol, field='symbol')` |
+| callees | _normalize_query_input | 2530 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2282 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2284 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2285 | `str(exc)` |
+| callees | normalize_documentation_query_text | 2531 | `normalize_documentation_query_text(symbol, field='symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 49 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 50 | `DocumentationQueryError(...)` |
@@ -230,7 +230,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2274 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2282 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |

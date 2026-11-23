@@ -27,6 +27,7 @@ content is preserved under a Legacy Notes section.
 | `json` | `json` |
 | `llm_wiki_engine.concept_identity` | `AliasType`, `identity_coordinate_key` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes` |
+| `llm_wiki_engine.historical_sources` | `bound_records` |
 | `llm_wiki_engine.host` | `current_host`, `discarding_stdout`, `emit` |
 | `llm_wiki_engine.io` | `read_md`, `write_json_atomic`, `write_md` |
 | `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `ArtifactWriteState` |
@@ -69,9 +70,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (24) |
+| Outbound | `src` (25) |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -81,8 +82,8 @@ flowchart LR
 | [TargetPage](../entities/TargetPage.md) | 134 | — | A canonical page generated from the current source inventory. |
 | [MigrationPlan](../entities/MigrationPlan.md) | 147 | — | Computed migration operations, shared by apply and dry-run paths. |
 | [MigrationChunk](../entities/MigrationChunk.md) | 175 | — | A bounded subset of currently pending migration work. |
-| [MigrateAborted](../entities/MigrateAborted.md) | 1737 | `SystemExit` | Migration stopped with an exit status; ``message`` is what it reported. |
-| [MigrateRequestAborted](../entities/MigrateRequestAborted.md) | 1745 | `MigrateAborted` | The request's options were rejected before any work started. |
+| [MigrateAborted](../entities/MigrateAborted.md) | 1746 | `SystemExit` | Migration stopped with an exit status; ``message`` is what it reported. |
+| [MigrateRequestAborted](../entities/MigrateRequestAborted.md) | 1754 | `MigrateAborted` | The request's options were rejected before any work started. |
 
 ## Functions
 

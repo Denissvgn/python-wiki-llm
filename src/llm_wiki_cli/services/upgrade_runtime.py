@@ -666,6 +666,20 @@ def run_request(request: UpgradeRequest) -> UpgradeOutcome:
         emit(f"Error: {exc}", stream="stderr")
         raise UpgradeAborted(2) from exc
 
+    from llm_wiki_engine.historical_sources import bound_records
+    from llm_wiki_engine.sync_manifest import SyncManifest
+    try:
+        enrolled = bound_records(SyncManifest.load(Path(wiki_dir)))
+    except FileNotFoundError:
+        enrolled = {}
+    except (OSError, ValueError) as exc:
+        emit(f"Error: restore the existing native manifest before upgrade: {exc}", stream="stderr")
+        raise UpgradeAborted(2) from exc
+    if enrolled:
+        emit("Error: upgrade requires an ordinary index. Retain the enrolled wiki, or preview "
+             "--release-historical-page PAGE for each enrolled page before upgrading.", stream="stderr")
+        raise UpgradeAborted(2)
+
     # Hook retirement is independent of agent preferences and schema recovery.
     # Complete it before a legacy/missing agent configuration can block refresh.
     emit("Legacy Git Hook Cleanup:")

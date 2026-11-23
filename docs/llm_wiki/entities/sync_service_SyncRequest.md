@@ -44,6 +44,10 @@ Field names describe the behaviour, not CLI flags: ``plugins=False`` is
 | `cache_stats` | `bool` | `False` | — |
 | `prune_storage` | `bool` | `False` | — |
 | `storage_recovery_dir` | `str \| Path \| None` | `None` | — |
+| `retire_missing_sources` | `Iterable[str] \| None` | `None` | — |
+| `retire_missing_pages` | `Iterable[str] \| None` | `None` | — |
+| `release_historical_pages` | `Iterable[str] \| None` | `None` | — |
+| `expected_historical_release` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -86,7 +90,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_service](../modules/sync_service.md) | 0 | `allow_external_source`, `cache`, `cache_dir`, `cache_stats`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `flow_categories`, `force`, `helper_cache_dir`, `include_tests`, `initialize_surfaces` |
+| [sync_service](../modules/sync_service.md) | 0 | `allow_external_source`, `cache`, `cache_dir`, `cache_stats`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `expected_historical_release`, `flow_categories`, `force`, `helper_cache_dir`, `include_tests` |
 
 ### References
 

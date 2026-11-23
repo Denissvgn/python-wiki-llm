@@ -2,7 +2,7 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 57 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 58 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,7 @@
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
+- [historical_retirement](../modules/historical_retirement.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
@@ -138,9 +139,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload(**=...)
 ```
 
-> Call sequence diagram shows 30 of 1669 interactions; 1639 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1691 interactions; 1661 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 529 (528 omitted); unresolved 1 of 506 (505 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 534 (533 omitted); unresolved 1 of 513 (512 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +155,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 25 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 25 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 25 | - | external | 10 |
-> Omission summary shows 8 of 470 groups; 462 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 480 groups; 472 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -167,9 +168,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 635; effect analysis evaluated: 508, partial: 29, unavailable: 98. Counts include steps omitted from the displayed trace.
+Source steps: 645; effect analysis evaluated: 516, partial: 29, unavailable: 100. Counts include steps omitted from the displayed trace.
 
-Collector observations for 537 source steps with known totals: observed: 3581, emitted: 3407, omitted: 174. Unavailable totals are excluded.
+Collector observations for 545 source steps with known totals: observed: 3625, emitted: 3451, omitted: 174. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -240,7 +241,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 2155 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
+| doctor | build_doctor_report | 2163 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 136 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `ValueError('report_schema must be auto, v1, v3 or v4')` |

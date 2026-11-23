@@ -50,6 +50,7 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.flow_followup` | `validate_request` |
 | `.health_details` | `CapturedHealthDetails`, `capture_health_details` |
 | `.health_summary` | `_diagnostic_kind`, `diagnostic_groups`, `render_validation_markdown` |
+| `.historical_retirement` | `confirm_absence` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
@@ -69,16 +70,19 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `dataclasses` | `asdict`, `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
 | `json` | `json` |
-| `llm_wiki_engine` | `wiki_media` |
+| `llm_wiki_engine` | `wiki_media`, `historical_sources` |
 | `llm_wiki_engine.analysis_compatibility` | `comparison_entrypoint` |
+| `llm_wiki_engine.historical_sources` | `INPUT` |
 | `llm_wiki_engine.host` | `emit` |
 | `llm_wiki_engine.io` | `read_md` |
-| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
+| `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `require_validated_artifacts` |
 | `llm_wiki_engine.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability`, `build_knowledge_read_view` |
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `evaluate_review_event`, `load_governance` |
 | `llm_wiki_engine.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `llm_wiki_engine.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState`, `ObservationScope` |
 | `llm_wiki_engine.knowledge_observability` | `KnowledgeAggregateSummary`, `KnowledgePhaseDurations`, `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `summarize_knowledge_view` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession` |
 | `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `llm_wiki_engine.progress` | `phase` |
@@ -115,9 +119,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (10) |
-| Outbound | `src` (45) |
+| Outbound | `src` (49) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 58 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -172,10 +176,11 @@ flowchart LR
 | `_diagnose_generated_diagram_bloat` | `(report: LintReport, rel: str, heading: str, block: list[str]) -> None` | — | — |
 | `_check_generated_diagrams` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
 | `_check_orphan_pages` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
-| `_check_entity_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, *, manifest: SyncManifest \| None = None) -> None` | — | — |
+| `_historical_pages_for_lint` | `(report, wiki_path, inputs, knowledge_state)` | — | — |
+| `_check_entity_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, *, manifest: SyncManifest \| None = None, historical_pages: Mapping \| None = None) -> None` | — | — |
 | `_lint_retired_entity_mappings` | `(report: LintReport, manifest: SyncManifest \| None) -> dict[str, ManifestPageSource]` | — | Qualify retirement only from the owner's cross-bound manifest marker. |
 | `_extracted_source_files` | `(source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]) -> set[str]` | — | Project-source files whose language the extractor actually ran on. |
-| `_check_module_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]) -> None` | — | — |
+| `_check_module_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus], historical_pages: Mapping \| None = None) -> None` | — | — |
 | `_check_workflow_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, page_index: _WikiPageIndex) -> None` | — | — |
 | `_check_flow_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, src_dir: str, *, include_plugins: bool = True, source_plugins_only: bool = False, source_snapshot: SourceSnapshot \| None = None) -> None` | — | Flag user-flow pages whose entry point no longer exists in the code. |
 | `_check_data_flow_diagnostics` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, src_dir: str, *, include_plugins: bool = True, source_plugins_only: bool = False, source_snapshot: SourceSnapshot \| None = None) -> None` | — | — |
@@ -194,11 +199,11 @@ flowchart LR
 | `_set_knowledge_summary` | `(report: LintReport, view: KnowledgeReadView, *, durations: KnowledgePhaseDurations) -> None` | — | — |
 | `_promised_structural_scope` | `(concept) -> ObservationScope \| None` | — | — |
 | `_promised_evidence_reason` | `(concept, expected_scope: ObservationScope) -> str \| None` | — | — |
-| `_check_knowledge_concepts` | `(report: LintReport, view: KnowledgeReadView) -> None` | — | — |
+| `_check_knowledge_concepts` | `(report: LintReport, view: KnowledgeReadView, historical_pages: Mapping \| None = None) -> None` | — | — |
 | `_manifest_promises_infrastructure_evidence` | `(manifest: SyncManifest) -> bool` | — | — |
 | `_check_knowledge_reviews` | `(report: LintReport, view: KnowledgeReadView) -> None` | — | Surface computed review expiry without treating it as machine status. |
 | `_check_verification_receipt` | `(report: LintReport, view: KnowledgeReadView \| None) -> None` | — | Validate one operation-scoped receipt view without executing checkers. |
-| `_check_knowledge_lint` | `(report: LintReport, state: _KnowledgeLintState) -> None` | — | — |
+| `_check_knowledge_lint` | `(report: LintReport, state: _KnowledgeLintState, historical_pages: Mapping \| None = None) -> None` | — | — |
 | `_measure_knowledge_phase` | `(durations: dict[str, int], name: str) -> Iterator[None]` | `@contextmanager` | — |
 | `_proven_nonsemantic_source_paths` | `(view: KnowledgeReadView \| None) -> frozenset[str]` | — | Collect structural observation equality; executable behavior is unevaluated. |
 | `_run_report_checks` | `(report: LintReport, wiki_path: Path, src_dir: str, strict: bool, profiler: _LintProfiler \| None, inputs: _LintInputs, media_size_warn_bytes: int, include_plugins: bool, source_plugins_only: bool) -> None` | — | — |

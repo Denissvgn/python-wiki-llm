@@ -454,7 +454,9 @@ def build_runtime_knowledge_plan(
     previous_maintenance = inputs.previous_manifest.maintenance_state if inputs.previous_manifest is not None else None
     old_observations = previous_maintenance["observations"].values() if previous_maintenance is not None else ()
     old_paths = {row["coordinate"]["source_path"] for row in old_observations}
-    missing = confirmed_missing_source_paths(inputs.source_snapshot, old_paths) if previous_maintenance is not None else frozenset()
+    from llm_wiki_engine.historical_sources import read_records
+    old_paths.update(row["owner"]["source_path"] for row in read_records(generation_inputs).values())
+    missing = confirmed_missing_source_paths(inputs.source_snapshot, old_paths) if old_paths else frozenset()
     old_targets = {row["target"]["canonical_path"] for row in (previous_maintenance["observations"].values() if previous_maintenance is not None else ())}
     from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
 
@@ -838,20 +840,30 @@ def _commit_runtime_knowledge(
     if inputs._plan_check is not None:
         inputs._plan_check(plan)
     assert inputs.committed_state is not None
+    from llm_wiki_engine.historical_sources import read_records
+    from .historical_retirement import confirm_absence
+
+    historical_paths = {row["owner"]["source_path"]
+                        for row in read_records(plan.committed_manifest.generation_inputs).values()}
+
+    def check_source():
+        _require_runtime_source_current(inputs.source_snapshot)
+        confirm_absence(inputs.source_snapshot, historical_paths)
+
     inputs.committed_state.assert_current()
-    _require_runtime_source_current(inputs.source_snapshot)
+    check_source()
 
     def checked_stage(stage):
         if fault_injector is not None:
             fault_injector(stage)
-        _require_runtime_source_current(inputs.source_snapshot)
+        check_source()
         if inputs._publication_check is not None:
             inputs._publication_check()
 
     result = commit_knowledge_artifacts(
         plan, dry_run=dry_run, fault_injector=checked_stage
     )
-    _require_runtime_source_current(inputs.source_snapshot)
+    check_source()
     return result
 
 

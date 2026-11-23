@@ -104,7 +104,7 @@ still stop the operation.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `knowledge_reuse`, `sync_analysis_cache` |
+| `.` | `historical_retirement`, `knowledge_reuse`, `sync_analysis_cache` |
 | `..` | `__version__` |
 | `..config` | `PathValidationError`, `validate_path`, `validate_source_root`, `EXTRACTOR_REGISTRY` |
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `load_openapi_document` |
@@ -114,6 +114,7 @@ still stop the operation.
 | `.entrypoints` | `build_flow`, `build_flow_context`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_for`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_inventory_result`, `get_docker_inventory`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges`, `InventoryRequest`, `prepare_inventory_helpers` |
+| `.historical_release` | `run_release` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
@@ -123,9 +124,9 @@ still stop the operation.
 | `.scoped_sync_repair` | `ScopedRepairBoundary`, `ScopedRepairError`, `prepare_boundary`, `repair_paths` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `source_snapshot_matches_current_files`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
-| `.sync_generated_sections` | `plan_generated_source_repairs` |
+| `.sync_generated_sections` | `plan_generated_source_repairs`, `repair_source_sections` |
 | `.sync_service` | `SYNC_PAGE_COUNTERS`, `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError`, `SyncStatus` |
-| `.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
+| `.sync_transitions` | `PageTransitionPlan`, `ReleasedPageInputs`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -134,12 +135,13 @@ still stop the operation.
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `json` | `json` |
+| `llm_wiki_engine` | `historical_sources` |
 | `llm_wiki_engine.contracts` | `INITIALIZABLE_SURFACES` |
 | `llm_wiki_engine.host` | `current_host`, `deferred_stdout`, `discarding_stdout`, `emit`, `recording_errors` |
 | `llm_wiki_engine.io` | `MarkdownEncodingError`, `read_md`, `write_md` |
 | `llm_wiki_engine.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
 | `llm_wiki_engine.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
-| `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
+| `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `sha256_bytes`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `llm_wiki_engine.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES` |
@@ -187,31 +189,31 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (51) |
+| Outbound | `src` (54) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAborted](../entities/SyncAborted.md) | 267 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
-| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 277 | `SyncAborted` | The request's options were rejected before any sync work started. |
-| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 282 | — | — |
+| [SyncAborted](../entities/SyncAborted.md) | 269 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
+| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 279 | `SyncAborted` | The request's options were rejected before any sync work started. |
+| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 284 | — | — |
 | [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 343 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
 | [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 347 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
 | [SyncResult](../entities/sync_runtime_SyncResult.md) | 679 | — | — |
 | [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 718 | — | — |
 | [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 740 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1759 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1787 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1794 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1800 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1806 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1822 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1866 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1899 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1905 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1785 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1817 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1824 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1830 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1836 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1852 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1896 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1929 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1935 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -259,6 +261,7 @@ flowchart LR
 | `_write_transition_page` | `(ctx: _ApplyDiffContext, path: Path, text: str) -> str` | — | — |
 | `_previous_entity_semantics` | `(ctx: _ApplyDiffContext, path: Path) -> dict \| None` | — | — |
 | `_record_page_write` | `(result: SyncResult, page_kind: str, page_name: str, write_state: str, *, metadata_only: bool) -> None` | — | — |
+| `_merge_revived_source_page` | `(ctx, path, existing, generated, kind)` | — | — |
 | `_merge_entity_page` | `(ctx: _ApplyDiffContext, entity_path: Path, generated: str, result: SyncResult) -> SemanticMergeResult` | — | — |
 | `_merge_module_page` | `(ctx: _ApplyDiffContext, module_path: Path, generated: str, old_generated_semantics: dict, result: SyncResult) -> SemanticMergeResult` | — | — |
 | `_apply_entity_page` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult, filepath: str, cls: dict, mod_page_name: str, entity_page_name: str) -> None` | — | — |
@@ -278,7 +281,7 @@ flowchart LR
 | `_refresh_module_dependency_sections` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult) -> None` | — | — |
 | `_refresh_generated_sections` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult) -> None` | — | — |
 | `_apply_diff_page_maps` | `(inventory: dict, src_dir: str, entity_page_cache: dict[tuple[str, str], str] \| None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None, module_page_map: dict[str, str] \| None) -> tuple[dict[tuple[str, str], str], dict[tuple[str, str, int], str], dict[str, str]]` | — | — |
-| `_build_apply_diff_context` | `(*, wiki_dir: Path, src_dir: str, inventory: dict, manifest: SyncManifest, entity_page_cache: dict[tuple[str, str], str], entity_occurrence_page_cache: dict[tuple[str, str, int], str], module_page_map: dict[str, str], relationships: dict, generated_sections: _GeneratedSectionContext \| None, diff: SyncDiff, preserve_semantic: bool, include_plugins: bool, source_selection_policy: SourceSelectionPolicy \| None) -> _ApplyDiffContext` | — | — |
+| `_build_apply_diff_context` | `(*, wiki_dir: Path, src_dir: str, inventory: dict, manifest: SyncManifest, entity_page_cache: dict[tuple[str, str], str], entity_occurrence_page_cache: dict[tuple[str, str, int], str], module_page_map: dict[str, str], relationships: dict, generated_sections: _GeneratedSectionContext \| None, diff: SyncDiff, preserve_semantic: bool, include_plugins: bool, source_selection_policy: SourceSelectionPolicy \| None, released_inputs: ReleasedPageInputs \| None = None) -> _ApplyDiffContext` | — | — |
 | `_apply_planned_diff` | `(ctx, diff, result, refresh_files, execution = None, *, refresh_unchanged_sections = True) -> None` | — | — |
 | `_apply_diff` | `(diff: SyncDiff, wiki_dir: Path, inventory: dict, src_dir: str, manifest: SyncManifest, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, generated_sections: _GeneratedSectionContext \| None = None, preserve_semantic: bool = True, include_plugins: bool = True, source_selection_policy: SourceSelectionPolicy \| None = None, transition_execution: PageTransitionExecution \| None = None, refresh_unchanged_sections: bool = True) -> SyncResult` | — | Regenerate pages for new/changed files, deprecate pages for removed files. |
 | `_removed_entity_page_name` | `(wiki_dir: Path, cls_name: str, filepath: str, old_info: dict) -> Optional[str]` | — | Resolve the existing entity page for a class whose source file was removed. |
@@ -337,7 +340,7 @@ flowchart LR
 | `_sync_reuse_input_basis` | `(options: _SyncRunOptions, manifest: SyncManifest, inventory_result: InventoryResult, source_snapshot: SourceSnapshot, surface_plan: _SurfaceInitializationPlan, repository_evidence: RepositoryEvidence, observation_inputs_hash: str \| None = None) -> dict[str, object] \| None` | — | — |
 | `_try_sync_knowledge_reuse` | `(options: _SyncRunOptions, manifest: SyncManifest, inventory_result: InventoryResult, source_snapshot: SourceSnapshot, surface_plan: _SurfaceInitializationPlan, repository_evidence: RepositoryEvidence, committed_state: CommittedKnowledgeState, observation_inputs_hash: str \| None = None) -> _ReusedSync \| None` | `@observed_phase('knowledge_reuse')` | — |
 | `_preflight_page_transition_governance` | `(wiki_dir, plan, diff) -> None` | — | — |
-| `_plan_source_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: dict, diff: SyncDiff, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], *, source_selection_policy: SourceSelectionPolicy \| None = None) -> PageTransitionPlan` | — | — |
+| `_plan_source_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: dict, diff: SyncDiff, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], *, source_selection_policy: SourceSelectionPolicy \| None = None, released_inputs: ReleasedPageInputs \| None = None) -> PageTransitionPlan` | — | — |
 | `_prepare_sync_run` | `(options: _SyncRunOptions) -> _PreparedSyncRun \| _ReusedSync \| None` | — | — |
 | `_preflight_sync_governance` | `(wiki_dir: Path, manifest: SyncManifest, *, committed_state: CommittedKnowledgeState \| None = None) -> None` | — | Reject corrupt or missing committed governance before page mutation. |
 | `_infrastructure_page_path` | `(wiki_dir: Path, record: Mapping[str, object]) -> Path` | — | — |
@@ -375,7 +378,7 @@ flowchart LR
 | `_initialization_flow_entries` | `(options: _SyncRunOptions, graph_observations: _RuntimeGraphObservations, plan: _SurfaceInitializationPlan) -> list[dict]` | — | Retain prior rich flow metadata unless flow initialization replaces it. |
 | `_sync_infrastructure_index_entries` | `(wiki_dir: Path, plan: InfrastructureSyncPlan) -> list[dict]` | — | — |
 | `_initialization_infrastructure_index_entries` | `(wiki_dir: Path, plan: InfrastructureSyncPlan) -> list[dict]` | — | Retain the persisted infrastructure metadata while source work is deferred. |
-| `_rebuild_index` | `(wiki_dir: Path, inventory: dict, src_dir: str, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, preserve_semantic: bool = True, workflow_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, retired_entity_pages: list[str] \| None = None) -> str` | — | Regenerate index.md from the live inventory. |
+| `_rebuild_index` | `(wiki_dir: Path, inventory: dict, src_dir: str, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, preserve_semantic: bool = True, workflow_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, retired_entity_pages: list[str] \| None = None, previous_history: Mapping \| None = None, file_history: Mapping \| None = None) -> str` | — | Regenerate index.md from the live inventory. |
 | `_rebuild_surface_only_index` | `(wiki_dir: Path, manifest: SyncManifest, *, preserve_semantic: bool = True, workflow_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, log_present: bool \| None = None) -> str` | — | Re-index only pages already present during source-deferred backfill. |
 | `_list_existing_pages` | `(directory: Path, extra_key: str) -> list[dict]` | — | Return a list of ``{"name": stem}`` dicts for every .md file in *directory*. |
 | `_markdown_title` | `(path: Path) -> str` | — | — |

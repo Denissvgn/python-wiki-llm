@@ -2,7 +2,7 @@
 
 **Entry point:** `finalize_runtime_knowledge` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 44 more
 
 **Complete modules touched:**
 
@@ -10,9 +10,9 @@
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [domain_pack](../modules/domain_pack.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
+- [historical_sources](../modules/historical_sources.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
@@ -43,7 +43,6 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
-- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -74,9 +73,9 @@ sequenceDiagram
     participant p8 as _prepared_runtime_governance
     participant p9 as GovernanceError
     participant p10 as guard_maintenance_owner
-    participant p11 as _require_runtime_source_current
-    participant p12 as commit_knowledge_artifacts
-    participant p13 as _decode_json_object
+    participant p11 as read_records
+    participant p12 as _decode_json_object
+    participant p13 as commit_knowledge_artifacts
     participant p14 as _producer_evidence
     participant p15 as with_source_selection_generation_input
     participant p16 as validate_knowledge_artifacts
@@ -90,8 +89,8 @@ sequenceDiagram
     participant p24 as _previous_committed_producer
     participant p25 as _absolute_path
     participant p26 as _validator_identity
-    participant p27 as source_snapshot_matches_current_files
-    participant p28 as build_knowledge_generation_plan
+    participant p27 as build_knowledge_generation_plan
+    participant p28 as _storage_validator_identity
     participant p29 as isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)
     participant p30 as committed_state.require_for (src/llm_wiki_cli/services…inalize_runtime_knowledge)
     p0->>p1: capture_committed_knowledge
@@ -104,9 +103,9 @@ sequenceDiagram
     p0->>p8: _prepared_runtime_governance
     p0->>p9: GovernanceError
     p1->>p10: guard_maintenance_owner
-    p2->>p11: _require_runtime_source_current
-    p2->>p12: commit_knowledge_artifacts
-    p1->>p13: _decode_json_object
+    p2->>p11: read_records
+    p1->>p12: _decode_json_object
+    p2->>p13: commit_knowledge_artifacts
     p3->>p14: _producer_evidence
     p3->>p15: with_source_selection_generation_input
     p1->>p16: validate_knowledge_artifacts
@@ -120,15 +119,15 @@ sequenceDiagram
     p3->>p24: _previous_committed_producer
     p10->>p25: _absolute_path
     p16->>p26: _validator_identity
-    p11->>p27: source_snapshot_matches_current_files
-    p21->>p28: build_knowledge_generation_plan
+    p21->>p27: build_knowledge_generation_plan
+    p16->>p28: _storage_validator_identity
     p0-->>p29: isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)(inputs, RuntimeKnowledgeInputs)
     p0-->>p30: committed_state.require_for (src/llm_wiki_cli/services…inalize_runtime_knowledge)(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3227 interactions; 3197 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3014 interactions; 2984 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1021 (1020 omitted); unresolved 1 of 707 (706 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 977 (976 omitted); unresolved 1 of 643 (642 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -142,7 +141,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-> Omission summary shows 8 of 729 groups; 721 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 678 groups; 670 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -155,9 +154,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1500; effect analysis evaluated: 873, partial: 67, unavailable: 560. Counts include steps omitted from the displayed trace.
+Source steps: 1395; effect analysis evaluated: 801, partial: 64, unavailable: 530. Counts include steps omitted from the displayed trace.
 
-Collector observations for 940 source steps with known totals: observed: 5633, emitted: 5314, omitted: 319. Unavailable totals are excluded.
+Collector observations for 865 source steps with known totals: observed: 5193, emitted: 4889, omitted: 304. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -238,9 +237,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 871 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 872 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| finalize_runtime_knowledge | capture_committed_knowledge | 875 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 883 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 884 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| finalize_runtime_knowledge | capture_committed_knowledge | 887 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |
@@ -261,8 +260,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `finalize_runtime_knowledge` | `isinstance` | 871 |
-| external_call | `finalize_runtime_knowledge` | `TypeError` | 872 |
+| external_call | `finalize_runtime_knowledge` | `isinstance` | 883 |
+| external_call | `finalize_runtime_knowledge` | `TypeError` | 884 |
 | unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 242 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `finalize_runtime_knowledge` | `first 12 steps` | 0 |

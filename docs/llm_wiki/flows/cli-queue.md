@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [queue_cmd](../modules/queue_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 83 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 84 more
 
 **Complete modules touched:**
 
@@ -30,6 +30,7 @@
 - [go_calls](../modules/go_calls.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [historical_retirement](../modules/historical_retirement.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
@@ -111,24 +112,24 @@ sequenceDiagram
     participant p8 as _assert_selection_unchanged
     participant p9 as _require_non_negative_int
     participant p10 as _require_positive_int
-    participant p11 as confirmed_missing_source_paths
-    participant p12 as select_changes
-    participant p13 as _new_lint_report
-    participant p14 as _preflight_lint_inputs
-    participant p15 as captured_observations_from_knowledge
-    participant p16 as _finalize_lint_report
-    participant p17 as prepare_cache_options
-    participant p18 as _collect_lint_inputs
-    participant p19 as _run_report_checks
-    participant p20 as _surface_page_map
-    participant p21 as validate_source_root
-    participant p22 as _source_path_from_page
-    participant p23 as _normalise_dependency_metrics
-    participant p24 as guard_maintenance_owner
-    participant p25 as _normalise_entrypoints
-    participant p26 as resolve_source_selection
-    participant p27 as capture_source_selection_inputs
-    participant p28 as validate_live_query_source_selection
+    participant p11 as select_changes
+    participant p12 as _new_lint_report
+    participant p13 as _preflight_lint_inputs
+    participant p14 as captured_observations_from_knowledge
+    participant p15 as _finalize_lint_report
+    participant p16 as prepare_cache_options
+    participant p17 as _collect_lint_inputs
+    participant p18 as _run_report_checks
+    participant p19 as _surface_page_map
+    participant p20 as validate_source_root
+    participant p21 as _source_path_from_page
+    participant p22 as _normalise_dependency_metrics
+    participant p23 as guard_maintenance_owner
+    participant p24 as _normalise_entrypoints
+    participant p25 as resolve_source_selection
+    participant p26 as capture_source_selection_inputs
+    participant p27 as validate_live_query_source_selection
+    participant p28 as _centrality_score
     participant p29 as print
     participant p30 as lines.append
     p0->>p1: build_maintenance_queue
@@ -141,31 +142,31 @@ sequenceDiagram
     p1->>p8: _assert_selection_unchanged
     p5->>p9: _require_non_negative_int
     p5->>p10: _require_positive_int
-    p6->>p11: confirmed_missing_source_paths
-    p8->>p12: select_changes
-    p4->>p13: _new_lint_report
-    p4->>p14: _preflight_lint_inputs
-    p6->>p15: captured_observations_from_knowledge
-    p4->>p16: _finalize_lint_report
-    p4->>p17: prepare_cache_options
-    p4->>p18: _collect_lint_inputs
-    p4->>p19: _run_report_checks
-    p5->>p20: _surface_page_map
-    p3->>p21: validate_source_root
-    p5->>p22: _source_path_from_page
-    p5->>p23: _normalise_dependency_metrics
-    p3->>p24: guard_maintenance_owner
-    p5->>p25: _normalise_entrypoints
-    p3->>p26: resolve_source_selection
-    p3->>p27: capture_source_selection_inputs
-    p3->>p28: validate_live_query_source_selection
+    p8->>p11: select_changes
+    p4->>p12: _new_lint_report
+    p4->>p13: _preflight_lint_inputs
+    p6->>p14: captured_observations_from_knowledge
+    p4->>p15: _finalize_lint_report
+    p4->>p16: prepare_cache_options
+    p4->>p17: _collect_lint_inputs
+    p4->>p18: _run_report_checks
+    p5->>p19: _surface_page_map
+    p3->>p20: validate_source_root
+    p5->>p21: _source_path_from_page
+    p5->>p22: _normalise_dependency_metrics
+    p3->>p23: guard_maintenance_owner
+    p5->>p24: _normalise_entrypoints
+    p3->>p25: resolve_source_selection
+    p3->>p26: capture_source_selection_inputs
+    p3->>p27: validate_live_query_source_selection
+    p5->>p28: _centrality_score
     p0-->>p29: print(..., end=...)
     p2-->>p30: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4522 interactions; 4492 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4462 interactions; 4432 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1421 (1420 omitted); unresolved 1 of 1559 (1558 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1389 (1388 omitted); unresolved 1 of 1548 (1547 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -179,7 +180,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 25 | - | unresolved | 1 |
-> Omission summary shows 8 of 1163 groups; 1155 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1156 groups; 1148 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -192,9 +193,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1543; effect analysis evaluated: 1158, partial: 69, unavailable: 316. Counts include steps omitted from the displayed trace.
+Source steps: 1526; effect analysis evaluated: 1146, partial: 67, unavailable: 313. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1227 source steps with known totals: observed: 7525, emitted: 7181, omitted: 344. Unavailable totals are excluded.
+Collector observations for 1213 source steps with known totals: observed: 7438, emitted: 7108, omitted: 330. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

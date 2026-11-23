@@ -76,6 +76,7 @@ KERNEL_SERVICES = frozenset(
         "query_result_format",
         "surface_index_format",
         "extract_format",
+        "historical_retirement",
         "maintenance_status_format",
         "maintenance_queue_format",
         "context_session",
@@ -252,6 +253,7 @@ PRODUCT_SERVICES = frozenset(
         "health_details",
         "health_policy",
         "health_summary",
+        "historical_release",
         "instruction_ownership",
         "knowledge_generation",
         "knowledge_orchestration",
@@ -943,7 +945,7 @@ def test_engine_package_loads_without_the_provider_or_third_party_modules() -> N
 
 # Engine modules written for the engine, which never had a services path.
 ENGINE_NATIVE_MODULES = frozenset({
-    "engine", "implementation_summary", "infrastructure_state", "layout", "integrations", "knowledge_reuse_format", "pack_interfaces",
+    "engine", "historical_sources", "implementation_summary", "infrastructure_state", "layout", "integrations", "knowledge_reuse_format", "pack_interfaces",
     "query_request_format", "sync_ownership", "token_counters", "wiki_operations",
 })
 

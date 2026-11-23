@@ -111,9 +111,9 @@ sequenceDiagram
     p0-->>p30: (…).exists (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan)
 ```
 
-> Call sequence diagram shows 30 of 2630 interactions; 2600 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2631 interactions; 2601 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 892 (891 omitted); unresolved 1 of 473 (472 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 892 (891 omitted); unresolved 1 of 474 (473 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -142,7 +142,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1266; effect analysis evaluated: 748, partial: 49, unavailable: 469. Counts include steps omitted from the displayed trace.
 
-Collector observations for 797 source steps with known totals: observed: 4410, emitted: 4185, omitted: 225. Unavailable totals are excluded.
+Collector observations for 797 source steps with known totals: observed: 4412, emitted: 4185, omitted: 227. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -216,9 +216,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan) | 691 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | KnowledgeArtifactError | 694 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
-| build_knowledge_commit_plan | current_manifest_format | 695 | `current_manifest_format(root)` |
+| build_knowledge_commit_plan | Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan) | 692 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | KnowledgeArtifactError | 695 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
+| build_knowledge_commit_plan | current_manifest_format | 696 | `current_manifest_format(root)` |
 | current_manifest_format | Path (src/llm_wiki_engine/manif…y:current_manifest_format) | 289 | `Path(wiki_dir)` |
 | current_manifest_format | adoption.exists | 291 | `adoption.exists(data not statically known)` |
 | current_manifest_format | adoption.is_symlink | 291 | `adoption.is_symlink(data not statically known)` |

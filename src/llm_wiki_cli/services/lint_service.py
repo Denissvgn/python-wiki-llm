@@ -1290,14 +1290,48 @@ def _check_orphan_pages(
                 )
 
 
+def _historical_pages_for_lint(report, wiki_path, inputs, knowledge_state):
+    from llm_wiki_engine import historical_sources
+    from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+    from .historical_retirement import confirm_absence
+
+    manifest = inputs.manifest
+    if manifest is None or historical_sources.INPUT not in manifest.generation_inputs:
+        return {}
+    try:
+        loaded = knowledge_state.load_result
+        if (loaded is None or loaded.status is not KnowledgeLoadState.VALID
+                or loaded.validated_artifacts is None or loaded.manifest_basis is None
+                or loaded.manifest_basis.artifact_hashes != manifest.artifact_hashes):
+            raise SourceRetirementError("the registry lacks its validated native projections")
+        artifacts = require_validated_artifacts(loaded.validated_artifacts)
+        records = historical_sources.check_projections(manifest, artifacts.knowledge)
+        with StorageReadSession(wiki_path).phase() as reader:
+            content = {path: reader.read(path, MAX_EXPANDED_BYTES) for path in ("index.md", *records)}
+            historical_sources.check_content(records, content)
+        confirm_absence(inputs.source_snapshot, {row["owner"]["source_path"] for row in records.values()})
+    # SourceSnapshotError (including a concurrent source-directory change),
+    # SourceRetirementError and KnowledgeStorageError all derive from ValueError.
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        _add(report, "knowledge_projection", f"Historical source custody failed: {exc}",
+             path=MANIFEST_FILENAME, reason_code="historical-source-invalid")
+        return {}
+    return records
+
+
 def _check_entity_coverage(
     report: LintReport,
     wiki_path: Path,
     deep_inventory: dict,
     *,
     manifest: SyncManifest | None = None,
+    historical_pages: Mapping | None = None,
 ) -> None:
     documented_entities = _collect_documented_entities(wiki_path)
+    documented_entities -= {Path(path).stem for path, row in (historical_pages or {}).items()
+                            if row["owner"]["scope"] == "entity"}
     retired_mappings = _lint_retired_entity_mappings(report, manifest)
     documented_entities -= {Path(path).stem for path in retired_mappings}
     code_classes = _inventory_code_classes(deep_inventory)
@@ -1372,8 +1406,11 @@ def _check_module_coverage(
     deep_inventory: dict,
     source_snapshot: SourceSnapshot,
     statuses: Mapping[str, ExtractorStatus],
+    historical_pages: Mapping | None = None,
 ) -> None:
     documented_modules = _collect_documented_modules(wiki_path)
+    documented_modules -= {Path(path).stem for path, row in (historical_pages or {}).items()
+                           if row["owner"]["scope"] == "module"}
     code_modules = _inventory_code_modules(deep_inventory)
 
     undoc_mods = code_modules - documented_modules
@@ -2116,6 +2153,7 @@ def _promised_evidence_reason(
 def _check_knowledge_concepts(
     report: LintReport,
     view: KnowledgeReadView,
+    historical_pages: Mapping | None = None,
 ) -> None:
     from .evidence_diagnostics import captured_evidence_diagnostic
 
@@ -2123,9 +2161,16 @@ def _check_knowledge_concepts(
     manifest = view.manifest_basis
     if knowledge is None or manifest is None:
         return
+    historical_pages = historical_pages or {}
     retired_mappings = _lint_retired_entity_mappings(report, manifest)
     for concept in sorted(knowledge.concepts, key=lambda item: item.locator):
         page_path = concept.document.canonical_path
+        if page_path in historical_pages:
+            _diagnose(report, "knowledge_evidence",
+                      f"Historical source page {page_path!r} retains its predecessor proof. "
+                      f"Present-day structural evidence is {concept.facets.structure.evidence.value}.",
+                      path=page_path, target=concept.locator, severity="info", reason_code="historical-source-file")
+            continue
         retired_owner = retired_mappings.get(page_path)
         retirement = concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY)
         expected_retirement = (
@@ -2501,6 +2546,7 @@ def _check_verification_receipt(
 def _check_knowledge_lint(
     report: LintReport,
     state: _KnowledgeLintState,
+    historical_pages: Mapping | None = None,
 ) -> None:
     if not state.enabled:
         return
@@ -2543,7 +2589,7 @@ def _check_knowledge_lint(
     _check_verification_receipt(report, state.view)
     if state.view is None or not state.view.ready:
         return
-    _check_knowledge_concepts(report, state.view)
+    _check_knowledge_concepts(report, state.view, historical_pages)
     _check_knowledge_reviews(report, state.view)
 
 
@@ -2633,9 +2679,16 @@ def _run_report_checks(
         _check_generated_diagrams(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "orphans"):
         _check_orphan_pages(report, wiki_path, inputs.page_index)
+    from llm_wiki_engine.historical_sources import INPUT as HISTORICAL_INPUT
+    knowledge_state = _KnowledgeLintState()
+    knowledge_durations: dict[str, int] = {}
+    if strict or (inputs.manifest and HISTORICAL_INPUT in inputs.manifest.generation_inputs):
+        with (_profile_phase(profiler, "knowledge_load"), _measure_knowledge_phase(knowledge_durations, "load")):
+            knowledge_state = _load_knowledge_lint_state(wiki_path, inputs)
+    historical_pages = _historical_pages_for_lint(report, wiki_path, inputs, knowledge_state)
     with _profile_phase(profiler, "entities"):
         _check_entity_coverage(
-            report, wiki_path, inputs.deep_inventory, manifest=inputs.manifest
+            report, wiki_path, inputs.deep_inventory, manifest=inputs.manifest, historical_pages=historical_pages
         )
     with _profile_phase(profiler, "modules"):
         _check_module_coverage(
@@ -2644,6 +2697,7 @@ def _run_report_checks(
             inputs.deep_inventory,
             inputs.source_snapshot,
             inputs.inventory_result.statuses,
+            historical_pages=historical_pages,
         )
     with _profile_phase(profiler, "workflows"):
         _check_workflow_coverage(
@@ -2699,14 +2753,7 @@ def _run_report_checks(
             wiki_path,
             inputs.source_snapshot,
         )
-    knowledge_state = _KnowledgeLintState()
     if strict:
-        knowledge_durations: dict[str, int] = {}
-        with (
-            _profile_phase(profiler, "knowledge_load"),
-            _measure_knowledge_phase(knowledge_durations, "load"),
-        ):
-            knowledge_state = _load_knowledge_lint_state(wiki_path, inputs)
         with (
             _profile_phase(profiler, "knowledge_freshness"),
             _measure_knowledge_phase(knowledge_durations, "evaluate"),
@@ -2729,7 +2776,7 @@ def _run_report_checks(
             _profile_phase(profiler, "knowledge_checks"),
             _measure_knowledge_phase(knowledge_durations, "check"),
         ):
-            _check_knowledge_lint(report, knowledge_state)
+            _check_knowledge_lint(report, knowledge_state, historical_pages)
         if knowledge_state.view is not None:
             _set_knowledge_summary(
                 report,

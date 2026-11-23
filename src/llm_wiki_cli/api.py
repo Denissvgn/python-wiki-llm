@@ -1257,6 +1257,10 @@ def sync_wiki(
     source_selection: str | Path | None = None,
     knowledge_format: str | None = None,
     rebuild_knowledge: bool = False,
+    retire_missing_sources: Iterable[str] | None = None,
+    retire_missing_pages: Iterable[str] | None = None,
+    release_historical_pages: Iterable[str] | None = None,
+    expected_historical_release: str | None = None,
 ) -> SyncOutcome:
     """Incrementally update a managed wiki from its source tree.
 
@@ -1287,6 +1291,10 @@ def sync_wiki(
         source_selection=source_selection,
         knowledge_format=knowledge_format,
         rebuild_knowledge=rebuild_knowledge,
+        retire_missing_sources=retire_missing_sources,
+        retire_missing_pages=retire_missing_pages,
+        release_historical_pages=release_historical_pages,
+        expected_historical_release=expected_historical_release,
     )
     try:
         with discarding_output():

@@ -37,12 +37,13 @@ flowchart LR
     n0["ManifestEvidenceBaseline (src/llm_wiki_engine/sync_manifest.py)"]
     n1["_mark_untrusted_evidence (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n2["_preserve_unchanged_unknown_baselines (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n3["src/llm_wiki_engine/knowledge_index.py"]
-    n4["_legacy_operational_state (src/llm_wiki_engine/sync_manifest.py)"]
-    n5["ManifestEvidenceBaseline.from_basis (src/llm_wiki_engine/sync_manifest.py)"]
-    n6["ManifestEvidenceBaseline.from_payload (src/llm_wiki_engine/sync_manifest.py)"]
-    n7["ManifestEvidenceBaseline.unknown (src/llm_wiki_engine/sync_manifest.py)"]
-    n8["SyncManifest.build_from_inventory (src/llm_wiki_engine/sync_manifest.py)"]
+    n3["src/llm_wiki_engine/historical_sources.py"]
+    n4["src/llm_wiki_engine/knowledge_index.py"]
+    n5["_legacy_operational_state (src/llm_wiki_engine/sync_manifest.py)"]
+    n6["ManifestEvidenceBaseline.from_basis (src/llm_wiki_engine/sync_manifest.py)"]
+    n7["ManifestEvidenceBaseline.from_payload (src/llm_wiki_engine/sync_manifest.py)"]
+    n8["ManifestEvidenceBaseline.unknown (src/llm_wiki_engine/sync_manifest.py)"]
+    n9["SyncManifest.build_from_inventory (src/llm_wiki_engine/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -51,15 +52,17 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/sync_manifest.md"
     click n1 "../modules/knowledge_generation.md"
     click n2 "../modules/knowledge_generation.md"
-    click n3 "../modules/knowledge_index.md"
-    click n4 "../modules/sync_manifest.md"
+    click n3 "../modules/historical_sources.md"
+    click n4 "../modules/knowledge_index.md"
     click n5 "../modules/sync_manifest.md"
     click n6 "../modules/sync_manifest.md"
     click n7 "../modules/sync_manifest.md"
     click n8 "../modules/sync_manifest.md"
+    click n9 "../modules/sync_manifest.md"
 ```
 
 ### Summary
@@ -74,6 +77,7 @@ flowchart LR
 |---|---|---|---:|
 | `_mark_untrusted_evidence` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_preserve_unchanged_unknown_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `historical_sources` | import | [historical_sources](../modules/historical_sources.md) | — |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_legacy_operational_state` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `ManifestEvidenceBaseline.from_basis` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |

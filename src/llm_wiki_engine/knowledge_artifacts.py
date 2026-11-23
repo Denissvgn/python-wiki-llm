@@ -55,6 +55,7 @@ from .knowledge_model import (
     Origin,
 )
 from llm_wiki_engine.section_ownership import SectionOwnershipError, validate_section_ownership
+from . import historical_sources
 from .source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
@@ -571,7 +572,7 @@ def _validate_artifact_parity(
         knowledge_payload=canonical_payload,
         retired_locators=frozenset(
             concept.locator for concept in knowledge.concepts
-            if SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+            if SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions or historical_sources.EXTENSION in concept.extensions
         ),
     )
     object.__setattr__(
@@ -852,11 +853,13 @@ def commit_knowledge_artifacts(
     *,
     dry_run: bool = False,
     fault_injector: FaultInjector | None = None,
+    before_manifest: Callable[[], None] | None = None,
 ) -> KnowledgeCommitResult:
     """Apply *plan* in projection/projection/manifest order.
 
     Dry-run returns the complete plan without touching the filesystem or
-    invoking fault-injection callbacks.
+    invoking callbacks. Owning writers may revalidate external inputs after
+    native projections are verified and immediately before manifest publication.
     """
 
     if not isinstance(plan, KnowledgeCommitPlan):
@@ -865,6 +868,8 @@ def commit_knowledge_artifacts(
         raise TypeError("dry_run must be a bool")
     if fault_injector is not None and not callable(fault_injector):
         raise TypeError("fault_injector must be callable")
+    if before_manifest is not None and not callable(before_manifest):
+        raise TypeError("before_manifest must be callable")
 
     if not dry_run:
         from .maintenance_protocol import storage_writer_lock, guard_maintenance_owner, load_adoption_marker
@@ -877,9 +882,9 @@ def commit_knowledge_artifacts(
             if marker is not None and plan.maintenance_adoption is not None and plan.maintenance_adoption.previous_content is not None:
                 guard_maintenance_owner(root)
             if plan.storage_format != "v1" or plan.storage_objects or plan.maintenance_adoption is not None:
-                _commit_sharded(plan, fault_injector)
+                _commit_sharded(plan, fault_injector, before_manifest)
             else:
-                _commit_flat(plan, fault_injector)
+                _commit_flat(plan, fault_injector, before_manifest)
     return KnowledgeCommitResult(
         surface_index=plan.surface_index,
         knowledge_index=plan.knowledge_index,
@@ -893,7 +898,7 @@ def commit_knowledge_artifacts(
     )
 
 
-def _commit_flat(plan, fault_injector):
+def _commit_flat(plan, fault_injector, before_manifest=None):
         _apply_write(
             plan.surface_index,
             CommitStage.SURFACE_INDEX_WRITTEN,
@@ -906,6 +911,8 @@ def _commit_flat(plan, fault_injector):
         )
         _verify_persisted(plan.surface_index)
         _verify_persisted(plan.knowledge_index)
+        if before_manifest is not None:
+            before_manifest()
         _apply_write(
             plan.manifest,
             CommitStage.MANIFEST_WRITTEN,
@@ -989,7 +996,7 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
         raise KnowledgeArtifactError("knowledge_index_bytes", str(exc), code=exc.code) from exc
 
 
-def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> None:
+def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None, before_manifest: Callable[[], None] | None = None) -> None:
     from llm_wiki_engine.filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
     from .maintenance_protocol import storage_writer_lock
     from .knowledge_storage_io import read_guarded, _absolute_path
@@ -1038,6 +1045,8 @@ def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> N
         apply(plan.knowledge_index, CommitStage.KNOWLEDGE_INDEX_WRITTEN)
         for artifact in (*plan.storage_objects, plan.surface_index, plan.knowledge_index):
             verify(artifact)
+        if before_manifest is not None:
+            before_manifest()
         apply(plan.manifest, CommitStage.MANIFEST_WRITTEN)
         for artifact in (*plan.storage_objects, *guarded):
             verify(artifact)
@@ -1384,6 +1393,7 @@ def _validate_manifest_knowledge_parity(
             exc.message,
         ) from exc
     try:
+        historical_sources.check_projections(manifest, knowledge)
         retired_mappings = retired_entity_mappings(manifest)
     except SourceRetirementError as exc:
         raise KnowledgeArtifactError(

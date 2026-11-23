@@ -18,6 +18,7 @@ from llm_wiki_engine.sync_manifest import ManifestPageSource, SyncManifest
 from llm_wiki_engine.sync_retained_links import repair_retained_page_links
 from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, canonical_path
+from llm_wiki_engine import historical_sources
 from llm_wiki_engine.source_retirement import retired_entity_mappings
 
 
@@ -29,6 +30,7 @@ class PageTransition:
     source_path: str | None  # actual existing file, including its recorded casing
     final_path: str
     refresh_requested: bool
+    revival_body_hash: str | None = None
 
     @property
     def action(self) -> str:
@@ -62,6 +64,13 @@ class RetainedPageRepair:
 
 
 @dataclass(frozen=True)
+class ReleasedPageInputs:
+    """Evidence from this run's source capture and its validated previous native projection."""
+    source_hashes: Mapping[str, str]
+    page_hashes: Mapping[str, str]
+
+
+@dataclass(frozen=True)
 class PageTransitionPlan:
     transitions: tuple[PageTransition, ...]
     # The executor fills ALL slots before placing ANY final target.
@@ -69,6 +78,7 @@ class PageTransitionPlan:
     staged_moves: tuple[StagedPageMove, ...]
     reserved_path_keys: tuple[str, ...]
     retained_page_repairs: tuple[RetainedPageRepair, ...] = ()
+    released_inputs: ReleasedPageInputs | None = field(default=None, repr=False, compare=False)
 
 
 def _retained_page_repairs(
@@ -290,6 +300,67 @@ def _current_pages(
     return pages
 
 
+def _released_revivals(wiki_dir, manifest, current, existing, enrolled, inputs):
+    from llm_wiki_engine.knowledge_evidence import sha256_bytes
+    from llm_wiki_engine.sync_manifest import PRODUCER_BASIS_INCOMPATIBLE
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import StorageReadSession
+
+    latest = historical_sources.latest_released_pages(manifest.generation_inputs)
+    revivals = {}
+    if not latest:
+        return revivals
+    def ordinary_body(owner, path, data, digest):
+        tombstone = manifest.tombstones.get(path)
+        if (inputs is None or manifest.page_source_mappings.get(path) != owner or tombstone is None
+                or tombstone.last_valid_basis is None or inputs.page_hashes.get(path) != digest
+                or inputs.source_hashes.get(owner.source_path) != tombstone.last_valid_basis.source_content_hash):
+            return None
+        return sha256_bytes(data.removeprefix(historical_sources.STALE_HEADER.encode("utf-8")))
+
+    with StorageReadSession(wiki_dir).phase() as reader:
+        for owner, path in current.items():
+            entry = latest.get(path)
+            occupied = existing.get(portable_path_key(path))
+            tombstone = manifest.tombstones.get(path)
+            if entry is None or occupied is None or tombstone is None or path in enrolled:
+                continue
+            record = entry["record"]
+            previous = manifest.page_source_mappings.get(path)
+            data = reader.read(occupied[0], MAX_EXPANDED_BYTES)
+            digest = sha256_bytes(data)
+            captured = inputs.source_hashes.get(owner.source_path) if inputs is not None else None
+            released_basis = (tombstone.last_valid_basis.to_evidence_payload()
+                              if tombstone.last_valid_basis is not None else None)
+            if (previous is not None and previous.to_payload() == record["owner"]
+                    and (released_basis == record["basis"] or (released_basis is None
+                         and tombstone.unknown_reason == PRODUCER_BASIS_INCOMPATIBLE))
+                    and digest in {entry["retained_page_hash"], record["page_hash"], record["marked_page_hash"]}):
+                if owner != previous or captured != record["basis"]["source_content_hash"]:
+                    raise PageTransitionError(
+                        f"Released page {path!r} still holds the measured former owner's Markdown. Move it "
+                        "to a tracked history path outside the generated wiki before assigning its URL."
+                    )
+                revivals[owner] = record["page_hash"]
+            else:
+                body = ordinary_body(owner, path, data, digest)
+                if body is not None:
+                    revivals[owner] = body
+        # A later source owner may project both a module and entities. Each
+        # companion must independently prove its own exact coordinate and page.
+        restored_sources = {owner.source_path for owner in revivals}
+        for owner, path in current.items():
+            occupied = existing.get(portable_path_key(path))
+            if (owner.source_path not in restored_sources or owner in revivals or occupied is None
+                    or path in enrolled or path not in manifest.tombstones):
+                continue
+            data = reader.read(occupied[0], MAX_EXPANDED_BYTES)
+            body = ordinary_body(owner, path, data, sha256_bytes(data))
+            if body is not None:
+                revivals[owner] = body
+    return revivals
+
+
 def plan_page_transitions(
     wiki_dir: Path,
     manifest: SyncManifest,
@@ -300,6 +371,7 @@ def plan_page_transitions(
     refresh_sources: frozenset[str] = frozenset(),
     moved_entities: Mapping[str, tuple[str, str]] | None = None,
     deleted_source_paths: frozenset[str] = frozenset(),
+    released_inputs: ReleasedPageInputs | None = None,
 ) -> PageTransitionPlan:
     """Plan every live source-owned page using supplied names, without mutations.
 
@@ -319,6 +391,14 @@ def plan_page_transitions(
         if key in prior.claims and not regular:
             raise PageTransitionError(f"Recorded source page is not a regular file: {path!r}")
     current = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
+    enrolled = historical_sources.bound_records(manifest)
+    historical = {manifest.page_source_mappings[path]: path for path in enrolled}
+    restored = _released_revivals(wiki_dir, manifest, current, existing, enrolled, released_inputs)
+    for owner, path in historical.items():
+        if owner in current:
+            prior.add(owner, path)
+    for owner in restored:
+        prior.add(owner, current[owner])
     old_counts = {
         source: Counter(info.get("entities", []))
         for source, info in manifest.sources.items()
@@ -338,7 +418,9 @@ def plan_page_transitions(
             raise PageTransitionError(f"Multiple current owners target {target!r}")
         targets.add(target_key)
         previous = None
-        if owner.scope == "module" and owner.source_path in manifest.sources:
+        if owner in historical or owner in restored:
+            previous = owner
+        elif owner.scope == "module" and owner.source_path in manifest.sources:
             previous = owner
         elif owner.scope == "module":
             previous = _moved_module_owner(prior, target, inventory)
@@ -359,6 +441,8 @@ def plan_page_transitions(
                 previous = ManifestPageSource("entity", old_source, name, 1)
             else:
                 previous = _moved_entity_owner(prior, target, owner, inventory)
+        if previous in historical and previous != owner:
+            raise PageTransitionError(f"A different declaration occupies historical source page {historical[previous]!r}; preview --release-historical-page {historical[previous]!r}")
         old_path = prior.resolve(previous) if previous is not None else None
         source_path = None
         if old_path is not None and portable_path_key(old_path) in existing:
@@ -372,6 +456,7 @@ def plan_page_transitions(
             source_path=source_path,
             final_path=target,
             refresh_requested=owner.source_path in refresh_sources,
+            revival_body_hash=restored.get(owner),
         )
         transitions.append(item)
         if old_path is not None:
@@ -389,6 +474,8 @@ def plan_page_transitions(
             raise PageTransitionError(f"Write target is not a regular file: {occupant!r}")
         outgoing = origins.get(key)
         if outgoing is None or prior.claims.get(key) != {outgoing.previous_owner}:
+            if any(portable_path_key(path) == key for path in historical.values()):
+                raise PageTransitionError(f"Occupied historical page {occupant!r}; preview --release-historical-page {occupant!r}")
             raise PageTransitionError(
                 f"Occupied target has no verified outgoing owner: {occupant!r}"
             )
@@ -401,6 +488,7 @@ def plan_page_transitions(
         if item.source_path is not None and item.action == "rename"
     )
     return PageTransitionPlan(
+        released_inputs=released_inputs,
         transitions=tuple(transitions),
         staged_moves=staged,
         reserved_path_keys=tuple(sorted(prior.claims)),
@@ -419,6 +507,7 @@ def find_missing_source_pages(
     entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
     refresh_sources: frozenset[str] = frozenset(),
     moved_entities: Mapping[str, tuple[str, str]] | None = None,
+    released_inputs: ReleasedPageInputs | None = None,
 ) -> dict[str, ManifestPageSource]:
     """Find missing canonical paths without inventing source changes or ownership.
 
@@ -456,7 +545,7 @@ def find_missing_source_pages(
         module_page_map=module_page_map,
         entity_occurrence_page_map=entity_occurrence_page_map,
         refresh_sources=refresh_sources,
-        moved_entities=moved_entities,
+        moved_entities=moved_entities, released_inputs=released_inputs,
     )
     return {
         item.final_path: item.owner for item in plan.transitions

@@ -2,7 +2,7 @@
 
 **Entry point:** `refresh_documentation_native_projection` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 78 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 79 more
 
 **Complete modules touched:**
 
@@ -25,6 +25,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
 - [go_calls](../modules/go_calls.md)
+- [historical_sources](../modules/historical_sources.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
@@ -158,9 +159,9 @@ sequenceDiagram
     p1-->>p30: path.exists (src/llm_wiki_engine/maint…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 4696 interactions; 4666 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4665 interactions; 4635 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1576 (1575 omitted); unresolved 1 of 1208 (1207 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1563 (1562 omitted); unresolved 1 of 1204 (1203 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -174,7 +175,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 13 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 3 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 3 | - | unresolved | 3 |
-> Omission summary shows 8 of 1172 groups; 1164 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1177 groups; 1169 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -187,9 +188,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1913; effect analysis evaluated: 1218, partial: 85, unavailable: 610. Counts include steps omitted from the displayed trace.
+Source steps: 1899; effect analysis evaluated: 1206, partial: 83, unavailable: 610. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1303 source steps with known totals: observed: 7632, emitted: 7293, omitted: 339. Unavailable totals are excluded.
+Collector observations for 1289 source steps with known totals: observed: 7544, emitted: 7218, omitted: 326. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

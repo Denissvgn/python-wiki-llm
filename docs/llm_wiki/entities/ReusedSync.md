@@ -1,6 +1,6 @@
 # _ReusedSync
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1899`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1929`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)

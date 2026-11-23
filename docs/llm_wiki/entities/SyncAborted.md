@@ -1,6 +1,6 @@
 # SyncAborted
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:267`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:269`
 **Kind:** Class
 **Bases:** `SystemExit`
 **Module:** [sync_runtime](../modules/sync_runtime.md)
@@ -84,4 +84,4 @@ flowchart LR
 | `_run_prepared_sync` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_run_sync_options` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_simulate_sync_dry_run` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
-| `run_request` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `run_request` | call | [sync_runtime](../modules/sync_runtime.md) | 2 |

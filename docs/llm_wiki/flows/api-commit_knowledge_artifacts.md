@@ -94,23 +94,23 @@ sequenceDiagram
     p2-->>p30: path.exists
 ```
 
-> Call sequence diagram shows 30 of 838 interactions; 808 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 842 interactions; 812 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 345 (344 omitted); unresolved 1 of 151 (150 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 347 (346 omitted); unresolved 1 of 153 (152 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_engine/knowledge_artifacts.py:commit_knowledge_artifacts` | 1 | - | external | 5 |
-| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 9 | - | external | 4 |
-| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | - | external | 19 |
-| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | - | unresolved | 6 |
-| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-| `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
-| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 9 | - | unresolved | 3 |
-> Omission summary shows 8 of 205 groups; 197 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/knowledge_artifacts.py:commit_knowledge_artifacts` | 1 | - | external | 7 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 11 | - | external | 4 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 14 | - | external | 19 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 14 | - | unresolved | 6 |
+| `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 14 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
+| `src/llm_wiki_engine/host.py:current_host` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 11 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+| `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 11 | - | unresolved | 3 |
+> Omission summary shows 8 of 206 groups; 198 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -125,7 +125,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 343; effect analysis evaluated: 186, partial: 15, unavailable: 142. Counts include steps omitted from the displayed trace.
 
-Collector observations for 201 source steps with known totals: observed: 1003, emitted: 966, omitted: 37. Unavailable totals are excluded.
+Collector observations for 201 source steps with known totals: observed: 1006, emitted: 969, omitted: 37. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -133,18 +133,18 @@ Collector observations for 201 source steps with known totals: observed: 1003, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `commit_knowledge_artifacts` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `commit_knowledge_artifacts` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 | `isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `storage_writer_lock` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 
 ```mermaid
 flowchart LR
@@ -155,82 +155,76 @@ flowchart LR
     s5["5. TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)"]
     s6["6. callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)"]
     s7["7. TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)"]
-    s8["8. storage_writer_lock"]
-    s9["9. _absolute_path"]
-    s10["10. Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)"]
-    s11["11. os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)"]
-    s12["12. first_unsafe_path_component"]
+    s8["8. callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)"]
+    s9["9. TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)"]
+    s10["10. storage_writer_lock"]
+    s11["11. _absolute_path"]
+    s12["12. Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)"]
     s1 -. "isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)" .-> s2
     s1 -. "TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)('plan must be a KnowledgeCommitPlan')" .-> s3
     s1 -. "isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)(dry_run, bool)" .-> s4
     s1 -. "TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)('dry_run must be a bool')" .-> s5
     s1 -. "callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)(fault_injector)" .-> s6
     s1 -. "TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)('fault_injector must be callable')" .-> s7
-    s1 -->|"storage_writer_lock(root)"| s8
-    s8 -->|"_absolute_path(Path(...))"| s9
-    s9 -. "Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)(os.path.abspath(...))" .-> s10
-    s9 -. "os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)(path)" .-> s11
-    s9 -->|"first_unsafe_path_component(path)"| s12
-    b0["mutation pending_parts.pop"]
-    s12 -. "mutation pending_parts.pop" .-> b0
+    s1 -. "callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)(before_manifest)" .-> s8
+    s1 -. "TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)('before_manifest must be callable')" .-> s9
+    s1 -->|"storage_writer_lock(root)"| s10
+    s10 -->|"_absolute_path(Path(...))"| s11
+    s11 -. "Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)(os.path.abspath(...))" .-> s12
     click s1 "../modules/knowledge_artifacts.md"
-    click s8 "../modules/maintenance_protocol.md"
-    click s9 "../modules/knowledge_storage_io.md"
-    click s12 "../modules/io.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
+    click s10 "../modules/maintenance_protocol.md"
+    click s11 "../modules/knowledge_storage_io.md"
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `commit_knowledge_artifacts` | `plan: KnowledgeCommitPlan`, `dry_run: bool`, `fault_injector: FaultInjector \| None` | `KnowledgeCommitPlan` | - | `KnowledgeCommitResult(...)` |
+| `commit_knowledge_artifacts` | `plan: KnowledgeCommitPlan`, `dry_run: bool`, `fault_injector: FaultInjector \| None`, `before_manifest: Callable[[], None] \| None` | `KnowledgeCommitPlan` | - | `KnowledgeCommitResult(...)` |
 | `isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
 | `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
 | `isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
 | `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
 | `callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
 | `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
+| `callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
+| `TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)` | - | - | - | - |
 | `storage_writer_lock` | `wiki_dir: str \| Path` | `STORAGE_LOCK_FILENAME` | - | `none` |
 | `_absolute_path` | `path: Path` | - | - | `path` |
 | `Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | - | - | - | - |
-| `os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)` | - | - | - | - |
-| `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 862 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 863 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 864 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 865 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 866 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 867 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | storage_writer_lock | 873 | `storage_writer_lock(root)` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 865 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 866 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 867 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 868 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 869 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 870 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 871 | `callable(before_manifest)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts) | 872 | `TypeError('before_manifest must be callable')` |
+| commit_knowledge_artifacts | storage_writer_lock | 878 | `storage_writer_lock(root)` |
 | storage_writer_lock | _absolute_path | 59 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
-| _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
-| _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 862 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 863 |
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 864 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 865 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 866 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 867 |
-| external_call | `_absolute_path` | `os.path.abspath` | 49 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 865 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 866 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 867 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 868 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 869 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 870 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 871 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 872 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |
 

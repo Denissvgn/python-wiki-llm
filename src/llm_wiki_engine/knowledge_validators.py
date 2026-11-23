@@ -187,7 +187,7 @@ DEFAULT_VALIDATORS = ValidatorRegistry(
         "analysis_compatibility", "concept_identity", "contracts", "immutable",
         "knowledge_evidence", "knowledge_graph", "knowledge_index", "knowledge_kinds", "knowledge_links",
         "knowledge_model", "knowledge_reuse_format", "knowledge_validators", "markdown_sections",
-        "section_ownership", "source_retirement", "validation", "wiki_media", "wiki_surface",
+        "section_ownership", "source_retirement", "historical_sources", "validation", "wiki_media", "wiki_surface",
     )),
 )
 

@@ -1,6 +1,6 @@
 # _SurfaceInitializationPlan
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1822`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1852`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)

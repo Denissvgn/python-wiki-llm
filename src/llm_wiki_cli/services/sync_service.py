@@ -53,6 +53,10 @@ class SyncRequest:
     cache_stats: bool = False
     prune_storage: bool = False
     storage_recovery_dir: str | Path | None = None
+    retire_missing_sources: Iterable[str] | None = None
+    retire_missing_pages: Iterable[str] | None = None
+    release_historical_pages: Iterable[str] | None = None
+    expected_historical_release: str | None = None
 
 
 @dataclass(frozen=True)
@@ -65,8 +69,11 @@ class SyncOutcome:
     regenerated_evidence_pages: tuple[str, ...] = ()
     storage_cleanup: Mapping[str, Any] | None = None
 
+    historical_release: Mapping[str, Any] | None = None
+
     def to_dict(self) -> dict[str, Any]:
         return {
+            **({"historical_release": dict(self.historical_release)} if self.historical_release is not None else {}),
             "status": self.status,
             "dry_run": self.dry_run,
             "pages": dict(self.pages),
