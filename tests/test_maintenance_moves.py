@@ -14,9 +14,11 @@ from llm_wiki_engine.maintenance_evidence import (
     MaintenanceCapture,
     captured_observations_from_knowledge,
     maintenance_transfers_from_page_plan,
+    owner_key,
     reconcile_pending_maintenance,
 )
 from llm_wiki_cli.services.python_implementation import analysis_identity
+from llm_wiki_engine.maintenance_status import build_maintenance_status
 from llm_wiki_cli.services.sync_transitions import plan_page_transitions
 from tests.test_maintenance_reconciliation import (
     MARKDOWN,
@@ -122,6 +124,25 @@ def test_missing_prior_capture_never_guesses_section_transfer_from_names_or_hash
     )
     assert result.confirmed == () and result.ambiguous == ()
     assert result.issues
+    assert any(issue["canonical_path"] == "entities/Batch.md" and issue["source_path"] == "policy.py" for issue in result.issues)
+
+
+def test_retained_owner_observations_cannot_allocate_after_verified_transfer(project):
+    guard, previous = adopted(project)
+    updated, collected, plan, pages = moved(project)
+    current = current_capture(updated, collected, plan, pages, previous)
+    retained = {owner_key(row["coordinate"], row["target"]): row for row in previous["observations"].values()}
+    assert retained.keys() <= current.retained_owner_keys
+    # Historical facts can have both hashes; only freshly joined section owners can register.
+    replay = replace(current, by_owner={**current.by_owner, **retained})
+    transfers = maintenance_transfers_from_page_plan(
+        previous, replay, plan, previous_raw_content_by_page={"entities/Batch.md": MARKDOWN.encode()})
+    result = reconcile_pending_maintenance(previous, guard, replay, confirmed_transfers=transfers.confirmed)
+    assert set(result["records"]) == set(previous["records"])
+    assert all(row["target"]["canonical_path"] == "entities/Moved.md" for row in result["observations"].values())
+    assert reconcile_pending_maintenance(result, guard, replay) == result
+    report = build_maintenance_status(result, guard, replay, analysis_scope="selected-source").to_payload()
+    assert report["coverage"]["untracked_targets"] == []
 
 
 def test_changed_heading_ancestry_keeps_explicit_unresolved_candidates(project):

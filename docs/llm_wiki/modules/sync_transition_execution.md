@@ -12,6 +12,8 @@ Guarded execution of source-page moves, with retained failure recovery data.
 |--------|---------|
 | `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
+| `collections.abc` | `Iterator` |
+| `contextlib` | `contextmanager` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `atomic_write_private_bytes`, `ensure_guarded_directory`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes` |
@@ -97,11 +99,13 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PageTransitionExecution](../entities/PageTransitionExecution.md) | 55 | — | Keep rename originals until the surrounding generation/commit succeeds. |
+| [PageTransitionExecution](../entities/PageTransitionExecution.md) | 131 | — | Keep rename originals until the surrounding generation/commit succeeds. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `preview_maintenance_preimages` | `(live_wiki: Path, staged_wiki: Path, plan, *, max_bytes: int = MAX_EXPANDED_BYTES) -> Iterator[dict[str, bytes]]` | `@contextmanager` | Verify the prior owners' live Markdown before and after simulating their transfer. |
+| `_bounded_page_digest` | `(path: Path, size: int)` | — | Hash a regular file at its expected size, holding at most one chunk and its identity. |
 | `assert_no_pending_page_moves` | `(wiki_dir: Path) -> None` | — | — |
 | `_decode` | `(content: bytes) -> str` | — | — |

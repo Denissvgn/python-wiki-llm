@@ -132,7 +132,7 @@ flowchart LR
 |---|---|---:|---|
 | authored_event_time | current_host().now | 1443 | `current_host().now(data not statically known)` |
 | authored_event_time | current_host | 1443 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 | authored_event_time | isinstance | 1444 | `isinstance(selected, str)` |
 | authored_event_time | datetime.fromisoformat | 1447 | `datetime.fromisoformat(raw.replace(...))` |
 | authored_event_time | raw.replace | 1447 | `raw.replace('Z', '+00:00')` |
@@ -151,7 +151,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `authored_event_time` | `current_host().now` | 1443 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | external_call | `authored_event_time` | `isinstance` | 1444 |
 | external_call | `authored_event_time` | `datetime.fromisoformat` | 1447 |
 | unresolved_call | `authored_event_time` | `raw.replace` | 1447 |

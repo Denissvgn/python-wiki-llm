@@ -152,9 +152,9 @@ sequenceDiagram
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 4297 interactions; 4267 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4295 interactions; 4265 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1444 (1443 omitted); unresolved 1 of 1008 (1007 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1437 (1436 omitted); unresolved 1 of 1010 (1009 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -181,9 +181,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1846; effect analysis evaluated: 1212, partial: 88, unavailable: 546. Counts include steps omitted from the displayed trace.
+Source steps: 1849; effect analysis evaluated: 1215, partial: 88, unavailable: 546. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1300 source steps with known totals: observed: 8316, emitted: 7758, omitted: 558. Unavailable totals are excluded.
+Collector observations for 1303 source steps with known totals: observed: 8324, emitted: 7766, omitted: 558. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -288,7 +288,7 @@ flowchart LR
 | validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
 | validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 103 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 | validate_path | current_host().cwd().resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd().resolve(data not statically known)` |
 | validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 104 | `current_host(data not statically known)` |
@@ -314,7 +314,7 @@ flowchart LR
 | external_call | `run` | `getattr` | 96 |
 | unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
 | unresolved_call | `validate_path` | `current_host().cwd` | 103 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
 | unresolved_call | `validate_path` | `current_host().cwd` | 104 |
 | unresolved_call | `validate_path` | `resolved.relative_to` | 106 |

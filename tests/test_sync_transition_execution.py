@@ -2,20 +2,107 @@
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
+import shutil
 
 import pytest
 
 from llm_wiki_cli.commands import sync_cmd
+from llm_wiki_cli.services import sync_runtime
 from llm_wiki_engine import sync_transition_execution as execution
 from llm_wiki_cli.services.sync_transitions import PageTransitionError
 from llm_wiki_engine.io import read_md
+from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from llm_wiki_engine.sync_manifest import SyncManifest
 from tests.test_sync_analysis import _inventory, _manifest
 from tests.test_sync_page_transitions import (
     _assert_consistent, _author_description, _bootstrap_project, _draft_source, _sync,
 )
 from tests.test_sync_transitions import _plan, _snapshot, _wiki
+
+
+def test_preview_rejects_divergence_before_or_during_a_source_transfer(tmp_path):
+    old = _inventory(model=["Draft"])
+    manifest = _manifest(old)
+    live = _wiki(tmp_path, manifest)
+    staged = tmp_path / "staged"
+    shutil.copytree(live, staged)
+    plan = _plan(live, manifest, {"new/model.py": old["pkg/model.py"]})
+    relative = "modules/model.md"
+    page = live / relative
+    original = page.read_bytes()
+    page.write_bytes(b"New authored content")
+    with pytest.raises(PageTransitionError, match="changed while staging"):
+        with execution.preview_maintenance_preimages(live, staged, plan):
+            pytest.fail("A divergent preview must not start")
+    page.write_bytes(original)
+    with pytest.raises(KnowledgeStorageError) as changed:
+        with execution.preview_maintenance_preimages(live, staged, plan) as previous:
+            assert previous[relative] == original
+            page.write_bytes(b"Concurrent edit")
+    assert changed.value.code == "storage-mutation"
+    assert page.read_bytes() == b"Concurrent edit" and (staged / relative).read_bytes() == original
+
+
+def test_preimage_limits_missing_paths_and_ambiguous_claims(tmp_path):
+    old = _inventory(model=["Draft"])
+    manifest = _manifest(old)
+    live = _wiki(tmp_path, manifest)
+    staged = tmp_path / "staged"
+    shutil.copytree(live, staged)
+    plan = _plan(live, manifest, {"new/model.py": old["pkg/model.py"]})
+    original = next(t for t in plan.transitions if t.owner.scope == "module")
+    peer = next(t for t in plan.transitions if t.owner.scope == "entity")
+    missing = replace(plan, transitions=(replace(original, source_path=None),))
+    with pytest.raises(PageTransitionError, match="Missing prior page.*modules/model.md.*pkg/model.py"):
+        with execution.preview_maintenance_preimages(live, staged, missing):
+            pytest.fail("Missing provenance entered the simulated writer")
+    unmapped = replace(plan, transitions=(replace(original, old_path=None),))
+    with pytest.raises(PageTransitionError, match="No recorded prior page.*pkg/model.py.*modules/model.md"):
+        with execution.preview_maintenance_preimages(live, staged, unmapped):
+            pytest.fail("An unbound source transfer entered the simulated writer")
+    conflicting = replace(plan, transitions=(original, replace(peer, old_path=original.old_path)))
+    with pytest.raises(PageTransitionError, match="Multiple transitions claim.*modules/model.md"):
+        with execution.preview_maintenance_preimages(live, staged, conflicting):
+            pytest.fail("Ambiguous ownership entered the simulated writer")
+    sizes = [(live / t.source_path).stat().st_size for t in (original, peer)]
+    assert max(sizes) < sum(sizes)
+    with pytest.raises(PageTransitionError, match="combined preview byte limit"):
+        with execution.preview_maintenance_preimages(live, staged, plan, max_bytes=sum(sizes)-1):
+            pytest.fail("Excess aggregate preimages entered the simulated writer")
+    with execution.preview_maintenance_preimages(live, staged, plan, max_bytes=sum(sizes)) as captured:
+        assert sum(map(len, captured.values())) == sum(sizes)
+
+
+def test_preview_requires_a_separate_live_wiki():
+    with pytest.raises(ValueError, match="original wiki directory"):
+        sync_runtime._execute_prepared_sync(None, None, dry_run=True)
+
+
+def test_staged_page_comparison_reads_chunks_and_rejects_a_replacement(tmp_path, monkeypatch):
+    page = tmp_path / "large.md"
+    content = b"first" * 65000
+    page.write_bytes(content)
+    read = execution.read_guarded
+    lengths = []
+    def observed(path, maximum, **kwargs):
+        lengths.append(kwargs["length"])
+        return read(path, maximum, **kwargs)
+    monkeypatch.setattr(execution, "read_guarded", observed)
+    assert execution._bounded_page_digest(page, len(content))[0] == hashlib.sha256(content).digest()
+    assert sum(lengths) == len(content) and 1 < len(lengths) and max(lengths) <= 64 * 1024
+    def replace_after_first(path, maximum, **kwargs):
+        result = read(path, maximum, **kwargs)
+        if kwargs["offset"] == 0:
+            replacement = tmp_path / "replacement.md"
+            replacement.write_bytes(content)
+            replacement.replace(page)
+        return result
+    monkeypatch.setattr(execution, "read_guarded", replace_after_first)
+    with pytest.raises(KnowledgeStorageError) as changed:
+        execution._bounded_page_digest(page, len(content))
+    assert changed.value.code == "storage-mutation"
 
 
 def _case(tmp_path, scope="entity", cycle=False):

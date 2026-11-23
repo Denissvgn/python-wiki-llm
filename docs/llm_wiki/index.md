@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 786 | [Open section](#entities) |
+| Entities | 788 | [Open section](#entities) |
 | Modules | 320 | [Open section](#modules) |
-| Workflows | 314 | [Open section](#workflows) |
+| Workflows | 315 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 512 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -125,6 +125,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DataFlowAnalysisContext](entities/DataFlowAnalysisContext.md)
 - [DataFlowForEntrypointResult](entities/DataFlowForEntrypointResult.md)
 - [DecodeCache](entities/DecodeCache.md)
+- [Deferred](entities/Deferred.md)
 - [DeliveryError](entities/DeliveryError.md)
 - [DependencyNeighborhoodResult](entities/DependencyNeighborhoodResult.md)
 - [DependencyResult](entities/DependencyResult.md)
@@ -718,6 +719,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [UnclassifiedPacketField](entities/UnclassifiedPacketField.md)
 - [UndeclaredPolicy](entities/UndeclaredPolicy.md)
 - [UnknownVerificationCheckerError](entities/UnknownVerificationCheckerError.md)
+- [Unpublished](entities/Unpublished.md)
 - [UnsafeUninstallPathError](entities/UnsafeUninstallPathError.md)
 - [UpgradeAborted](entities/UpgradeAborted.md)
 - [UpgradeError](entities/UpgradeError.md)
@@ -1342,6 +1344,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_sync_page_maps](workflows/prepare_sync_page_maps.md) - entry: `sync_runtime._prepare_sync_page_maps`
 - [prepare_sync_run](workflows/prepare_sync_run.md) - entry: `sync_runtime._prepare_sync_run`
 - [prepare_typescript](workflows/prepare_typescript.md) - entry: `extractor_helpers.prepare_typescript`
+- [preview_maintenance_preimages](workflows/preview_maintenance_preimages.md) - entry: `sync_transition_execution.preview_maintenance_preimages`
 - [print_managed_lifecycle](workflows/print_managed_lifecycle.md) - entry: `status_cmd._print_managed_lifecycle`
 - [prior_ownership](workflows/prior_ownership.md) - entry: `sync_transitions._prior_ownership`
 - [project_maintenance_knowledge](workflows/project_maintenance_knowledge.md) - entry: `maintenance_projection.project_maintenance_knowledge`

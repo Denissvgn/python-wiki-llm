@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A sync preview in a wiki with adopted maintenance now fails if a page
+  that a source move hands to a new owner changes while the preview runs,
+  instead of reporting a plan built from text that is no longer there.
+  `sync --dry-run` prints its plan, and an engine host receives its message
+  events, only after the preview has been validated.
+- When same-named declarations gain separate pages, maintenance keeps the
+  transferred record and its history. A new record requires captured source
+  and prose for its current owner.
+  Coverage lists new sections as untracked until a sync captures both and
+  registers them. Existing records retain their identity when a basis is missing.
+
 ## [6.0.0] - 2026-11-23
 
 ### Added

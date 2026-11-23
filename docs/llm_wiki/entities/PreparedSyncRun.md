@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1862`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1866`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)
@@ -87,6 +87,7 @@ flowchart LR
     n8["_run_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
     n9["_run_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
     n10["_selection_pruning_has_changes (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n11["_simulate_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -97,6 +98,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/sync_runtime.md"
     click n1 "../modules/sync_runtime.md"
     click n2 "../modules/sync_runtime.md"
@@ -108,6 +110,7 @@ flowchart LR
     click n8 "../modules/sync_runtime.md"
     click n9 "../modules/sync_runtime.md"
     click n10 "../modules/sync_runtime.md"
+    click n11 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -131,3 +134,4 @@ flowchart LR
 | `_run_prepared_sync` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_run_sync_dry_run` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_selection_pruning_has_changes` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_simulate_sync_dry_run` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |

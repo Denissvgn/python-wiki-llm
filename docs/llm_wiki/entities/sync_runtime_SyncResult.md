@@ -1,6 +1,6 @@
 # SyncResult
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:675`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:679`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)
@@ -89,4 +89,4 @@ flowchart LR
 | `_apply_prepared_sync` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_apply_refreshed_file_pages` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 
-> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.
+> References: showing 12 of 39 logical references; 27 omitted by the 12-row generated summary limit.

@@ -222,15 +222,15 @@ flowchart LR
 |---|---|---:|---|
 | migrate_wiki | MigrateRequest | 1325 | `MigrateRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, chunk_size=chunk_size, chunk=chunk, plan_chunks=plan_chunks, plugins=trust_source_plugins, source_selection=source_selection)` |
 | migrate_wiki | discarding_output | 1336 | `discarding_output(data not statically known)` |
-| discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
-| using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
-| using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
-| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
-| discarding_output | current_host | 255 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| discarding_output | _Discard | 255 | `_Discard(data not statically known)` |
+| discarding_output | using_host | 282 | `using_host(...)` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |
+| using_host | _ACTIVE.set | 175 | `_ACTIVE.set(host)` |
+| using_host | _ACTIVE.reset | 179 | `_ACTIVE.reset(token)` |
+| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 282 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
+| discarding_output | current_host | 282 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
+| discarding_output | _Discard | 282 | `_Discard(data not statically known)` |
 
 ### Boundary effects
 
@@ -240,11 +240,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_host` | `isinstance` | 172 |
-| external_call | `using_host` | `TypeError` | 173 |
-| unresolved_call | `using_host` | `_ACTIVE.reset` | 178 |
-| unresolved_call | `discarding_output` | `current_host().with_output` | 255 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| external_call | `using_host` | `isinstance` | 173 |
+| external_call | `using_host` | `TypeError` | 174 |
+| unresolved_call | `using_host` | `_ACTIVE.reset` | 179 |
+| unresolved_call | `discarding_output` | `current_host().with_output` | 282 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `migrate_wiki` | `first 12 steps` | 0 |
 | truncated_flow | `migrate_wiki` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # SyncAborted
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:263`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:267`
 **Kind:** Class
 **Bases:** `SystemExit`
 **Module:** [sync_runtime](../modules/sync_runtime.md)
@@ -35,8 +35,8 @@ flowchart LR
     n5["_extract_current_inventory (src/llm_wiki_cli/services/sync_runtime.py)"]
     n6["_load_or_seed_manifest (src/llm_wiki_cli/services/sync_runtime.py)"]
     n7["_run_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n8["_run_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n9["_run_sync_options (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n8["_run_sync_options (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n9["_simulate_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
     n10["run_request (src/llm_wiki_cli/services/sync_runtime.py)"]
     n0 --> n1
     n2 --> n0
@@ -82,6 +82,6 @@ flowchart LR
 | `_extract_current_inventory` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_load_or_seed_manifest` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_run_prepared_sync` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
-| `_run_sync_dry_run` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_run_sync_options` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `_simulate_sync_dry_run` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `run_request` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |

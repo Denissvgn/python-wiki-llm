@@ -95,4 +95,4 @@ flowchart LR
 | `ScopedTaskState.revalidate` | call | [task_context_v2](../modules/task_context_v2.md) | 3 |
 | `_blobs` | call | [wiki_git_delivery](../modules/wiki_git_delivery.md) | 4 |
 
-> References: showing 12 of 100 logical references; 88 omitted by the 12-row generated summary limit.
+> References: showing 12 of 101 logical references; 89 omitted by the 12-row generated summary limit.

@@ -1,6 +1,6 @@
 # Host
 
-**Location:** `src/llm_wiki_engine/host.py:63`
+**Location:** `src/llm_wiki_engine/host.py:64`
 **Kind:** Class
 **Bases:** —
 **Module:** [host](../modules/host.md)

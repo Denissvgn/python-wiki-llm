@@ -343,9 +343,14 @@ def test_module_moved_to_another_directory_keeps_its_page(
     _sync(wiki_dir)
     (project / "engine").mkdir()
     (project / "pkg/model.py").rename(project / "engine/model.py")
+    with (project / "engine/model.py").open("a", encoding="utf-8") as stream:
+        stream.write("\n\ndef current_label():\n    return 'current'\n")
     if leaves_alias:
         (project / "pkg/model.py").write_text(MODULE_ALIAS, encoding="utf-8")
 
+    before = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+    _sync(wiki_dir, dry_run=True)
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == before
     _sync(wiki_dir)
 
     _assert_module_page(wiki_dir, "model", "engine/model.py")
@@ -359,6 +364,89 @@ def test_module_moved_to_another_directory_keeps_its_page(
     stable = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
     _sync(wiki_dir)
     assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == stable
+
+
+def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
+
+    source = "class Bookmark:\n    def caption(self):\n        return 'first'\n"
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"alpha.py": source})
+    adopt_maintenance_authority(project, wiki, recovery_dir=tmp_path / "owner-recovery")
+    prior = SyncManifest.load(wiki).maintenance_state
+    assert prior is not None
+    old_target = "entities/Bookmark.md"
+    original_ids = {
+        record_id for record_id, row in prior["observations"].items()
+        if row["target"]["canonical_path"] == old_target and row["coordinate"]["source_path"] == "pkg/alpha.py"
+    }
+    assert original_ids
+    (project / "pkg/beta.py").write_text(source.replace("first", "second"), encoding="utf-8")
+    before = {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+    projected = []
+    finalize = sync_cmd._finalize_prepared_sync
+    def record_finalization(*args, **kwargs):
+        result = finalize(*args, **kwargs)
+        projected.append(result.committed_manifest.maintenance_state)
+        return result
+    monkeypatch.setattr(sync_cmd, "_finalize_prepared_sync", record_finalization)
+    _sync(wiki, dry_run=True)
+    assert before == {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+    _sync(wiki)
+    committed = SyncManifest.load(wiki).maintenance_state
+    assert committed is not None
+    # The dry run, the writing sync's preflight and the write itself.
+    preview, preflight, written = projected
+    assert written == committed
+    # New records get fresh identifiers in each run; everything else matches.
+    for planned in (preview, preflight):
+        for rid in original_ids:
+            assert planned["records"][rid] == written["records"][rid]
+            assert planned["observations"][rid] == written["observations"][rid]
+    def owners(state):
+        return sorted((row["coordinate"]["source_path"], row["target"]["section_locator"], state["records"][rid]["mapping"]["state"])
+                      for rid, row in state["observations"].items())
+    assert owners(preview) == owners(preflight) == owners(written)
+    for record_id in original_ids:
+        row = committed["observations"][record_id]
+        assert row["coordinate"]["source_path"] == "pkg/alpha.py"
+        assert row["target"]["canonical_path"] == "entities/alpha_Bookmark.md"
+        assert row["basis"]["prose_hash"] == prior["observations"][record_id]["basis"]["prose_hash"]
+        assert len(committed["records"][record_id]["target_history"]) == 2
+    assert any(row["coordinate"]["source_path"] == "pkg/beta.py" and
+               row["target"]["canonical_path"] == "entities/beta_Bookmark.md" for row in committed["observations"].values())
+    assert all(row["target"]["canonical_path"] != old_target for row in committed["observations"].values())
+    _sync(wiki, dry_run=True)
+    _sync(wiki)
+    assert committed == SyncManifest.load(wiki).maintenance_state
+
+
+@pytest.mark.parametrize("body_fails", [False, True])
+def test_changed_live_page_never_publishes_a_successful_preview(tmp_path, monkeypatch, capsys, body_fails):
+    from llm_wiki_cli.services.maintenance_service import adopt_maintenance_authority
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"alpha.py": _draft_source("Original prose.")})
+    adopt_maintenance_authority(project, wiki, recovery_dir=tmp_path / "owner-recovery")
+    (project / "moved").mkdir()
+    (project / "pkg/alpha.py").rename(project / "moved/alpha.py")
+    page = wiki / "modules/alpha.md"
+    apply_stage = sync_cmd._apply_prepared_sync
+    outcomes = []
+    def edit_during_simulation(*args):
+        result = apply_stage(*args)
+        page.write_text("A concurrent edit.\n")
+        if body_fails:
+            raise RuntimeError("original simulation failure")
+        return result
+    monkeypatch.setattr(sync_cmd, "_apply_prepared_sync", edit_during_simulation)
+    monkeypatch.setattr(sync_cmd, "_record_outcome", lambda status, result=None: outcomes.append(status))
+    capsys.readouterr()
+    error = pytest.raises(RuntimeError, match="original simulation failure") if body_fails else pytest.raises(KnowledgeStorageError)
+    with error:
+        _sync(wiki, dry_run=True)
+    stdout = capsys.readouterr().out
+    assert "Sync dry-run plan:" not in stdout and "DRY-RUN:" not in stdout and "Preview completed." not in stdout
+    assert "synced" not in outcomes and page.read_text() == "A concurrent edit.\n"
 
 
 def _adopted_moved_module(tmp_path, monkeypatch) -> tuple[Path, Path]:
@@ -401,19 +489,37 @@ def _wiki_bytes(wiki_dir: Path) -> dict[Path, bytes]:
 
 
 @pytest.mark.parametrize("dry_run", [True, False])
-def test_moved_module_whose_page_was_removed_is_refused(tmp_path, monkeypatch, dry_run):
-    from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
+def test_moved_module_whose_page_was_removed_is_refused(tmp_path, monkeypatch, capsys, dry_run):
+    from llm_wiki_cli.services.sync_runtime import SyncAborted
 
     _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
     # The maintained page is gone, so its prose cannot be carried to the new owner.
     (wiki_dir / "modules/model.md").unlink()
     before = _wiki_bytes(wiki_dir)
 
-    with pytest.raises(KnowledgeGenerationError) as raised:
+    with pytest.raises(SyncAborted):
         _sync(wiki_dir, dry_run=dry_run)
 
-    assert "previous-semantic-preimage-unavailable (modules/model.md)" in str(raised.value)
+    assert "Missing prior page 'modules/model.md' for 'pkg/model.py'" in capsys.readouterr().err
     # A writing sync preflights on a staged copy, so a refusal writes nothing.
+    assert _wiki_bytes(wiki_dir) == before
+
+
+def test_unverifiable_transfer_is_still_refused_when_planning_knowledge(tmp_path, monkeypatch):
+    from contextlib import nullcontext
+    from llm_wiki_cli.services import sync_runtime
+    from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    (wiki_dir / "modules/model.md").unlink()
+    before = _wiki_bytes(wiki_dir)
+    # Without the preview's page guard, knowledge planning still refuses and names the page.
+    monkeypatch.setattr(sync_runtime, "preview_maintenance_preimages", lambda *args, **kwargs: nullcontext())
+
+    with pytest.raises(KnowledgeGenerationError) as raised:
+        _sync(wiki_dir, dry_run=True)
+
+    assert "previous-semantic-preimage-unavailable (modules/model.md)" in str(raised.value)
     assert _wiki_bytes(wiki_dir) == before
 
 

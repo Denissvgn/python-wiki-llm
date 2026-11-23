@@ -30,6 +30,7 @@ import io
 import os
 import subprocess
 import sys
+import tempfile
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -186,7 +187,7 @@ def emit(*values: object, stream: Stream = "stdout", sep: str = " ", end: str = 
     host = current_host()
     target = host.stderr if stream == "stderr" else host.stdout
     print(*values, sep=sep, end=end, file=target, flush=flush)
-    if host.reports_events and not isinstance(target, _Discard):
+    if host.reports_events and not isinstance(target, _Unpublished):
         text = sep.join(str(value) for value in values) + end
         for line in text.splitlines():
             _publish_message(host, stream, line)
@@ -218,7 +219,7 @@ class MessageStream:
     def write(self, text: str, /) -> int:
         host, target = self._target()
         target.write(text)
-        if host.reports_events and not isinstance(target, _Discard):
+        if host.reports_events and not isinstance(target, _Unpublished):
             *lines, self._pending = (self._pending + text).split("\n")
             for line in lines:
                 _publish_message(host, self._stream, line.removesuffix("\r"))
@@ -229,17 +230,43 @@ class MessageStream:
 
     def close(self) -> None:
         pending, self._pending = self._pending, ""
-        host = current_host()
-        if pending and host.reports_events:
+        host, target = self._target()
+        if pending and host.reports_events and not isinstance(target, _Unpublished):
             _publish_message(host, self._stream, pending)
 
 
-class _Discard(io.TextIOBase):
+class _Unpublished(io.TextIOBase):
     def writable(self) -> bool:
         return True
 
+
+class _Discard(_Unpublished):
     def write(self, text: str) -> int:
         return len(text)
+
+
+class _Deferred(_Unpublished):
+    def __init__(self, output):
+        self.output = output
+
+    def write(self, text: str) -> int:
+        return self.output.write(text)
+
+
+@contextmanager
+def deferred_stdout() -> Iterator[None]:
+    """Publish stdout and its message events only after the enclosed checks succeed."""
+    host = current_host()
+    if isinstance(host.stdout, _Discard):
+        yield
+        return
+    with tempfile.SpooledTemporaryFile(max_size=256 * 1024, mode="w+", encoding="utf-8", errors="surrogatepass", newline="") as output:
+        with using_host(host.with_output(stdout=_Deferred(output))):
+            yield
+        output.seek(0)
+        for line in output:
+            emit(line, end="")
+        host.stdout.flush()
 
 
 @contextmanager

@@ -13,6 +13,7 @@ from llm_wiki_cli.services.extraction_service import get_inventory_result
 from llm_wiki_engine.knowledge_loader import load_knowledge_state
 from llm_wiki_engine.maintenance_evidence import (
     captured_observations_from_knowledge,
+    owner_key,
     reconcile_pending_maintenance,
 )
 from llm_wiki_engine.maintenance_projection import (
@@ -26,6 +27,7 @@ from llm_wiki_engine.maintenance_state import (
     new_identity,
     validate_maintenance_state,
 )
+from llm_wiki_engine.maintenance_status import build_maintenance_status
 from llm_wiki_cli.services.python_implementation import analysis_identity
 
 SOURCE = (
@@ -334,6 +336,55 @@ def test_new_authored_section_registers_once_preserving_existing_history(project
         == state["records"][by_heading(state, "First note")]["acknowledgment_history"]
     )
     assert reconcile_pending_maintenance(result, guard, current) == result
+
+
+@pytest.mark.parametrize("missing", ["source_hash", "prose_hash"])
+def test_new_section_waits_for_its_own_complete_basis(project, missing):
+    guard, state = adopted(project)
+    state = acknowledged(state)
+    complete = capture(project, previous=state, markdown=MARKDOWN + "\n### Later decision\n\nDocumented rationale.\n")
+    prior_keys = {owner_key(row["coordinate"], row["target"]) for row in state["observations"].values()}
+    (key,) = complete.by_owner.keys() - prior_keys
+    observed = complete.by_owner[key]
+    evidence, prose = observed["implementation"], observed["basis"]["prose_hash"]
+    if missing == "source_hash":
+        unavailable = capture(project, previous=state, selected=False)
+        evidence = next(iter(unavailable.by_owner.values()))["implementation"]
+    else:
+        prose = None
+    pending = maintenance_core().observation(deepcopy(evidence), prose, target=deepcopy(observed["target"]))
+    assert pending["presence"] == pending["target_presence"] == "present" and pending["basis"][missing] is None
+    incomplete = replace(complete, by_owner={**complete.by_owner, key: pending})
+    expected = reconcile_pending_maintenance(state, guard, replace(
+        complete, by_owner={k: v for k, v in complete.by_owner.items() if k != key}))
+    unchanged = reconcile_pending_maintenance(state, guard, incomplete, allocate_id=lambda: pytest.fail("unqualified registration"))
+    assert unchanged == expected and set(unchanged["records"]) == set(state["records"])
+    coverage = build_maintenance_status(unchanged, guard, incomplete, analysis_scope="selected-source").to_payload()["coverage"]
+    assert coverage["untracked_semantic_total"] == 1 and observed["target"] in coverage["untracked_targets"]
+    registered = reconcile_pending_maintenance(unchanged, guard, complete)
+    assert len(registered["records"]) == len(state["records"]) + 1
+    assert all(registered["records"][rid] == row for rid, row in unchanged["records"].items())
+    assert all(registered["records"][rid]["acknowledgment_history"] == row["acknowledgment_history"]
+               for rid, row in state["records"].items())
+    assert reconcile_pending_maintenance(registered, guard, complete) == registered
+
+
+def test_actual_partial_capture_counts_owned_and_unowned_sections_against_authority(project):
+    guard, state = adopted(project)
+    markdown = MARKDOWN + "\n### Unregistered\n\nA new rationale.\n"
+    partial = capture(project, previous=state, markdown=markdown, selected=False)
+    assert partial.by_owner and all(row["basis"]["source_hash"] is None for row in partial.by_owner.values())
+    coverage = build_maintenance_status(state, guard, partial, analysis_scope="selected-source").to_payload()["coverage"]
+    assert coverage["source_backed_semantic_total"] == 4
+    assert coverage["tracked_semantic_total"] == len(state["records"]) == 3
+    assert coverage["untracked_semantic_total"] == len(coverage["untracked_targets"]) == 1
+    assert "Unregistered" in coverage["untracked_targets"][0]["section_locator"]
+    independent_capture = capture(project, markdown=markdown, selected=False)
+    assert not independent_capture.by_owner
+    assert build_maintenance_status(state, guard, independent_capture, analysis_scope="selected-source").to_payload()["coverage"]["untracked_targets"] == coverage["untracked_targets"]
+    unadopted = build_maintenance_status(None, None, independent_capture, analysis_scope="selected-source").to_payload()["coverage"]
+    assert unadopted["tracked_semantic_total"] == 0
+    assert unadopted["untracked_semantic_total"] == len(unadopted["untracked_targets"]) == 4
 
 
 def test_projection_is_bounded_and_binds_exact_authority_and_marker(project):
