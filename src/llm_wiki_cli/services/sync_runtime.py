@@ -14,9 +14,11 @@ Workflow:
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from llm_wiki_engine.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 
 from llm_wiki_engine.progress import observed_phase, record_counts
@@ -85,12 +87,12 @@ from .infrastructure_sync import (
     with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
-from llm_wiki_engine.io import read_md, write_md
+from llm_wiki_engine.io import MarkdownEncodingError, read_md, write_md
 from llm_wiki_engine.paths import render_shell_command
 from .scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine import historical_sources as historical
-from . import historical_sources as historical_plan
+from . import historical_retirement as historical_plan
 from llm_wiki_engine.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
     SourceRetirementError,
@@ -189,7 +191,7 @@ from .sync_generated_sections import plan_generated_source_repairs, repair_sourc
 from .sync_transitions import (
     PageTransitionPlan, ReleasedPageInputs, find_missing_source_pages, plan_page_transitions,
 )
-from .sync_transition_execution import (
+from llm_wiki_engine.sync_transition_execution import (
     PageTransitionExecution,
     assert_no_pending_page_moves,
     preview_maintenance_preimages,
@@ -1921,7 +1923,6 @@ class _PreparedSyncRun:
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
     repair_boundary: ScopedRepairBoundary | None = None
-    maintenance_preview_preimages: Mapping[str, bytes] | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -2389,8 +2390,8 @@ def _print_dry_run_plan(
     ancillary = [
         "index.md",
         "log.md",
-        ".llm-wiki-surface.json",
-        ".llm-wiki-knowledge.json",
+        DEFAULT_LAYOUT.surface_index,
+        DEFAULT_LAYOUT.knowledge_index,
         MANIFEST_FILENAME,
     ]
     emit(f"  ancillary files considered: {', '.join(ancillary)}")
@@ -2510,7 +2511,7 @@ def sync_request_from_args(args) -> SyncRequest:
 
     return SyncRequest(
         source_root=getattr(args, "src_dir", "."),
-        wiki_root=getattr(args, "wiki_dir", "docs/llm_wiki"),
+        wiki_root=getattr(args, "wiki_dir", DEFAULT_LAYOUT.wiki_dir),
         dry_run=bool(getattr(args, "dry_run", False)),
         force=bool(getattr(args, "force", False)),
         plugins=not bool(getattr(args, "no_plugins", False)),
@@ -5208,7 +5209,6 @@ def _finalize_prepared_sync(
             _plan_check=prepared.repair_boundary.validate_plan if prepared.repair_boundary is not None else None,
             _publication_check=prepared.repair_boundary.assert_analysis_current if prepared.repair_boundary is not None else None,
             maintenance_page_transitions=prepared.page_transitions,
-            maintenance_previous_raw_content_by_page=prepared.maintenance_preview_preimages,
             inventory=prepared.inventory,
             surface=surface,
             source_snapshot=prepared.source_snapshot,
@@ -5461,13 +5461,17 @@ def _simulate_sync_dry_run(options: _SyncRunOptions, prepared: _PreparedSyncRun)
             wiki_dir=staged_wiki,
             dry_run=False,
         )
-        result = _execute_prepared_sync(
-            staged_options, prepared,
-            target_wiki_dir=options.wiki_dir,
-            dry_run=True,
-        )
-        if prepared.repair_boundary is not None:
-            prepared.repair_boundary.validate_markdown(staged_wiki)
+        try:
+            with _staged_write_basis(staged_wiki, adopted=prepared.manifest.maintenance_state is not None):
+                result = _execute_prepared_sync(
+                    staged_options, prepared,
+                    target_wiki_dir=options.wiki_dir,
+                    dry_run=True,
+                )
+            if prepared.repair_boundary is not None:
+                prepared.repair_boundary.validate_markdown(staged_wiki)
+        except MarkdownEncodingError as exc:
+            raise _live_page_error(exc, staged_wiki, options.wiki_dir) from None
     if requires_force:
         emit(
             "\nPreview completed. After reviewing the page and artifact actions, "
@@ -5484,6 +5488,51 @@ def _simulate_sync_dry_run(options: _SyncRunOptions, prepared: _PreparedSyncRun)
         enabled=options.cache_stats_enabled,
     )
     return result
+
+
+def _live_page_error(exc: MarkdownEncodingError, staged_wiki: Path, live_wiki: Path) -> MarkdownEncodingError:
+    """Name the user's page, not its copy in the discarded preview directory."""
+    if exc.page is None:
+        return exc
+    page = Path(exc.page)
+    for root in (staged_wiki, staged_wiki.resolve()):
+        try:
+            relative = page.relative_to(root)
+        except ValueError:
+            continue
+        return MarkdownEncodingError(str(live_wiki / relative), exc)
+    return exc
+
+
+@contextmanager
+def _staged_write_basis(staged_wiki: Path, *, adopted: bool):
+    """Give a dry run's staged copy the write basis a writing sync would have.
+
+    With maintenance adopted, a writing sync captures the whole wiki before
+    any write and plans knowledge against those preimages and the bytes it
+    writes. The staged copy gets the same basis, without recovery data since
+    the copy is discarded, so a dry run plans exactly as the sync would.
+    """
+    if not adopted:
+        yield None
+        return
+    from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
+    from llm_wiki_engine.knowledge_storage_io import _absolute_path
+    from llm_wiki_engine.maintenance_protocol import WikiWriteBasis, _capture_spooled_wiki
+    from llm_wiki_engine.storage_spool import ByteSpool
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    root = _absolute_path(staged_wiki)
+    with ByteSpool(max_bytes=8_589_934_592, max_index_bytes=67_108_864,
+                   max_entry_bytes=MAX_EXPANDED_BYTES) as files:
+        _capture_spooled_wiki(root, files)
+        basis = WikiWriteBasis(root, files.fork())
+        token = ACTIVE_WRITE_BASIS.set(basis)
+        try:
+            yield basis
+        finally:
+            basis._close_storage_staging()
+            ACTIVE_WRITE_BASIS.reset(token)
 
 
 def _unsafe_dry_run_symlink(wiki_dir: Path) -> str | None:
@@ -5581,14 +5630,17 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
     historical_pages = previous_history.keys() | file_history.keys()
     if historical_pages:
         historical_pages.add("index.md")
+    # The staged write basis supplies the prior pages' bytes; this guard checks
+    # their live originals, and the retained historical pages, so a concurrent
+    # edit invalidates the preview.
     prior_pages = (
         preview_maintenance_preimages(target_wiki_dir, options.wiki_dir, prepared.page_transitions,
                                       guarded_pages=frozenset(historical_pages))
         if dry_run and target_wiki_dir is not None and prepared.page_transitions is not None
         and (prepared.manifest.maintenance_state is not None or historical_pages) else nullcontext(None)
     )
-    with prior_pages as preimages, boundary as execution:
-        active = replace(prepared, transition_execution=execution, maintenance_preview_preimages=preimages)
+    with prior_pages, boundary as execution:
+        active = replace(prepared, transition_execution=execution)
         result = _apply_prepared_sync(options, active)
         _finalize_prepared_sync(
             options, active, result, target_wiki_dir=target_wiki_dir, dry_run=dry_run
@@ -5597,6 +5649,22 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
     if not dry_run:
         _record_outcome("synced", result)
     return result
+
+
+def _preflight_on_staged_copy(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    """Run the dry run exactly as a standalone one would, before any live write.
+
+    The live wiki's write basis describes the live pages; the staged copy is
+    planned without it, as ``sync --dry-run`` plans.
+    """
+    from llm_wiki_engine.wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    token = ACTIVE_WRITE_BASIS.set(None)
+    try:
+        with discarding_stdout():
+            _run_sync_dry_run(options, prepared)
+    finally:
+        ACTIVE_WRITE_BASIS.reset(token)
 
 
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
@@ -5625,9 +5693,16 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             with discarding_stdout():
                 _run_sync_dry_run(options, prepared)
             prepared.repair_boundary.assert_current()
+        elif prepared.manifest.maintenance_state is not None:
+            # With maintenance adopted, pages and machine state must agree. The
+            # same run on a staged copy first, so a refusal from planning
+            # (an unverifiable transfer, an unreadable page) leaves the wiki
+            # untouched instead of after some pages were rewritten.
+            emit("Preflighting the sync on an isolated wiki copy.")
+            _preflight_on_staged_copy(options, prepared)
         with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
             _execute_prepared_sync(options, prepared)
-    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
+    except (GeneratedSurfacePruneError, SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError, MarkdownEncodingError) as exc:
         emit(f"Error: {exc}", stream="stderr")
         raise SyncAborted(2)
 

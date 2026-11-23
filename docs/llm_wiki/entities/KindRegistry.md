@@ -43,12 +43,13 @@ Declared concept, relationship and typed-graph edge kinds.
 flowchart LR
     n0["KindRegistry (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
-    n2["current_kinds (src/llm_wiki_engine/knowledge_kinds.py)"]
-    n3["KindRegistry.rejecting_undeclared (src/llm_wiki_engine/knowledge_kinds.py)"]
-    n4["KindRegistry.with_concept_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
-    n5["KindRegistry.with_graph_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
-    n6["KindRegistry.with_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
-    n7["using_kinds (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n2["Engine.__init__ (src/llm_wiki_engine/engine.py)"]
+    n3["current_kinds (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n4["KindRegistry.rejecting_undeclared (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n5["KindRegistry.with_concept_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n6["KindRegistry.with_graph_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n7["KindRegistry.with_relationship_kind (src/llm_wiki_engine/knowledge_kinds.py)"]
+    n8["using_kinds (src/llm_wiki_engine/knowledge_kinds.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -56,14 +57,16 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_kinds.md"
     click n1 "../modules/engine___init__.md"
-    click n2 "../modules/knowledge_kinds.md"
+    click n2 "../modules/engine.md"
     click n3 "../modules/knowledge_kinds.md"
     click n4 "../modules/knowledge_kinds.md"
     click n5 "../modules/knowledge_kinds.md"
     click n6 "../modules/knowledge_kinds.md"
     click n7 "../modules/knowledge_kinds.md"
+    click n8 "../modules/knowledge_kinds.md"
 ```
 
 ### Summary
@@ -77,6 +80,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `Engine.__init__` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
+| `Engine.__init__` | type_reference | [engine](../modules/engine.md) | — |
 | `current_kinds` | type_reference | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
 | `KindRegistry.rejecting_undeclared` | type_reference | [knowledge_kinds](../modules/knowledge_kinds.md) | — |
 | `KindRegistry.with_concept_kind` | type_reference | [knowledge_kinds](../modules/knowledge_kinds.md) | — |

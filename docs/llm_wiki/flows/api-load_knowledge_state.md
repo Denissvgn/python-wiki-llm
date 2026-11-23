@@ -110,9 +110,9 @@ sequenceDiagram
     p0-->>p30: issue.field.split('.')
 ```
 
-> Call sequence diagram shows 30 of 1873 interactions; 1843 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1878 interactions; 1848 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 594 (593 omitted); unresolved 1 of 315 (314 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 595 (594 omitted); unresolved 1 of 318 (317 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 10 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 10 | - | unresolved | 3 |
-> Omission summary shows 8 of 441 groups; 433 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 442 groups; 434 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,7 +139,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 965; effect analysis evaluated: 513, partial: 50, unavailable: 402. Counts include steps omitted from the displayed trace.
+Source steps: 966; effect analysis evaluated: 513, partial: 50, unavailable: 403. Counts include steps omitted from the displayed trace.
 
 Collector observations for 563 source steps with known totals: observed: 3389, emitted: 3097, omitted: 292. Unavailable totals are excluded.
 
@@ -222,7 +222,7 @@ flowchart LR
 | load_knowledge_state | TypeError (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 120 | `TypeError('rebuild_callback must be callable')` |
 | load_knowledge_state | Path (src/llm_wiki_engine/knowl…r.py:load_knowledge_state) | 122 | `Path(wiki_dir)` |
 | load_knowledge_state | guard_maintenance_owner | 126 | `guard_maintenance_owner(root)` |
-| guard_maintenance_owner | _absolute_path | 112 | `_absolute_path(Path(...))` |
+| guard_maintenance_owner | _absolute_path | 114 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 

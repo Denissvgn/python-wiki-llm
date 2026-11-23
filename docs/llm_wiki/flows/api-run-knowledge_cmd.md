@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`api`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 79 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 78 more
 
 **Complete modules touched:**
 
@@ -17,8 +17,6 @@
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -71,6 +69,7 @@
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
+- [query_request_format](../modules/query_request_format.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
@@ -160,9 +159,9 @@ sequenceDiagram
     p5-->>p30: prepare
 ```
 
-> Call sequence diagram shows 30 of 4771 interactions; 4741 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4774 interactions; 4744 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1382 (1381 omitted); unresolved 1 of 1155 (1154 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1382 (1381 omitted); unresolved 1 of 1156 (1155 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -176,7 +175,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | [src/llm_wiki_engine/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
-> Omission summary shows 8 of 1213 groups; 1205 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1214 groups; 1206 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -189,9 +188,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 2235; effect analysis evaluated: 1495, partial: 94, unavailable: 646. Counts include steps omitted from the displayed trace.
+Source steps: 2237; effect analysis evaluated: 1494, partial: 96, unavailable: 647. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1589 source steps with known totals: observed: 9630, emitted: 9036, omitted: 594. Unavailable totals are excluded.
+Collector observations for 1590 source steps with known totals: observed: 9649, emitted: 9053, omitted: 596. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

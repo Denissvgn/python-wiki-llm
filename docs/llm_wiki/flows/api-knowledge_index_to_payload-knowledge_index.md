@@ -2,7 +2,7 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [immutable](../modules/immutable.md), [integrations](../modules/integrations.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 15 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [immutable](../modules/immutable.md), [integrations](../modules/integrations.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 14 more
 
 **Complete modules touched:**
 
@@ -18,7 +18,6 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
-- [maintenance_state](../modules/maintenance_state.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -61,7 +60,7 @@ sequenceDiagram
     participant p25 as _emit_extensions
     participant p26 as require_string
     participant p27 as _validate_and_join_inputs
-    participant p28 as maintenance_core
+    participant p28 as _parse_document
     participant p29 as isinstance (src/llm_wiki_engine/knowl…:validate_knowledge_index)
     participant p30 as model.bundle.snapshot.extensions.get
     p0->>p1: _model_to_payload
@@ -91,14 +90,14 @@ sequenceDiagram
     p8->>p25: _emit_extensions
     p11->>p26: require_string
     p10->>p27: _validate_and_join_inputs
-    p12->>p28: maintenance_core
+    p16->>p28: _parse_document
     p2-->>p29: isinstance (src/llm_wiki_engine/knowl…:validate_knowledge_index)(value, KnowledgeIndex)
     p5-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1093 interactions; 1063 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1083 interactions; 1053 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 269 (268 omitted); unresolved 1 of 134 (133 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 268 (267 omitted); unresolved 1 of 135 (134 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -112,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_model.py:_bundle_to_payload` | 4 | [src/llm_wiki_engine/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
 | `src/llm_wiki_engine/knowledge_model.py:_wire_enum` | 17 | - | external | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_component_to_payload` | 21 | - | external | 1 |
-> Omission summary shows 8 of 253 groups; 245 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 245 groups; 237 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -125,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 691; effect analysis evaluated: 385, partial: 19, unavailable: 287. Counts include steps omitted from the displayed trace.
+Source steps: 681; effect analysis evaluated: 378, partial: 19, unavailable: 284. Counts include steps omitted from the displayed trace.
 
-Collector observations for 404 source steps with known totals: observed: 2057, emitted: 1891, omitted: 166. Unavailable totals are excluded.
+Collector observations for 397 source steps with known totals: observed: 2029, emitted: 1863, omitted: 166. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

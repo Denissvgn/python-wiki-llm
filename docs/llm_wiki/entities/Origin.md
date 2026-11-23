@@ -33,8 +33,8 @@ flowchart LR
     n0["Origin (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_engine/context_packet.py"]
     n5["src/llm_wiki_engine/knowledge_artifacts.py"]
     n6["_require_structure_state (src/llm_wiki_engine/knowledge_index.py)"]
     n7["src/llm_wiki_engine/knowledge_kinds.py"]
@@ -48,8 +48,8 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/knowledge_projection.md"
+    click n3 "../modules/knowledge_projection.md"
+    click n4 "../modules/context_packet.md"
     click n5 "../modules/knowledge_artifacts.md"
     click n6 "../modules/knowledge_index.md"
     click n7 "../modules/knowledge_kinds.md"
@@ -73,8 +73,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `knowledge_kinds` | import | [knowledge_kinds](../modules/knowledge_kinds.md) | — |

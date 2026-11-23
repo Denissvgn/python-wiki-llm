@@ -95,16 +95,17 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 12; effect analysis evaluated: 6, partial: 0, unavailable: 6. Counts include steps omitted from the displayed trace.
+Source steps: 12; effect analysis evaluated: 5, partial: 1, unavailable: 6. Counts include steps omitted from the displayed trace.
 
-Collector observations for 6 source steps with known totals: observed: 47, emitted: 47, omitted: 0. Unavailable totals are excluded.
+Collector observations for 6 source steps with known totals: observed: 48, emitted: 47, omitted: 1. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `governance_lock` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `governance_lock` | `available` | `partial` | `available` | `11` | `10` | `1` |
 | `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
@@ -156,7 +157,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `governance_lock` | `wiki_dir: str \| Path`, `_lock_filename: str` | `GOVERNANCE_LOCK_FILENAME`, `os`, `os`, `os`, `sys`, `sys`, `GOVERNANCE_FILENAME`, `sys` | - | - |
+| `governance_lock` | `wiki_dir: str \| Path`, `_lock_filename: str` | `GOVERNANCE_LOCK_FILENAME`, `DEFAULT_LAYOUT`, `os`, `os`, `os`, `sys`, `sys`, `GOVERNANCE_FILENAME` | - | - |
 | `GovernanceError` | - | - | - | - |
 | `Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
@@ -173,9 +174,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| governance_lock | GovernanceError | 883 | `GovernanceError('lock', 'unknown mutation lock')` |
-| governance_lock | Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock) | 884 | `Path(wiki_dir)` |
-| governance_lock | first_unsafe_path_component | 885 | `first_unsafe_path_component(root)` |
+| governance_lock | GovernanceError | 885 | `GovernanceError('lock', 'unknown mutation lock')` |
+| governance_lock | Path (src/llm_wiki_engine/knowl…ernance.py:governance_lock) | 886 | `Path(wiki_dir)` |
+| governance_lock | first_unsafe_path_component | 887 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 52 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…irst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
@@ -183,7 +184,7 @@ flowchart LR
 | first_unsafe_path_component | lexical.is_absolute | 61 | `lexical.is_absolute(data not statically known)` |
 | first_unsafe_path_component | current_host().cwd | 67 | `current_host().cwd(data not statically known)` |
 | first_unsafe_path_component | current_host | 67 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -199,7 +200,7 @@ flowchart LR
 | external_call | `first_unsafe_path_component` | `os.path.abspath` | 60 |
 | unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 61 |
 | unresolved_call | `first_unsafe_path_component` | `current_host().cwd` | 67 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `governance_lock` | `first 12 steps` | 0 |
 
 ## Behavior

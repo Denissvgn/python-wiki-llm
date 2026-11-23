@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_entity | service.get_entity | 1411 | `service.get_entity(entity_id)` |
+| get_entity | service.get_entity | 1413 | `service.get_entity(entity_id)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_entity` | `service.get_entity` | 1411 |
+| unresolved_call | `get_entity` | `service.get_entity` | 1413 |
 
 ## Behavior
 

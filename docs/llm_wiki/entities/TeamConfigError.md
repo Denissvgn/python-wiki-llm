@@ -1,6 +1,6 @@
 # TeamConfigError
 
-**Location:** `src/llm_wiki_cli/services/team.py:72`
+**Location:** `src/llm_wiki_cli/services/team.py:74`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [team](../modules/team.md)

@@ -132,7 +132,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 570; effect analysis evaluated: 322, partial: 18, unavailable: 230. Counts include steps omitted from the displayed trace.
 
-Collector observations for 340 source steps with known totals: observed: 1925, emitted: 1864, omitted: 61. Unavailable totals are excluded.
+Collector observations for 340 source steps with known totals: observed: 1926, emitted: 1865, omitted: 61. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -238,9 +238,9 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/install_ci_cmd.py:run) | 24 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | InstallCiError | 25 | `InstallCiError('--wiki-dir applies to the integrity profile; set architecture.root in --config')` |
 | run | install_documentation_ci_workflow | 28 | `install_documentation_ci_workflow(action_ref=args.action_ref, src_dir=src_dir, dry_run=dry_run, force=force, config=..., working_directory=..., target_dir=args.target_dir, baseline=args.baseline, reviews=args.reviews, previous_receipt=args.previous_receipt, candidate_review=args.candidate_review, require_ready=require_ready)` |
-| install_documentation_ci_workflow | any (src/llm_wiki_cli/services…documentation_ci_workflow) | 366 | `any(...)` |
-| install_documentation_ci_workflow | type (src/llm_wiki_cli/services…documentation_ci_workflow) | 366 | `type(value)` |
-| install_documentation_ci_workflow | InstallCiError | 367 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
+| install_documentation_ci_workflow | any (src/llm_wiki_cli/services…documentation_ci_workflow) | 368 | `any(...)` |
+| install_documentation_ci_workflow | type (src/llm_wiki_cli/services…documentation_ci_workflow) | 368 | `type(value)` |
+| install_documentation_ci_workflow | InstallCiError | 369 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
 
 ### Boundary effects
 
@@ -252,8 +252,8 @@ flowchart LR
 | output | `print` | `run` | 78 |
 | output | `print` | `run` | 82 |
 | output | `print` | `run` | 83 |
-| mutation | `authored.extend` | `install_documentation_ci_workflow` | 409 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 417 |
+| mutation | `authored.extend` | `install_documentation_ci_workflow` | 411 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 419 |
 
 ### Static analysis gaps
 
@@ -265,8 +265,8 @@ flowchart LR
 | external_call | `run` | `getattr` | 20 |
 | external_call | `run` | `getattr` | 21 |
 | external_call | `run` | `getattr` | 24 |
-| external_call | `install_documentation_ci_workflow` | `any` | 366 |
-| external_call | `install_documentation_ci_workflow` | `type` | 366 |
+| external_call | `install_documentation_ci_workflow` | `any` | 368 |
+| external_call | `install_documentation_ci_workflow` | `type` | 368 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

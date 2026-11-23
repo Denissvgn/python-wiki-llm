@@ -373,6 +373,7 @@ def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_pa
     project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"alpha.py": source})
     adopt_maintenance_authority(project, wiki, recovery_dir=tmp_path / "owner-recovery")
     prior = SyncManifest.load(wiki).maintenance_state
+    assert prior is not None
     old_target = "entities/Bookmark.md"
     original_ids = {
         record_id for record_id, row in prior["observations"].items()
@@ -392,15 +393,19 @@ def test_qualified_peer_pages_preserve_only_their_own_maintenance_records(tmp_pa
     assert before == {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
     _sync(wiki)
     committed = SyncManifest.load(wiki).maintenance_state
-    preview, written = projected
+    assert committed is not None
+    # The dry run, the writing sync's preflight and the write itself.
+    preview, preflight, written = projected
     assert written == committed
-    for rid in original_ids:
-        assert preview["records"][rid] == written["records"][rid]
-        assert preview["observations"][rid] == written["observations"][rid]
+    # New records get fresh identifiers in each run; everything else matches.
+    for planned in (preview, preflight):
+        for rid in original_ids:
+            assert planned["records"][rid] == written["records"][rid]
+            assert planned["observations"][rid] == written["observations"][rid]
     def owners(state):
         return sorted((row["coordinate"]["source_path"], row["target"]["section_locator"], state["records"][rid]["mapping"]["state"])
                       for rid, row in state["observations"].items())
-    assert owners(preview) == owners(written)
+    assert owners(preview) == owners(preflight) == owners(written)
     for record_id in original_ids:
         row = committed["observations"][record_id]
         assert row["coordinate"]["source_path"] == "pkg/alpha.py"
@@ -442,6 +447,153 @@ def test_changed_live_page_never_publishes_a_successful_preview(tmp_path, monkey
     stdout = capsys.readouterr().out
     assert "Sync dry-run plan:" not in stdout and "DRY-RUN:" not in stdout and "Preview completed." not in stdout
     assert "synced" not in outcomes and page.read_text() == "A concurrent edit.\n"
+
+
+def _adopted_moved_module(tmp_path, monkeypatch) -> tuple[Path, Path]:
+    from llm_wiki_cli import api
+
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    _author_description(
+        wiki_dir / "modules/model.md",
+        "_Auto-generated from `pkg/model.py`._",
+        "AUTHORED: module purpose.",
+    )
+    _sync(wiki_dir)
+    api.adopt_maintenance(".", "docs/llm_wiki", recovery_dir=tmp_path / "recovery")
+    _sync(wiki_dir)
+    (project / "engine").mkdir()
+    (project / "pkg/model.py").rename(project / "engine/model.py")
+    return project, wiki_dir
+
+
+def test_dry_run_previews_a_maintained_module_move_without_writing(tmp_path, monkeypatch):
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    before = {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()}
+
+    _sync(wiki_dir, dry_run=True)
+
+    assert {p.relative_to(wiki_dir): p.read_bytes() for p in wiki_dir.rglob("*") if p.is_file()} == before
+    _sync(wiki_dir)
+    _assert_module_page(wiki_dir, "model", "engine/model.py")
+    assert "AUTHORED: module purpose." in read_md(wiki_dir / "modules/model.md")
+
+
+def _wiki_bytes(wiki_dir: Path) -> dict[Path, bytes]:
+    return {
+        path.relative_to(wiki_dir): b"<link>" if path.is_symlink() else path.read_bytes()
+        for path in sorted(wiki_dir.rglob("*"))
+        if path.is_symlink() or path.is_file()
+    }
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+def test_moved_module_whose_page_was_removed_is_refused(tmp_path, monkeypatch, capsys, dry_run):
+    from llm_wiki_cli.services.sync_runtime import SyncAborted
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    # The maintained page is gone, so its prose cannot be carried to the new owner.
+    (wiki_dir / "modules/model.md").unlink()
+    before = _wiki_bytes(wiki_dir)
+
+    with pytest.raises(SyncAborted):
+        _sync(wiki_dir, dry_run=dry_run)
+
+    assert "Missing prior page 'modules/model.md' for 'pkg/model.py'" in capsys.readouterr().err
+    # A writing sync preflights on a staged copy, so a refusal writes nothing.
+    assert _wiki_bytes(wiki_dir) == before
+
+
+def test_unverifiable_transfer_is_still_refused_when_planning_knowledge(tmp_path, monkeypatch):
+    from contextlib import nullcontext
+    from llm_wiki_cli.services import sync_runtime
+    from llm_wiki_cli.services.knowledge_generation import KnowledgeGenerationError
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    (wiki_dir / "modules/model.md").unlink()
+    before = _wiki_bytes(wiki_dir)
+    # Without the preview's page guard, knowledge planning still refuses and names the page.
+    monkeypatch.setattr(sync_runtime, "preview_maintenance_preimages", lambda *args, **kwargs: nullcontext())
+
+    with pytest.raises(KnowledgeGenerationError) as raised:
+        _sync(wiki_dir, dry_run=True)
+
+    assert "previous-semantic-preimage-unavailable (modules/model.md)" in str(raised.value)
+    assert _wiki_bytes(wiki_dir) == before
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+def test_undecodable_maintained_page_is_refused_by_name(tmp_path, monkeypatch, capsys, dry_run):
+    from llm_wiki_cli.services.sync_runtime import SyncAborted
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    page = wiki_dir / "modules/model.md"
+    # 0x81 is undefined in both UTF-8 (as a lead byte) and Windows-1252.
+    page.write_bytes(page.read_bytes().replace(b"AUTHORED: module purpose.", b"AUTHORED \x81 purpose."))
+    before = _wiki_bytes(wiki_dir)
+
+    with pytest.raises(SyncAborted):
+        _sync(wiki_dir, dry_run=dry_run)
+
+    error = capsys.readouterr().err
+    assert "neither UTF-8 nor Windows-1252" in error
+    # The page is named where the user can repair it, never in the discarded preview copy.
+    assert str(Path("modules", "model.md")) in error
+    assert "llm-wiki-sync-preview" not in error
+    assert _wiki_bytes(wiki_dir) == before
+
+
+def test_adopted_writing_sync_preflights_once_and_plain_sync_does_not(tmp_path, monkeypatch):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services import sync_runtime
+
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    calls = []
+    original = sync_runtime._run_sync_dry_run
+
+    def counted(options, prepared):
+        calls.append(options.dry_run)
+        return original(options, prepared)
+
+    monkeypatch.setattr(sync_runtime, "_run_sync_dry_run", counted)
+    (project / "pkg/model.py").write_text(_draft_source("Changed once."), encoding="utf-8")
+    _sync(wiki_dir)
+    assert calls == []
+    api.adopt_maintenance(".", "docs/llm_wiki", recovery_dir=tmp_path / "recovery")
+    (project / "pkg/model.py").write_text(_draft_source("Changed twice."), encoding="utf-8")
+    _sync(wiki_dir)
+    assert calls == [False]
+    assert "Changed twice." in read_md(wiki_dir / "entities/Draft.md")
+
+
+@pytest.mark.parametrize("dry_run", [True, False])
+@pytest.mark.parametrize("linked", ["page", "folder"])
+def test_moved_module_page_behind_a_link_is_never_read(tmp_path, monkeypatch, linked, dry_run):
+    import os
+
+    _, wiki_dir = _adopted_moved_module(tmp_path, monkeypatch)
+    page = wiki_dir / "modules/model.md"
+    if linked == "page":
+        outside = tmp_path / "outside.md"
+        outside.write_bytes(page.read_bytes())
+        page.unlink()
+        os.symlink(outside, page)
+    else:
+        outside = tmp_path / "outside-modules"
+        (wiki_dir / "modules").rename(outside)
+        os.symlink(outside, wiki_dir / "modules", target_is_directory=True)
+    before = _wiki_bytes(wiki_dir)
+    outside_before = outside.read_bytes() if outside.is_file() else _wiki_bytes(outside)
+
+    with pytest.raises(BaseException) as raised:
+        _sync(wiki_dir, dry_run=dry_run)
+
+    assert not isinstance(raised.value, (KeyboardInterrupt, AssertionError))
+    assert _wiki_bytes(wiki_dir) == before
+    assert (outside.read_bytes() if outside.is_file() else _wiki_bytes(outside)) == outside_before
 
 
 @pytest.mark.parametrize("leaves_alias", [False, True])

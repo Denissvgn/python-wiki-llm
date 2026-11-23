@@ -11,8 +11,6 @@
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -48,6 +46,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [obsidian](../modules/obsidian.md)
 - [obsidian_cmd](../modules/obsidian_cmd.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
@@ -55,6 +54,7 @@
 - [python_contracts](../modules/python_contracts.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_observations](../modules/python_observations.md)
+- [query_request_format](../modules/query_request_format.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -134,9 +134,9 @@ sequenceDiagram
     p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3089 interactions; 3059 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3083 interactions; 3053 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 913 (912 omitted); unresolved 1 of 837 (836 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 906 (905 omitted); unresolved 1 of 836 (835 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -150,7 +150,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 19 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 19 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 19 | - | external | 10 |
-> Omission summary shows 8 of 765 groups; 757 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 764 groups; 756 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -163,9 +163,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1340; effect analysis evaluated: 909, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
+Source steps: 1342; effect analysis evaluated: 911, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
 
-Collector observations for 948 source steps with known totals: observed: 5158, emitted: 4923, omitted: 235. Unavailable totals are excluded.
+Collector observations for 950 source steps with known totals: observed: 5160, emitted: 4925, omitted: 235. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -250,12 +250,12 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 79 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 80 | `getattr(args, 'src_dir', '.')` |
 | run | validate_path | 81 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 101 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| validate_path | current_host().cwd().resolve | 102 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | PathValidationError | 102 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 103 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve | 104 | `current_host().cwd().resolve(data not statically known)` |
 
 ### Boundary effects
 
@@ -272,10 +272,10 @@ flowchart LR
 | external_call | `run` | `getattr` | 75 |
 | external_call | `run` | `getattr` | 79 |
 | external_call | `run` | `getattr` | 80 |
-| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
-| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 103 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

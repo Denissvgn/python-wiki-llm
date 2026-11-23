@@ -1,6 +1,6 @@
 # ContextPacketUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:142`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:125`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet_builder](../modules/context_packet_builder.md)
@@ -25,7 +25,7 @@ A required read-only packet capability is unavailable.
 ```mermaid
 flowchart LR
     n0["ContextPacketUnavailableError (src/llm_wiki_cli/services/context_packet_builder.py)"]
-    n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
+    n1["ContextPacketError (src/llm_wiki_engine/context_packet.py)"]
     n2["_fit_knowledge_packet_response (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n3["_guard_windows_inputs (src/llm_wiki_cli/services/context_packet_builder.py)"]
     n4["_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py)"]

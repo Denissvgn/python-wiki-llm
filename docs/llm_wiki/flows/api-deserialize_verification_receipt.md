@@ -180,17 +180,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| deserialize_verification_receipt | isinstance (src/llm_wiki_engine/verif…lize_verification_receipt) | 923 | `isinstance(content, bytes)` |
-| deserialize_verification_receipt | TypeError | 924 | `TypeError('content must be bytes')` |
-| deserialize_verification_receipt | len (src/llm_wiki_engine/verif…lize_verification_receipt) | 925 | `len(content)` |
-| deserialize_verification_receipt | VerificationReceiptError | 926 | `VerificationReceiptError('receipt', 'exceeds the byte limit')` |
-| deserialize_verification_receipt | content.decode | 928 | `content.decode('utf-8')` |
-| deserialize_verification_receipt | VerificationReceiptError | 930 | `VerificationReceiptError('receipt', 'must be valid UTF-8')` |
-| deserialize_verification_receipt | json.loads | 950 | `json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| deserialize_verification_receipt | VerificationReceiptError | 958 | `VerificationReceiptError('receipt', ...)` |
-| deserialize_verification_receipt | validate_verification_receipt | 962 | `validate_verification_receipt(payload)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
-| validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
+| deserialize_verification_receipt | isinstance (src/llm_wiki_engine/verif…lize_verification_receipt) | 925 | `isinstance(content, bytes)` |
+| deserialize_verification_receipt | TypeError | 926 | `TypeError('content must be bytes')` |
+| deserialize_verification_receipt | len (src/llm_wiki_engine/verif…lize_verification_receipt) | 927 | `len(content)` |
+| deserialize_verification_receipt | VerificationReceiptError | 928 | `VerificationReceiptError('receipt', 'exceeds the byte limit')` |
+| deserialize_verification_receipt | content.decode | 930 | `content.decode('utf-8')` |
+| deserialize_verification_receipt | VerificationReceiptError | 932 | `VerificationReceiptError('receipt', 'must be valid UTF-8')` |
+| deserialize_verification_receipt | json.loads | 952 | `json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| deserialize_verification_receipt | VerificationReceiptError | 960 | `VerificationReceiptError('receipt', ...)` |
+| deserialize_verification_receipt | validate_verification_receipt | 964 | `validate_verification_receipt(payload)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 837 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | _receipt_to_payload | 836 | `_receipt_to_payload(value)` |
 
 ### Boundary effects
 
@@ -200,11 +200,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `deserialize_verification_receipt` | `isinstance` | 923 |
-| external_call | `deserialize_verification_receipt` | `TypeError` | 924 |
-| unresolved_call | `deserialize_verification_receipt` | `content.decode` | 928 |
-| external_call | `deserialize_verification_receipt` | `json.loads` | 950 |
-| external_call | `validate_verification_receipt` | `isinstance` | 835 |
+| external_call | `deserialize_verification_receipt` | `isinstance` | 925 |
+| external_call | `deserialize_verification_receipt` | `TypeError` | 926 |
+| unresolved_call | `deserialize_verification_receipt` | `content.decode` | 930 |
+| external_call | `deserialize_verification_receipt` | `json.loads` | 952 |
+| external_call | `validate_verification_receipt` | `isinstance` | 837 |
 | step_limit | `deserialize_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `deserialize_verification_receipt` | `depth limit` | 0 |
 

@@ -46,31 +46,36 @@ run side by side.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_engine/integrations.py"]
-    n2["src/llm_wiki_engine/knowledge_governance.py"]
-    n3["src/llm_wiki_engine/knowledge_index.py"]
-    n4["src/llm_wiki_engine/knowledge_model.py"]
-    n5["src/llm_wiki_engine/knowledge_validators.py"]
-    n6["src/llm_wiki_engine/maintenance_projection.py"]
-    n0 --> n5
-    n2 --> n4
-    n3 --> n2
-    n3 --> n4
+    n1["src/llm_wiki_engine/engine.py"]
+    n2["src/llm_wiki_engine/integrations.py"]
+    n3["src/llm_wiki_engine/knowledge_governance.py"]
+    n4["src/llm_wiki_engine/knowledge_index.py"]
+    n5["src/llm_wiki_engine/knowledge_model.py"]
+    n6["src/llm_wiki_engine/knowledge_validators.py"]
+    n7["src/llm_wiki_engine/maintenance_projection.py"]
+    n0 --> n2
+    n0 --> n6
+    n1 --> n2
+    n1 --> n6
     n3 --> n5
-    n4 --> n1
+    n4 --> n3
     n4 --> n5
-    n5 --> n1
+    n4 --> n6
     n5 --> n2
-    n5 --> n3
-    n5 --> n4
     n5 --> n6
+    n6 --> n2
+    n6 --> n3
+    n6 --> n4
+    n6 --> n5
+    n6 --> n7
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/integrations.md"
-    click n2 "../modules/knowledge_governance.md"
-    click n3 "../modules/knowledge_index.md"
-    click n4 "../modules/knowledge_model.md"
-    click n5 "../modules/knowledge_validators.md"
-    click n6 "../modules/maintenance_projection.md"
+    click n1 "../modules/engine.md"
+    click n2 "../modules/integrations.md"
+    click n3 "../modules/knowledge_governance.md"
+    click n4 "../modules/knowledge_index.md"
+    click n5 "../modules/knowledge_model.md"
+    click n6 "../modules/knowledge_validators.md"
+    click n7 "../modules/maintenance_projection.md"
 ```
 
 ### Internal neighbors
@@ -78,6 +83,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
+| Inbound | [engine](../modules/engine.md) |
 | Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Inbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [integrations](../modules/integrations.md) |

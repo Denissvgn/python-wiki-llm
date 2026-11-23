@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 from pathlib import Path
@@ -32,13 +34,13 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
     from llm_wiki_engine.filesystem_guard import ensure_guarded_directory
 
     wiki = _absolute_path(Path(wiki_dir))
-    root = wiki / ".llm-wiki-knowledge.json"
-    manifest = wiki / ".llm-wiki-manifest.json"
-    surface = wiki / ".llm-wiki-surface.json"
+    root = wiki / DEFAULT_LAYOUT.knowledge_index
+    manifest = wiki / DEFAULT_LAYOUT.manifest
+    surface = wiki / DEFAULT_LAYOUT.surface_index
     adopted = load_adoption_marker(wiki) is not None
     if adopted:
         guard_maintenance_owner(wiki)
-    if not root.exists() and (wiki / ".llm-wiki-governance.json").exists():
+    if not root.exists() and (wiki / DEFAULT_LAYOUT.governance).exists():
         raise ValueError("Missing governed native authority requires recovery")
     if not root.exists() and not manifest.exists() and not surface.exists():
         from .wiki_lifecycle import is_pristine_wiki_target

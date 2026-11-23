@@ -63,7 +63,7 @@ flowchart LR
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
 | [SyncStatus](../entities/SyncStatus.md) | Type alias | 19 | `Literal['synced', 'up-to-date', 'no-change']` | — |
-| [SyncRequest](../entities/SyncRequest.md) | Class | 23 | — | One incremental sync of ``wiki_root`` from ``source_root``. |
+| [SyncRequest](../entities/sync_service_SyncRequest.md) | Class | 23 | — | One incremental sync of ``wiki_root`` from ``source_root``. |
 | [SyncOutcome](../entities/SyncOutcome.md) | Class | 59 | — | What one sync did; human-readable progress went to the host streams. |
 | [SyncError](../entities/SyncError.md) | Class | 78 | `Exception` | Sync stopped; ``exit_code`` is the status the CLI would exit with. |
 | [SyncRequestError](../entities/SyncRequestError.md) | Class | 86 | `SyncError` | The request's options are invalid or contradict each other. |

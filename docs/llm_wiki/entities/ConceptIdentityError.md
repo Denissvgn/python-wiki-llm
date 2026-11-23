@@ -27,18 +27,18 @@ flowchart LR
     n0["ConceptIdentityError (src/llm_wiki_engine/concept_identity.py)"]
     n1["ValueError"]
     n2["IdentityCollisionError (src/llm_wiki_engine/concept_identity.py)"]
-    n3["src/llm_wiki_cli/services/documentation_query_builder.py"]
-    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n5["src/llm_wiki_cli/services/mcp_server.py"]
-    n6["src/llm_wiki_cli/services/publication_config.py"]
-    n7["_machine_text (src/llm_wiki_engine/concept_identity.py)"]
-    n8["_safe_decoded_coordinate (src/llm_wiki_engine/concept_identity.py)"]
-    n9["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
-    n10["aliases_for_move (src/llm_wiki_engine/concept_identity.py)"]
-    n11["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
-    n12["ConceptAllocation.__post_init__ (src/llm_wiki_engine/concept_identity.py)"]
-    n13["IdentityCollision.__post_init__ (src/llm_wiki_engine/concept_identity.py)"]
-    n14["IdentityUpdate.__post_init__ (src/llm_wiki_engine/concept_identity.py)"]
+    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_cli/services/mcp_server.py"]
+    n5["src/llm_wiki_cli/services/publication_config.py"]
+    n6["_machine_text (src/llm_wiki_engine/concept_identity.py)"]
+    n7["_safe_decoded_coordinate (src/llm_wiki_engine/concept_identity.py)"]
+    n8["add_identity_alias (src/llm_wiki_engine/concept_identity.py)"]
+    n9["aliases_for_move (src/llm_wiki_engine/concept_identity.py)"]
+    n10["allocate_concept (src/llm_wiki_engine/concept_identity.py)"]
+    n11["ConceptAllocation.__post_init__ (src/llm_wiki_engine/concept_identity.py)"]
+    n12["IdentityCollision.__post_init__ (src/llm_wiki_engine/concept_identity.py)"]
+    n13["IdentityUpdate.__post_init__ (src/llm_wiki_engine/concept_identity.py)"]
+    n14["move_allocation (src/llm_wiki_engine/concept_identity.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -55,10 +55,10 @@ flowchart LR
     n14 --> n0
     click n0 "../modules/concept_identity.md"
     click n2 "../modules/concept_identity.md"
-    click n3 "../modules/documentation_query_builder.md"
-    click n4 "../modules/knowledge_projection.md"
-    click n5 "../modules/mcp_server.md"
-    click n6 "../modules/publication_config.md"
+    click n3 "../modules/knowledge_projection.md"
+    click n4 "../modules/mcp_server.md"
+    click n5 "../modules/publication_config.md"
+    click n6 "../modules/concept_identity.md"
     click n7 "../modules/concept_identity.md"
     click n8 "../modules/concept_identity.md"
     click n9 "../modules/concept_identity.md"
@@ -86,7 +86,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `mcp_server` | import | [mcp_server](../modules/mcp_server.md) | — |
 | `publication_config` | import | [publication_config](../modules/publication_config.md) | — |
@@ -98,5 +97,6 @@ flowchart LR
 | `ConceptAllocation.__post_init__` | call | [concept_identity](../modules/concept_identity.md) | 1 |
 | `IdentityCollision.__post_init__` | call | [concept_identity](../modules/concept_identity.md) | 4 |
 | `IdentityUpdate.__post_init__` | call | [concept_identity](../modules/concept_identity.md) | 3 |
+| `move_allocation` | call | [concept_identity](../modules/concept_identity.md) | 1 |
 
 > References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

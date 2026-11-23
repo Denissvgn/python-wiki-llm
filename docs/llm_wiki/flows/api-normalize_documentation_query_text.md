@@ -1,8 +1,8 @@
 # normalize_documentation_query_text
 
 **Entry point:** `normalize_documentation_query_text` (`api`)
-**Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md)
+**Source:** [query_request_format](../modules/query_request_format.md)
+**Modules touched:** [query_request_format](../modules/query_request_format.md)
 
 ## Call sequence
 
@@ -74,9 +74,9 @@ flowchart LR
     s1 -. "len(selected.encode(...))" .-> s6
     s1 -. "selected.encode('utf-8')" .-> s7
     s1 -->|"DocumentationQueryError(...)"| s8
-    click s1 "../modules/documentation_query_builder.md"
-    click s4 "../modules/documentation_queries.md"
-    click s8 "../modules/documentation_queries.md"
+    click s1 "../modules/query_request_format.md"
+    click s4 "../modules/query_request_format.md"
+    click s8 "../modules/query_request_format.md"
 ```
 
 ### Step data
@@ -96,13 +96,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_documentation_query_text | isinstance | 65 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip | 65 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip | 67 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len | 68 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 68 | `selected.encode('utf-8')` |
-| normalize_documentation_query_text | DocumentationQueryError | 69 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | isinstance | 49 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip | 49 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 50 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip | 51 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len | 52 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 52 | `selected.encode('utf-8')` |
+| normalize_documentation_query_text | DocumentationQueryError | 53 | `DocumentationQueryError(...)` |
 
 ### Boundary effects
 
@@ -112,10 +112,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 68 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 52 |
 
 ## Behavior
 

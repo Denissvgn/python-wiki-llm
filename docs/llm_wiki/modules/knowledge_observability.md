@@ -21,6 +21,7 @@ timestamps.
 | `.knowledge_freshness` | `analysis_basis_diagnostic`, `REASON_EXTRACTOR_CONFIGURATION_CHANGED`, `REASON_EXTRACTOR_CONFIGURATION_UNKNOWN`, `REASON_EXTRACTOR_LIMITATIONS_CHANGED`, `REASON_EXTRACTOR_SELECTION_CHANGED`, `REASON_EXTRACTOR_VERSION_CHANGED`, `REASON_GENERATION_OPTIONS_CHANGED`, `REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH`, `REASON_LIVE_EXTRACTOR_UNAVAILABLE`, `REASON_OBSERVATION_SCOPE_CHANGED`, `REASON_PLUGIN_CONFIGURATION_CHANGED`, `REASON_PLUGIN_CONFIGURATION_UNKNOWN`, `REASON_PLUGIN_LIMITATIONS_CHANGED`, `REASON_PLUGIN_SET_CHANGED`, `REASON_PLUGIN_VERSION_CHANGED`, `REASON_SCHEMA_VERSION_CHANGED`, `REASON_SOURCE_MAPPING_CHANGED`, `REASON_TOOL_CONFIGURATION_CHANGED`, `REASON_TOOL_CONFIGURATION_UNKNOWN`, `REASON_TOOL_ID_CHANGED`, `REASON_TOOL_LIMITATIONS_CHANGED`, `REASON_TOOL_VERSION_CHANGED`, `REASON_VERSION_UNKNOWN` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `.knowledge_model` | `ComputedFreshness`, `ConceptRecord`, `EvidenceState`, `KnowledgeLoadState` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `.sync_manifest` | `SyncManifest` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
@@ -53,17 +54,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (15) |
-| Outbound | `src` (10) |
+| Outbound | `src` (11) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgePhaseDurations](../entities/KnowledgePhaseDurations.md) | 204 | — | Operational phase durations in milliseconds. |
-| [KnowledgeAggregateSummary](../entities/KnowledgeAggregateSummary.md) | 235 | — | Low-cardinality knowledge status safe for reports and local metrics. |
-| [SnapshotKnowledgeObservability](../entities/SnapshotKnowledgeObservability.md) | 399 | — | One snapshot-only read view and its aggregate operational summary. |
+| [KnowledgePhaseDurations](../entities/KnowledgePhaseDurations.md) | 206 | — | Operational phase durations in milliseconds. |
+| [KnowledgeAggregateSummary](../entities/KnowledgeAggregateSummary.md) | 237 | — | Low-cardinality knowledge status safe for reports and local metrics. |
+| [SnapshotKnowledgeObservability](../entities/SnapshotKnowledgeObservability.md) | 401 | — | One snapshot-only read view and its aggregate operational summary. |
 
 ## Functions
 

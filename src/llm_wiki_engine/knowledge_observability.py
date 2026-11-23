@@ -9,6 +9,8 @@ timestamps.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
@@ -646,7 +648,7 @@ def _with_current_source_selection(
         return load_result
     issue = KnowledgeLoadIssue(
         code="source-selection-mismatch",
-        artifact_path=".llm-wiki-manifest.json",
+        artifact_path=DEFAULT_LAYOUT.manifest,
         field="generation_inputs.source_selection_inputs",
         message=(
             "Persisted knowledge was generated from a different source-selection "

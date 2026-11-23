@@ -25,7 +25,7 @@ from .infrastructure_sync import infrastructure_evidence_by_page
 from .knowledge_orchestration import capture_committed_knowledge
 from .knowledge_reuse import REUSE_INPUT_KEY, REUSE_EXTENSION_KEY
 from .sync_analysis_cache import EXTENSION as SYNC_ANALYSIS
-from .sync_transition_execution import _bounded_page_digest
+from llm_wiki_engine.sync_transition_execution import _bounded_page_digest
 
 
 def _read_originals(root, canonical_pages):

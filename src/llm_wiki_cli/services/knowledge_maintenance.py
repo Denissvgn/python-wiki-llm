@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import argparse
 import hashlib
 import importlib.metadata
@@ -181,9 +183,9 @@ def _archive_binding(
     paths.update(
         wiki / name
         for name in (
-            ".llm-wiki-knowledge.json",
-            ".llm-wiki-manifest.json",
-            ".llm-wiki-surface.json",
+            DEFAULT_LAYOUT.knowledge_index,
+            DEFAULT_LAYOUT.manifest,
+            DEFAULT_LAYOUT.surface_index,
         )
     )
     with tarfile.open(archive, "r:") as tar:
@@ -272,7 +274,7 @@ def preflight(
     except (OSError, ValueError, importlib.metadata.PackageNotFoundError) as exc:
         issues.append(str(exc))
     session = StorageReadSession(wiki)
-    raw = session.read(".llm-wiki-knowledge.json", MAX_EVIDENCE_BYTES)
+    raw = session.read(DEFAULT_LAYOUT.knowledge_index, MAX_EVIDENCE_BYTES)
     data = strict_json(raw)
     schema = data.get("schema_version")
     if schema in {"llm-wiki-knowledge/v3", "llm-wiki-knowledge/v4"}:
@@ -290,7 +292,7 @@ def preflight(
     commitments = manifest.artifact_hashes
     if commitments is None or commitments.knowledge_index_hash != digest(raw):
         raise MaintenanceError("knowledge root does not match the committed manifest")
-    surface = session.read(".llm-wiki-surface.json", MAX_EVIDENCE_BYTES)
+    surface = session.read(DEFAULT_LAYOUT.surface_index, MAX_EVIDENCE_BYTES)
     if commitments.surface_index_hash != digest(surface):
         raise MaintenanceError("surface does not match the committed manifest")
     try:

@@ -52,6 +52,8 @@ def read_records(inputs: Mapping) -> dict:
             basis = ManifestEvidenceBaseline.from_payload(
                 {"state": "known", "basis": row["basis"]}, "historical.basis"
             ).basis
+            if basis is None:
+                raise ValueError("a known basis is required")
             kind = PageKind.MODULES if owner.scope == "module" else PageKind.ENTITIES
             expected = canonical_path(kind, PurePosixPath(path).stem)
         except (ValueError, TypeError) as exc:

@@ -1,6 +1,6 @@
 # context_packet Module
 
-**Path:** `src/llm_wiki_cli/services/context_packet.py`
+**Path:** `src/llm_wiki_engine/context_packet.py`
 
 ## Description
 
@@ -31,10 +31,11 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet_builder` |
-| `.implementation_evidence` | `validate_implementation_summary` |
+| `.implementation_summary` | `validate_implementation_summary` |
+| `.integrations` | `IntegrationUnavailable`, `provider` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Mapping`, `Sequence` |
+| `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
+| `contextvars` | `ContextVar` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `llm_wiki_engine` | `context_request_format`, `wiki_surface` |
@@ -61,7 +62,7 @@ Declared ordinary authority is checked before metadata helpers use it. A typed a
 ```mermaid
 flowchart LR
     n0["src"]
-    n1["src/llm_wiki_cli/services/context_packet.py"]
+    n1["src/llm_wiki_engine/context_packet.py"]
     n0 --> n1
     n1 --> n0
     click n1 "../modules/context_packet.md"
@@ -76,25 +77,26 @@ flowchart LR
 | Inbound | `src` (11) |
 | Outbound | `src` (14) |
 
-> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 123 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 170 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 176 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 189 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 218 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 255 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 125 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 172 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 178 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 191 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 220 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 257 | — | Successful structural validation with explicitly unevaluated freshness. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_packet_contract_for_schema` | `(schema_version: object) -> _PacketWireContract` | — | — |
-| `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | — | Strictly validate canonical bytes without performing live reads. |
+| `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview, *, accepted_generators: Iterable[str] \| None = None) -> ContextPacketValidation` | — | Strictly validate canonical bytes without performing live reads. |
+| `_validate_context_packet_bytes` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | — | — |
 | `_packet_limitations` | `(response: Mapping[str, Any], basis: Mapping[str, Any]) -> list[str]` | — | — |
 | `_context_policy_digest` | `(schema_version: str = CONTEXT_PACKET_SCHEMA_VERSION) -> str` | — | — |
 | `_path_policy_digest` | `() -> str` | — | — |

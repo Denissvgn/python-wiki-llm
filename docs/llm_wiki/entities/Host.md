@@ -1,6 +1,6 @@
 # Host
 
-**Location:** `src/llm_wiki_engine/host.py:63`
+**Location:** `src/llm_wiki_engine/host.py:64`
 **Kind:** Class
 **Bases:** —
 **Module:** [host](../modules/host.md)
@@ -44,14 +44,14 @@ flowchart LR
     n1["NoProcessHost (src/llm_wiki_engine/host.py)"]
     n2["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
     n3["Engine.host (src/llm_wiki_cli/engine/__init__.py)"]
-    n4["_publish_message (src/llm_wiki_engine/host.py)"]
-    n5["current_host (src/llm_wiki_engine/host.py)"]
-    n6["discarding_output (src/llm_wiki_engine/host.py)"]
-    n7["discarding_stdout (src/llm_wiki_engine/host.py)"]
-    n8["ErrorRecorder.__init__ (src/llm_wiki_engine/host.py)"]
-    n9["Host.with_output (src/llm_wiki_engine/host.py)"]
-    n10["MessageStream._target (src/llm_wiki_engine/host.py)"]
-    n11["using_host (src/llm_wiki_engine/host.py)"]
+    n4["Engine.__init__ (src/llm_wiki_engine/engine.py)"]
+    n5["Engine.host (src/llm_wiki_engine/engine.py)"]
+    n6["_publish_message (src/llm_wiki_engine/host.py)"]
+    n7["current_host (src/llm_wiki_engine/host.py)"]
+    n8["discarding_output (src/llm_wiki_engine/host.py)"]
+    n9["discarding_stdout (src/llm_wiki_engine/host.py)"]
+    n10["ErrorRecorder.__init__ (src/llm_wiki_engine/host.py)"]
+    n11["Host.with_output (src/llm_wiki_engine/host.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -67,8 +67,8 @@ flowchart LR
     click n1 "../modules/host.md"
     click n2 "../modules/engine___init__.md"
     click n3 "../modules/engine___init__.md"
-    click n4 "../modules/host.md"
-    click n5 "../modules/host.md"
+    click n4 "../modules/engine.md"
+    click n5 "../modules/engine.md"
     click n6 "../modules/host.md"
     click n7 "../modules/host.md"
     click n8 "../modules/host.md"
@@ -96,11 +96,14 @@ flowchart LR
 | `Engine.__init__` | call | [engine___init__](../modules/engine___init__.md) | 1 |
 | `Engine.__init__` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
 | `Engine.host` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
+| `Engine.__init__` | call | [engine](../modules/engine.md) | 1 |
+| `Engine.__init__` | type_reference | [engine](../modules/engine.md) | — |
+| `Engine.host` | type_reference | [engine](../modules/engine.md) | — |
 | `_publish_message` | type_reference | [host](../modules/host.md) | — |
 | `current_host` | type_reference | [host](../modules/host.md) | — |
 | `discarding_output` | type_reference | [host](../modules/host.md) | — |
 | `discarding_stdout` | type_reference | [host](../modules/host.md) | — |
 | `ErrorRecorder.__init__` | type_reference | [host](../modules/host.md) | — |
 | `Host.with_output` | type_reference | [host](../modules/host.md) | — |
-| `MessageStream._target` | type_reference | [host](../modules/host.md) | — |
-| `using_host` | type_reference | [host](../modules/host.md) | — |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

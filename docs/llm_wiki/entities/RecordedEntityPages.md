@@ -1,6 +1,6 @@
 # _RecordedEntityPages
 
-**Location:** `src/llm_wiki_cli/services/sync_analysis.py:46`
+**Location:** `src/llm_wiki_cli/services/sync_analysis.py:43`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_analysis](../modules/sync_analysis.md)

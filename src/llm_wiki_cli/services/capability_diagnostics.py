@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import os
 import shutil
 import sys
@@ -233,7 +235,7 @@ def build_capability_diagnostics(
     }
 
 
-def build_capability_doctor(wiki_dir="docs/llm_wiki", src_dir=".", **kwargs):
+def build_capability_doctor(wiki_dir=DEFAULT_LAYOUT.wiki_dir, src_dir=".", **kwargs):
     from .doctor_service import build_doctor_report
 
     capabilities = build_capability_diagnostics(

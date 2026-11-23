@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 from collections import Counter
@@ -468,7 +470,7 @@ def compose_queue(
 
 def build_maintenance_queue(
     src_dir=".",
-    wiki_dir="docs/llm_wiki",
+    wiki_dir=DEFAULT_LAYOUT.wiki_dir,
     *,
     limit=DEFAULT_QUEUE_LIMIT,
     allow_external_src=False,

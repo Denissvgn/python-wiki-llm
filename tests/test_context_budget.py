@@ -11,7 +11,7 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import context_budget
 from llm_wiki_cli.services import token_counting
 from llm_wiki_cli.services.context_budget import build_budgeted_context
-from llm_wiki_cli.services.context_packet import (
+from llm_wiki_engine.context_packet import (
     validate_context_packet,
     _encode_packet_payload,
 )

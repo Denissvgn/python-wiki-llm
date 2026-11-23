@@ -2,19 +2,7 @@
 
 **Entry point:** `validate_context_packet` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), and 5 more
-
-**Complete modules touched:**
-
-- [api](../modules/api.md)
-- [canonical_json](../modules/canonical_json.md)
-- [context_packet](../modules/context_packet.md)
-- [context_packet_builder](../modules/context_packet_builder.md)
-- [context_request_format](../modules/context_request_format.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
-- [maintenance_status](../modules/maintenance_status.md)
-- [packet_field_policy](../modules/packet_field_policy.md)
-- [validation](../modules/validation.md)
+**Modules touched:** [api](../modules/api.md), [context_packet_builder](../modules/context_packet_builder.md)
 
 ## Call sequence
 
@@ -23,89 +11,70 @@
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as validate_context_packet (src/llm_wiki_cli/api.py)
-    participant p1 as validate_context_packet (src/llm_wiki_cli/services/context_packet.py)
-    participant p2 as _raise_context_packet_api_error
-    participant p3 as _coerce_packet_bytes
-    participant p4 as _raise_required_knowledge_api_error
-    participant p5 as _strict_json_payload
-    participant p6 as _packet_contract_for_schema
-    participant p7 as _validate_packet_shape
-    participant p8 as _encode_packet_payload
-    participant p9 as _packet_id
-    participant p10 as _path_policy_receipt
-    participant p11 as QualifiedContextPacket._from_validated_payload
-    participant p12 as _exact_fields
-    participant p13 as _freeze_json
-    participant p14 as _validate_assurance
-    participant p15 as _validate_packet_request
-    participant p16 as _validate_response
-    participant p17 as _validate_basis
-    participant p18 as _validate_response_basis_consistency
-    participant p19 as _validate_delivery
-    participant p20 as _validate_path_policy_shape
-    participant p21 as _mapping
-    participant p22 as _validate_protocol_request
-    participant p23 as _path_policy_digest
-    participant p24 as _validate_repository_basis
-    participant p25 as _validate_knowledge_basis
-    participant p26 as _validate_explicit_ranking_policy
-    participant p27 as _context_policy_digest
-    participant p28 as _validate_freshness_basis
-    participant p29 as len (src/llm_wiki_cli/services…y:validate_context_packet)
-    participant p30 as leaf
-    p0->>p1: validate_context_packet (src/llm_wiki_cli/services/context_packet.py)
-    p0->>p2: _raise_context_packet_api_error
-    p1->>p3: _coerce_packet_bytes
-    p2->>p4: _raise_required_knowledge_api_error
-    p1->>p5: _strict_json_payload
-    p1->>p6: _packet_contract_for_schema
-    p1->>p7: _validate_packet_shape
-    p1->>p8: _encode_packet_payload
-    p1->>p9: _packet_id
-    p1->>p10: _path_policy_receipt
-    p1->>p11: QualifiedContextPacket._from_validated_payload
-    p7->>p12: _exact_fields
-    p11->>p13: _freeze_json
-    p7->>p14: _validate_assurance
-    p7->>p15: _validate_packet_request
-    p7->>p16: _validate_response
-    p7->>p17: _validate_basis
-    p7->>p18: _validate_response_basis_consistency
-    p7->>p19: _validate_delivery
-    p7->>p20: _validate_path_policy_shape
-    p14->>p21: _mapping
-    p15->>p22: _validate_protocol_request
-    p20->>p23: _path_policy_digest
-    p17->>p24: _validate_repository_basis
-    p17->>p25: _validate_knowledge_basis
-    p16->>p26: _validate_explicit_ranking_policy
-    p17->>p27: _context_policy_digest
-    p17->>p28: _validate_freshness_basis
-    p1-->>p29: len (src/llm_wiki_cli/services…y:validate_context_packet)(raw)
-    p2-->>p30: leaf(failure[...], code=failure[...], details=failure[...])
+    participant p0 as validate_context_packet
+    participant p1 as _raise_context_packet_api_error
+    participant p2 as _raise_required_knowledge_api_error
+    participant p3 as describe_context_packet_error
+    participant p4 as _required_knowledge_failure
+    participant p5 as WorkspaceStateError
+    participant p6 as isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)
+    participant p7 as context_packet_service.validate_context_packet
+    participant p8 as leaf
+    participant p9 as str (src/llm_wiki_cli/api.py:_…quired_knowledge_api_error)
+    participant p10 as str (src/llm_wiki_cli/services…cribe_context_packet_error)
+    participant p11 as deepcopy
+    participant p12 as getattr (src/llm_wiki_cli/services…cribe_context_packet_error)
+    participant p13 as {'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get
+    participant p14 as re.match
+    participant p15 as flag.group
+    participant p16 as set (src/llm_wiki_cli/services…cribe_context_packet_error)
+    participant p17 as id (src/llm_wiki_cli/services…cribe_context_packet_error)
+    participant p18 as seen.add (src/llm_wiki_cli/services…cribe_context_packet_error)
+    p0->>p1: _raise_context_packet_api_error
+    p1->>p2: _raise_required_knowledge_api_error
+    p1->>p3: describe_context_packet_error
+    p2->>p4: _required_knowledge_failure
+    p2->>p5: WorkspaceStateError
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, HelperPreparationError)
+    p0-->>p7: context_packet_service.validate_context_packet(packet_bytes)
+    p1-->>p8: leaf(failure[...], code=failure[...], details=failure[...])
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, ContextPacketAuthorityError)
+    p2-->>p9: str (src/llm_wiki_cli/api.py:_…quired_knowledge_api_error)(exc)
+    p3-->>p10: str (src/llm_wiki_cli/services…cribe_context_packet_error)(error)
+    p3-->>p11: deepcopy(error.details)
+    p3-->>p12: getattr (src/llm_wiki_cli/services…cribe_context_packet_error)(error, 'field', None)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, ContextPacketMalformedError)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, ContextPacketSourceMutationError)
+    p3-->>p13: {'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get(error.facet, error.facet)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, ContextPacketUnavailableError)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, (...))
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, PathValidationError)
+    p3-->>p14: re.match('^(?:Error:\\s*)?--(src|wiki)-dir\\b', str(...))
+    p3-->>p10: str (src/llm_wiki_cli/services…cribe_context_packet_error)(error)
+    p3-->>p15: flag.group(1)
+    p3-->>p16: set (src/llm_wiki_cli/services…cribe_context_packet_error)
+    p3-->>p17: id (src/llm_wiki_cli/services…cribe_context_packet_error)(cause)
+    p3-->>p18: seen.add (src/llm_wiki_cli/services…cribe_context_packet_error)(id(...))
+    p3-->>p17: id (src/llm_wiki_cli/services…cribe_context_packet_error)(cause)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(cause, OSError)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(cause, OSError)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, context_service.ProtocolRequestError)
+    p3-->>p6: isinstance (src/llm_wiki_cli/services…cribe_context_packet_error)(error, (...))
 ```
 
-> Call sequence diagram shows 30 of 618 interactions; 588 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 49 interactions; 19 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 211 (210 omitted); unresolved 1 of 115 (114 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 20 of 34 (14 omitted); unresolved 5 of 10 (5 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/context_packet.py:_coerce_packet_bytes` | 3 | - | external | 5 |
-| `src/llm_wiki_cli/services/context_packet.py:_coerce_packet_bytes` | 3 | [src/llm_wiki_cli/services/context_packet.py](../modules/context_packet.md) | internal | 4 |
-| `src/llm_wiki_cli/services/context_packet.py:_coerce_packet_bytes` | 3 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 16 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 16 | [src/llm_wiki_cli/services/context_packet.py](../modules/context_packet.md) | internal | 4 |
-| `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
-| `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 118 groups; 110 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/api.py:_required_knowledge_failure` | 5 | - | external | 10 |
+| `src/llm_wiki_cli/api.py:_required_knowledge_failure` | 5 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:describe_context_packet_error` | 20 | - | external | 4 |
+| `src/llm_wiki_cli/services/context_packet_builder.py:describe_context_packet_error` | 20 | - | unresolved | 3 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
-
-> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -115,110 +84,112 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 293; effect analysis evaluated: 138, partial: 4, unavailable: 151. Counts include steps omitted from the displayed trace.
+Source steps: 6; effect analysis evaluated: 5, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
 
-Collector observations for 142 source steps with known totals: observed: 625, emitted: 611, omitted: 14. Unavailable totals are excluded.
+Collector observations for 5 source steps with known totals: observed: 30, emitted: 30, omitted: 0. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
-- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `validate_context_packet (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `validate_context_packet (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `_coerce_packet_bytes` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
-| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `validate_context_packet` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `context_packet_service.validate_context_packet` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_raise_context_packet_api_error` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_raise_required_knowledge_api_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_required_knowledge_failure` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `set (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `id (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `id (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
-    s1["1. validate_context_packet (src/llm_wiki_cli/api.py)"]
-    s2["2. validate_context_packet (src/llm_wiki_cli/services/context_packet.py)"]
-    s3["3. _coerce_packet_bytes"]
-    s4["4. isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)"]
-    s5["5. isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)"]
-    s6["6. bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)"]
-    s7["7. TypeError"]
-    s8["8. ContextPacketMalformedError"]
-    s9["9. len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)"]
-    s10["10. ContextPacketMalformedError"]
-    s11["11. raw.startswith"]
-    s12["12. ContextPacketMalformedError"]
-    s1 -->|"validate_context_packet (src/llm_wiki_cli/services/context_packet.py)(packet_bytes)"| s2
-    s2 -->|"_coerce_packet_bytes(packet_bytes)"| s3
-    s3 -. "isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)(value, bytes)" .-> s4
-    s3 -. "isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)(value, (...))" .-> s5
-    s3 -. "bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)(value)" .-> s6
-    s3 -. "TypeError('packet_bytes must be bytes-like')" .-> s7
-    s3 -->|"ContextPacketMalformedError('packet_bytes', 'must not be empty')"| s8
-    s3 -. "len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)(raw)" .-> s9
-    s3 -->|"ContextPacketMalformedError('packet_bytes', ...)"| s10
-    s3 -. "raw.startswith(b'\xef\xbb\xbf')" .-> s11
-    s3 -->|"ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')"| s12
+    s1["1. validate_context_packet"]
+    s2["2. context_packet_service.validate_context_packet"]
+    s3["3. _raise_context_packet_api_error"]
+    s4["4. _raise_required_knowledge_api_error"]
+    s5["5. _required_knowledge_failure"]
+    s6["6. set (src/llm_wiki_cli/api.py:_required_knowledge_failure)"]
+    s7["7. id (src/llm_wiki_cli/api.py:_required_knowledge_failure)"]
+    s8["8. seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)"]
+    s9["9. id (src/llm_wiki_cli/api.py:_required_knowledge_failure)"]
+    s10["10. getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)"]
+    s11["11. type"]
+    s12["12. getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)"]
+    s1 -. "context_packet_service.validate_context_packet(packet_bytes)" .-> s2
+    s1 -->|"_raise_context_packet_api_error(exc)"| s3
+    s3 -->|"_raise_required_knowledge_api_error(exc)"| s4
+    s4 -->|"_required_knowledge_failure(exc)"| s5
+    s5 -. "set (src/llm_wiki_cli/api.py:_required_knowledge_failure)(data not statically known)" .-> s6
+    s5 -. "id (src/llm_wiki_cli/api.py:_required_knowledge_failure)(current)" .-> s7
+    s5 -. "seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)(id(...))" .-> s8
+    s5 -. "id (src/llm_wiki_cli/api.py:_required_knowledge_failure)(current)" .-> s9
+    s5 -. "getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)(current, 'code', None)" .-> s10
+    s5 -. "type(current)" .-> s11
+    s5 -. "getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)(current, 'details', None)" .-> s12
+    b0["mutation seen.add"]
+    s5 -. "mutation seen.add" .-> b0
     click s1 "../modules/api.md"
-    click s2 "../modules/context_packet.md"
-    click s3 "../modules/context_packet.md"
-    click s8 "../modules/context_packet.md"
-    click s10 "../modules/context_packet.md"
-    click s12 "../modules/context_packet.md"
+    click s3 "../modules/api.md"
+    click s4 "../modules/api.md"
+    click s5 "../modules/api.md"
+    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
+    class b0 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `validate_context_packet (src/llm_wiki_cli/api.py)` | `packet_bytes: bytes \| bytearray \| memoryview` | `context_packet_service` | - | `validation` |
-| `validate_context_packet (src/llm_wiki_cli/services/context_packet.py)` | `packet_bytes: bytes \| bytearray \| memoryview` | - | - | `ContextPacketValidation(...)` |
-| `_coerce_packet_bytes` | `value: bytes \| bytearray \| memoryview` | `_MAX_PACKET_BYTES`, `_MAX_PACKET_BYTES` | - | `raw` |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | - | - | - | - |
-| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `ContextPacketMalformedError` | - | - | - | - |
-| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | - | - | - | - |
-| `ContextPacketMalformedError` | - | - | - | - |
-| `raw.startswith` | - | - | - | - |
-| `ContextPacketMalformedError` | - | - | - | - |
+| `validate_context_packet` | `packet_bytes: bytes \| bytearray \| memoryview` | `context_packet_service` | - | `validation` |
+| `context_packet_service.validate_context_packet` | - | - | - | - |
+| `_raise_context_packet_api_error` | `exc: BaseException` | `WorkspaceStateError`, `InvalidRequestError` | - | - |
+| `_raise_required_knowledge_api_error` | `exc: BaseException` | - | - | `none` |
+| `_required_knowledge_failure` | `exc: BaseException` | `Mapping`, `Mapping`, `KNOWLEDGE_MODE_REQUEST_FIELD` | - | `dict(...)`, `copied`, `None`, `{...}` |
+| `set (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | - | - | - | - |
+| `id (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | - | - | - | - |
+| `seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | - | - | - | - |
+| `id (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | - | - | - | - |
+| `type` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet (src/llm_wiki_cli/api.py) | validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | 2021 | `context_packet_service.validate_context_packet(packet_bytes)` |
-| validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | _coerce_packet_bytes | 302 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 583 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 585 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 586 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError | 588 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 590 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 591 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 592 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 596 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 597 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| validate_context_packet | context_packet_service.validate_context_packet | 2021 | `context_packet_service.validate_context_packet(packet_bytes)` |
+| validate_context_packet | _raise_context_packet_api_error | 2023 | `_raise_context_packet_api_error(exc)` |
+| _raise_context_packet_api_error | _raise_required_knowledge_api_error | 475 | `_raise_required_knowledge_api_error(exc)` |
+| _raise_required_knowledge_api_error | _required_knowledge_failure | 455 | `_required_knowledge_failure(exc)` |
+| _required_knowledge_failure | set (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 424 | `set(data not statically known)` |
+| _required_knowledge_failure | id (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 425 | `id(current)` |
+| _required_knowledge_failure | seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 426 | `seen.add(id(...))` |
+| _required_knowledge_failure | id (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 426 | `id(current)` |
+| _required_knowledge_failure | getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 427 | `getattr(current, 'code', None)` |
+| _required_knowledge_failure | type | 428 | `type(current)` |
+| _required_knowledge_failure | getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 431 | `getattr(current, 'details', None)` |
 
 ### Boundary effects
 
-*No boundary-effect observations were captured in this static trace.*
+| Kind | Target | Step | Line |
+|---|---|---|---:|
+| mutation | `seen.add` | `_required_knowledge_failure` | 426 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 583 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 585 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 586 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 588 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 596 |
+| unresolved_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 2021 |
+| external_call | `_required_knowledge_failure` | `id` | 425 |
+| external_call | `_required_knowledge_failure` | `getattr` | 427 |
+| external_call | `_required_knowledge_failure` | `type` | 428 |
+| external_call | `_required_knowledge_failure` | `getattr` | 431 |
 | step_limit | `validate_context_packet` | `first 12 steps` | 0 |
-| truncated_flow | `validate_context_packet` | `depth limit` | 0 |
 
 ## Behavior
 

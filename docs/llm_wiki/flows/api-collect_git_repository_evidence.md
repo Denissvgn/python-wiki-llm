@@ -183,7 +183,7 @@ flowchart LR
 | _run_git | _run_git_result | 1189 | `_run_git_result(root, ...)` |
 | _run_git_result | current_host().environ.items (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1203 | `current_host().environ.items(data not statically known)` |
 | _run_git_result | current_host | 1203 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 | _run_git_result | key.startswith (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1203 | `key.startswith('GIT_')` |
 | _run_git_result | current_host().run (src/llm_wiki_engine/knowl…velope.py:_run_git_result) | 1210 | `current_host().run([...], input='', capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
 | _run_git_result | current_host | 1210 | `current_host(data not statically known)` |
@@ -199,7 +199,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `_run_git_result` | `current_host().environ.items` | 1203 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | unresolved_call | `_run_git_result` | `key.startswith` | 1203 |
 | unresolved_call | `_run_git_result` | `current_host().run` | 1210 |
 | step_limit | `collect_git_repository_evidence` | `first 12 steps` | 0 |

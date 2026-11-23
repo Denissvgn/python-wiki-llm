@@ -9,7 +9,8 @@ import shutil
 import pytest
 
 from llm_wiki_cli.commands import sync_cmd
-from llm_wiki_cli.services import sync_transition_execution as execution
+from llm_wiki_cli.services import sync_runtime
+from llm_wiki_engine import sync_transition_execution as execution
 from llm_wiki_cli.services.sync_transitions import PageTransitionError
 from llm_wiki_engine.io import read_md
 from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
@@ -76,7 +77,7 @@ def test_preimage_limits_missing_paths_and_ambiguous_claims(tmp_path):
 
 def test_preview_requires_a_separate_live_wiki():
     with pytest.raises(ValueError, match="original wiki directory"):
-        sync_cmd._execute_prepared_sync(None, None, dry_run=True)
+        sync_runtime._execute_prepared_sync(None, None, dry_run=True)
 
 
 def test_staged_page_comparison_reads_chunks_and_rejects_a_replacement(tmp_path, monkeypatch):

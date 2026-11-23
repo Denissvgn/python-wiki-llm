@@ -1,14 +1,12 @@
 # validate_live_query_source_selection
 
 **Entry point:** `validate_live_query_source_selection` (`api`)
-**Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 10 more
+**Source:** [query_request_format](../modules/query_request_format.md)
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [integrations](../modules/integrations.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 8 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [integrations](../modules/integrations.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -16,6 +14,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [query_request_format](../modules/query_request_format.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -56,7 +55,7 @@ sequenceDiagram
     participant p26 as is_portable_relative_path
     participant p27 as require_mapping
     participant p28 as ManifestStoreReader.field
-    participant p29 as str (src/llm_wiki_cli/services…ve_query_source_selection)
+    participant p29 as str (src/llm_wiki_engine/query…ve_query_source_selection)
     participant p30 as manifest_path.exists
     p0->>p1: SyncManifest.load
     p0->>p2: validate_persisted_source_selection_identity
@@ -86,7 +85,7 @@ sequenceDiagram
     p10->>p26: is_portable_relative_path
     p11->>p27: require_mapping
     p16->>p28: ManifestStoreReader.field
-    p0-->>p29: str (src/llm_wiki_cli/services…ve_query_source_selection)(exc)
+    p0-->>p29: str (src/llm_wiki_engine/query…ve_query_source_selection)(exc)
     p1-->>p30: manifest_path.exists
 ```
 
@@ -169,7 +168,7 @@ flowchart LR
     s11 -->|"is_portable_relative_path(relative)"| s12
     b0["filesystem_read manifest_path.read_text"]
     s2 -. "filesystem_read manifest_path.read_text" .-> b0
-    click s1 "../modules/documentation_query_builder.md"
+    click s1 "../modules/query_request_format.md"
     click s2 "../modules/sync_manifest.md"
     click s9 "../modules/knowledge_storage_io.md"
     click s10 "../modules/knowledge_storage_io.md"
@@ -200,15 +199,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_live_query_source_selection | SyncManifest.load | 303 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1031 | `manifest_path.exists(data not statically known)` |
-| SyncManifest.load | FileNotFoundError | 1032 | `FileNotFoundError(manifest_path)` |
-| SyncManifest.load | json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1051 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| SyncManifest.load | manifest_path.read_text | 1052 | `manifest_path.read_text(encoding='utf-8')` |
-| SyncManifest.load | isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1056 | `isinstance(data, dict)` |
-| SyncManifest.load | data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1056 | `data.get('version')` |
-| SyncManifest.load | StorageReadSession | 1059 | `StorageReadSession(wiki_dir)` |
-| SyncManifest.load | StorageReadSession.read | 1060 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
+| validate_live_query_source_selection | SyncManifest.load | 166 | `SyncManifest.load(wiki_root)` |
+| SyncManifest.load | manifest_path.exists | 1033 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | FileNotFoundError | 1034 | `FileNotFoundError(manifest_path)` |
+| SyncManifest.load | json.loads (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1053 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| SyncManifest.load | manifest_path.read_text | 1054 | `manifest_path.read_text(encoding='utf-8')` |
+| SyncManifest.load | isinstance (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1058 | `isinstance(data, dict)` |
+| SyncManifest.load | data.get (src/llm_wiki_engine/sync_…fest.py:SyncManifest.load) | 1058 | `data.get('version')` |
+| SyncManifest.load | StorageReadSession | 1061 | `StorageReadSession(wiki_dir)` |
+| SyncManifest.load | StorageReadSession.read | 1062 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
 | StorageReadSession.read | _require_relative_name | 354 | `_require_relative_name(relative)` |
 | _require_relative_name | is_portable_relative_path | 44 | `is_portable_relative_path(relative)` |
 
@@ -216,17 +215,17 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1052 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1054 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1031 |
-| external_call | `SyncManifest.load` | `FileNotFoundError` | 1032 |
-| external_call | `SyncManifest.load` | `json.loads` | 1051 |
-| external_call | `SyncManifest.load` | `isinstance` | 1056 |
-| unresolved_call | `SyncManifest.load` | `data.get` | 1056 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1033 |
+| external_call | `SyncManifest.load` | `FileNotFoundError` | 1034 |
+| external_call | `SyncManifest.load` | `json.loads` | 1053 |
+| external_call | `SyncManifest.load` | `isinstance` | 1058 |
+| unresolved_call | `SyncManifest.load` | `data.get` | 1058 |
 | step_limit | `validate_live_query_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `validate_live_query_source_selection` | `depth limit` | 0 |
 

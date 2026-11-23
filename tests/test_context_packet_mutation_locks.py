@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from llm_wiki_cli.services import context_packet
+from llm_wiki_engine import context_packet
 from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_engine.knowledge_governance import governance_lock
 

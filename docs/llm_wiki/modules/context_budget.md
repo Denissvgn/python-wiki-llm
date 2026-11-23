@@ -27,7 +27,7 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service`, `context_packet_builder` |
+| `.` | `context_service`, `context_packet_builder` |
 | `.change_selection` | `affected_page_map`, `changes_from_args`, `select_changes` |
 | `.token_counting` | `EstimatedCounter`, `LocalTokenizerCounter`, `TokenCounter` |
 | `__future__` | `annotations` |
@@ -36,6 +36,7 @@ The CLI adapter handles typed ordinary-authority refusal through the shared pack
 | `dataclasses` | `dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_engine` | `context_packet` |
 | `llm_wiki_engine.context_request_format` | `validate_budget_request`, `validate_changes` |
 | `llm_wiki_engine.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `llm_wiki_engine.host` | `emit` |
@@ -71,8 +72,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [BudgetedContext](../entities/BudgetedContext.md) | 31 | — | — |
-| [_JointSelection](../entities/JointSelection.md) | 95 | — | Spend one budget across whole native groups and source detail. |
+| [BudgetedContext](../entities/BudgetedContext.md) | 32 | — | — |
+| [_JointSelection](../entities/JointSelection.md) | 96 | — | Spend one budget across whole native groups and source detail. |
 
 ## Functions
 

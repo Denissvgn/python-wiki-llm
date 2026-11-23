@@ -2,7 +2,7 @@
 
 **Entry point:** `reference_provider` (`api`)
 **Source:** [reference_providers](../modules/reference_providers.md)
-**Modules touched:** [domain_pack](../modules/domain_pack.md), [reference_providers](../modules/reference_providers.md)
+**Modules touched:** [domain_pack](../modules/domain_pack.md), [pack_interfaces](../modules/pack_interfaces.md), [reference_providers](../modules/reference_providers.md)
 
 ## Call sequence
 
@@ -15,14 +15,16 @@ sequenceDiagram
     participant p1 as current_reference_providers
     participant p2 as KeyError
     participant p3 as current_pack
-    participant p4 as _ACTIVE_PACK.get
+    participant p4 as active_pack
+    participant p5 as _ACTIVE_PACK.get
     p0->>p1: current_reference_providers
     p0-->>p2: KeyError(...)
     p1->>p3: current_pack
-    p3-->>p4: _ACTIVE_PACK.get
+    p3->>p4: active_pack
+    p4-->>p5: _ACTIVE_PACK.get
 ```
 
-> Call sequence diagram shows 4 of 4 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 5 of 5 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 1 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -35,24 +37,27 @@ sequenceDiagram
 
 **Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 4; effect analysis evaluated: 4, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 3 source steps with known totals: observed: 5, emitted: 5, omitted: 0. Unavailable totals are excluded.
+Collector observations for 4 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR
     s1["1. reference_provider"]
     s2["2. current_reference_providers"]
     s3["3. current_pack"]
-    s4["4. _ACTIVE_PACK.get"]
-    s5["5. KeyError"]
+    s4["4. active_pack"]
+    s5["5. _ACTIVE_PACK.get"]
+    s6["6. KeyError"]
     s1 -->|"current_reference_providers(data not statically known)"| s2
     s2 -->|"current_pack(data not statically known)"| s3
-    s3 -. "_ACTIVE_PACK.get(data not statically known)" .-> s4
-    s1 -. "KeyError(...)" .-> s5
+    s3 -->|"active_pack(data not statically known)"| s4
+    s4 -. "_ACTIVE_PACK.get(data not statically known)" .-> s5
+    s1 -. "KeyError(...)" .-> s6
     click s1 "../modules/reference_providers.md"
     click s2 "../modules/reference_providers.md"
     click s3 "../modules/domain_pack.md"
+    click s4 "../modules/pack_interfaces.md"
 ```
 
 ### Step data
@@ -62,6 +67,7 @@ flowchart LR
 | `reference_provider` | `kind: str` | - | - | `providers[...]` |
 | `current_reference_providers` | - | - | - | `...` |
 | `current_pack` | - | `CODE_DOCS_PACK` | - | `...` |
+| `active_pack` | - | - | - | `_ACTIVE_PACK.get(...)` |
 | `_ACTIVE_PACK.get` | - | - | - | - |
 | `KeyError` | - | - | - | - |
 
@@ -71,7 +77,8 @@ flowchart LR
 |---|---|---:|---|
 | reference_provider | current_reference_providers | 365 | `current_reference_providers(data not statically known)` |
 | current_reference_providers | current_pack | 360 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
+| current_pack | active_pack | 324 | `active_pack(data not statically known)` |
+| active_pack | _ACTIVE_PACK.get | 643 | `_ACTIVE_PACK.get(data not statically known)` |
 | reference_provider | KeyError | 367 | `KeyError(...)` |
 
 ### Boundary effects
@@ -82,7 +89,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
+| unresolved_call | `active_pack` | `_ACTIVE_PACK.get` | 643 |
 | external_call | `reference_provider` | `KeyError` | 367 |
 
 ## Behavior

@@ -30,6 +30,7 @@ owned page and checks the composed tree; GitHub wiki is the built-in target.
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_private_bytes`, `ensure_guarded_directory` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `_absolute_path` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -58,9 +59,9 @@ flowchart LR
 |---|---|
 | Inbound | `integrations` (4) |
 | Inbound | `src` (5) |
-| Outbound | `src` (14) |
+| Outbound | `src` (15) |
 
-> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

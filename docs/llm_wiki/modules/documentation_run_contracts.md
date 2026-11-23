@@ -22,6 +22,7 @@ permissions, the five rollback roots or the four refresh-mutable roots.
 | `__future__` | `annotations` |
 | `llm_wiki_engine.canonical_json` | `ascii_compact_bytes`, `sha256_digest` |
 | `llm_wiki_engine.contracts` | `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `typing` | `TYPE_CHECKING` |
 
 ## Local dependency map
@@ -43,29 +44,29 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationRunError](../entities/DocumentationRunError.md) | 297 | `RuntimeError` | Base error raised by the documentation lifecycle service. |
-| [DocumentationSchemaError](../entities/DocumentationSchemaError.md) | 301 | `DocumentationRunError` | Raised when a persisted or returned contract is invalid. |
-| [DocumentationTransitionError](../entities/DocumentationTransitionError.md) | 305 | `DocumentationRunError` | Raised when a stage transition violates the lifecycle graph. |
-| [DocumentationIntegrityError](../entities/DocumentationIntegrityError.md) | 309 | `DocumentationRunError` | Raised when source, input-wiki, or generated ownership changed. |
-| [DocumentationPersistedStateError](../entities/DocumentationPersistedStateError.md) | 313 | `DocumentationIntegrityError`, `DocumentationSchemaError` | Raised when a stored documentation-run contract is corrupt. |
-| [DocumentationIntakeBrief](../entities/DocumentationIntakeBrief.md) | 321 | — | — |
-| [DocumentationRun](../entities/DocumentationRun.md) | 627 | — | — |
-| [DocumentationRunStatus](../entities/DocumentationRunStatus.md) | 776 | — | — |
-| [DocumentationAgentPacket](../entities/DocumentationAgentPacket.md) | 803 | — | — |
-| [DocumentationAgentResult](../entities/DocumentationAgentResult.md) | 825 | — | — |
-| [DocumentationVerificationReport](../entities/DocumentationVerificationReport.md) | 957 | — | — |
-| [_RefreshContinuationSnapshot](../entities/RefreshContinuationSnapshot.md) | 979 | — | Safe in-memory handoff from an archived run to a refreshed baseline. |
-| [_RefreshArchiveTransaction](../entities/RefreshArchiveTransaction.md) | 990 | — | Tracks an archived run until its replacement is safely committed. |
-| [_NativeEvidenceTransaction](../entities/NativeEvidenceTransaction.md) | 1004 | — | Captured controller state for refresh plus evidence reconciliation. |
-| [_InitialPrepareTransaction](../entities/InitialPrepareTransaction.md) | 1014 | — | Tracks a pristine workspace root until initial preparation commits. |
+| [DocumentationRunError](../entities/DocumentationRunError.md) | 299 | `RuntimeError` | Base error raised by the documentation lifecycle service. |
+| [DocumentationSchemaError](../entities/DocumentationSchemaError.md) | 303 | `DocumentationRunError` | Raised when a persisted or returned contract is invalid. |
+| [DocumentationTransitionError](../entities/DocumentationTransitionError.md) | 307 | `DocumentationRunError` | Raised when a stage transition violates the lifecycle graph. |
+| [DocumentationIntegrityError](../entities/DocumentationIntegrityError.md) | 311 | `DocumentationRunError` | Raised when source, input-wiki, or generated ownership changed. |
+| [DocumentationPersistedStateError](../entities/DocumentationPersistedStateError.md) | 315 | `DocumentationIntegrityError`, `DocumentationSchemaError` | Raised when a stored documentation-run contract is corrupt. |
+| [DocumentationIntakeBrief](../entities/DocumentationIntakeBrief.md) | 323 | — | — |
+| [DocumentationRun](../entities/DocumentationRun.md) | 629 | — | — |
+| [DocumentationRunStatus](../entities/DocumentationRunStatus.md) | 778 | — | — |
+| [DocumentationAgentPacket](../entities/DocumentationAgentPacket.md) | 805 | — | — |
+| [DocumentationAgentResult](../entities/DocumentationAgentResult.md) | 827 | — | — |
+| [DocumentationVerificationReport](../entities/DocumentationVerificationReport.md) | 959 | — | — |
+| [_RefreshContinuationSnapshot](../entities/RefreshContinuationSnapshot.md) | 981 | — | Safe in-memory handoff from an archived run to a refreshed baseline. |
+| [_RefreshArchiveTransaction](../entities/RefreshArchiveTransaction.md) | 992 | — | Tracks an archived run until its replacement is safely committed. |
+| [_NativeEvidenceTransaction](../entities/NativeEvidenceTransaction.md) | 1006 | — | Captured controller state for refresh plus evidence reconciliation. |
+| [_InitialPrepareTransaction](../entities/InitialPrepareTransaction.md) | 1016 | — | Tracks a pristine workspace root until initial preparation commits. |
 
 ## Functions
 

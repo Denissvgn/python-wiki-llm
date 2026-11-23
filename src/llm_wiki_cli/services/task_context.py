@@ -10,7 +10,8 @@ from types import SimpleNamespace
 from typing import Any
 
 from llm_wiki_engine.path_policy import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from . import context_packet as packets, context_service as context
+from . import context_service as context
+from llm_wiki_engine import context_packet as packets
 from . import context_packet_builder as packet_builder
 from .change_selection import select_changes
 from .context_budget import _accounted_render, fit_payload, validate_request as budget_request
@@ -19,11 +20,11 @@ from llm_wiki_engine.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_engine.knowledge_loader import KnowledgeStateLoadError
 from llm_wiki_engine.knowledge_envelope import hash_source_snapshot
 from llm_wiki_engine.io import first_unsafe_path_component
-from .search_service import SEARCH_KINDS, page_records, search_records
+from llm_wiki_engine.search_service import SEARCH_KINDS, page_records, search_records
 from .source_snapshot import SourceSnapshotError
-from .task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
+from llm_wiki_engine.task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
 from .task_evidence import coverage, declaration_records, match_declarations, observe_requirement, query_service
-from .token_counting import EstimatedCounter, TokenCounter
+from llm_wiki_engine.token_counters import EstimatedCounter, TokenCounter
 from llm_wiki_engine.wiki_surface_index import evaluate_surface_index
 from llm_wiki_engine.workflow_profile import (
     SCOPES, WorkflowPolicy, WorkflowProfile, WorkflowRequestError, canonical_json, content_id,

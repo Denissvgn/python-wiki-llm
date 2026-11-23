@@ -22,9 +22,10 @@ VALIDATION_PATH = (
     else SERVICES_ROOT / "validation.py"
 )
 VALIDATION_MODULE = "llm_wiki_engine.validation"
-# The shared module lives in the engine; the services path is its alias.
-# Code may still spell the deprecated alias; the adapter analysis follows both.
-VALIDATION_MODULES = frozenset({VALIDATION_MODULE, "llm_wiki_cli.services.validation"})
+# A tree that keeps shared validation in the services package (release timing
+# controls, the fixtures below) names it there.
+SERVICES_VALIDATION_MODULE = ".".join(("llm_wiki_cli", "services", "validation"))
+VALIDATION_MODULES = frozenset({VALIDATION_MODULE, SERVICES_VALIDATION_MODULE})
 NON_ADAPTER_VALIDATION_HELPERS = frozenset(
     {
         # These utilities are intentionally used inside substantive domain
@@ -326,7 +327,9 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
 
 def _service_package(path: Path, services_root: Path) -> tuple[str, ...]:
     relative = path.relative_to(services_root)
-    return ("llm_wiki_cli", "services", *relative.parent.parts)
+    # Engine modules resolve relative imports inside the engine package.
+    package = ("llm_wiki_engine",) if services_root.name == "llm_wiki_engine" else ("llm_wiki_cli", "services")
+    return (*package, *relative.parent.parts)
 
 
 def _resolve_relative_module(

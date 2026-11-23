@@ -1,6 +1,6 @@
 # SyncManifest
 
-**Location:** `src/llm_wiki_engine/sync_manifest.py:864`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:866`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -111,4 +111,4 @@ flowchart LR
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
 
-> References: showing 12 of 115 logical references; 103 omitted by the 12-row generated summary limit.
+> References: showing 12 of 117 logical references; 105 omitted by the 12-row generated summary limit.

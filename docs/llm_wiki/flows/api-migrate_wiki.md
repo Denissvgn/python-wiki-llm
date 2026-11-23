@@ -2,7 +2,7 @@
 
 **Entry point:** `migrate_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 32 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 33 more
 
 **Complete modules touched:**
 
@@ -33,6 +33,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [migrate_runtime](../modules/migrate_runtime.md)
 - [migrate_service](../modules/migrate_service.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [python_imports](../modules/python_imports.md)
 - [source_selection](../modules/source_selection.md)
@@ -113,9 +114,9 @@ sequenceDiagram
     p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 1113 interactions; 1083 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1114 interactions; 1084 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 341 (340 omitted); unresolved 1 of 315 (314 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 342 (341 omitted); unresolved 1 of 315 (314 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -129,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/migrate_runtime.py:run_request` | 17 | - | external | 9 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 21 | - | unresolved | 5 |
-> Omission summary shows 8 of 293 groups; 285 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 295 groups; 287 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -221,15 +222,15 @@ flowchart LR
 |---|---|---:|---|
 | migrate_wiki | MigrateRequest | 1325 | `MigrateRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, chunk_size=chunk_size, chunk=chunk, plan_chunks=plan_chunks, plugins=trust_source_plugins, source_selection=source_selection)` |
 | migrate_wiki | discarding_output | 1336 | `discarding_output(data not statically known)` |
-| discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
-| using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
-| using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
-| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
-| discarding_output | current_host | 255 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| discarding_output | _Discard | 255 | `_Discard(data not statically known)` |
+| discarding_output | using_host | 282 | `using_host(...)` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |
+| using_host | _ACTIVE.set | 175 | `_ACTIVE.set(host)` |
+| using_host | _ACTIVE.reset | 179 | `_ACTIVE.reset(token)` |
+| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 282 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
+| discarding_output | current_host | 282 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
+| discarding_output | _Discard | 282 | `_Discard(data not statically known)` |
 
 ### Boundary effects
 
@@ -239,11 +240,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_host` | `isinstance` | 172 |
-| external_call | `using_host` | `TypeError` | 173 |
-| unresolved_call | `using_host` | `_ACTIVE.reset` | 178 |
-| unresolved_call | `discarding_output` | `current_host().with_output` | 255 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| external_call | `using_host` | `isinstance` | 173 |
+| external_call | `using_host` | `TypeError` | 174 |
+| unresolved_call | `using_host` | `_ACTIVE.reset` | 179 |
+| unresolved_call | `discarding_output` | `current_host().with_output` | 282 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `migrate_wiki` | `first 12 steps` | 0 |
 | truncated_flow | `migrate_wiki` | `depth limit` | 0 |
 

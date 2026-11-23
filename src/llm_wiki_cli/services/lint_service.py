@@ -1295,7 +1295,7 @@ def _historical_pages_for_lint(report, wiki_path, inputs, knowledge_state):
     from llm_wiki_engine.knowledge_artifacts import require_validated_artifacts
     from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
     from llm_wiki_engine.knowledge_storage_io import StorageReadSession
-    from .historical_sources import confirm_absence
+    from .historical_retirement import confirm_absence
 
     manifest = inputs.manifest
     if manifest is None or historical_sources.INPUT not in manifest.generation_inputs:

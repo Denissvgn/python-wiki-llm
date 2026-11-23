@@ -20,6 +20,7 @@ establish dependency, runtime behavior, or authored documentation correctness.
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_engine.analysis_compatibility` | `component_record` |
+| `llm_wiki_engine.implementation_summary` | `ANALYSIS_SCOPES`, `LIMITATIONS`, `REASONS`, `SCOPES`, `SUMMARY_FIELDS`, `UNAVAILABLE_REASONS`, `validate_implementation_summary`, `_bool`, `_object` |
 | `llm_wiki_engine.knowledge_evidence` | `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY` |
 | `re` | `re` |
 | `types` | `MappingProxyType` |
@@ -42,8 +43,8 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (9) |
-| Outbound | `src` (3) |
+| Inbound | `src` (8) |
+| Outbound | `src` (4) |
 
 > All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
@@ -51,16 +52,14 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ImplementationComparison](../entities/ImplementationComparison.md) | 713 | — | — |
-| [ImplementationReport](../entities/ImplementationReport.md) | 738 | — | — |
+| [ImplementationComparison](../entities/ImplementationComparison.md) | 665 | — | — |
+| [ImplementationReport](../entities/ImplementationReport.md) | 690 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_object` | `(value, fields, label)` | — | — |
 | `_int` | `(value, maximum, label, minimum = 0)` | — | — |
-| `_bool` | `(value, label)` | — | — |
 | `_hash` | `(value, label, nullable = False)` | — | — |
 | `_copy` | `(value)` | — | — |
 | `_freeze` | `(value)` | — | — |
@@ -79,7 +78,6 @@ flowchart LR
 | `_validate_detail_lineages` | `(observations, details, *, owner = None, complete = True)` | — | — |
 | `validate_implementation_collection` | `(concepts, *, producer = None, complete = True)` | — | Crosscheck redundant primaries and detail ancestry in a full collection. |
 | `project_concept_implementations` | `(observations, mappings, *, producer, source_content_hashes) -> dict` | — | Project exact already captured owners after manifest mapping finalization. |
-| `validate_implementation_summary` | `(value: object) -> dict` | — | — |
 | `compact_implementation_summary` | `(value: ImplementationComparison \| Mapping) -> dict` | — | — |
 | `_analysis_scope` | `(value)` | — | — |
 | `compare_implementation_observations` | `(recorded, live, *, analysis_scope = 'snapshot', coordinate = None, scope = None, expected_analysis_hash = None, source_captured = True, source_present = True, truncated = False) -> ImplementationComparison` | — | — |

@@ -1,0 +1,51 @@
+# LintRequest
+
+**Location:** `src/llm_wiki_engine/wiki_operations.py:60`
+**Kind:** Class
+**Bases:** —
+**Module:** [wiki_operations](../modules/wiki_operations.md)
+
+**Decorators:** `@dataclass(frozen=True)`
+
+## Description
+
+Check the wiki at ``wiki_root`` against ``source_root``.
+
+## Attributes
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `source_root` | `str \| os.PathLike[str]` | *required* | — |
+| `wiki_root` | `str \| os.PathLike[str]` | *required* | — |
+
+## Methods
+
+*No declared methods.*
+
+## Relationships
+
+<!-- Auto-generated relationship summary. Do not edit by hand. -->
+```mermaid
+flowchart LR
+    n0["LintRequest (src/llm_wiki_engine/wiki_operations.py)"]
+    n1["Engine.lint (src/llm_wiki_engine/engine.py)"]
+    n2["lint (src/llm_wiki_engine/wiki_operations.py)"]
+    n1 --> n0
+    n2 --> n0
+    click n0 "../modules/wiki_operations.md"
+    click n1 "../modules/engine.md"
+    click n2 "../modules/wiki_operations.md"
+```
+
+### Summary
+
+| Module | Methods | Attributes |
+|---|---:|---|
+| [wiki_operations](../modules/wiki_operations.md) | 0 | `source_root`, `wiki_root` |
+
+### References
+
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `Engine.lint` | type_reference | [engine](../modules/engine.md) | — |
+| `lint` | type_reference | [wiki_operations](../modules/wiki_operations.md) | — |

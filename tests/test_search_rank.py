@@ -203,7 +203,7 @@ def test_search_runtime_failures_keep_exit_one(tmp_path, monkeypatch, capsys, er
     def fail(*args, **kwargs):
         raise error
 
-    from llm_wiki_cli.services import search_service
+    from llm_wiki_engine import search_service
     monkeypatch.setattr(search_service, "search_wiki", fail)
     monkeypatch.setattr("sys.argv", ["llm-wiki", "search", "User"])
     with pytest.raises(SystemExit) as exc:

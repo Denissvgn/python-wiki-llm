@@ -1,9 +1,9 @@
 # ExtensionSourceClassifier
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:406`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:218`
 **Kind:** Class
 **Bases:** —
-**Module:** [domain_pack](../modules/domain_pack.md)
+**Module:** [pack_interfaces](../modules/pack_interfaces.md)
 
 ## Description
 
@@ -32,21 +32,21 @@ those are excluded unless the kind is in ``include_tests``.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ExtensionSourceClassifier (src/llm_wiki_cli/services/domain_pack.py)"]
+    n0["ExtensionSourceClassifier (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["CodeSourceClassifier (src/llm_wiki_cli/services/domain_pack.py)"]
-    n2["src/llm_wiki_cli/engine/__init__.py"]
+    n2["src/llm_wiki_cli/services/domain_pack.py"]
     n1 --> n0
     n2 --> n0
-    click n0 "../modules/domain_pack.md"
+    click n0 "../modules/pack_interfaces.md"
     click n1 "../modules/domain_pack.md"
-    click n2 "../modules/engine___init__.md"
+    click n2 "../modules/domain_pack.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [domain_pack](../modules/domain_pack.md) | 6 | — |
+| [pack_interfaces](../modules/pack_interfaces.md) | 6 | — |
 
 ### Structure
 
@@ -58,4 +58,4 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |

@@ -89,6 +89,7 @@ def _provide_knowledge_core_integrations() -> None:
         "maintenance_reports": services + "maintenance_service",
         "inventory_results": services + "extraction_service",
         "domain_packs": services + "domain_pack",
+        "packet_builders": services + "context_packet_builder",
     })
 
 

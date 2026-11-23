@@ -22,7 +22,6 @@
 - [dependency_versions](../modules/dependency_versions.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -52,20 +51,21 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
-- [packet_field_policy](../modules/packet_field_policy.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_bindings](../modules/python_bindings.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
+- [query_request_format](../modules/query_request_format.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
-- [token_counting](../modules/token_counting.md)
+- [token_counters](../modules/token_counters.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -108,8 +108,8 @@ sequenceDiagram
     participant p24 as validate_changes
     participant p25 as validate_live_query_source_selection
     participant p26 as build_source_snapshot
-    participant p27 as validate_context_packet
-    participant p28 as _guard_windows_inputs
+    participant p27 as _guard_windows_inputs
+    participant p28 as _assert_source_unchanged
     participant p29 as ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)
     participant p30 as request.get (src/llm_wiki_cli/services…py:build_budgeted_context)
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
@@ -138,15 +138,15 @@ sequenceDiagram
     p2->>p24: validate_changes
     p3->>p25: validate_live_query_source_selection
     p3->>p26: build_source_snapshot
-    p8->>p27: validate_context_packet
-    p3->>p28: _guard_windows_inputs
+    p3->>p27: _guard_windows_inputs
+    p3->>p28: _assert_source_unchanged
     p1-->>p29: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Exact mode requires an explicit trusted counter or --tokenizer FILE')
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3502 interactions; 3472 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3293 interactions; 3263 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1209 (1208 omitted); unresolved 1 of 1099 (1098 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1171 (1170 omitted); unresolved 1 of 1053 (1052 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -160,7 +160,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 21 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 24 | - | external | 13 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 868 groups; 860 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 811 groups; 803 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -173,9 +173,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1195; effect analysis evaluated: 824, partial: 46, unavailable: 325. Counts include steps omitted from the displayed trace.
+Source steps: 1070; effect analysis evaluated: 759, partial: 45, unavailable: 266. Counts include steps omitted from the displayed trace.
 
-Collector observations for 870 source steps with known totals: observed: 5237, emitted: 5013, omitted: 224. Unavailable totals are excluded.
+Collector observations for 804 source steps with known totals: observed: 4967, emitted: 4748, omitted: 219. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -264,7 +264,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1602 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
-| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_budget_request | 342 | `validate_request(...)` |
+| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_budget_request | 343 | `validate_request(...)` |
 | validate_budget_request | isinstance (src/llm_wiki_engine/conte…y:validate_budget_request) | 381 | `isinstance(data, Mapping)` |
 | validate_budget_request | any (src/llm_wiki_engine/conte…y:validate_budget_request) | 381 | `any(...)` |
 | validate_budget_request | isinstance (src/llm_wiki_engine/conte…y:validate_budget_request) | 381 | `isinstance(key, str)` |
@@ -279,7 +279,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `legacy.update` | `build_budgeted_context` | 383 |
+| mutation | `legacy.update` | `build_budgeted_context` | 384 |
 | mutation | `legacy.pop` | `validate_budget_request` | 397 |
 | mutation | `legacy.pop` | `validate_budget_request` | 398 |
 | mutation | `legacy.pop` | `validate_budget_request` | 399 |

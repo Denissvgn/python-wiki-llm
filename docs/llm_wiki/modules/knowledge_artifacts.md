@@ -33,6 +33,7 @@ silently accept a different retirement claim.
 | `.knowledge_reuse_format` | `validate_reuse_artifact_parity` |
 | `.knowledge_storage` | `STORE_SCHEMA`, `MAX_EXPANDED_BYTES`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `logical_digest`, `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `StorageReadSession`, `StorageReadSession`, `read_guarded`, `read_guarded`, `read_guarded`, `_absolute_path` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `.maintenance_projection` | `validate_maintenance_projection`, `BINDING_KEY`, `RECORD_KEY` |
 | `.maintenance_protocol` | `ADOPTION_FILENAME`, `load_adoption_marker`, `storage_writer_lock`, `guard_maintenance_owner`, `load_adoption_marker`, `storage_writer_lock` |
 | `.maintenance_state` | `validate_maintenance_adoption` |
@@ -82,22 +83,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (33) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 61 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 90 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
-| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 100 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
-| [CommitStage](../entities/CommitStage.md) | Enum | 108 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
-| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 119 | — | One exact-byte action in a knowledge artifact commit. |
-| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 132 | — | Validated canonical projections and their exact-byte commitments. |
-| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 153 | — | — |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 218 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 245 | — | Outcome of a real or dry-run commit. |
+| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 92 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
+| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 102 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
+| [CommitStage](../entities/CommitStage.md) | Enum | 110 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
+| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 121 | — | One exact-byte action in a knowledge artifact commit. |
+| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 134 | — | Validated canonical projections and their exact-byte commitments. |
+| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 155 | — | — |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 220 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 247 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 

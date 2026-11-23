@@ -12,7 +12,7 @@ from .context_budget import _accounted_render
 from llm_wiki_engine.immutable import freeze
 from llm_wiki_engine.request_json import _pairs, _constant
 from .task_context import validate_task_context, _counter, _LIMITATIONS
-from .task_contract import TaskContext, TASK_REQUEST_SCHEMA_V2, normalize_task_request
+from llm_wiki_engine.task_contract import TaskContext, TASK_REQUEST_SCHEMA_V2, normalize_task_request
 from llm_wiki_engine.workflow_profile import canonical_json, content_id
 from llm_wiki_engine.task_compact_readable import readable_projection, readable_expansion
 

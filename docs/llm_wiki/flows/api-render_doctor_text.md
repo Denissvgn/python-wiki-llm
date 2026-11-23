@@ -2,7 +2,7 @@
 
 **Entry point:** `render_doctor_text` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [doctor_service](../modules/doctor_service.md), [health_summary](../modules/health_summary.md)
+**Modules touched:** [doctor_service](../modules/doctor_service.md), [health_summary](../modules/health_summary.md)
 
 ## Call sequence
 
@@ -15,61 +15,56 @@ sequenceDiagram
     participant p1 as _render_doctor_payload
     participant p2 as assurance_rows
     participant p3 as detailed_health_rows
-    participant p4 as captured_analysis_diagnostic
-    participant p5 as analysis_diagnostic
-    participant p6 as captured_components
-    participant p7 as component_record
-    participant p8 as _format_counts
-    participant p9 as health_policy
-    participant p10 as summary_cell
-    participant p11 as optional_status
-    participant p12 as reason_list
-    participant p13 as detailed_health_rows.<locals>.value
-    participant p14 as freshness_counts
-    participant p15 as _versions
-    participant p16 as validate_record
-    participant p17 as configuration_commitment
-    participant p18 as isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)
-    participant p19 as report.to_payload
-    participant p20 as dict
-    participant p21 as lines.append
-    participant p22 as lines.extend
-    participant p23 as ', '.join (src/llm_wiki_cli/services…py:_render_doctor_payload)
+    participant p4 as _format_counts
+    participant p5 as health_policy
+    participant p6 as summary_cell
+    participant p7 as optional_status
+    participant p8 as reason_list
+    participant p9 as captured_analysis_diagnostic
+    participant p10 as detailed_health_rows.<locals>.value
+    participant p11 as freshness_counts
+    participant p12 as _versions
+    participant p13 as isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)
+    participant p14 as report.to_payload
+    participant p15 as dict
+    participant p16 as lines.append
+    participant p17 as lines.extend
+    participant p18 as ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)
     p0->>p1: _render_doctor_payload
     p1->>p2: assurance_rows
     p1->>p3: detailed_health_rows
-    p3->>p4: captured_analysis_diagnostic
-    p4->>p5: analysis_diagnostic
-    p4->>p6: captured_components
-    p5->>p7: component_record
-    p1->>p8: _format_counts
-    p1->>p9: health_policy
-    p1->>p10: summary_cell
-    p2->>p11: optional_status
-    p2->>p12: reason_list
-    p3->>p13: detailed_health_rows.<locals>.value
-    p3->>p14: freshness_counts
-    p3->>p15: _versions
-    p6->>p16: validate_record
-    p7->>p17: configuration_commitment
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(availability, Mapping)
-    p0-->>p19: report.to_payload(report_schema=report_schema)
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(freshness, Mapping)
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(snapshot, Mapping)
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(governance, Mapping)
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(drift, Mapping)
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(verification, Mapping)
-    p1-->>p20: dict(assurance_rows(...))
-    p1-->>p21: lines.append(...)
-    p1-->>p22: lines.extend([...])
-    p1-->>p21: lines.append(...)
-    p1-->>p21: lines.append(...)
-    p1-->>p23: ', '.join (src/llm_wiki_cli/services…py:_render_doctor_payload)(payload[...])
+    p1->>p4: _format_counts
+    p1->>p5: health_policy
+    p1->>p6: summary_cell
+    p2->>p7: optional_status
+    p2->>p8: reason_list
+    p3->>p9: captured_analysis_diagnostic
+    p3->>p10: detailed_health_rows.<locals>.value
+    p3->>p11: freshness_counts
+    p3->>p12: _versions
+    p1-->>p13: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(availability, Mapping)
+    p0-->>p14: report.to_payload(report_schema=report_schema)
+    p1-->>p13: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(freshness, Mapping)
+    p1-->>p13: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(snapshot, Mapping)
+    p1-->>p13: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(governance, Mapping)
+    p1-->>p13: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(drift, Mapping)
+    p1-->>p13: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(verification, Mapping)
+    p1-->>p15: dict(assurance_rows(...))
+    p1-->>p16: lines.append(...)
+    p1-->>p17: lines.extend([...])
+    p1-->>p16: lines.append(...)
+    p1-->>p16: lines.append(...)
+    p1-->>p18: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)(payload[...])
+    p1-->>p16: lines.append(...)
+    p1-->>p18: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)(payload[...])
+    p1-->>p16: lines.append(...)
+    p1-->>p16: lines.append(ASSURANCE_DISCLOSURE)
+    p1-->>p17: lines.extend(...)
 ```
 
-> Call sequence diagram shows 30 of 128 interactions; 98 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 86 interactions; 56 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 44 (37 omitted); unresolved 6 of 57 (51 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 25 (18 omitted); unresolved 11 of 43 (32 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -83,10 +78,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/health_summary.py:summary_cell` | 23 | - | external | 7 |
 | `src/llm_wiki_cli/services/health_summary.py:summary_cell` | 23 | - | unresolved | 8 |
 | `src/llm_wiki_cli/services/doctor_service.py:_render_doctor_payload` | 2 | [src/llm_wiki_cli/services/health_summary.py](../modules/health_summary.md) | internal | 3 |
-> Omission summary shows 8 of 26 groups; 18 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
-
-> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -94,50 +87,33 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 28; effect analysis evaluated: 27, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 19; effect analysis evaluated: 19, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 28 source steps with known totals: observed: 159, emitted: 158, omitted: 1. Unavailable totals are excluded.
-
-- Effect collector omitted observations before flow assembly; displayed effects are partial.
-
-| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
-|---|---|---|---|---:|---:|---:|
-| `render_doctor_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `_render_doctor_payload` | `available` | `evaluated` | `available` | `18` | `18` | `0` |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `assurance_rows` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
-| `optional_status` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
-| `reason_list` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+Collector observations for 19 source steps with known totals: observed: 89, emitted: 89, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR
     s1["1. render_doctor_text"]
     s2["2. _render_doctor_payload"]
-    s3["3. isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)"]
-    s4["4. isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)"]
-    s5["5. isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)"]
-    s7["7. isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)"]
-    s8["8. isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)"]
+    s3["3. isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)"]
+    s4["4. isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)"]
+    s5["5. isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)"]
+    s6["6. isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)"]
+    s7["7. isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)"]
+    s8["8. isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)"]
     s9["9. dict"]
     s10["10. assurance_rows"]
     s11["11. optional_status"]
     s12["12. reason_list"]
     s1 -->|"_render_doctor_payload(report.to_payload(...))"| s2
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(availability, Mapping)" .-> s3
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(freshness, Mapping)" .-> s4
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(snapshot, Mapping)" .-> s5
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(governance, Mapping)" .-> s6
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(drift, Mapping)" .-> s7
-    s2 -. "isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)(verification, Mapping)" .-> s8
+    s2 -. "isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(availability, Mapping)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(freshness, Mapping)" .-> s4
+    s2 -. "isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(snapshot, Mapping)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(governance, Mapping)" .-> s6
+    s2 -. "isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(drift, Mapping)" .-> s7
+    s2 -. "isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(verification, Mapping)" .-> s8
     s2 -. "dict(assurance_rows(...))" .-> s9
     s2 -->|"assurance_rows(payload)"| s10
     s10 -->|"optional_status(governance[...], absent='not-present')"| s11
@@ -180,12 +156,12 @@ flowchart LR
 |---|---|---|---|---|
 | `render_doctor_text` | `report: DoctorReport`, `report_schema: str` | - | - | `_render_doctor_payload(...)` |
 | `_render_doctor_payload` | `payload: Mapping[str, Any]` | `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping`, `RELEASE_POLICY_UNAVAILABLE`, `ASSURANCE_DISCLOSURE` | - | `...` |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
 | `dict` | - | - | - | - |
 | `assurance_rows` | `report: Mapping` | - | - | `[...]` |
 | `optional_status` | `state: str`, `absent: str` | - | - | `...` |
@@ -196,12 +172,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | render_doctor_text | _render_doctor_payload | 234 | `_render_doctor_payload(report.to_payload(...))` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload) | 244 | `isinstance(availability, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload) | 245 | `isinstance(freshness, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload) | 246 | `isinstance(snapshot, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload) | 247 | `isinstance(governance, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload) | 248 | `isinstance(drift, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload) | 249 | `isinstance(verification, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 244 | `isinstance(availability, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 245 | `isinstance(freshness, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 246 | `isinstance(snapshot, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 247 | `isinstance(governance, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 248 | `isinstance(drift, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 249 | `isinstance(verification, Mapping)` |
 | _render_doctor_payload | dict | 250 | `dict(assurance_rows(...))` |
 | _render_doctor_payload | assurance_rows | 250 | `assurance_rows(payload)` |
 | assurance_rows | optional_status | 74 | `optional_status(governance[...], absent='not-present')` |
@@ -231,7 +207,6 @@ flowchart LR
 | external_call | `_render_doctor_payload` | `isinstance` | 248 |
 | external_call | `_render_doctor_payload` | `isinstance` | 249 |
 | step_limit | `render_doctor_text` | `first 12 steps` | 0 |
-| truncated_flow | `render_doctor_text` | `depth limit` | 0 |
 
 ## Behavior
 

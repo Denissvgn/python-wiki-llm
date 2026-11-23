@@ -2,11 +2,10 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [render_summary](../modules/render_summary.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), and 2 more
+**Modules touched:** [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), [knowledge_freshness](../modules/knowledge_freshness.md), and 1 more
 
 **Complete modules touched:**
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [ci_report](../modules/ci_report.md)
 - [health_contract](../modules/health_contract.md)
 - [health_summary](../modules/health_summary.md)
@@ -32,25 +31,25 @@ sequenceDiagram
     participant p7 as assurance_rows
     participant p8 as detailed_health_rows
     participant p9 as _cell
-    participant p10 as captured_analysis_diagnostic
-    participant p11 as _required_object
-    participant p12 as _enum (integrations/github-action/render_summary.py)
-    participant p13 as _validate_availability
-    participant p14 as _validate_freshness
-    participant p15 as _validate_snapshot
-    participant p16 as _validate_governance
-    participant p17 as _validate_drift
-    participant p18 as _validate_verification
-    participant p19 as validate_doctor_payload
-    participant p20 as analysis_diagnostic
-    participant p21 as _exact_object (src/llm_wiki_cli/services/ci_report.py)
-    participant p22 as _string_list
-    participant p23 as _freshness_counts (integrations/github-action/render_summary.py)
-    participant p24 as _nullable_boolean (integrations/github-action/render_summary.py)
-    participant p25 as validate_health_details
-    participant p26 as _contract_object
-    participant p27 as _string (src/llm_wiki_cli/services/ci_report.py)
-    participant p28 as _validate_doctor
+    participant p10 as _required_object
+    participant p11 as _enum (integrations/github-action/render_summary.py)
+    participant p12 as _validate_availability
+    participant p13 as _validate_freshness
+    participant p14 as _validate_snapshot
+    participant p15 as _validate_governance
+    participant p16 as _validate_drift
+    participant p17 as _validate_verification
+    participant p18 as validate_doctor_payload
+    participant p19 as _exact_object (src/llm_wiki_cli/services/ci_report.py)
+    participant p20 as _string_list
+    participant p21 as _freshness_counts (integrations/github-action/render_summary.py)
+    participant p22 as _nullable_boolean (integrations/github-action/render_summary.py)
+    participant p23 as validate_health_details
+    participant p24 as _contract_object
+    participant p25 as _string (src/llm_wiki_cli/services/ci_report.py)
+    participant p26 as _validate_doctor
+    participant p27 as _exact_object (integrations/github-action/render_summary.py)
+    participant p28 as _object (src/llm_wiki_cli/services/ci_report.py)
     participant p29 as Path (integrations/github-action/render_summary.py:main)
     participant p30 as Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
     p0->>p1: load_report
@@ -62,32 +61,32 @@ sequenceDiagram
     p2->>p7: assurance_rows
     p2->>p8: detailed_health_rows
     p2->>p9: _cell
-    p8->>p10: captured_analysis_diagnostic
-    p6->>p11: _required_object
-    p6->>p12: _enum (integrations/github-action/render_summary.py)
-    p6->>p13: _validate_availability
-    p6->>p14: _validate_freshness
-    p6->>p15: _validate_snapshot
-    p6->>p16: _validate_governance
-    p6->>p17: _validate_drift
-    p6->>p18: _validate_verification
-    p6->>p19: validate_doctor_payload
-    p10->>p20: analysis_diagnostic
-    p19->>p21: _exact_object (src/llm_wiki_cli/services/ci_report.py)
-    p15->>p22: _string_list
-    p14->>p23: _freshness_counts (integrations/github-action/render_summary.py)
-    p18->>p24: _nullable_boolean (integrations/github-action/render_summary.py)
-    p19->>p25: validate_health_details
-    p19->>p26: _contract_object
-    p19->>p27: _string (src/llm_wiki_cli/services/ci_report.py)
-    p19->>p28: _validate_doctor
+    p6->>p10: _required_object
+    p6->>p11: _enum (integrations/github-action/render_summary.py)
+    p6->>p12: _validate_availability
+    p6->>p13: _validate_freshness
+    p6->>p14: _validate_snapshot
+    p6->>p15: _validate_governance
+    p6->>p16: _validate_drift
+    p6->>p17: _validate_verification
+    p6->>p18: validate_doctor_payload
+    p18->>p19: _exact_object (src/llm_wiki_cli/services/ci_report.py)
+    p14->>p20: _string_list
+    p13->>p21: _freshness_counts (integrations/github-action/render_summary.py)
+    p17->>p22: _nullable_boolean (integrations/github-action/render_summary.py)
+    p18->>p23: validate_health_details
+    p18->>p24: _contract_object
+    p18->>p25: _string (src/llm_wiki_cli/services/ci_report.py)
+    p18->>p26: _validate_doctor
+    p21->>p27: _exact_object (integrations/github-action/render_summary.py)
+    p19->>p28: _object (src/llm_wiki_cli/services/ci_report.py)
     p0-->>p29: Path (integrations/github-action/render_summary.py:main)(args.report)
     p1-->>p30: Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
 ```
 
-> Call sequence diagram shows 30 of 606 interactions; 576 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 539 interactions; 509 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 198 (197 omitted); unresolved 1 of 109 (108 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 166 (165 omitted); unresolved 1 of 99 (98 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/github-action/render_summary.py:_required_object` | 21 | [integrations/github-action/render_summary.py](../modules/render_summary.md) | internal | 1 |
 | `integrations/github-action/render_summary.py:_object` | 22 | - | external | 2 |
 | `integrations/github-action/render_summary.py:_required_object` | 21 | - | external | 3 |
-> Omission summary shows 8 of 121 groups; 113 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -114,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 300; effect analysis evaluated: 248, partial: 7, unavailable: 45. Counts include steps omitted from the displayed trace.
+Source steps: 275; effect analysis evaluated: 227, partial: 3, unavailable: 45. Counts include steps omitted from the displayed trace.
 
-Collector observations for 255 source steps with known totals: observed: 1061, emitted: 1034, omitted: 27. Unavailable totals are excluded.
+Collector observations for 230 source steps with known totals: observed: 894, emitted: 874, omitted: 20. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

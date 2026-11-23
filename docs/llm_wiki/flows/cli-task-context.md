@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), and 49 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), and 50 more
 
 **Complete modules touched:**
 
@@ -37,6 +37,7 @@
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_implementation](../modules/python_implementation.md)
+- [query_request_format](../modules/query_request_format.md)
 - [request_json](../modules/request_json.md)
 - [search_lexical](../modules/search_lexical.md)
 - [search_rank](../modules/search_rank.md)
@@ -54,8 +55,8 @@
 - [task_contract](../modules/task_contract.md)
 - [task_evidence](../modules/task_evidence.md)
 - [task_implementation](../modules/task_implementation.md)
+- [token_counters](../modules/token_counters.md)
 - [token_counting](../modules/token_counting.md)
-- [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
 - [workflow_profile](../modules/workflow_profile.md)
@@ -132,7 +133,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 1458 interactions; 1428 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 602 (601 omitted); unresolved 1 of 358 (357 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 602 (601 omitted); unresolved 1 of 363 (362 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -146,7 +147,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 12 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | [src/llm_wiki_cli/commands/task_cmd.py](../modules/task_cmd.md) | internal | 5 |
-> Omission summary shows 8 of 317 groups; 309 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 314 groups; 306 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -159,9 +160,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 499; effect analysis evaluated: 298, partial: 41, unavailable: 160. Counts include steps omitted from the displayed trace.
+Source steps: 494; effect analysis evaluated: 293, partial: 41, unavailable: 160. Counts include steps omitted from the displayed trace.
 
-Collector observations for 339 source steps with known totals: observed: 2377, emitted: 2225, omitted: 152. Unavailable totals are excluded.
+Collector observations for 334 source steps with known totals: observed: 2359, emitted: 2207, omitted: 152. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

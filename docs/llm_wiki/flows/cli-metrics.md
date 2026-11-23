@@ -2,15 +2,13 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [documentation_queries](../modules/documentation_queries.md), and 31 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [domain_pack](../modules/domain_pack.md), and 31 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [common](../modules/common.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -30,6 +28,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [metrics_cmd](../modules/metrics_cmd.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [packages](../modules/packages.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
@@ -37,6 +36,7 @@
 - [python_contracts](../modules/python_contracts.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_observations](../modules/python_observations.md)
+- [query_request_format](../modules/query_request_format.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -114,7 +114,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 1010 interactions; 980 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 363 (362 omitted); unresolved 1 of 266 (265 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 363 (362 omitted); unresolved 1 of 265 (264 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 13 | - | unresolved | 1 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 8 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 8 | - | external | 10 |
-> Omission summary shows 8 of 272 groups; 264 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 271 groups; 263 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -141,9 +141,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 382; effect analysis evaluated: 260, partial: 8, unavailable: 114. Counts include steps omitted from the displayed trace.
+Source steps: 383; effect analysis evaluated: 261, partial: 8, unavailable: 114. Counts include steps omitted from the displayed trace.
 
-Collector observations for 268 source steps with known totals: observed: 1537, emitted: 1517, omitted: 20. Unavailable totals are excluded.
+Collector observations for 269 source steps with known totals: observed: 1538, emitted: 1518, omitted: 20. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -230,10 +230,10 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 116 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 125 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
+| validate_source_root | validate_path | 127 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 102 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
 
 ### Boundary effects
 
@@ -251,8 +251,8 @@ flowchart LR
 | external_call | `run` | `getattr` | 112 |
 | external_call | `run` | `getattr` | 113 |
 | external_call | `run` | `getattr` | 115 |
-| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 103 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

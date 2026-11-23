@@ -15,6 +15,7 @@ agent worktrees and validation of wiki and source roots.
 |--------|---------|
 | `.filesystem_guard` | `WindowsSecurityGuardError`, `windows_current_user_sid`, `windows_path_owner_sid` |
 | `.io` | `first_unsafe_path_component` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable` |
 | `llm_wiki_engine.host` | `current_host` |
@@ -41,16 +42,16 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (27) |
-| Outbound | `src` (3) |
+| Inbound | `src` (28) |
+| Outbound | `src` (4) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PathValidationError](../entities/PathValidationError.md) | 90 | `ValueError` | Raised when a user-provided path escapes the project root. |
+| [PathValidationError](../entities/PathValidationError.md) | 92 | `ValueError` | Raised when a user-provided path escapes the project root. |
 
 ## Functions
 

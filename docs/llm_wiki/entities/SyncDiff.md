@@ -1,6 +1,6 @@
 # SyncDiff
 
-**Location:** `src/llm_wiki_cli/services/sync_analysis.py:138`
+**Location:** `src/llm_wiki_cli/services/sync_analysis.py:135`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_analysis](../modules/sync_analysis.md)

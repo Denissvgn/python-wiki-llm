@@ -121,17 +121,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| summarize_knowledge_view | isinstance | 413 | `isinstance(view, KnowledgeReadView)` |
-| summarize_knowledge_view | TypeError | 414 | `TypeError('view must be a KnowledgeReadView')` |
-| summarize_knowledge_view | KnowledgePhaseDurations | 415 | `KnowledgePhaseDurations(data not statically known)` |
-| summarize_knowledge_view | int | 419 | `int(count)` |
-| summarize_knowledge_view | view.freshness.counts.items | 419 | `view.freshness.counts.items(data not statically known)` |
-| summarize_knowledge_view | sum | 422 | `sum(freshness_counts.values(...))` |
-| summarize_knowledge_view | freshness_counts.values | 422 | `freshness_counts.values(data not statically known)` |
-| summarize_knowledge_view | int | 428 | `int(view.counts.evidence_by_state.get(...))` |
-| summarize_knowledge_view | view.counts.evidence_by_state.get | 428 | `view.counts.evidence_by_state.get(state, 0)` |
-| summarize_knowledge_view | KnowledgeAggregateSummary | 438 | `KnowledgeAggregateSummary(availability=view.availability.value, reason=view.reason_code, concepts_evaluated=concepts_evaluated, freshness_counts=freshness_counts, evidence_issue_counts=evidence_issue_counts, degraded_reason=degraded_reason, phase_durations_ms=selected_durations.to_payload(...), freshness_evaluated=view.freshness_evaluated)` |
-| summarize_knowledge_view | selected_durations.to_payload | 445 | `selected_durations.to_payload(data not statically known)` |
+| summarize_knowledge_view | isinstance | 415 | `isinstance(view, KnowledgeReadView)` |
+| summarize_knowledge_view | TypeError | 416 | `TypeError('view must be a KnowledgeReadView')` |
+| summarize_knowledge_view | KnowledgePhaseDurations | 417 | `KnowledgePhaseDurations(data not statically known)` |
+| summarize_knowledge_view | int | 421 | `int(count)` |
+| summarize_knowledge_view | view.freshness.counts.items | 421 | `view.freshness.counts.items(data not statically known)` |
+| summarize_knowledge_view | sum | 424 | `sum(freshness_counts.values(...))` |
+| summarize_knowledge_view | freshness_counts.values | 424 | `freshness_counts.values(data not statically known)` |
+| summarize_knowledge_view | int | 430 | `int(view.counts.evidence_by_state.get(...))` |
+| summarize_knowledge_view | view.counts.evidence_by_state.get | 430 | `view.counts.evidence_by_state.get(state, 0)` |
+| summarize_knowledge_view | KnowledgeAggregateSummary | 440 | `KnowledgeAggregateSummary(availability=view.availability.value, reason=view.reason_code, concepts_evaluated=concepts_evaluated, freshness_counts=freshness_counts, evidence_issue_counts=evidence_issue_counts, degraded_reason=degraded_reason, phase_durations_ms=selected_durations.to_payload(...), freshness_evaluated=view.freshness_evaluated)` |
+| summarize_knowledge_view | selected_durations.to_payload | 447 | `selected_durations.to_payload(data not statically known)` |
 
 ### Boundary effects
 
@@ -141,13 +141,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `summarize_knowledge_view` | `isinstance` | 413 |
-| external_call | `summarize_knowledge_view` | `TypeError` | 414 |
-| unresolved_call | `summarize_knowledge_view` | `view.freshness.counts.items` | 419 |
-| external_call | `summarize_knowledge_view` | `sum` | 422 |
-| unresolved_call | `summarize_knowledge_view` | `freshness_counts.values` | 422 |
-| unresolved_call | `summarize_knowledge_view` | `view.counts.evidence_by_state.get` | 428 |
-| unresolved_call | `summarize_knowledge_view` | `selected_durations.to_payload` | 445 |
+| external_call | `summarize_knowledge_view` | `isinstance` | 415 |
+| external_call | `summarize_knowledge_view` | `TypeError` | 416 |
+| unresolved_call | `summarize_knowledge_view` | `view.freshness.counts.items` | 421 |
+| external_call | `summarize_knowledge_view` | `sum` | 424 |
+| unresolved_call | `summarize_knowledge_view` | `freshness_counts.values` | 424 |
+| unresolved_call | `summarize_knowledge_view` | `view.counts.evidence_by_state.get` | 430 |
+| unresolved_call | `summarize_knowledge_view` | `selected_durations.to_payload` | 447 |
 
 ## Behavior
 

@@ -25,6 +25,7 @@ and are not decoded or hashed by this inventory.
 | `.schema` | `*` |
 | `.workspace` | `*` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 
 ## Local dependency map
 
@@ -45,9 +46,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

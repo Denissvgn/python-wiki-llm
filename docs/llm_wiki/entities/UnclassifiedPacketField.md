@@ -26,7 +26,7 @@ _Auto-generated from `UnclassifiedPacketField` in `src/llm_wiki_engine/packet_fi
 flowchart LR
     n0["UnclassifiedPacketField (src/llm_wiki_engine/packet_field_policy.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
+    n2["src/llm_wiki_engine/context_packet.py"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/packet_field_policy.md"

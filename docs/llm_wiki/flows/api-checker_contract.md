@@ -87,11 +87,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| checker_contract | _checker_id | 700 | `_checker_id(checker_id, 'checker_id')` |
-| _checker_id | isinstance | 1388 | `isinstance(value, str)` |
-| _checker_id | _CHECKER_ID_RE.fullmatch | 1388 | `_CHECKER_ID_RE.fullmatch(value)` |
-| _checker_id | VerificationContractError | 1389 | `VerificationContractError(...)` |
-| checker_contract | UnknownVerificationCheckerError | 704 | `UnknownVerificationCheckerError(checker_id)` |
+| checker_contract | _checker_id | 702 | `_checker_id(checker_id, 'checker_id')` |
+| _checker_id | isinstance | 1390 | `isinstance(value, str)` |
+| _checker_id | _CHECKER_ID_RE.fullmatch | 1390 | `_CHECKER_ID_RE.fullmatch(value)` |
+| _checker_id | VerificationContractError | 1391 | `VerificationContractError(...)` |
+| checker_contract | UnknownVerificationCheckerError | 706 | `UnknownVerificationCheckerError(checker_id)` |
 
 ### Boundary effects
 
@@ -101,8 +101,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_checker_id` | `isinstance` | 1388 |
-| unresolved_call | `_checker_id` | `_CHECKER_ID_RE.fullmatch` | 1388 |
+| external_call | `_checker_id` | `isinstance` | 1390 |
+| unresolved_call | `_checker_id` | `_CHECKER_ID_RE.fullmatch` | 1390 |
 
 ## Behavior
 

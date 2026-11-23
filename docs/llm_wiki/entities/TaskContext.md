@@ -1,6 +1,6 @@
 # TaskContext
 
-**Location:** `src/llm_wiki_cli/services/task_contract.py:123`
+**Location:** `src/llm_wiki_engine/task_contract.py:123`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_contract](../modules/task_contract.md)
@@ -34,7 +34,7 @@ Canonical task output with complete-representation accounting. Successful constr
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["TaskContext (src/llm_wiki_cli/services/task_contract.py)"]
+    n0["TaskContext (src/llm_wiki_engine/task_contract.py)"]
     n1["apply_task_delta (src/llm_wiki_cli/api.py)"]
     n2["build_compact_task_context (src/llm_wiki_cli/api.py)"]
     n3["build_task_context (src/llm_wiki_cli/api.py)"]

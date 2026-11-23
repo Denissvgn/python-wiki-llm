@@ -15,8 +15,6 @@
 - [context_service](../modules/context_service.md)
 - [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -59,10 +57,12 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [python_implementation](../modules/python_implementation.md)
+- [query_request_format](../modules/query_request_format.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
@@ -152,9 +152,9 @@ sequenceDiagram
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 4296 interactions; 4266 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4295 interactions; 4265 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1444 (1443 omitted); unresolved 1 of 1009 (1008 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1437 (1436 omitted); unresolved 1 of 1010 (1009 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -181,9 +181,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1844; effect analysis evaluated: 1215, partial: 84, unavailable: 545. Counts include steps omitted from the displayed trace.
+Source steps: 1849; effect analysis evaluated: 1215, partial: 88, unavailable: 546. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1299 source steps with known totals: observed: 8296, emitted: 7744, omitted: 552. Unavailable totals are excluded.
+Collector observations for 1303 source steps with known totals: observed: 8324, emitted: 7766, omitted: 558. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -284,15 +284,15 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/init_cmd.py:run) | 96 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | validate_path | 97 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 100 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 101 | `(current_host().cwd() / path).resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 101 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 101 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| validate_path | current_host().cwd().resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd().resolve(data not statically known)` |
-| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 102 | `current_host().cwd(data not statically known)` |
-| validate_path | current_host | 102 | `current_host(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 102 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 103 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
+| validate_path | current_host().cwd().resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd().resolve(data not statically known)` |
+| validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd(data not statically known)` |
+| validate_path | current_host | 104 | `current_host(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_engine/path_policy.py:validate_path) | 106 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -312,12 +312,12 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 96 |
-| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 101 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 101 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
-| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 102 |
-| unresolved_call | `validate_path` | `current_host().cwd` | 102 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 104 |
+| unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 103 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
+| unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
+| unresolved_call | `validate_path` | `current_host().cwd` | 104 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 106 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

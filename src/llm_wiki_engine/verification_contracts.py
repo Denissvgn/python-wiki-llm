@@ -14,6 +14,8 @@ it is not stored as a timeless boolean.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import json
 import os
 import re
@@ -48,7 +50,7 @@ from llm_wiki_engine.validation import (
     require_string,
 )
 
-VERIFICATION_RECEIPT_FILENAME = ".llm-wiki-verification.json"
+VERIFICATION_RECEIPT_FILENAME = DEFAULT_LAYOUT.verification_receipt
 
 ARTIFACT_INTEGRITY_CHECKER_ID = "artifact-integrity"
 INTERNAL_LINKS_CHECKER_ID = "internal-links"

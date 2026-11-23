@@ -37,7 +37,7 @@ from llm_wiki_engine.knowledge_loader import KnowledgeLoadResult, load_knowledge
 from llm_wiki_engine.knowledge_storage import canonical_bytes
 from llm_wiki_engine.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
 from llm_wiki_engine.knowledge_storage_diagnostics import storage_report, review_storage
-from llm_wiki_cli.services.task_contract import TaskContext
+from llm_wiki_engine.task_contract import TaskContext
 
 T = TypeVar("T")
 FunctionKey = tuple[str, int, str]
@@ -54,7 +54,7 @@ ROOT = Path.cwd()
 WIKI = ROOT / "docs/llm_wiki"
 OUT = ROOT / "reports/knowledge-storage-performance"
 PAGE = "entities/KnowledgeStorePlan.md"
-SELECTORS = {"concept": "page:" + PAGE, "module": "source:src/llm_wiki_cli/services/workflow_profile.py"}
+SELECTORS = {"concept": "page:" + PAGE, "module": "source:src/llm_wiki_engine/workflow_profile.py"}
 
 
 def rss():

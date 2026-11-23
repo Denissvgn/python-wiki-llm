@@ -8,6 +8,8 @@ validated reader must reject any orphan or mixed projection set.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 from llm_wiki_engine.integrations import attributes
 
 from llm_wiki_engine.progress import observed_phase
@@ -79,7 +81,7 @@ from llm_wiki_engine.wiki_surface_index import (
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
 
-KNOWLEDGE_INDEX_FILENAME = ".llm-wiki-knowledge.json"
+KNOWLEDGE_INDEX_FILENAME = DEFAULT_LAYOUT.knowledge_index
 _KNOWLEDGE_SCHEMA_VERSION_RE = re.compile(
     r"^llm-wiki-knowledge/v([1-9][0-9]*)$"
 )
@@ -968,7 +970,7 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
     if not path.exists() and not path.is_symlink():
         if (path.parent / ".llm-wiki-knowledge/packs").exists():
             raise KnowledgeArtifactError("knowledge_index_bytes", "packed root is missing; recover it or select an explicit format")
-        return "sharded-v2" if (path.parent / ".llm-wiki-knowledge").exists() else "v1"
+        return "sharded-v2" if (path.parent / DEFAULT_LAYOUT.knowledge_store).exists() else "v1"
     try:
         raw = read_guarded(path, MAX_EXPANDED_BYTES).content
         try:
@@ -979,7 +981,7 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
             # Preserve the existing explicit v1 rebuild policy. If a sharded
             # store has ever been adopted, a broken/missing root cannot silently
             # make the writer return to a monolithic file.
-            return "sharded-v2" if (path.parent / ".llm-wiki-knowledge").exists() else "v1"
+            return "sharded-v2" if (path.parent / DEFAULT_LAYOUT.knowledge_store).exists() else "v1"
         version = payload.get("schema_version")
         if version == STORE_SCHEMA:
             return "sharded-v2"

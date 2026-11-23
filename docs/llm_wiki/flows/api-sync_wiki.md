@@ -2,7 +2,7 @@
 
 **Entry point:** `sync_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 59 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 60 more
 
 **Complete modules touched:**
 
@@ -59,6 +59,7 @@
 - [sync_analysis_storage](../modules/sync_analysis_storage.md)
 - [sync_generated_sections](../modules/sync_generated_sections.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [sync_recovery](../modules/sync_recovery.md)
 - [sync_runtime](../modules/sync_runtime.md)
 - [sync_service](../modules/sync_service.md)
@@ -140,9 +141,9 @@ sequenceDiagram
     p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 1637 interactions; 1607 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1631 interactions; 1601 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 519 (518 omitted); unresolved 1 of 402 (401 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 515 (514 omitted); unresolved 1 of 399 (398 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | [src/llm_wiki_cli/services/sync_runtime.py](../modules/sync_runtime.md) | internal | 3 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | - | unresolved | 4 |
 | `src/llm_wiki_engine/host.py:recording_errors` | 19 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 3 |
-> Omission summary shows 8 of 474 groups; 466 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 476 groups; 468 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -169,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 717; effect analysis evaluated: 509, partial: 37, unavailable: 171. Counts include steps omitted from the displayed trace.
+Source steps: 718; effect analysis evaluated: 506, partial: 41, unavailable: 171. Counts include steps omitted from the displayed trace.
 
-Collector observations for 546 source steps with known totals: observed: 3691, emitted: 3448, omitted: 243. Unavailable totals are excluded.
+Collector observations for 547 source steps with known totals: observed: 3721, emitted: 3453, omitted: 268. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -248,15 +249,15 @@ flowchart LR
 |---|---|---:|---|
 | sync_wiki | SyncRequest | 1273 | `SyncRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, force=force, plugins=trust_source_plugins, preserve_semantic=preserve_semantic, initialize_surfaces=initialize_surfaces, flow_categories=flow_categories, exclude_tests=exclude_tests, include_tests=include_tests, openapi_file=openapi_file, clear_openapi_file=clear_openapi_file, helper_cache_dir=helper_cache_dir, source_selection=source_selection, knowledge_format=knowledge_format, rebuild_knowledge=rebuild_knowledge)` |
 | sync_wiki | discarding_output | 1292 | `discarding_output(data not statically known)` |
-| discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
-| using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
-| using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
-| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
-| discarding_output | current_host | 255 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| discarding_output | _Discard | 255 | `_Discard(data not statically known)` |
+| discarding_output | using_host | 282 | `using_host(...)` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |
+| using_host | _ACTIVE.set | 175 | `_ACTIVE.set(host)` |
+| using_host | _ACTIVE.reset | 179 | `_ACTIVE.reset(token)` |
+| discarding_output | current_host().with_output (src/llm_wiki_engine/host.py:discarding_output) | 282 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
+| discarding_output | current_host | 282 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
+| discarding_output | _Discard | 282 | `_Discard(data not statically known)` |
 
 ### Boundary effects
 
@@ -266,11 +267,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_host` | `isinstance` | 172 |
-| external_call | `using_host` | `TypeError` | 173 |
-| unresolved_call | `using_host` | `_ACTIVE.reset` | 178 |
-| unresolved_call | `discarding_output` | `current_host().with_output` | 255 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| external_call | `using_host` | `isinstance` | 173 |
+| external_call | `using_host` | `TypeError` | 174 |
+| unresolved_call | `using_host` | `_ACTIVE.reset` | 179 |
+| unresolved_call | `discarding_output` | `current_host().with_output` | 282 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `sync_wiki` | `first 12 steps` | 0 |
 | truncated_flow | `sync_wiki` | `depth limit` | 0 |
 

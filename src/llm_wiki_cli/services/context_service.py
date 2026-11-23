@@ -3247,7 +3247,7 @@ def _run_packet_output(
 ) -> None:
     """Build and emit canonical QCP bytes for the CLI-only packet format."""
 
-    from .context_packet import ContextPacketError
+    from llm_wiki_engine.context_packet import ContextPacketError
     from .context_packet_builder import build_qualified_context
 
     if request is None:

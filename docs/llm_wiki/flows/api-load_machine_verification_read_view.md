@@ -198,8 +198,8 @@ flowchart LR
 | load_machine_verification_read_view | TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view) | 77 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | load_machine_verification_read_view | MachineVerificationReadView | 81 | `MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')` |
 | load_machine_verification_read_view | load_verification_receipt | 87 | `load_verification_receipt(Path(...))` |
-| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 985 | `Path(wiki_dir)` |
-| load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
+| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 987 | `Path(wiki_dir)` |
+| load_verification_receipt | first_unsafe_path_component | 988 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |

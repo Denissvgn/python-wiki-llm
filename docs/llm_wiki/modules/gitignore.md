@@ -30,6 +30,7 @@ flowchart LR
     n4["src/llm_wiki_cli/services/source_snapshot.py"]
     n5["src/llm_wiki_engine/gitignore.py"]
     n6["src/llm_wiki_engine/path_policy.py"]
+    n7["src/llm_wiki_engine/wiki_operations.py"]
     n0 --> n5
     n0 --> n6
     n1 --> n5
@@ -44,6 +45,8 @@ flowchart LR
     n4 --> n5
     n4 --> n6
     n5 --> n6
+    n7 --> n5
+    n7 --> n6
     click n0 "../modules/config.md"
     click n1 "../modules/common.md"
     click n2 "../modules/python_extractor.md"
@@ -51,6 +54,7 @@ flowchart LR
     click n4 "../modules/source_snapshot.md"
     click n5 "../modules/gitignore.md"
     click n6 "../modules/path_policy.md"
+    click n7 "../modules/wiki_operations.md"
 ```
 
 ### Internal neighbors
@@ -62,6 +66,7 @@ flowchart LR
 | Inbound | [python_extractor](../modules/python_extractor.md) |
 | Inbound | [source_path_diagnostics](../modules/source_path_diagnostics.md) |
 | Inbound | [source_snapshot](../modules/source_snapshot.md) |
+| Inbound | [wiki_operations](../modules/wiki_operations.md) |
 | Outbound | [path_policy](../modules/path_policy.md) |
 
 ## Classes

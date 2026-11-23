@@ -727,8 +727,8 @@
     },
     {
       "paths": [
-        "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
-        "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
+        "src/llm_wiki_engine/knowledge_storage_diagnostics.py",
+        "src/llm_wiki_engine/knowledge_storage_lifecycle.py",
         "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
         "tests/test_storage_update_cleanup.py"
       ],
@@ -1239,9 +1239,9 @@
     },
     {
       "paths": [
-        "src/llm_wiki_cli/services/source_retirement.py",
-        "src/llm_wiki_cli/services/knowledge_freshness.py",
-        "src/llm_wiki_cli/services/knowledge_coverage.py",
+        "src/llm_wiki_engine/source_retirement.py",
+        "src/llm_wiki_engine/knowledge_freshness.py",
+        "src/llm_wiki_engine/knowledge_coverage.py",
         "src/llm_wiki_cli/services/documentation_native.py"
       ],
       "groups": [

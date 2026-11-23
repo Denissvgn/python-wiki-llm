@@ -8,6 +8,8 @@ documentation-run service to persist ``wiki-input.json`` later.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import json
 import os
@@ -83,7 +85,7 @@ from llm_wiki_engine.validation import (
 )
 
 
-MANIFEST_FILENAME = ".llm-wiki-manifest.json"
+MANIFEST_FILENAME = DEFAULT_LAYOUT.manifest
 # Keep the singular legacy name until the documentation-run v1 baseline
 # validator is widened to represent both accepted forms.  Import validation
 # itself uses the explicit set below.

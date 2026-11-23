@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from .dependencies import *
 from .contracts import *
 from .schema import *
@@ -477,11 +479,11 @@ def _native_refresh_payload(
         "ownership_after": dict(sorted(ownership_after.items())),
         "ownership_coverage": _native_ownership_coverage(),
         "artifact_ownership": {
-            ".llm-wiki-manifest.json": {
+            DEFAULT_LAYOUT.manifest: {
                 "classification": "generated-projection",
                 "owner": "documentation-supervisor",
             },
-            ".llm-wiki-surface.json": {
+            DEFAULT_LAYOUT.surface_index: {
                 "classification": "generated-projection",
                 "owner": "documentation-supervisor",
             },
@@ -1019,7 +1021,7 @@ def _prior_generated_descriptions(wiki_root: Path) -> dict[str, str]:
 
     from llm_wiki_engine.sync_manifest import SyncManifest
 
-    manifest_path = wiki_root / ".llm-wiki-manifest.json"
+    manifest_path = wiki_root / DEFAULT_LAYOUT.manifest
     if not manifest_path.is_file() or manifest_path.is_symlink():
         return {}
     try:

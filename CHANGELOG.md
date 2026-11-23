@@ -21,15 +21,130 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Sync previews preserve authored module and entity descriptions across source
-  moves in maintained wikis. A concurrent edit to a prior page invalidates
-  the preview. Dry-run standard output and its engine message events are published
-  after validation. Progress and errors remain visible on standard error.
+- A sync preview in a wiki with adopted maintenance now fails if a page
+  that a source move hands to a new owner changes while the preview runs,
+  instead of reporting a plan built from text that is no longer there.
+  `sync --dry-run` prints its plan, and an engine host receives its message
+  events, only after the preview has been validated.
 - When same-named declarations gain separate pages, maintenance keeps the
   transferred record and its history. A new record requires captured source
   and prose for its current owner.
   Coverage lists new sections as untracked until a sync captures both and
   registers them. Existing records retain their identity when a basis is missing.
+
+## [6.0.0] - 2026-11-23
+
+### Added
+
+- `llm_wiki_engine.Engine` runs with no `llm_wiki_cli` code: it applies a
+  host, a domain pack, validators, kinds and integrations to each operation
+  and reports engine events, like `llm_wiki_cli.engine.Engine`, but never
+  prepares helpers and serves no publication targets. Importing it loads no
+  application code. `Engine.bootstrap()`, `Engine.sync()` and `Engine.lint()`
+  (`llm_wiki_engine.wiki_operations`) run a wiki through the pack alone: the
+  pack's classifier and in-process extractors read the sources, its page
+  namer and renderer write module and entity pages, and the engine writes
+  `index.md`, `log.md` and the sync manifest. Sync keeps each page's reviewed
+  `Description` and retires pages of removed sources; lint reports missing,
+  unowned and stale pages and broken links.
+- `llm_wiki_engine.pack_interfaces` now holds a `DomainPack` that needs no
+  application parts: by default it names pages with `StemPageNamer`, writes
+  the built-in Markdown with `BuiltInPageRenderer`, relates no sources
+  (`NoContextSource`), serves no references and prepares no helpers. Its
+  `using_pack()` and `active_pack()` choose the pack for a block of code.
+  `llm_wiki_cli`'s `DomainPack`, `StemPageNamer` and `BuiltInPageRenderer`
+  are subclasses that keep today's code-documentation defaults, so packs
+  describe themselves exactly as before.
+- Engines in one process can use different knowledge-core providers. An
+  `IntegrationSet` names providers for some capabilities; a `DomainPack`
+  carries one (`integrations`, `with_integrations()`), and
+  `Engine(integrations=...)` adds its own on top of the pack's. Each engine
+  call resolves capabilities through its set first, so two engines never
+  see each other's providers. A set built with `inherit=False` uses only
+  the providers it names and never falls back to the process-wide ones.
+  `llm_wiki_engine.integrations.using_integrations()` applies a set to a
+  block of code outside an engine.
+
+- `llm_wiki_engine.context_packet.validate_context_packet()` takes
+  `accepted_generators` to admit packets from producers other than
+  `agent-wiki-cli`. Without it, only `agent-wiki-cli` packets validate, as
+  before (`DEFAULT_ACCEPTED_GENERATORS`).
+- `llm_wiki_engine.layout.DEFAULT_LAYOUT` names every file and directory the
+  knowledge core keeps on disk (the wiki directory, the sync manifest, the
+  knowledge index and store, the surface index, governance and lock files,
+  the maintenance adoption record, the verification receipt, page-move
+  recovery and circuit breaker state). The existing name constants are
+  taken from it; the names themselves are unchanged.
+
+### Changed
+
+- The domain pack interfaces (`SourceClassifier`, `PageNamer`,
+  `PageRenderer`, `ContextSource`, `HelperToolchain`), the page request
+  types, `ExtensionSourceClassifier` and `NoHelperToolchain` now live in
+  `llm_wiki_engine.pack_interfaces`. They stay importable from
+  `llm_wiki_cli.services.domain_pack` and `llm_wiki_cli.engine`, but a pack
+  description now names `ExtensionSourceClassifier` and `NoHelperToolchain`
+  by their engine module.
+- The Qualified Context Packet format moves to `llm_wiki_engine.context_packet`,
+  together with `context_response_format`, `context_budget_format` and the
+  implementation summary check (`llm_wiki_engine.implementation_summary`).
+  Validating a packet now loads no `llm_wiki_cli` code. The
+  `llm_wiki_cli.services` paths of the three modules still work and raise a
+  `DeprecationWarning` naming the engine path. The packet builder names
+  `context_packet` re-exports come from the new `packet_builders` integration,
+  which `llm_wiki_cli` provides.
+- `task_contract`, `search_service` and `sync_transition_execution` move to
+  `llm_wiki_engine`; their `llm_wiki_cli.services` paths are deprecated
+  aliases. The documentation query request checks (`DocumentationQueryError`,
+  the limit, coordinate and supplied-path normalizers and the live
+  source-selection check) now live in `llm_wiki_engine.query_request_format`,
+  and `SyncOwnershipError` and `PageTransitionError` in
+  `llm_wiki_engine.sync_ownership`. All stay importable from their previous
+  modules as the same objects.
+- `TokenCounter` and `EstimatedCounter` now live in
+  `llm_wiki_engine.token_counters` and stay importable from
+  `llm_wiki_cli.services.token_counting`, which keeps `LocalTokenizerCounter`
+  (it needs the optional `tokenizers` package; a host passes it in as the
+  counter).
+- `llm_wiki_engine.integrations.provided()` reports the providers in effect
+  where it is called, including an active `IntegrationSet`;
+  `integrations.defaults()` reports the process-wide ones.
+
+### Removed
+
+- The 85 `llm_wiki_cli.services.<module>` aliases of engine modules that
+  have raised a `DeprecationWarning` since 5.0.0 are removed. Import those
+  modules from `llm_wiki_engine.<module>` instead. The aliases added after
+  5.0.0 (`context_packet`, `context_response_format`, `context_budget_format`,
+  `search_service`, `sync_transition_execution` and `task_contract`) still
+  work and warn.
+
+### Fixed
+
+- The knowledge health and full integrity GitHub Actions now install their
+  runtime dependencies from a hash-pinned `requirements.txt` beside each
+  action (matching `release/validation-requirements.txt`) and run on
+  Python 3.13.18. A new
+  PyYAML or Python patch release therefore no longer makes infrastructure
+  pages of a wiki captured with the locked versions read as
+  basis-incompatible, which failed strict health.
+- `llm-wiki sync --dry-run` no longer stops with "Unresolved maintenance
+  transfer prevents publication: previous-semantic-preimage-unavailable" in a
+  wiki with adopted maintenance when a module moved, was renamed or was
+  split. A dry run now reads the pages it would hand to a new owner from the
+  unchanged wiki, as a writing sync captures them before it writes. A dry
+  run also no longer counts a deleted page it would recreate as both present
+  and absent. A transfer that cannot be verified, for example because the
+  maintained page was deleted, is still refused by both, and the error names
+  the affected pages.
+- A writing sync in a wiki with adopted maintenance no longer leaves
+  rewritten pages next to the previous manifest when it is refused while
+  planning knowledge. It first runs the same sync on a staged copy of the
+  wiki and writes nothing if that is refused. This adds one staged pass to
+  each such sync.
+- A wiki page whose bytes are neither UTF-8 nor Windows-1252 now stops sync
+  (and other readers) with an error that names the page, the byte and its
+  offset and says how to repair it, instead of a bare codec error.
 
 ## [5.0.0] - 2026-11-19
 
@@ -1981,7 +2096,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v5.0.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.0.0...HEAD
+[6.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v5.0.0...v6.0.0
 [5.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.1...v5.0.0
 [4.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.0.1...v4.1.0

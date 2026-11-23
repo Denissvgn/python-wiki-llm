@@ -25,9 +25,12 @@ _Auto-generated from `EventKind` in `src/llm_wiki_engine/engine_events.py`._
 flowchart LR
     n0["EventKind (src/llm_wiki_engine/engine_events.py)"]
     n1["Engine._report (src/llm_wiki_cli/engine/__init__.py)"]
+    n2["Engine._report (src/llm_wiki_engine/engine.py)"]
     n1 --> n0
+    n2 --> n0
     click n0 "../modules/engine_events.md"
     click n1 "../modules/engine___init__.md"
+    click n2 "../modules/engine.md"
 ```
 
 ### Summary
@@ -41,3 +44,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `Engine._report` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
+| `Engine._report` | type_reference | [engine](../modules/engine.md) | — |

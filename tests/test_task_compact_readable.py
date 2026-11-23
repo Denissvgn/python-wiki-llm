@@ -229,10 +229,9 @@ def test_presentation_classification_does_not_change_analysis_identity():
     from llm_wiki_cli.services.analysis_capture import registry
 
     rules = registry()
-    name = "services/task_compact_readable.py"
-    assert name in rules["classified_python_files"]
-    assert name not in rules["shared"]
-    assert all(name not in names for names in rules["providers"].values())
+    name = "llm_wiki_engine/task_compact_readable.py"
+    assert name in rules["engine_classified_python_files"]
+    assert name not in rules["engine_shared"]
 
 
 def test_minimal_metadata_preserves_new_qualifications_and_conditional_base(project):

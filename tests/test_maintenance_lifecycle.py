@@ -275,7 +275,9 @@ def test_dirty_prose_sync_fault_restores_exact_inputs_then_converges(tmp_path, m
     _write_reviewed_description(page, "New authored prose retained through interrupted sync.")
     exact = page.read_bytes()
     old = SyncManifest.load(wiki).maintenance_state
-    def interrupt(plan, **_options):
+    def interrupt(plan, **options):
+        if options.get("dry_run"):  # the adopted-wiki preflight writes nothing
+            return commit_knowledge_artifacts(plan, **options)
         return commit_knowledge_artifacts(plan,
             fault_injector=_interrupt_adoption(CommitStage.KNOWLEDGE_INDEX_WRITTEN))
     with monkeypatch.context() as fault:

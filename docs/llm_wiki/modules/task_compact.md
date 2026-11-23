@@ -20,7 +20,6 @@ performs no source reads; delivery uses the owned task/session lifecycle.
 |--------|---------|
 | `.context_budget` | `_accounted_render` |
 | `.task_context` | `validate_task_context`, `_counter`, `_LIMITATIONS` |
-| `.task_contract` | `TaskContext`, `TASK_REQUEST_SCHEMA_V2`, `normalize_task_request` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `deepcopy` |
@@ -29,6 +28,7 @@ performs no source reads; delivery uses the owned task/session lifecycle.
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `llm_wiki_engine.task_compact_readable` | `readable_projection`, `readable_expansion` |
+| `llm_wiki_engine.task_contract` | `TaskContext`, `TASK_REQUEST_SCHEMA_V2`, `normalize_task_request` |
 | `llm_wiki_engine.workflow_profile` | `canonical_json`, `content_id` |
 | `typing` | `Any` |
 
@@ -44,10 +44,10 @@ flowchart LR
     n4["src/llm_wiki_cli/services/task_compact.py"]
     n5["src/llm_wiki_cli/services/task_compact_delivery.py"]
     n6["src/llm_wiki_cli/services/task_context.py"]
-    n7["src/llm_wiki_cli/services/task_contract.py"]
-    n8["src/llm_wiki_engine/immutable.py"]
-    n9["src/llm_wiki_engine/request_json.py"]
-    n10["src/llm_wiki_engine/task_compact_readable.py"]
+    n7["src/llm_wiki_engine/immutable.py"]
+    n8["src/llm_wiki_engine/request_json.py"]
+    n9["src/llm_wiki_engine/task_compact_readable.py"]
+    n10["src/llm_wiki_engine/task_contract.py"]
     n11["src/llm_wiki_engine/workflow_profile.py"]
     n0 --> n1
     n0 --> n2
@@ -55,15 +55,15 @@ flowchart LR
     n0 --> n4
     n0 --> n5
     n0 --> n6
-    n0 --> n7
+    n0 --> n10
     n0 --> n11
     n1 --> n4
-    n1 --> n7
-    n2 --> n9
+    n1 --> n10
+    n2 --> n8
     n3 --> n4
     n3 --> n6
     n3 --> n7
-    n3 --> n8
+    n3 --> n10
     n3 --> n11
     n4 --> n2
     n4 --> n6
@@ -75,11 +75,11 @@ flowchart LR
     n5 --> n3
     n5 --> n4
     n6 --> n2
-    n6 --> n7
-    n6 --> n9
+    n6 --> n8
+    n6 --> n10
     n6 --> n11
-    n7 --> n11
-    n11 --> n9
+    n10 --> n11
+    n11 --> n8
     click n0 "../modules/api.md"
     click n1 "../modules/behavior_reference.md"
     click n2 "../modules/context_budget.md"
@@ -87,10 +87,10 @@ flowchart LR
     click n4 "../modules/task_compact.md"
     click n5 "../modules/task_compact_delivery.md"
     click n6 "../modules/task_context.md"
-    click n7 "../modules/task_contract.md"
-    click n8 "../modules/immutable.md"
-    click n9 "../modules/request_json.md"
-    click n10 "../modules/task_compact_readable.md"
+    click n7 "../modules/immutable.md"
+    click n8 "../modules/request_json.md"
+    click n9 "../modules/task_compact_readable.md"
+    click n10 "../modules/task_contract.md"
     click n11 "../modules/workflow_profile.md"
 ```
 
@@ -104,10 +104,10 @@ flowchart LR
 | Inbound | [task_compact_delivery](../modules/task_compact_delivery.md) |
 | Outbound | [context_budget](../modules/context_budget.md) |
 | Outbound | [task_context](../modules/task_context.md) |
-| Outbound | [task_contract](../modules/task_contract.md) |
 | Outbound | [immutable](../modules/immutable.md) |
 | Outbound | [request_json](../modules/request_json.md) |
 | Outbound | [task_compact_readable](../modules/task_compact_readable.md) |
+| Outbound | [task_contract](../modules/task_contract.md) |
 | Outbound | [workflow_profile](../modules/workflow_profile.md) |
 
 ## Classes

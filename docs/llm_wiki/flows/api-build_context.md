@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [context_packet_builder](../modules/context_packet_builder.md), and 47 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [context_packet_builder](../modules/context_packet_builder.md), and 49 more
 
 **Complete modules touched:**
 
@@ -15,7 +15,6 @@
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [engine_events](../modules/engine_events.md)
 - [entrypoints](../modules/entrypoints.md)
@@ -24,6 +23,7 @@
 - [gitignore](../modules/gitignore.md)
 - [host](../modules/host.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [implementation_summary](../modules/implementation_summary.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -41,11 +41,13 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
+- [query_request_format](../modules/query_request_format.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
@@ -144,7 +146,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 10 |
-> Omission summary shows 8 of 507 groups; 499 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 506 groups; 498 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -159,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 674; effect analysis evaluated: 457, partial: 34, unavailable: 183. Counts include steps omitted from the displayed trace.
 
-Collector observations for 491 source steps with known totals: observed: 3252, emitted: 2995, omitted: 257. Unavailable totals are excluded.
+Collector observations for 491 source steps with known totals: observed: 3251, emitted: 2994, omitted: 257. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

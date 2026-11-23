@@ -195,7 +195,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_query_service_from_view | attach_machine_verification_read_view | 414 | `attach_machine_verification_read_view(wiki_root, knowledge_view)` |
+| build_documentation_query_service_from_view | attach_machine_verification_read_view | 240 | `attach_machine_verification_read_view(wiki_root, knowledge_view)` |
 | attach_machine_verification_read_view | isinstance (src/llm_wiki_engine/knowl…ne_verification_read_view) | 54 | `isinstance(knowledge_view, KnowledgeReadView)` |
 | attach_machine_verification_read_view | TypeError (src/llm_wiki_engine/knowl…ne_verification_read_view) | 55 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | attach_machine_verification_read_view | replace | 61 | `replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))` |
@@ -204,8 +204,8 @@ flowchart LR
 | load_machine_verification_read_view | TypeError (src/llm_wiki_engine/knowl…verification_read_view, 1) | 77 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | load_machine_verification_read_view | MachineVerificationReadView | 81 | `MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')` |
 | load_machine_verification_read_view | load_verification_receipt | 87 | `load_verification_receipt(Path(...))` |
-| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 985 | `Path(wiki_dir)` |
-| load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
+| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 987 | `Path(wiki_dir)` |
+| load_verification_receipt | first_unsafe_path_component | 988 | `first_unsafe_path_component(root)` |
 
 ### Boundary effects
 

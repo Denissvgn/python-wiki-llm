@@ -354,3 +354,27 @@ def test_first_unsafe_path_component_owner_predicate_preserves_target_traversal(
     assert stat.S_ISLNK(metadata.st_mode) or bool(
         reparse_flag and getattr(metadata, "st_file_attributes", 0) & reparse_flag
     )
+
+
+def test_markdown_that_is_neither_utf8_nor_cp1252_names_the_page(tmp_path):
+    from llm_wiki_engine.io import MarkdownEncodingError, decode_markdown_bytes, read_md
+
+    page = tmp_path / "modules" / "model.md"
+    page.parent.mkdir()
+    page.write_bytes(b"# Model\n\nAuto\x81generated\n")
+    with pytest.raises(MarkdownEncodingError) as raised:
+        read_md(page)
+    message = str(raised.value)
+    assert str(page) in message and "0x81" in message and "offset 13" in message
+    assert "Save the page as UTF-8" in message
+    # Callers that already handle decoding failures keep catching it.
+    assert isinstance(raised.value, UnicodeDecodeError)
+    with pytest.raises(MarkdownEncodingError, match="Cannot read Markdown page"):
+        decode_markdown_bytes(b"\x8d")
+
+
+def test_markdown_reader_still_accepts_utf8_and_cp1252():
+    from llm_wiki_engine.io import decode_markdown_bytes
+
+    assert decode_markdown_bytes("café — ok\r\n".encode("utf-8")) == "café — ok\n"
+    assert decode_markdown_bytes("café — ok\r\n".encode("cp1252")) == "café — ok\n"

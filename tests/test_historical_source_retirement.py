@@ -7,6 +7,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+from typing import Any
 import re
 import shutil
 import subprocess
@@ -53,6 +54,17 @@ def _hash(data: bytes) -> str:
     return "sha256:" + sha256(data).hexdigest()
 
 
+def _input(manifest: SyncManifest, key: str) -> Any:
+    """Return a generation input whose shape the test asserts directly."""
+    return manifest.generation_inputs[key]
+
+
+def _basis(manifest: SyncManifest, path: str):
+    basis = manifest.evidence_baselines[path].basis
+    assert basis is not None
+    return basis
+
+
 def _snapshot(root: Path) -> dict:
     return {
         file.relative_to(root).as_posix(): (file.read_bytes(), file.stat().st_mtime_ns)
@@ -95,6 +107,7 @@ def _acknowledge(wiki):
     for record_id in selected.values():
         active = api.get_maintenance_status("src", "wiki", record_id=record_id)
         record, = active["records"]
+        assert active["state_hash"] is not None and record["expected_basis"] is not None
         ack = api.acknowledge_maintenance(
             "src", "wiki", record_id=record_id, expected_state_hash=active["state_hash"],
             expected_basis=record["expected_basis"], actor_kind="human", actor_id="fixture-editor",
@@ -152,7 +165,7 @@ def _release(capsys, pages, digest):
 def _release_events(wiki):
     native = load_knowledge_state(wiki)
     assert native.validated_artifacts is not None and native.knowledge is not None
-    ledger = SyncManifest.load(wiki).generation_inputs[RELEASES]
+    ledger = _input(SyncManifest.load(wiki), RELEASES)
     assert native.knowledge.extensions[RELEASE_EXTENSION] == ledger
     events = {event["digest"]: event["basis"] for event in ledger["events"]}
     assert len(events) == len(ledger["events"])
@@ -192,7 +205,7 @@ def test_whole_source_preserves_canonical_pages_and_truthful_historical_evidence
     pages = {path: (wiki / path).read_bytes() for path in PAGES}
     assert all(PROSE[path][1].encode() in raw and f"author-owned bytes — {path}".encode() in raw for path, raw in pages.items())
     owners = {path: previous.page_source_mappings[path].to_payload() for path in PAGES}
-    bases = {path: previous.evidence_baselines[path].basis.to_evidence_payload() for path in PAGES}
+    bases = {path: _basis(previous, path).to_evidence_payload() for path in PAGES}
     assert all(basis["source_content_hash"] == _hash(SOURCE.encode()) for basis in bases.values())
     producer_hash = hash_json(knowledge_index_to_payload(native.knowledge)["bundle"]["producer"])
     knowledge_hash = native.validated_artifacts.knowledge_index_hash
@@ -202,16 +215,16 @@ def test_whole_source_preserves_canonical_pages_and_truthful_historical_evidence
         _new_producer(monkeypatch)
     _retire(capsys)
     if producer_transition == "after-enrollment":
-        enrolled = deepcopy(SyncManifest.load(wiki).generation_inputs[REGISTRY])
+        enrolled = deepcopy(_input(SyncManifest.load(wiki), REGISTRY))
         _new_producer(monkeypatch)
         _call(capsys, "sync")
-        assert SyncManifest.load(wiki).generation_inputs[REGISTRY] == enrolled
+        assert _input(SyncManifest.load(wiki), REGISTRY) == enrolled
 
     state = load_knowledge_state(wiki)
     assert state.knowledge is not None and state.validated_artifacts is not None
     manifest = SyncManifest.load(wiki)
     assert SOURCE_PATH not in manifest.sources
-    registry = manifest.generation_inputs[REGISTRY]
+    registry = _input(manifest, REGISTRY)
     assert registry["schema_version"] == "llm-wiki-historical-source-files/v1"
     assert set(registry["pages"]) == set(PAGES)
     index = (wiki / "index.md").read_text(encoding="utf-8")
@@ -231,7 +244,8 @@ def test_whole_source_preserves_canonical_pages_and_truthful_historical_evidence
         assert manifest.page_source_mappings[path].to_payload() == owners[path] and path not in manifest.evidence_baselines
         assert locator in state.validated_artifacts.retired_locators
         answer = api.query_documentation({"operation": "concept", "value": locator}, src_dir="src", wiki_dir="wiki")
-        assert answer["found"] and not answer["ambiguous"] and answer["concept"]["canonical_path"] == path
+        concept = answer.get("concept")
+        assert answer["found"] and not answer["ambiguous"] and concept is not None and concept["canonical_path"] == path
         structural = concepts[locator].facets.structure
         tombstone = manifest.tombstones[path]
         if producer_transition == "unchanged":
@@ -302,7 +316,7 @@ def test_unowned_stale_page_is_not_an_enrolled_source(project, capsys):
     assert not lint["ok"] and "Unowned" in json.dumps(lint["issues"])
     _call(capsys, "ci-check", "--no-report", success=False)
     assert _snapshot(wiki) == saved
-    assert "entities/Unowned.md" not in SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"]
+    assert "entities/Unowned.md" not in _input(SyncManifest.load(wiki), REGISTRY)["pages"]
 
 
 
@@ -334,7 +348,7 @@ def test_manifest_only_history_cannot_exempt_stale_pages(project, capsys, target
     api.sync_wiki("src", "comparison")
     (src / SOURCE_PATH).unlink()
     api.sync_wiki("src", "comparison", retire_missing_sources=[SOURCE_PATH])
-    genuine = SyncManifest.load(comparison).generation_inputs[REGISTRY]
+    genuine = _input(SyncManifest.load(comparison), REGISTRY)
     if target_enrolled:
         _retire(capsys)
     else:
@@ -342,7 +356,7 @@ def test_manifest_only_history_cannot_exempt_stale_pages(project, capsys, target
     before = _snapshot(wiki)
     manifest = SyncManifest.load(wiki)
     if target_enrolled:
-        previous = manifest.generation_inputs[REGISTRY]["pages"]
+        previous = _input(manifest, REGISTRY)["pages"]
         for path, row in genuine["pages"].items():
             assert {field for field in row if row[field] != previous[path][field]} == {"knowledge_hash"}
     else:
@@ -373,7 +387,7 @@ def test_invalid_enrolled_markdown_revokes_coverage_without_crashing(project, ca
 
 
 def test_source_directory_mutation_reports_an_invalid_history_without_suppressing_ordinary_lint(project, capsys, monkeypatch):
-    from llm_wiki_cli.services import historical_sources, source_snapshot
+    from llm_wiki_cli.services import historical_retirement, source_snapshot
     from llm_wiki_engine import filesystem_guard
 
     src, wiki = project
@@ -381,7 +395,7 @@ def test_source_directory_mutation_reports_an_invalid_history_without_suppressin
     _retire(capsys)
     before = _snapshot(wiki)
     checked = []
-    original = historical_sources.confirm_absence
+    original = historical_retirement.confirm_absence
 
     def racing_confirmation(snapshot, selected):
         assert selected == {SOURCE_PATH}
@@ -409,7 +423,7 @@ def test_source_directory_mutation_reports_an_invalid_history_without_suppressin
                 checked.append(exc.field)
                 raise
 
-    monkeypatch.setattr(historical_sources, "confirm_absence", racing_confirmation)
+    monkeypatch.setattr(historical_retirement, "confirm_absence", racing_confirmation)
     _assert_invalid_history_reports(capsys, entity_present=True)
     assert checked == ["source", "source"] and _snapshot(wiki) == before
 
@@ -446,7 +460,7 @@ def test_public_index_writers_defer_to_explicit_release_without_changing_the_wor
     assert "--release-historical-page" in refusal
     assert _snapshot(src.parent) == before
     manifest = SyncManifest.load(wiki)
-    assert set(manifest.generation_inputs[REGISTRY]["pages"]) == set(PAGES)
+    assert set(_input(manifest, REGISTRY)["pages"]) == set(PAGES)
     assert api.lint_wiki("src", "wiki", strict=True)["ok"]
     digest = _preview_release(capsys, wiki, list(PAGES))
     _release(capsys, list(PAGES), digest)
@@ -463,7 +477,7 @@ def test_supported_writer_options_respect_enrolled_pages_and_native_proof(projec
     acknowledgments = _acknowledge(wiki) if operation == "scoped-known-source" else None
     (src / SOURCE_PATH).unlink()
     _retire(capsys)
-    records = deepcopy(SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"])
+    records = deepcopy(_input(SyncManifest.load(wiki), REGISTRY)["pages"])
     before = _snapshot(wiki)
     if operation == "existing-bootstrap":
         response = _call(capsys, "bootstrap", "--knowledge-format", "v1", success=False)
@@ -480,7 +494,7 @@ def test_supported_writer_options_respect_enrolled_pages_and_native_proof(projec
             assert "no scoped publication" in response.lower() and _snapshot(wiki) == before
     now = load_knowledge_state(wiki)
     assert now.validated_artifacts is not None and now.knowledge is not None
-    assert SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"] == records
+    assert _input(SyncManifest.load(wiki), REGISTRY)["pages"] == records
     concepts = {entry.document.canonical_path: entry for entry in now.knowledge.concepts}
     for path, row in records.items():
         assert (wiki / path).read_bytes() == before[path][0] and concepts[path].extensions[EXTENSION] == row
@@ -511,7 +525,7 @@ def test_release_requires_preview_bound_to_the_selected_pages_and_current_snapsh
     (src / SOURCE_PATH).unlink()
     _retire(capsys)
     before = _snapshot(wiki)
-    custody = deepcopy(SyncManifest.load(wiki).generation_inputs[REGISTRY]["pages"])
+    custody = deepcopy(_input(SyncManifest.load(wiki), REGISTRY)["pages"])
     original_pages = {path: (wiki / path).read_bytes() for path in PAGES}
     approved = _preview_release(capsys, wiki, [ENTITY])
     other = _preview_release(capsys, wiki, [MODULE])
@@ -521,16 +535,19 @@ def test_release_requires_preview_bound_to_the_selected_pages_and_current_snapsh
         assert _snapshot(wiki) == before
     result = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=approved)
     assert result.historical_release == {"digest": approved, "pages": [ENTITY], "applied": True, "replayed": False}
+    applied = result.historical_release
+    assert applied is not None
     stable = _snapshot(wiki)
     repeated = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=approved)
-    assert repeated.historical_release == {**result.historical_release, "replayed": True}
+    assert repeated.historical_release == {**applied, "replayed": True}
     replay_preview = api.sync_wiki("src", "wiki", dry_run=True, release_historical_pages=[ENTITY], expected_historical_release=approved)
-    assert replay_preview.historical_release == {**result.historical_release, "applied": False, "replayed": True}
+    assert replay_preview.historical_release == {**applied, "applied": False, "replayed": True}
     assert _snapshot(wiki) == stable
     manifest = SyncManifest.load(wiki)
-    assert manifest.generation_inputs[REGISTRY]["pages"] == {MODULE: custody[MODULE]}
+    assert _input(manifest, REGISTRY)["pages"] == {MODULE: custody[MODULE]}
     assert {path: (wiki / path).read_bytes() for path in PAGES} == original_pages
     native = load_knowledge_state(wiki)
+    assert native.knowledge is not None
     concepts = {entry.document.canonical_path: entry for entry in native.knowledge.concepts}
     assert EXTENSION not in concepts[ENTITY].extensions and concepts[MODULE].extensions[EXTENSION] == custody[MODULE]
     section = (wiki / "index.md").read_text(encoding="utf-8").split(HEADING, 1)[1].split("\n## ", 1)[0]
@@ -681,7 +698,7 @@ def test_concurrent_editor_during_knowledge_publication_preserves_the_predecesso
     assert selected.read_bytes() == edited
     assert all((wiki / name).read_bytes() == raw for name, raw in previous.items())
     manifest = SyncManifest.load(wiki)
-    assert RELEASES not in manifest.generation_inputs and set(manifest.generation_inputs[REGISTRY]["pages"]) == set(PAGES)
+    assert RELEASES not in manifest.generation_inputs and set(_input(manifest, REGISTRY)["pages"]) == set(PAGES)
     _assert_ack_history(wiki, acknowledgments, archived=True)
     _assert_invalid_history_reports(capsys, entity_present=True)
 
@@ -696,7 +713,7 @@ def test_concurrent_editor_during_knowledge_publication_preserves_the_predecesso
     assert list(_release_events(wiki)) == [fresh]
     stable = _snapshot(wiki)
     again = api.sync_wiki("src", "wiki", release_historical_pages=[ENTITY], expected_historical_release=fresh)
-    assert again.historical_release["replayed"] and _snapshot(wiki) == stable
+    assert again.historical_release is not None and again.historical_release["replayed"] and _snapshot(wiki) == stable
     assert selected.read_bytes() == original and editor_copy.read_bytes() == edited
     if marker is not None:
         assert (marker.read_bytes(), marker.stat().st_ino, marker.stat().st_mtime_ns) == before_marker
@@ -749,7 +766,7 @@ def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_ow
         assert not current.startswith(HEADER.encode()) and PROSE[path][1].encode() not in current
         assert f"author-owned bytes — {path}".encode() not in current
         assert manifest.page_source_mappings[path].source_path == new_source
-        assert manifest.evidence_baselines[path].basis.source_content_hash == _hash(new_code.encode())
+        assert _basis(manifest, path).source_content_hash == _hash(new_code.encode())
         assert (archive / path).read_bytes() == raw
     assert _release_events(wiki)[digest] == event
     assert api.lint_wiki("src", "wiki", strict=True)["ok"]
@@ -783,7 +800,7 @@ def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_ow
     _call(capsys, "sync")
     revived = SyncManifest.load(wiki)
     for path in pages:
-        assert path not in revived.tombstones and revived.evidence_baselines[path].basis.source_content_hash == _hash(new_code.encode())
+        assert path not in revived.tombstones and _basis(revived, path).source_content_hash == _hash(new_code.encode())
         assert (wiki / path).read_bytes() == newer_pages[path]
         assert (archive / path).read_bytes() == custody[path]
     assert _release_events(wiki)[digest] == event
@@ -808,7 +825,7 @@ def test_exact_original_source_can_reclaim_its_measured_released_markdown_in_pla
     manifest = SyncManifest.load(wiki)
     for path in PAGES:
         assert manifest.page_source_mappings[path].to_payload() == previous.page_source_mappings[path].to_payload()
-        assert manifest.evidence_baselines[path].basis.source_content_hash == _hash(SOURCE.encode()) and path not in manifest.tombstones
+        assert _basis(manifest, path).source_content_hash == _hash(SOURCE.encode()) and path not in manifest.tombstones
         assert (wiki / path).read_bytes() == original[path]
     assert REGISTRY not in manifest.generation_inputs and _release_events(wiki)[digest] == event
     assert api.lint_wiki("src", "wiki", strict=True)["ok"]
@@ -913,11 +930,11 @@ def test_exact_page_selection_leaves_the_surviving_entity_with_its_live_source(m
     _call(capsys, "sync", "--retire-missing-source", SOURCE_PATH, "--retire-missing-page", archived[0],
           "--retire-missing-page", archived[1])
     manifest = SyncManifest.load(wiki)
-    registered = manifest.generation_inputs[REGISTRY]["pages"]
+    registered = _input(manifest, REGISTRY)["pages"]
     assert set(registered) == set(archived)
     before_hash = _hash((src / "relocated.py").read_bytes())
     assert manifest.page_source_mappings[survivor].source_path == "relocated.py"
-    assert manifest.evidence_baselines[survivor].basis.source_content_hash == before_hash
+    assert _basis(manifest, survivor).source_content_hash == before_hash
     assert survivor not in manifest.tombstones
     native = load_knowledge_state(wiki)
     assert native.knowledge is not None and native.validated_artifacts is not None

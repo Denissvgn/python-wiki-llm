@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import hashlib
 import html
 import json
@@ -22,7 +24,7 @@ def build_impact(
     diff_text: str = "",
     *,
     src_dir=".",
-    wiki_dir="docs/llm_wiki",
+    wiki_dir=DEFAULT_LAYOUT.wiki_dir,
     changes=None,
     source_selection=None,
     helper_cache_dir=None,

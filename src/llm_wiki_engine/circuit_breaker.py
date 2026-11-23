@@ -1,3 +1,4 @@
+from .layout import DEFAULT_LAYOUT
 import json
 import math
 import os
@@ -11,7 +12,7 @@ from .host import emit
 MAX_CONSECUTIVE_FAILURES = 3
 DEFAULT_BREAKER_TTL_SECONDS = 3600
 BREAKER_TTL_ENV = "LLM_WIKI_BREAKER_TTL_SECONDS"
-_STATE_FILE = "llm-wiki-breaker.json"
+_STATE_FILE = DEFAULT_LAYOUT.breaker_state
 
 _DEFAULT_STATE = {
     "consecutive_failures": 0,

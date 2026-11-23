@@ -32,6 +32,7 @@ Read-only candidate/producer preflight and bound health-policy commands.
 | `llm_wiki_engine.knowledge_packs` | `parse_packed_root` |
 | `llm_wiki_engine.knowledge_storage` | `parse_store_root` |
 | `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.path_policy` | `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.source_selection` | `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.sync_manifest` | `SyncManifest` |
@@ -61,15 +62,15 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (21) |
+| Outbound | `src` (23) |
 
 ### External packages
 
 | Language | Used packages | Undeclared packages |
 |---|---:|---:|
-| python | 2 | 1 |
+| python | 1 | 0 |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

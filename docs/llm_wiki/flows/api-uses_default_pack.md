@@ -2,7 +2,7 @@
 
 **Entry point:** `uses_default_pack` (`api`)
 **Source:** [domain_pack](../modules/domain_pack.md)
-**Modules touched:** [domain_pack](../modules/domain_pack.md)
+**Modules touched:** [domain_pack](../modules/domain_pack.md), [pack_interfaces](../modules/pack_interfaces.md)
 
 ## Call sequence
 
@@ -13,12 +13,14 @@
 sequenceDiagram
     participant p0 as uses_default_pack
     participant p1 as current_pack
-    participant p2 as _ACTIVE_PACK.get
+    participant p2 as active_pack
+    participant p3 as _ACTIVE_PACK.get
     p0->>p1: current_pack
-    p1-->>p2: _ACTIVE_PACK.get
+    p1->>p2: active_pack
+    p2-->>p3: _ACTIVE_PACK.get
 ```
 
-> Call sequence diagram shows 2 of 2 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 3 of 3 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 0 of 0 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
@@ -31,19 +33,22 @@ sequenceDiagram
 
 **Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 2; effect analysis evaluated: 2, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 3; effect analysis evaluated: 3, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 2 source steps with known totals: observed: 4, emitted: 4, omitted: 0. Unavailable totals are excluded.
+Collector observations for 3 source steps with known totals: observed: 5, emitted: 5, omitted: 0. Unavailable totals are excluded.
 
 ```mermaid
 flowchart LR
     s1["1. uses_default_pack"]
     s2["2. current_pack"]
-    s3["3. _ACTIVE_PACK.get"]
+    s3["3. active_pack"]
+    s4["4. _ACTIVE_PACK.get"]
     s1 -->|"current_pack(data not statically known)"| s2
-    s2 -. "_ACTIVE_PACK.get(data not statically known)" .-> s3
+    s2 -->|"active_pack(data not statically known)"| s3
+    s3 -. "_ACTIVE_PACK.get(data not statically known)" .-> s4
     click s1 "../modules/domain_pack.md"
     click s2 "../modules/domain_pack.md"
+    click s3 "../modules/pack_interfaces.md"
 ```
 
 ### Step data
@@ -52,14 +57,16 @@ flowchart LR
 |---|---|---|---|---|
 | `uses_default_pack` | - | `CODE_DOCS_PACK` | - | `...` |
 | `current_pack` | - | `CODE_DOCS_PACK` | - | `...` |
+| `active_pack` | - | - | - | `_ACTIVE_PACK.get(...)` |
 | `_ACTIVE_PACK.get` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| uses_default_pack | current_pack | 858 | `current_pack(data not statically known)` |
-| current_pack | _ACTIVE_PACK.get | 850 | `_ACTIVE_PACK.get(data not statically known)` |
+| uses_default_pack | current_pack | 332 | `current_pack(data not statically known)` |
+| current_pack | active_pack | 324 | `active_pack(data not statically known)` |
+| active_pack | _ACTIVE_PACK.get | 643 | `_ACTIVE_PACK.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -69,7 +76,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_pack` | `_ACTIVE_PACK.get` | 850 |
+| unresolved_call | `active_pack` | `_ACTIVE_PACK.get` | 643 |
 
 ## Behavior
 

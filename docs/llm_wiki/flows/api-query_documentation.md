@@ -2,7 +2,7 @@
 
 **Entry point:** `query_documentation` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 46 more
 
 **Complete modules touched:**
 
@@ -42,9 +42,11 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [python_implementation](../modules/python_implementation.md)
+- [query_request_format](../modules/query_request_format.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_retirement](../modules/source_retirement.md)
@@ -54,7 +56,6 @@
 - [typescript_helper_identity](../modules/typescript_helper_identity.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
-- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -77,21 +78,21 @@ sequenceDiagram
     participant p11 as InvalidRequestError
     participant p12 as _normalize_query_input
     participant p13 as explain_source
-    participant p14 as validate_exact_page_coordinate
-    participant p15 as normalize_documentation_query_text
-    participant p16 as _require_full_inventory_opt_in
-    participant p17 as _normalize_query_choice
-    participant p18 as _normalize_query_values
-    participant p19 as _surface_query
-    participant p20 as _portable_supplied_path
-    participant p21 as validate_path
-    participant p22 as _supplied_path_values
-    participant p23 as build_snapshot_documentation_query_service
-    participant p24 as fit_documentation_query_result
-    participant p25 as supplied_paths_from_unified_diff
-    participant p26 as _validate_wiki_dir
-    participant p27 as build_live_documentation_query_service
-    participant p28 as windows_current_user_sid
+    participant p14 as normalize_documentation_query_text
+    participant p15 as _require_full_inventory_opt_in
+    participant p16 as _normalize_query_choice
+    participant p17 as _normalize_query_values
+    participant p18 as _surface_query
+    participant p19 as _portable_supplied_path
+    participant p20 as validate_path
+    participant p21 as _supplied_path_values
+    participant p22 as build_snapshot_documentation_query_service
+    participant p23 as fit_documentation_query_result
+    participant p24 as supplied_paths_from_unified_diff
+    participant p25 as _validate_wiki_dir
+    participant p26 as build_live_documentation_query_service
+    participant p27 as windows_current_user_sid
+    participant p28 as _normalize_query_limit
     participant p29 as isinstance (src/llm_wiki_cli/api.py:query_documentation)
     participant p30 as request.get (src/llm_wiki_cli/api.py:query_documentation)
     p0->>p1: _validate_documentation_query_request
@@ -107,42 +108,42 @@ sequenceDiagram
     p0->>p11: InvalidRequestError
     p0->>p12: _normalize_query_input
     p0->>p13: explain_source
-    p0->>p14: validate_exact_page_coordinate
-    p0->>p15: normalize_documentation_query_text
-    p0->>p16: _require_full_inventory_opt_in
-    p0->>p17: _normalize_query_choice
-    p0->>p18: _normalize_query_values
-    p0->>p19: _surface_query
-    p2->>p20: _portable_supplied_path
-    p4->>p21: validate_path
-    p2->>p22: _supplied_path_values
-    p6->>p23: build_snapshot_documentation_query_service
-    p8->>p24: fit_documentation_query_result
-    p9->>p25: supplied_paths_from_unified_diff
-    p5->>p26: _validate_wiki_dir
-    p5->>p27: build_live_documentation_query_service
-    p4->>p28: windows_current_user_sid
+    p0->>p14: normalize_documentation_query_text
+    p0->>p15: _require_full_inventory_opt_in
+    p0->>p16: _normalize_query_choice
+    p0->>p17: _normalize_query_values
+    p0->>p18: _surface_query
+    p2->>p19: _portable_supplied_path
+    p4->>p20: validate_path
+    p2->>p21: _supplied_path_values
+    p6->>p22: build_snapshot_documentation_query_service
+    p8->>p23: fit_documentation_query_result
+    p9->>p24: supplied_paths_from_unified_diff
+    p5->>p25: _validate_wiki_dir
+    p5->>p26: build_live_documentation_query_service
+    p4->>p27: windows_current_user_sid
+    p1->>p28: _normalize_query_limit
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:query_documentation)(helper_cache_dir, (...))
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:query_documentation)('source')
 ```
 
-> Call sequence diagram shows 30 of 2543 interactions; 2513 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2499 interactions; 2469 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 974 (973 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 958 (957 omitted); unresolved 1 of 670 (669 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | - | external | 13 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 20 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | - | unresolved | 19 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 16 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | - | external | 1 |
-| `src/llm_wiki_cli/api.py:_normalize_query_limit` | 16 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
-> Omission summary shows 8 of 637 groups; 629 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/api.py:_normalize_query_limit` | 16 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 1 |
+> Omission summary shows 8 of 617 groups; 609 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -155,9 +156,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 894; effect analysis evaluated: 588, partial: 36, unavailable: 270. Counts include steps omitted from the displayed trace.
+Source steps: 872; effect analysis evaluated: 577, partial: 35, unavailable: 260. Counts include steps omitted from the displayed trace.
 
-Collector observations for 624 source steps with known totals: observed: 3714, emitted: 3461, omitted: 253. Unavailable totals are excluded.
+Collector observations for 612 source steps with known totals: observed: 3654, emitted: 3402, omitted: 252. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

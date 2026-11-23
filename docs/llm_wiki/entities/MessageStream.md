@@ -1,6 +1,6 @@
 # MessageStream
 
-**Location:** `src/llm_wiki_engine/host.py:203`
+**Location:** `src/llm_wiki_engine/host.py:204`
 **Kind:** Class
 **Bases:** —
 **Module:** [host](../modules/host.md)

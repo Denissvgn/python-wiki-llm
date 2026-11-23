@@ -2,11 +2,10 @@
 
 **Entry point:** `build_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [integrations](../modules/integrations.md), and 19 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [integrations](../modules/integrations.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 18 more
 
 **Complete modules touched:**
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [integrations](../modules/integrations.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -53,9 +52,9 @@ sequenceDiagram
     participant p14 as _knowledge_index_to_payload_unchecked
     participant p15 as qualified_retired_entity_locators
     participant p16 as validate_maintenance_state
-    participant p17 as _evaluate_model_freshness
-    participant p18 as validate_maintenance_adoption
-    participant p19 as canonical_hash
+    participant p17 as validate_maintenance_adoption
+    participant p18 as canonical_hash
+    participant p19 as _evaluate_model_freshness
     participant p20 as owner_key
     participant p21 as compare_implementation_observations
     participant p22 as _record
@@ -83,25 +82,25 @@ sequenceDiagram
     p11->>p14: _knowledge_index_to_payload_unchecked
     p11->>p15: qualified_retired_entity_locators
     p10->>p16: validate_maintenance_state
-    p11->>p17: _evaluate_model_freshness
-    p10->>p18: validate_maintenance_adoption
-    p10->>p19: canonical_hash
+    p10->>p17: validate_maintenance_adoption
+    p10->>p18: canonical_hash
+    p11->>p19: _evaluate_model_freshness
     p10->>p20: owner_key
     p10->>p21: compare_implementation_observations
     p13->>p22: _record
     p14->>p23: _bundle_to_payload
     p15->>p24: retired_entity_mappings
-    p17->>p25: _validate_live_evaluation
+    p19->>p25: _validate_live_evaluation
     p16->>p26: _detached
     p13->>p27: _string
-    p19->>p28: canonical_bytes
+    p18->>p28: canonical_bytes
     p0-->>p29: isinstance (src/llm_wiki_engine/knowl…build_knowledge_read_view)(load_result, KnowledgeLoadResult)
     p7-->>p30: compare_knowledge_implementation(knowledge, None, analysis_scope='snapshot')
 ```
 
-> Call sequence diagram shows 30 of 812 interactions; 782 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 807 interactions; 777 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 219 (218 omitted); unresolved 1 of 113 (112 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 216 (215 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_consumption.py:_unsupported_reason` | 29 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_consumption.py:_loaded_freshness` | 32 | [src/llm_wiki_engine/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_artifacts.py:require_validated_artifacts` | 33 | - | external | 4 |
-> Omission summary shows 8 of 183 groups; 175 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 177 groups; 169 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -128,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 481; effect analysis evaluated: 326, partial: 14, unavailable: 141. Counts include steps omitted from the displayed trace.
+Source steps: 475; effect analysis evaluated: 322, partial: 13, unavailable: 140. Counts include steps omitted from the displayed trace.
 
-Collector observations for 340 source steps with known totals: observed: 1642, emitted: 1541, omitted: 101. Unavailable totals are excluded.
+Collector observations for 335 source steps with known totals: observed: 1610, emitted: 1510, omitted: 100. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [immutable](../modules/immutable.md), [integrations](../modules/integrations.md), and 16 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [immutable](../modules/immutable.md), [integrations](../modules/integrations.md), and 15 more
 
 **Complete modules touched:**
 
@@ -19,7 +19,6 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse_format](../modules/knowledge_reuse_format.md)
 - [knowledge_validators](../modules/knowledge_validators.md)
-- [maintenance_state](../modules/maintenance_state.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -59,10 +58,10 @@ sequenceDiagram
     participant p22 as _object (src/llm_wiki_engine/knowledge_model.py)
     participant p23 as _bundle_to_payload
     participant p24 as _validate_and_join_inputs
-    participant p25 as maintenance_core
-    participant p26 as _parse_document
-    participant p27 as validate_reuse_commitment
-    participant p28 as _parse_repository
+    participant p25 as _parse_document
+    participant p26 as validate_reuse_commitment
+    participant p27 as _parse_repository
+    participant p28 as _concept_for_page
     participant p29 as isinstance (src/llm_wiki_engine/knowl…:validate_knowledge_index)
     participant p30 as model.bundle.snapshot.extensions.get
     p0->>p1: parse_knowledge_index
@@ -89,17 +88,17 @@ sequenceDiagram
     p8->>p22: _object (src/llm_wiki_engine/knowledge_model.py)
     p9->>p23: _bundle_to_payload
     p10->>p24: _validate_and_join_inputs
-    p11->>p25: maintenance_core
-    p13->>p26: _parse_document
-    p18->>p27: validate_reuse_commitment
-    p12->>p28: _parse_repository
+    p13->>p25: _parse_document
+    p18->>p26: validate_reuse_commitment
+    p12->>p27: _parse_repository
+    p10->>p28: _concept_for_page
     p0-->>p29: isinstance (src/llm_wiki_engine/knowl…:validate_knowledge_index)(value, KnowledgeIndex)
     p3-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1428 interactions; 1398 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1414 interactions; 1384 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 361 (360 omitted); unresolved 1 of 212 (211 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 359 (358 omitted); unresolved 1 of 216 (215 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,7 +112,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:_validation_error` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_record` | 4 | - | external | 4 |
-> Omission summary shows 8 of 339 groups; 331 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 329 groups; 321 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +125,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 856; effect analysis evaluated: 486, partial: 24, unavailable: 346. Counts include steps omitted from the displayed trace.
+Source steps: 840; effect analysis evaluated: 478, partial: 24, unavailable: 338. Counts include steps omitted from the displayed trace.
 
-Collector observations for 510 source steps with known totals: observed: 2609, emitted: 2398, omitted: 211. Unavailable totals are excluded.
+Collector observations for 502 source steps with known totals: observed: 2579, emitted: 2368, omitted: 211. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

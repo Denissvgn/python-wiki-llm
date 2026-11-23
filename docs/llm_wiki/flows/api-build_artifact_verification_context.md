@@ -91,9 +91,9 @@ sequenceDiagram
     p0-->>p30: knowledge.extensions.get(governance_key)
 ```
 
-> Call sequence diagram shows 30 of 699 interactions; 669 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 691 interactions; 661 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 143 (142 omitted); unresolved 1 of 86 (85 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 142 (141 omitted); unresolved 1 of 86 (85 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:require_nonempty_text` | 11 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:require_nonempty_text` | 11 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 5 |
 | `src/llm_wiki_engine/validation.py:require_nonempty_text` | 11 | - | unresolved | 1 |
-> Omission summary shows 8 of 169 groups; 161 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 163 groups; 155 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -120,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 471; effect analysis evaluated: 318, partial: 7, unavailable: 146. Counts include steps omitted from the displayed trace.
+Source steps: 464; effect analysis evaluated: 313, partial: 7, unavailable: 144. Counts include steps omitted from the displayed trace.
 
-Collector observations for 325 source steps with known totals: observed: 1499, emitted: 1382, omitted: 117. Unavailable totals are excluded.
+Collector observations for 320 source steps with known totals: observed: 1478, emitted: 1361, omitted: 117. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -197,10 +197,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_artifact_verification_context | isinstance (src/llm_wiki_engine/verif…fact_verification_context) | 352 | `isinstance(knowledge, KnowledgeIndex)` |
-| build_artifact_verification_context | TypeError (src/llm_wiki_engine/verif…fact_verification_context) | 353 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| build_artifact_verification_context | _sha256 | 354 | `_sha256(knowledge_hash, 'knowledge_hash')` |
-| _sha256 | require_sha256 | 1454 | `require_sha256(value, digest_error=VerificationContractError(...))` |
+| build_artifact_verification_context | isinstance (src/llm_wiki_engine/verif…fact_verification_context) | 354 | `isinstance(knowledge, KnowledgeIndex)` |
+| build_artifact_verification_context | TypeError (src/llm_wiki_engine/verif…fact_verification_context) | 355 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| build_artifact_verification_context | _sha256 | 356 | `_sha256(knowledge_hash, 'knowledge_hash')` |
+| _sha256 | require_sha256 | 1456 | `require_sha256(value, digest_error=VerificationContractError(...))` |
 | require_sha256 | isinstance (src/llm_wiki_engine/validation.py:require_sha256) | 1159 | `isinstance(value, str)` |
 | require_sha256 | _validation_error | 1160 | `_validation_error(digest_error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -217,8 +217,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_artifact_verification_context` | `isinstance` | 352 |
-| external_call | `build_artifact_verification_context` | `TypeError` | 353 |
+| external_call | `build_artifact_verification_context` | `isinstance` | 354 |
+| external_call | `build_artifact_verification_context` | `TypeError` | 355 |
 | external_call | `require_sha256` | `isinstance` | 1159 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | unresolved_call | `_validation_error` | `error` | 95 |

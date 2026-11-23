@@ -1,6 +1,6 @@
 # PlannedArtifactWrite
 
-**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:119`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:121`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

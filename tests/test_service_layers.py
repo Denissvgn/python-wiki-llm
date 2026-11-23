@@ -76,6 +76,7 @@ KERNEL_SERVICES = frozenset(
         "query_result_format",
         "surface_index_format",
         "extract_format",
+        "historical_retirement",
         "maintenance_status_format",
         "maintenance_queue_format",
         "context_session",
@@ -252,6 +253,7 @@ PRODUCT_SERVICES = frozenset(
         "health_details",
         "health_policy",
         "health_summary",
+        "historical_release",
         "instruction_ownership",
         "knowledge_generation",
         "knowledge_orchestration",
@@ -310,7 +312,6 @@ UPWARD_IMPORT_BASELINE: dict[str, frozenset[str]] = {
             "services.extraction_service",
         }
     ),
-    "context_packet": frozenset({"services.implementation_evidence"}),
     "context_packet_builder": frozenset(
         {
             "llm_wiki_cli",
@@ -755,6 +756,8 @@ def test_every_service_module_has_exactly_one_layer() -> None:
         if any(name in other for other in groups[index + 1:])
     }
 
+    # Engine modules that moved from services keep their layer.
+    modules |= ENGINE_MODULES - ENGINE_NATIVE_MODULES
     assert overlapping == set()
     assert sorted(modules - _SERVICE_LAYERS.keys()) == [], "classify new service modules"
     assert sorted(_SERVICE_LAYERS.keys() - modules) == [], "remove deleted service modules"
@@ -861,7 +864,7 @@ def test_format_modules_load_no_builders_or_analyzers(module: str) -> None:
     src = Path(__file__).resolve().parents[1] / "src"
     probe = (
         f"import sys; sys.path.insert(0, {str(src)!r}); "
-        f"import llm_wiki_cli.services.{module}; "
+        f"import llm_wiki_engine.{module}; "
         "print('\\n'.join(sorted(m for m in sys.modules if m.startswith('llm_wiki_cli.'))))"
     )
     result = subprocess.run(
@@ -941,7 +944,110 @@ def test_engine_package_loads_without_the_provider_or_third_party_modules() -> N
 
 
 # Engine modules written for the engine, which never had a services path.
-ENGINE_NATIVE_MODULES = frozenset({"infrastructure_state", "integrations", "knowledge_reuse_format"})
+ENGINE_NATIVE_MODULES = frozenset({
+    "engine", "historical_sources", "implementation_summary", "infrastructure_state", "layout", "integrations", "knowledge_reuse_format", "pack_interfaces",
+    "query_request_format", "sync_ownership", "token_counters", "wiki_operations",
+})
+
+
+# Engine modules whose services path is still a deprecated alias: they moved
+# after 5.0.0, so a release must warn about them before they can go.
+DEPRECATED_ALIASES = frozenset({
+    "context_budget_format",
+    "context_packet",
+    "context_response_format",
+    "search_service",
+    "sync_transition_execution",
+    "task_contract",
+})
+# Services paths of engine modules that warned in 5.0.0 and are gone now.
+RETIRED_ALIASES = frozenset({
+    "analysis_compatibility",
+    "canonical_json",
+    "circuit_breaker",
+    "concept_identity",
+    "context_knowledge_contract",
+    "context_request_format",
+    "contracts",
+    "engine_events",
+    "extract_format",
+    "filesystem_guard",
+    "freshness_wording",
+    "gitignore",
+    "host",
+    "immutable",
+    "io",
+    "knowledge_artifacts",
+    "knowledge_audit",
+    "knowledge_consumption",
+    "knowledge_coverage",
+    "knowledge_envelope",
+    "knowledge_evidence",
+    "knowledge_freshness",
+    "knowledge_governance",
+    "knowledge_graph",
+    "knowledge_index",
+    "knowledge_kinds",
+    "knowledge_links",
+    "knowledge_loader",
+    "knowledge_model",
+    "knowledge_observability",
+    "knowledge_packs",
+    "knowledge_storage",
+    "knowledge_storage_access",
+    "knowledge_storage_diagnostics",
+    "knowledge_storage_io",
+    "knowledge_storage_lifecycle",
+    "knowledge_stream_audit",
+    "knowledge_validators",
+    "knowledge_verification",
+    "lockfile",
+    "maintenance_evidence",
+    "maintenance_projection",
+    "maintenance_protocol",
+    "maintenance_queue_format",
+    "maintenance_recovery",
+    "maintenance_shapes",
+    "maintenance_state",
+    "maintenance_status",
+    "maintenance_status_format",
+    "manifest_storage",
+    "markdown_sections",
+    "normalization_diagnostics",
+    "packet_field_policy",
+    "path_policy",
+    "paths",
+    "progress",
+    "protected_artifacts",
+    "query_result_format",
+    "redaction",
+    "request_json",
+    "runtime_output",
+    "search_discovery",
+    "search_discovery_capture",
+    "search_lexical",
+    "search_rank",
+    "search_source",
+    "section_ownership",
+    "secure_file",
+    "source_retirement",
+    "source_selection",
+    "storage_receipts",
+    "storage_sort",
+    "storage_spool",
+    "surface_index_format",
+    "sync_manifest",
+    "sync_recovery",
+    "sync_retained_links",
+    "task_compact_readable",
+    "validation",
+    "verification_contracts",
+    "wiki_media",
+    "wiki_surface",
+    "wiki_surface_index",
+    "wiki_write_basis",
+    "workflow_profile",
+})
 
 
 def test_engine_native_modules_have_no_services_path() -> None:
@@ -949,7 +1055,30 @@ def test_engine_native_modules_have_no_services_path() -> None:
     assert not [name for name in ENGINE_NATIVE_MODULES if (PACKAGE_ROOT / "services" / f"{name}.py").exists()]
 
 
-@pytest.mark.parametrize("name", sorted(ENGINE_MODULES - ENGINE_NATIVE_MODULES))
+def test_only_the_deprecated_aliases_keep_a_services_path() -> None:
+    assert DEPRECATED_ALIASES <= ENGINE_MODULES - ENGINE_NATIVE_MODULES
+    assert RETIRED_ALIASES <= ENGINE_MODULES - ENGINE_NATIVE_MODULES
+    assert not DEPRECATED_ALIASES & RETIRED_ALIASES
+    with_path = {name for name in ENGINE_MODULES if (PACKAGE_ROOT / "services" / f"{name}.py").exists()}
+    assert with_path == DEPRECATED_ALIASES
+
+
+def test_retired_aliases_no_longer_import() -> None:
+    names = ", ".join(repr(name) for name in sorted(RETIRED_ALIASES))
+    probe = (
+        f"import importlib, sys; sys.path.insert(0, {str(PACKAGE_ROOT.parent)!r}); missing = []\n"
+        f"for name in ({names},):\n"
+        "    try:\n"
+        "        importlib.import_module('llm_wiki_cli.services.' + name)\n"
+        "    except ModuleNotFoundError:\n"
+        "        missing.append(name)\n"
+        "print(len(missing))"
+    )
+    result = subprocess.run([sys.executable, "-I", "-c", probe], capture_output=True, text=True, check=True)
+    assert int(result.stdout) == len(RETIRED_ALIASES)
+
+
+@pytest.mark.parametrize("name", sorted(DEPRECATED_ALIASES))
 def test_service_path_is_a_static_alias_of_the_engine_module(name: str) -> None:
     import importlib
 
@@ -962,7 +1091,7 @@ def test_service_path_is_a_static_alias_of_the_engine_module(name: str) -> None:
 
 
 def test_each_alias_warns_once_naming_its_engine_module_at_the_importer(tmp_path: Path) -> None:
-    names = sorted(ENGINE_MODULES - ENGINE_NATIVE_MODULES)
+    names = sorted(DEPRECATED_ALIASES)
     importer = tmp_path / "importer.py"
     # Plain import statements, twice each: only the first import warns.
     statements = "".join(f"    import llm_wiki_cli.services.{name}\n" for name in names)
@@ -989,21 +1118,15 @@ def test_each_alias_warns_once_naming_its_engine_module_at_the_importer(tmp_path
     assert {row[2] for row in deprecations} == {str(importer)}
 
 
-# Analyses that must still recognize code written against a deprecated alias.
-LEGACY_SPELLINGS = {
-    "test_architecture_layers.py": frozenset({"llm_wiki_cli.services.validation"}),
-}
-
-
 def test_this_repository_never_imports_a_deprecated_alias() -> None:
-    aliases = {f"{_SERVICES}.{name}" for name in ENGINE_MODULES - ENGINE_NATIVE_MODULES}
+    aliases = {f"{_SERVICES}.{name}" for name in DEPRECATED_ALIASES | RETIRED_ALIASES}
     roots = [PACKAGE_ROOT, PACKAGE_ROOT.parents[1] / "integrations", PACKAGE_ROOT.parents[1] / "release"]
     tests_root = Path(__file__).resolve().parent
     found: list[str] = []
     for path in [p for root in roots for p in _source_paths(root)] + sorted(tests_root.rglob("*.py")):
         if path == Path(__file__).resolve() or "fixtures" in path.relative_to(path.parents[len(path.parents) - 1]).parts:
             continue
-        if path.parent == PACKAGE_ROOT / "services" and path.stem in ENGINE_MODULES:
+        if path.parent == PACKAGE_ROOT / "services" and path.stem in DEPRECATED_ALIASES:
             continue  # the aliases themselves
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         in_package = PACKAGE_ROOT in path.parents
@@ -1021,9 +1144,8 @@ def test_this_repository_never_imports_a_deprecated_alias() -> None:
                 continue
             found.extend(f"{path.name}:{node.lineno}:{target}" for target in targets if target in aliases)
         text = path.read_text(encoding="utf-8")
-        allowed = LEGACY_SPELLINGS.get(path.name, frozenset())
         found.extend(
-            f"{path.name}:{name}" for name in aliases - allowed
+            f"{path.name}:{name}" for name in aliases
             if f'"{name}"' in text or f"'{name}'" in text
         )
     assert found == []
@@ -1035,180 +1157,21 @@ def test_every_deprecated_alias_still_imports_under_its_old_name() -> None:
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
-        import llm_wiki_cli.services.analysis_compatibility
-        import llm_wiki_cli.services.canonical_json
-        import llm_wiki_cli.services.circuit_breaker
-        import llm_wiki_cli.services.concept_identity
-        import llm_wiki_cli.services.context_knowledge_contract
-        import llm_wiki_cli.services.context_request_format
-        import llm_wiki_cli.services.contracts
-        import llm_wiki_cli.services.engine_events
-        import llm_wiki_cli.services.extract_format
-        import llm_wiki_cli.services.filesystem_guard
-        import llm_wiki_cli.services.freshness_wording
-        import llm_wiki_cli.services.gitignore
-        import llm_wiki_cli.services.host
-        import llm_wiki_cli.services.immutable
-        import llm_wiki_cli.services.io
-        import llm_wiki_cli.services.knowledge_artifacts
-        import llm_wiki_cli.services.knowledge_audit
-        import llm_wiki_cli.services.knowledge_consumption
-        import llm_wiki_cli.services.knowledge_coverage
-        import llm_wiki_cli.services.knowledge_envelope
-        import llm_wiki_cli.services.knowledge_evidence
-        import llm_wiki_cli.services.knowledge_freshness
-        import llm_wiki_cli.services.knowledge_governance
-        import llm_wiki_cli.services.knowledge_graph
-        import llm_wiki_cli.services.knowledge_index
-        import llm_wiki_cli.services.knowledge_kinds
-        import llm_wiki_cli.services.knowledge_links
-        import llm_wiki_cli.services.knowledge_loader
-        import llm_wiki_cli.services.knowledge_model
-        import llm_wiki_cli.services.knowledge_observability
-        import llm_wiki_cli.services.knowledge_packs
-        import llm_wiki_cli.services.knowledge_storage
-        import llm_wiki_cli.services.knowledge_storage_access
-        import llm_wiki_cli.services.knowledge_storage_diagnostics
-        import llm_wiki_cli.services.knowledge_storage_io
-        import llm_wiki_cli.services.knowledge_storage_lifecycle
-        import llm_wiki_cli.services.knowledge_stream_audit
-        import llm_wiki_cli.services.knowledge_validators
-        import llm_wiki_cli.services.knowledge_verification
-        import llm_wiki_cli.services.lockfile
-        import llm_wiki_cli.services.maintenance_evidence
-        import llm_wiki_cli.services.maintenance_projection
-        import llm_wiki_cli.services.maintenance_protocol
-        import llm_wiki_cli.services.maintenance_queue_format
-        import llm_wiki_cli.services.maintenance_recovery
-        import llm_wiki_cli.services.maintenance_shapes
-        import llm_wiki_cli.services.maintenance_state
-        import llm_wiki_cli.services.maintenance_status
-        import llm_wiki_cli.services.maintenance_status_format
-        import llm_wiki_cli.services.manifest_storage
-        import llm_wiki_cli.services.markdown_sections
-        import llm_wiki_cli.services.normalization_diagnostics
-        import llm_wiki_cli.services.packet_field_policy
-        import llm_wiki_cli.services.path_policy
-        import llm_wiki_cli.services.paths
-        import llm_wiki_cli.services.progress
-        import llm_wiki_cli.services.protected_artifacts
-        import llm_wiki_cli.services.query_result_format
-        import llm_wiki_cli.services.redaction
-        import llm_wiki_cli.services.request_json
-        import llm_wiki_cli.services.runtime_output
-        import llm_wiki_cli.services.search_discovery
-        import llm_wiki_cli.services.search_discovery_capture
-        import llm_wiki_cli.services.search_lexical
-        import llm_wiki_cli.services.search_rank
-        import llm_wiki_cli.services.search_source
-        import llm_wiki_cli.services.section_ownership
-        import llm_wiki_cli.services.secure_file
-        import llm_wiki_cli.services.source_retirement
-        import llm_wiki_cli.services.source_selection
-        import llm_wiki_cli.services.storage_receipts
-        import llm_wiki_cli.services.storage_sort
-        import llm_wiki_cli.services.storage_spool
-        import llm_wiki_cli.services.surface_index_format
-        import llm_wiki_cli.services.sync_manifest
-        import llm_wiki_cli.services.sync_recovery
-        import llm_wiki_cli.services.sync_retained_links
-        import llm_wiki_cli.services.task_compact_readable
-        import llm_wiki_cli.services.validation
-        import llm_wiki_cli.services.verification_contracts
-        import llm_wiki_cli.services.wiki_media
-        import llm_wiki_cli.services.wiki_surface
-        import llm_wiki_cli.services.wiki_surface_index
-        import llm_wiki_cli.services.wiki_write_basis
-        import llm_wiki_cli.services.workflow_profile
+        import llm_wiki_cli.services.context_budget_format
+        import llm_wiki_cli.services.context_packet
+        import llm_wiki_cli.services.context_response_format
+        import llm_wiki_cli.services.search_service
+        import llm_wiki_cli.services.sync_transition_execution
+        import llm_wiki_cli.services.task_contract
     import llm_wiki_cli
     pairs = (
-        (llm_wiki_cli.services.analysis_compatibility, "analysis_compatibility"),
-        (llm_wiki_cli.services.canonical_json, "canonical_json"),
-        (llm_wiki_cli.services.circuit_breaker, "circuit_breaker"),
-        (llm_wiki_cli.services.concept_identity, "concept_identity"),
-        (llm_wiki_cli.services.context_knowledge_contract, "context_knowledge_contract"),
-        (llm_wiki_cli.services.context_request_format, "context_request_format"),
-        (llm_wiki_cli.services.contracts, "contracts"),
-        (llm_wiki_cli.services.engine_events, "engine_events"),
-        (llm_wiki_cli.services.extract_format, "extract_format"),
-        (llm_wiki_cli.services.filesystem_guard, "filesystem_guard"),
-        (llm_wiki_cli.services.freshness_wording, "freshness_wording"),
-        (llm_wiki_cli.services.gitignore, "gitignore"),
-        (llm_wiki_cli.services.host, "host"),
-        (llm_wiki_cli.services.immutable, "immutable"),
-        (llm_wiki_cli.services.io, "io"),
-        (llm_wiki_cli.services.knowledge_artifacts, "knowledge_artifacts"),
-        (llm_wiki_cli.services.knowledge_audit, "knowledge_audit"),
-        (llm_wiki_cli.services.knowledge_consumption, "knowledge_consumption"),
-        (llm_wiki_cli.services.knowledge_coverage, "knowledge_coverage"),
-        (llm_wiki_cli.services.knowledge_envelope, "knowledge_envelope"),
-        (llm_wiki_cli.services.knowledge_evidence, "knowledge_evidence"),
-        (llm_wiki_cli.services.knowledge_freshness, "knowledge_freshness"),
-        (llm_wiki_cli.services.knowledge_governance, "knowledge_governance"),
-        (llm_wiki_cli.services.knowledge_graph, "knowledge_graph"),
-        (llm_wiki_cli.services.knowledge_index, "knowledge_index"),
-        (llm_wiki_cli.services.knowledge_kinds, "knowledge_kinds"),
-        (llm_wiki_cli.services.knowledge_links, "knowledge_links"),
-        (llm_wiki_cli.services.knowledge_loader, "knowledge_loader"),
-        (llm_wiki_cli.services.knowledge_model, "knowledge_model"),
-        (llm_wiki_cli.services.knowledge_observability, "knowledge_observability"),
-        (llm_wiki_cli.services.knowledge_packs, "knowledge_packs"),
-        (llm_wiki_cli.services.knowledge_storage, "knowledge_storage"),
-        (llm_wiki_cli.services.knowledge_storage_access, "knowledge_storage_access"),
-        (llm_wiki_cli.services.knowledge_storage_diagnostics, "knowledge_storage_diagnostics"),
-        (llm_wiki_cli.services.knowledge_storage_io, "knowledge_storage_io"),
-        (llm_wiki_cli.services.knowledge_storage_lifecycle, "knowledge_storage_lifecycle"),
-        (llm_wiki_cli.services.knowledge_stream_audit, "knowledge_stream_audit"),
-        (llm_wiki_cli.services.knowledge_validators, "knowledge_validators"),
-        (llm_wiki_cli.services.knowledge_verification, "knowledge_verification"),
-        (llm_wiki_cli.services.lockfile, "lockfile"),
-        (llm_wiki_cli.services.maintenance_evidence, "maintenance_evidence"),
-        (llm_wiki_cli.services.maintenance_projection, "maintenance_projection"),
-        (llm_wiki_cli.services.maintenance_protocol, "maintenance_protocol"),
-        (llm_wiki_cli.services.maintenance_queue_format, "maintenance_queue_format"),
-        (llm_wiki_cli.services.maintenance_recovery, "maintenance_recovery"),
-        (llm_wiki_cli.services.maintenance_shapes, "maintenance_shapes"),
-        (llm_wiki_cli.services.maintenance_state, "maintenance_state"),
-        (llm_wiki_cli.services.maintenance_status, "maintenance_status"),
-        (llm_wiki_cli.services.maintenance_status_format, "maintenance_status_format"),
-        (llm_wiki_cli.services.manifest_storage, "manifest_storage"),
-        (llm_wiki_cli.services.markdown_sections, "markdown_sections"),
-        (llm_wiki_cli.services.normalization_diagnostics, "normalization_diagnostics"),
-        (llm_wiki_cli.services.packet_field_policy, "packet_field_policy"),
-        (llm_wiki_cli.services.path_policy, "path_policy"),
-        (llm_wiki_cli.services.paths, "paths"),
-        (llm_wiki_cli.services.progress, "progress"),
-        (llm_wiki_cli.services.protected_artifacts, "protected_artifacts"),
-        (llm_wiki_cli.services.query_result_format, "query_result_format"),
-        (llm_wiki_cli.services.redaction, "redaction"),
-        (llm_wiki_cli.services.request_json, "request_json"),
-        (llm_wiki_cli.services.runtime_output, "runtime_output"),
-        (llm_wiki_cli.services.search_discovery, "search_discovery"),
-        (llm_wiki_cli.services.search_discovery_capture, "search_discovery_capture"),
-        (llm_wiki_cli.services.search_lexical, "search_lexical"),
-        (llm_wiki_cli.services.search_rank, "search_rank"),
-        (llm_wiki_cli.services.search_source, "search_source"),
-        (llm_wiki_cli.services.section_ownership, "section_ownership"),
-        (llm_wiki_cli.services.secure_file, "secure_file"),
-        (llm_wiki_cli.services.source_retirement, "source_retirement"),
-        (llm_wiki_cli.services.source_selection, "source_selection"),
-        (llm_wiki_cli.services.storage_receipts, "storage_receipts"),
-        (llm_wiki_cli.services.storage_sort, "storage_sort"),
-        (llm_wiki_cli.services.storage_spool, "storage_spool"),
-        (llm_wiki_cli.services.surface_index_format, "surface_index_format"),
-        (llm_wiki_cli.services.sync_manifest, "sync_manifest"),
-        (llm_wiki_cli.services.sync_recovery, "sync_recovery"),
-        (llm_wiki_cli.services.sync_retained_links, "sync_retained_links"),
-        (llm_wiki_cli.services.task_compact_readable, "task_compact_readable"),
-        (llm_wiki_cli.services.validation, "validation"),
-        (llm_wiki_cli.services.verification_contracts, "verification_contracts"),
-        (llm_wiki_cli.services.wiki_media, "wiki_media"),
-        (llm_wiki_cli.services.wiki_surface, "wiki_surface"),
-        (llm_wiki_cli.services.wiki_surface_index, "wiki_surface_index"),
-        (llm_wiki_cli.services.wiki_write_basis, "wiki_write_basis"),
-        (llm_wiki_cli.services.workflow_profile, "workflow_profile"),
+        (llm_wiki_cli.services.context_budget_format, "context_budget_format"),
+        (llm_wiki_cli.services.context_packet, "context_packet"),
+        (llm_wiki_cli.services.context_response_format, "context_response_format"),
+        (llm_wiki_cli.services.search_service, "search_service"),
+        (llm_wiki_cli.services.sync_transition_execution, "sync_transition_execution"),
+        (llm_wiki_cli.services.task_contract, "task_contract"),
     )
-    assert len(pairs) == len(ENGINE_MODULES - ENGINE_NATIVE_MODULES)
+    assert {name for _, name in pairs} == DEPRECATED_ALIASES
     for alias, name in pairs:
         assert alias is importlib.import_module(f"{ENGINE_PACKAGE}.{name}")
-    assert llm_wiki_cli is not None

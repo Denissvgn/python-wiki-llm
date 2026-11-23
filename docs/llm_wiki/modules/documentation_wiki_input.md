@@ -29,6 +29,7 @@ documentation-run service to persist ``wiki-input.json`` later.
 | `llm_wiki_engine.knowledge_observability` | `knowledge_freshness_hint` |
 | `llm_wiki_engine.knowledge_packs` | `PACK_NAME`, `INDEX_NAME`, `INDEX_PAGE_NAME` |
 | `llm_wiki_engine.knowledge_storage` | `canonical_bytes`, `digest` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_projection` | `validate_maintenance_projection` |
 | `llm_wiki_engine.maintenance_protocol` | `ADOPTION_FILENAME` |
 | `llm_wiki_engine.maintenance_state` | `validate_maintenance_adoption` |
@@ -66,22 +67,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (19) |
+| Outbound | `src` (20) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationWikiInputError](../entities/DocumentationWikiInputError.md) | 213 | `ValueError` | Raised when a wiki cannot be adopted without weakening isolation. |
-| [DocumentationWikiSnapshot](../entities/DocumentationWikiSnapshot.md) | 233 | — | Typed provenance for an adopted, byte-preserved wiki snapshot. |
-| [_InputFile](../entities/InputFile.md) | 353 | — | — |
-| [_HashedInputFile](../entities/HashedInputFile.md) | 366 | — | — |
-| [_InputTree](../entities/InputTree.md) | 372 | — | — |
-| [_ValidatedWikiMetadata](../entities/ValidatedWikiMetadata.md) | 404 | — | One fully classified metadata form built only from guarded input bytes. |
-| [_MarkdownInspection](../entities/MarkdownInspection.md) | 440 | — | — |
-| [_InputResourceBudget](../entities/InputResourceBudget.md) | 449 | — | — |
+| [DocumentationWikiInputError](../entities/DocumentationWikiInputError.md) | 215 | `ValueError` | Raised when a wiki cannot be adopted without weakening isolation. |
+| [DocumentationWikiSnapshot](../entities/DocumentationWikiSnapshot.md) | 235 | — | Typed provenance for an adopted, byte-preserved wiki snapshot. |
+| [_InputFile](../entities/InputFile.md) | 355 | — | — |
+| [_HashedInputFile](../entities/HashedInputFile.md) | 368 | — | — |
+| [_InputTree](../entities/InputTree.md) | 374 | — | — |
+| [_ValidatedWikiMetadata](../entities/ValidatedWikiMetadata.md) | 406 | — | One fully classified metadata form built only from guarded input bytes. |
+| [_MarkdownInspection](../entities/MarkdownInspection.md) | 442 | — | — |
+| [_InputResourceBudget](../entities/InputResourceBudget.md) | 451 | — | — |
 
 ## Functions
 

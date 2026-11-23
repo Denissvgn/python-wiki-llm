@@ -1,6 +1,6 @@
 # MaintenanceCapture
 
-**Location:** `src/llm_wiki_engine/maintenance_evidence.py:111`
+**Location:** `src/llm_wiki_engine/maintenance_evidence.py:119`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_evidence](../modules/maintenance_evidence.md)
@@ -23,12 +23,15 @@ _Auto-generated from `MaintenanceCapture` in `src/llm_wiki_engine/maintenance_ev
 | `issues` | `tuple[dict[str, Any], ...]` | `()` | — |
 | `source_backed_semantic_total` | `int` | `0` | — |
 | `tracked_semantic_total` | `int` | `0` | — |
+| `retained_owner_keys` | `frozenset[str]` | `frozenset()` | — |
+| `semantic_targets` | `Mapping[str, dict[str, Any]] \| None` | `None` | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__post_init__` | `()` | — | — |
+| `can_register` | `(key, observed)` | — | — |
 | `to_payload` | `() -> dict` | — | — |
 
 ## Relationships
@@ -56,7 +59,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [maintenance_evidence](../modules/maintenance_evidence.md) | 2 | `by_owner`, `captured_paths`, `complete_pages`, `issues`, `known_absent_pages`, `missing_source_paths`, `source_backed_semantic_total`, `tracked_semantic_total` |
+| [maintenance_evidence](../modules/maintenance_evidence.md) | 3 | `by_owner`, `captured_paths`, `complete_pages`, `issues`, `known_absent_pages`, `missing_source_paths`, `retained_owner_keys`, `semantic_targets`, `source_backed_semantic_total`, `tracked_semantic_total` |
 
 ### References
 

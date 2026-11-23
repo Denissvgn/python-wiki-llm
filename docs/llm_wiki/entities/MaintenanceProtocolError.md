@@ -1,6 +1,6 @@
 # MaintenanceProtocolError
 
-**Location:** `src/llm_wiki_engine/maintenance_protocol.py:38`
+**Location:** `src/llm_wiki_engine/maintenance_protocol.py:40`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)

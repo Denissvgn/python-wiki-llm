@@ -41,6 +41,7 @@
 - [paths](../modules/paths.md)
 - [python_implementation](../modules/python_implementation.md)
 - [query_cmd](../modules/query_cmd.md)
+- [query_request_format](../modules/query_request_format.md)
 - [request_json](../modules/request_json.md)
 - [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
@@ -48,7 +49,6 @@
 - [sync_manifest](../modules/sync_manifest.md)
 - [typescript_helper_identity](../modules/typescript_helper_identity.md)
 - [validation](../modules/validation.md)
-- [wiki_surface](../modules/wiki_surface.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
@@ -78,15 +78,15 @@ sequenceDiagram
     participant p17 as normalize_documentation_query_text
     participant p18 as validate_path
     participant p19 as _supplied_path_values
-    participant p20 as validate_exact_page_coordinate
-    participant p21 as build_snapshot_documentation_query_service
-    participant p22 as fit_documentation_query_result
-    participant p23 as write_bytes_atomic
-    participant p24 as supplied_paths_from_unified_diff
-    participant p25 as _validate_wiki_dir
-    participant p26 as build_live_documentation_query_service
-    participant p27 as windows_current_user_sid
-    participant p28 as _normalize_query_limit
+    participant p20 as build_snapshot_documentation_query_service
+    participant p21 as fit_documentation_query_result
+    participant p22 as write_bytes_atomic
+    participant p23 as supplied_paths_from_unified_diff
+    participant p24 as _validate_wiki_dir
+    participant p25 as build_live_documentation_query_service
+    participant p26 as windows_current_user_sid
+    participant p27 as _normalize_query_limit
+    participant p28 as helper_identity
     participant p29 as json.dumps (src/llm_wiki_cli/commands/query_cmd.py:run)
     participant p30 as Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
     p0->>p1: load_request
@@ -108,22 +108,22 @@ sequenceDiagram
     p8->>p17: normalize_documentation_query_text
     p9->>p18: validate_path
     p7->>p19: _supplied_path_values
-    p8->>p20: validate_exact_page_coordinate
-    p11->>p21: build_snapshot_documentation_query_service
-    p13->>p22: fit_documentation_query_result
-    p6->>p23: write_bytes_atomic
-    p14->>p24: supplied_paths_from_unified_diff
-    p10->>p25: _validate_wiki_dir
-    p10->>p26: build_live_documentation_query_service
-    p9->>p27: windows_current_user_sid
-    p5->>p28: _normalize_query_limit
+    p11->>p20: build_snapshot_documentation_query_service
+    p13->>p21: fit_documentation_query_result
+    p6->>p22: write_bytes_atomic
+    p14->>p23: supplied_paths_from_unified_diff
+    p10->>p24: _validate_wiki_dir
+    p10->>p25: build_live_documentation_query_service
+    p9->>p26: windows_current_user_sid
+    p5->>p27: _normalize_query_limit
+    p12->>p28: helper_identity
     p0-->>p29: json.dumps (src/llm_wiki_cli/commands/query_cmd.py:run)(result, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=False)
     p3-->>p30: Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 1873 interactions; 1843 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1828 interactions; 1798 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 731 (730 omitted); unresolved 1 of 505 (504 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 709 (708 omitted); unresolved 1 of 499 (498 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 19 |
-> Omission summary shows 8 of 434 groups; 426 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 417 groups; 409 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -150,9 +150,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 638; effect analysis evaluated: 438, partial: 30, unavailable: 170. Counts include steps omitted from the displayed trace.
+Source steps: 621; effect analysis evaluated: 426, partial: 30, unavailable: 165. Counts include steps omitted from the displayed trace.
 
-Collector observations for 468 source steps with known totals: observed: 2835, emitted: 2612, omitted: 223. Unavailable totals are excluded.
+Collector observations for 456 source steps with known totals: observed: 2785, emitted: 2562, omitted: 223. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

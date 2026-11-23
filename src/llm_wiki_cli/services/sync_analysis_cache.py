@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from collections.abc import Mapping
 from pathlib import Path
 import json
@@ -57,7 +59,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         (options.knowledge_format is not None, "storage-format-requested"),
         (any((root / ".llm-wiki/plugins.lock.json").exists()
              for root in (Path.cwd(), snapshot.root)), "plugin-lock-present"),
-        ((options.wiki_dir / ".llm-wiki-governance.json").exists(), "governance-present"),
+        ((options.wiki_dir / DEFAULT_LAYOUT.governance).exists(), "governance-present"),
         (not uses_default_pack(), "domain-pack"),
     ):
         if excluded:

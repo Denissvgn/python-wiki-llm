@@ -25,6 +25,7 @@ Markdown mirror for static-site tooling without invoking external builders.
 | `llm_wiki_engine.filesystem_guard` | `fresh_no_follow_stat` |
 | `llm_wiki_engine.io` | `read_md`, `write_md` |
 | `llm_wiki_engine.knowledge_observability` | `UNEVALUATED_FRESHNESS_DISCLOSURE` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.validation` | `path_is_within`, `paths_overlap`, `require_existing_directory`, `require_sha256`, `require_string`, `resolve_portable_workspace_path` |
 | `llm_wiki_engine.wiki_media` | `build_asset_index`, `collect_media_references`, `iter_markdown_link_targets`, `mask_markdown_code`, `media_type_for_path` |
 | `os` | `os` |
@@ -56,21 +57,21 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SiteExportError](../entities/SiteExportError.md) | 109 | `ValueError` | Raised for invalid static-site export requests. |
-| [SiteExportOperation](../entities/SiteExportOperation.md) | 114 | — | — |
-| [SitePublicationSelection](../entities/SitePublicationSelection.md) | 122 | — | Immutable, path-safe policy selections for one generated site. |
-| [SitePublicationReceipt](../entities/SitePublicationReceipt.md) | 157 | — | Validated publication receipt loaded from an exported mirror. |
-| [SiteExportReport](../entities/SiteExportReport.md) | 169 | — | — |
-| [FrontMatterParseResult](../entities/FrontMatterParseResult.md) | 266 | — | — |
-| [HubWikiSource](../entities/HubWikiSource.md) | 273 | — | — |
+| [SiteExportError](../entities/SiteExportError.md) | 111 | `ValueError` | Raised for invalid static-site export requests. |
+| [SiteExportOperation](../entities/SiteExportOperation.md) | 116 | — | — |
+| [SitePublicationSelection](../entities/SitePublicationSelection.md) | 124 | — | Immutable, path-safe policy selections for one generated site. |
+| [SitePublicationReceipt](../entities/SitePublicationReceipt.md) | 159 | — | Validated publication receipt loaded from an exported mirror. |
+| [SiteExportReport](../entities/SiteExportReport.md) | 171 | — | — |
+| [FrontMatterParseResult](../entities/FrontMatterParseResult.md) | 268 | — | — |
+| [HubWikiSource](../entities/HubWikiSource.md) | 275 | — | — |
 
 ## Functions
 

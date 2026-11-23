@@ -65,10 +65,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_freshness_hint | isinstance | 480 | `isinstance(state, ComputedFreshness)` |
-| knowledge_freshness_hint | isinstance | 487 | `isinstance(reason_code, str)` |
-| knowledge_freshness_hint | ValueError | 488 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
-| knowledge_freshness_hint | ValueError | 494 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
+| knowledge_freshness_hint | isinstance | 482 | `isinstance(state, ComputedFreshness)` |
+| knowledge_freshness_hint | isinstance | 489 | `isinstance(reason_code, str)` |
+| knowledge_freshness_hint | ValueError | 490 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
+| knowledge_freshness_hint | ValueError | 496 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
 
 ### Boundary effects
 
@@ -78,10 +78,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `knowledge_freshness_hint` | `isinstance` | 480 |
-| external_call | `knowledge_freshness_hint` | `isinstance` | 487 |
-| external_call | `knowledge_freshness_hint` | `ValueError` | 488 |
-| external_call | `knowledge_freshness_hint` | `ValueError` | 494 |
+| external_call | `knowledge_freshness_hint` | `isinstance` | 482 |
+| external_call | `knowledge_freshness_hint` | `isinstance` | 489 |
+| external_call | `knowledge_freshness_hint` | `ValueError` | 490 |
+| external_call | `knowledge_freshness_hint` | `ValueError` | 496 |
 
 ## Behavior
 

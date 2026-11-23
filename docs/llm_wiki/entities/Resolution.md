@@ -30,7 +30,7 @@ flowchart LR
     n0["Resolution (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
+    n3["src/llm_wiki_engine/context_packet.py"]
     n4["src/llm_wiki_engine/knowledge_index.py"]
     n5["src/llm_wiki_engine/knowledge_links.py"]
     n6["src/llm_wiki_engine/knowledge_stream_audit.py"]

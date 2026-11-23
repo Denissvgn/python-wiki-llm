@@ -60,10 +60,14 @@ runs:
         PIP_DISABLE_PIP_VERSION_CHECK: "1"
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
-      run: >-
-        "${{ steps.setup-python.outputs.python-path }}"
-        -I -m pip install --no-cache-dir
-        "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."
+      run: |
+        set -euo pipefail
+        # Locked runtime dependencies first, so sources are observed with the
+        # same parser versions as the reviewed wiki capture.
+        "${{ steps.setup-python.outputs.python-path }}" -I -m pip install --no-cache-dir \
+          --require-hashes -r "${GITHUB_ACTION_PATH}/requirements.txt"
+        "${{ steps.setup-python.outputs.python-path }}" -I -m pip install --no-cache-dir --no-deps \
+          "${GITHUB_ACTION_PATH}/../../src" "${GITHUB_ACTION_PATH}/../.."
 
     - name: Bind runner-temporary wiki paths
       shell: bash

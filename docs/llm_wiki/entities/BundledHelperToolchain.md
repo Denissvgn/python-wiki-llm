@@ -1,6 +1,6 @@
 # BundledHelperToolchain
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:681`
+**Location:** `src/llm_wiki_cli/services/domain_pack.py:260`
 **Kind:** Class
 **Bases:** `HelperToolchain`
 **Module:** [domain_pack](../modules/domain_pack.md)
@@ -26,12 +26,12 @@ The bundled Go, Rust, TypeScript and Haskell helpers and their cache.
 ```mermaid
 flowchart LR
     n0["BundledHelperToolchain (src/llm_wiki_cli/services/domain_pack.py)"]
-    n1["HelperToolchain (src/llm_wiki_cli/services/domain_pack.py)"]
+    n1["HelperToolchain (src/llm_wiki_engine/pack_interfaces.py)"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/domain_pack.md"
-    click n1 "../modules/domain_pack.md"
+    click n1 "../modules/pack_interfaces.md"
     click n2 "../modules/engine___init__.md"
 ```
 
@@ -45,7 +45,7 @@ flowchart LR
 
 | Kind | Entity | Module |
 |---|---|---|
-| Base | `HelperToolchain` | [domain_pack](../modules/domain_pack.md) |
+| Base | `HelperToolchain` | [pack_interfaces](../modules/pack_interfaces.md) |
 
 ### References
 

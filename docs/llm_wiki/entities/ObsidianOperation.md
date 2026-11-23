@@ -1,6 +1,6 @@
 # ObsidianOperation
 
-**Location:** `src/llm_wiki_cli/services/obsidian.py:165`
+**Location:** `src/llm_wiki_cli/services/obsidian.py:167`
 **Kind:** Class
 **Bases:** —
 **Module:** [obsidian](../modules/obsidian.md)

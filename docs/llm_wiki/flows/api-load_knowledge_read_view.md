@@ -2,11 +2,10 @@
 
 **Entry point:** `load_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 34 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), [immutable](../modules/immutable.md), and 33 more
 
 **Complete modules touched:**
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [host](../modules/host.md)
@@ -115,9 +114,9 @@ sequenceDiagram
     p4-->>p30: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
 ```
 
-> Call sequence diagram shows 30 of 1658 interactions; 1628 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1665 interactions; 1635 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 554 (553 omitted); unresolved 1 of 299 (298 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 555 (554 omitted); unresolved 1 of 304 (303 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -131,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 16 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 16 | - | unresolved | 6 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 16 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
-> Omission summary shows 8 of 378 groups; 370 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 379 groups; 371 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -144,7 +143,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 806; effect analysis evaluated: 422, partial: 40, unavailable: 344. Counts include steps omitted from the displayed trace.
+Source steps: 807; effect analysis evaluated: 422, partial: 40, unavailable: 345. Counts include steps omitted from the displayed trace.
 
 Collector observations for 462 source steps with known totals: observed: 2897, emitted: 2666, omitted: 231. Unavailable totals are excluded.
 

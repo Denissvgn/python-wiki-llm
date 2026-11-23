@@ -1,6 +1,6 @@
 # WikiWriteBasis
 
-**Location:** `src/llm_wiki_engine/maintenance_protocol.py:201`
+**Location:** `src/llm_wiki_engine/maintenance_protocol.py:203`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)
@@ -49,14 +49,17 @@ flowchart LR
     n0["WikiWriteBasis (src/llm_wiki_engine/maintenance_protocol.py)"]
     n1["bootstrap_write_operation (src/llm_wiki_cli/services/bootstrap_recovery.py)"]
     n2["_capture_basis (src/llm_wiki_cli/services/maintenance_service.py)"]
-    n3["maintenance_write_operation (src/llm_wiki_engine/maintenance_protocol.py)"]
+    n3["_staged_write_basis (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n4["maintenance_write_operation (src/llm_wiki_engine/maintenance_protocol.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/maintenance_protocol.md"
     click n1 "../modules/bootstrap_recovery.md"
     click n2 "../modules/maintenance_service.md"
-    click n3 "../modules/maintenance_protocol.md"
+    click n3 "../modules/sync_runtime.md"
+    click n4 "../modules/maintenance_protocol.md"
 ```
 
 ### Summary
@@ -71,4 +74,5 @@ flowchart LR
 |---|---|---|---:|
 | `bootstrap_write_operation` | call | [bootstrap_recovery](../modules/bootstrap_recovery.md) | 1 |
 | `_capture_basis` | call | [maintenance_service](../modules/maintenance_service.md) | 1 |
+| `_staged_write_basis` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |

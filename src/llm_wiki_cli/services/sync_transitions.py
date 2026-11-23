@@ -12,17 +12,14 @@ from .bootstrap_runtime import _module_name_from_path
 from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
 from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from llm_wiki_engine.markdown_sections import normalize_markdown
-from .sync_analysis import SyncOwnershipError, _recorded_entity_pages
+from .sync_analysis import _recorded_entity_pages
+from llm_wiki_engine.sync_ownership import PageTransitionError as PageTransitionError, SyncOwnershipError as SyncOwnershipError
 from llm_wiki_engine.sync_manifest import ManifestPageSource, SyncManifest
 from llm_wiki_engine.sync_retained_links import repair_retained_page_links
 from llm_wiki_engine.validation import portable_path_key
 from llm_wiki_engine.wiki_surface import PageKind, WikiSurfaceError, canonical_path
 from llm_wiki_engine import historical_sources
 from llm_wiki_engine.source_retirement import retired_entity_mappings
-
-
-class PageTransitionError(SyncOwnershipError):
-    """The intended page writes cannot preserve verified ownership."""
 
 
 @dataclass(frozen=True)

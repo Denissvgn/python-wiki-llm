@@ -1,7 +1,7 @@
 # validate_task_context
 
 **Entry point:** `task_context.validate_task_context`
-**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [task_implementation](../modules/task_implementation.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [task_implementation](../modules/task_implementation.md), [workflow_profile](../modules/workflow_profile.md)
 
 > Check the task envelope separately from the unchanged embedded packet.
 
@@ -14,16 +14,13 @@
 4. `workflow_profile.content_id`
 5. `task_evidence.match_declarations`
 6. `workflow_profile.content_id`
-7. `context_packet.validate_context_packet`
-8. `context_packet._encode_packet_payload`
-9. `task_implementation.validate_task_implementations`
-10. `task_context_v2.validate_scoped_bindings`
-11. `workflow_profile.WorkflowRequestError`
+7. `task_implementation.validate_task_implementations`
+8. `task_context_v2.validate_scoped_bindings`
+9. `workflow_profile.WorkflowRequestError`
 
 ## Touches
 
 - [canonical_json](../modules/canonical_json.md)
-- [context_packet](../modules/context_packet.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)
 - [task_contract](../modules/task_contract.md)

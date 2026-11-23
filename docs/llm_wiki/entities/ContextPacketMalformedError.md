@@ -1,6 +1,6 @@
 # ContextPacketMalformedError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:176`
+**Location:** `src/llm_wiki_engine/context_packet.py:178`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -24,20 +24,20 @@ The supplied bytes do not satisfy the canonical packet contract.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["ContextPacketMalformedError (src/llm_wiki_cli/services/context_packet.py)"]
-    n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["_coerce_packet_bytes (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["_encode_packet_payload (src/llm_wiki_cli/services/context_packet.py)"]
-    n4["_exact_fields (src/llm_wiki_cli/services/context_packet.py)"]
-    n5["_explicit_response_source_priorities (src/llm_wiki_cli/services/context_packet.py)"]
-    n6["_mapping (src/llm_wiki_cli/services/context_packet.py)"]
-    n7["_nonnegative_integer (src/llm_wiki_cli/services/context_packet.py)"]
-    n8["_object_list (src/llm_wiki_cli/services/context_packet.py)"]
-    n9["_packet_contract_for_schema (src/llm_wiki_cli/services/context_packet.py)"]
-    n10["_stable_code (src/llm_wiki_cli/services/context_packet.py)"]
-    n11["_strict_json_payload (src/llm_wiki_cli/services/context_packet.py)"]
-    n12["_string_list (src/llm_wiki_cli/services/context_packet.py)"]
-    n13["_validate_assurance (src/llm_wiki_cli/services/context_packet.py)"]
+    n0["ContextPacketMalformedError (src/llm_wiki_engine/context_packet.py)"]
+    n1["ContextPacketError (src/llm_wiki_engine/context_packet.py)"]
+    n2["compare_context_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py)"]
+    n3["_coerce_packet_bytes (src/llm_wiki_engine/context_packet.py)"]
+    n4["_encode_packet_payload (src/llm_wiki_engine/context_packet.py)"]
+    n5["_exact_fields (src/llm_wiki_engine/context_packet.py)"]
+    n6["_explicit_response_source_priorities (src/llm_wiki_engine/context_packet.py)"]
+    n7["_mapping (src/llm_wiki_engine/context_packet.py)"]
+    n8["_nonnegative_integer (src/llm_wiki_engine/context_packet.py)"]
+    n9["_object_list (src/llm_wiki_engine/context_packet.py)"]
+    n10["_packet_contract_for_schema (src/llm_wiki_engine/context_packet.py)"]
+    n11["_stable_code (src/llm_wiki_engine/context_packet.py)"]
+    n12["_strict_json_payload (src/llm_wiki_engine/context_packet.py)"]
+    n13["_string_list (src/llm_wiki_engine/context_packet.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -53,7 +53,7 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"
-    click n2 "../modules/context_packet.md"
+    click n2 "../modules/context_packet_builder.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/context_packet.md"
     click n5 "../modules/context_packet.md"
@@ -83,6 +83,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `compare_context_packet_basis` | call | [context_packet_builder](../modules/context_packet_builder.md) | 2 |
 | `_coerce_packet_bytes` | call | [context_packet](../modules/context_packet.md) | 4 |
 | `_encode_packet_payload` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_exact_fields` | call | [context_packet](../modules/context_packet.md) | 2 |
@@ -94,6 +95,5 @@ flowchart LR
 | `_stable_code` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_strict_json_payload` | call | [context_packet](../modules/context_packet.md) | 3 |
 | `_string_list` | call | [context_packet](../modules/context_packet.md) | 1 |
-| `_validate_assurance` | call | [context_packet](../modules/context_packet.md) | 2 |
 
 > References: showing 12 of 41 logical references; 29 omitted by the 12-row generated summary limit.

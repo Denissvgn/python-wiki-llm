@@ -19,6 +19,10 @@ from itertools import islice
 from pathlib import PurePosixPath
 from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
+from llm_wiki_engine.query_request_format import (  # re-exported: request checks live there
+    QUERY_IDENTITY_BYTE_LIMIT as QUERY_IDENTITY_BYTE_LIMIT,
+    DocumentationQueryError as DocumentationQueryError,
+)
 from llm_wiki_engine.contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
 from llm_wiki_engine.context_request_format import (  # re-exported: format checks live there
     CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH as CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH,
@@ -78,7 +82,6 @@ _MAX_NORMALIZED_CONTEXT_TARGET_LENGTH = 2048
 RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT = 64 * 1024
 QUERY_RESULT_SERIALIZED_BYTE_LIMIT = 64 * 1024
 QUERY_RESULT_TEXT_BYTE_LIMIT = 4 * 1024
-QUERY_IDENTITY_BYTE_LIMIT = 4 * 1024
 QUERY_FILTER_VALUE_LIMIT = 100
 _CONTEXT_COVERAGE_LIMITATION_RE = re.compile(r"^[a-z][a-z0-9]*(?:[/-][a-z0-9]+)*$")
 _QUERY_PRESENTATION_TEXT_FIELDS = frozenset(
@@ -133,14 +136,6 @@ def _ineligible_knowledge_status(
     }:
         return "degraded", "surface-validation-failed"
     return knowledge_view.availability.value, knowledge_view.reason_code
-
-
-class DocumentationQueryError(ValueError):
-    """Raised when a documentation graph query request is invalid."""
-
-    def __init__(self, message: str = "", *, field: str | None = None):
-        super().__init__(message)
-        self.field = field
 
 
 _QueryParameters = ParamSpec("_QueryParameters")

@@ -44,6 +44,7 @@ the current directory, the clock and the standard streams directly.
 | `pathlib` | `Path` |
 | `subprocess` | `subprocess` |
 | `sys` | `sys` |
+| `tempfile` | `tempfile` |
 | `typing` | `Any`, `Literal`, `Protocol` |
 
 ## Local dependency map
@@ -64,23 +65,25 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (36) |
+| Inbound | `src` (38) |
 | Outbound | `src` (1) |
 
-> All 37 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [TextSink](../entities/TextSink.md) | Class | 43 | `Protocol` | A writable text stream, such as ``sys.stdout`` or ``io.StringIO``. |
-| [HostCapabilityError](../entities/HostCapabilityError.md) | Class | 51 | `PermissionError` | The active host does not grant this capability. |
-| [Host](../entities/Host.md) | Class | 63 | — | This machine: real processes, live environment and cwd, wall clock. |
-| [NoProcessHost](../entities/NoProcessHost.md) | Class | 142 | `Host` | A host that grants no subprocesses; everything else is local. |
-| [Stream](../entities/Stream.md) | Type alias | 181 | `Literal['stdout', 'stderr']` | — |
-| [MessageStream](../entities/MessageStream.md) | Class | 203 | — | A stream that writes to the active host and reports each line as an event. |
-| [_Discard](../entities/Discard.md) | Class | 237 | `io.TextIOBase` | — |
-| [ErrorRecorder](../entities/ErrorRecorder.md) | Class | 259 | — | Forwards writes to a host's stderr and keeps a copy for error messages. |
+| [TextSink](../entities/TextSink.md) | Class | 44 | `Protocol` | A writable text stream, such as ``sys.stdout`` or ``io.StringIO``. |
+| [HostCapabilityError](../entities/HostCapabilityError.md) | Class | 52 | `PermissionError` | The active host does not grant this capability. |
+| [Host](../entities/Host.md) | Class | 64 | — | This machine: real processes, live environment and cwd, wall clock. |
+| [NoProcessHost](../entities/NoProcessHost.md) | Class | 143 | `Host` | A host that grants no subprocesses; everything else is local. |
+| [Stream](../entities/Stream.md) | Type alias | 182 | `Literal['stdout', 'stderr']` | — |
+| [MessageStream](../entities/MessageStream.md) | Class | 204 | — | A stream that writes to the active host and reports each line as an event. |
+| [_Unpublished](../entities/Unpublished.md) | Class | 238 | `io.TextIOBase` | — |
+| [_Discard](../entities/Discard.md) | Class | 243 | `_Unpublished` | — |
+| [_Deferred](../entities/Deferred.md) | Class | 248 | `_Unpublished` | — |
+| [ErrorRecorder](../entities/ErrorRecorder.md) | Class | 286 | — | Forwards writes to a host's stderr and keeps a copy for error messages. |
 
 ## Functions
 
@@ -91,6 +94,7 @@ flowchart LR
 | `using_host` | `(host: Host) -> Iterator[Host]` | `@contextmanager` | Run the enclosed engine work against ``host``. |
 | `emit` | `(*values: object, stream: Stream = 'stdout', sep: str = ' ', end: str = '\n', flush: bool = False) -> None` | — | Write one human-readable line to the active host's stream. |
 | `_publish_message` | `(host: Host, stream: Stream, line: str) -> None` | — | — |
+| `deferred_stdout` | `() -> Iterator[None]` | `@contextmanager` | Publish stdout and its message events only after the enclosed checks succeed. |
 | `discarding_stdout` | `() -> Iterator[Host]` | `@contextmanager` | Run the enclosed work with the active host's stdout discarded. |
 | `discarding_output` | `() -> Iterator[Host]` | `@contextmanager` | Run the enclosed work with the active host's stdout and stderr discarded. |
 | `recording_errors` | `() -> Iterator[ErrorRecorder]` | `@contextmanager` | Run the enclosed work with stderr still written, and recorded. |

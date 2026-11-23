@@ -1357,15 +1357,14 @@ def test_committed_profile_freezes_intended_product_census():
     snapshot = build_source_snapshot(repository)
     assert "integrations/obsidian/llm-wiki/esbuild.config.mjs" in snapshot.language_paths("typescript")
     assert "src/llm_wiki_cli/services/go_calls.py" in snapshot.language_paths("python")
-    assert "src/llm_wiki_cli/services/packet_field_policy.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_engine/packet_field_policy.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/helper_preparation.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/current_contracts.py" in snapshot.language_paths("python")
-    assert "src/llm_wiki_cli/services/sync_recovery.py" in snapshot.language_paths("python")
+    assert "src/llm_wiki_engine/sync_recovery.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/bootstrap_recovery.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/evidence_diagnostics.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/evidence_explanation.py" in snapshot.language_paths("python")
-    assert "src/llm_wiki_cli/services/normalization_diagnostics.py" in snapshot.language_paths("python")
+    assert "src/llm_wiki_engine/normalization_diagnostics.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/scoped_sync_repair.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/analysis_targets.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/extractors/native_diagnostics.py" in snapshot.language_paths("python")
@@ -1408,22 +1407,22 @@ def test_committed_profile_freezes_intended_product_census():
     assert set(snapshot.language_paths("typescript")) == expected_typescript
     assert set(snapshot.all_source_paths) == expected_python | expected_typescript
     assert {
-        "src/llm_wiki_cli/services/analysis_compatibility.py",
+        "src/llm_wiki_engine/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",
         "src/llm_wiki_cli/services/health_contract.py",
         "src/llm_wiki_cli/services/health_details.py",
         "src/llm_wiki_cli/services/health_policy.py",
         "src/llm_wiki_cli/services/knowledge_maintenance.py",
         "src/llm_wiki_cli/services/health_summary.py",
-        "src/llm_wiki_cli/services/knowledge_storage.py",
-        "src/llm_wiki_cli/services/storage_receipts.py",
+        "src/llm_wiki_engine/knowledge_storage.py",
+        "src/llm_wiki_engine/storage_receipts.py",
         "src/llm_wiki_cli/services/sync_transitions.py",
         "src/llm_wiki_cli/services/sync_analysis_cache.py",
         "src/llm_wiki_cli/services/sync_analysis_storage.py",
-        "src/llm_wiki_cli/services/maintenance_recovery.py",
+        "src/llm_wiki_engine/maintenance_recovery.py",
         "src/llm_wiki_cli/services/sync_generated_sections.py",
         "src/llm_wiki_cli/services/sync_transition_execution.py",
-        "src/llm_wiki_cli/services/sync_retained_links.py",
+        "src/llm_wiki_engine/sync_retained_links.py",
         "src/llm_wiki_cli/services/task_context_v2.py",
         "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
     } <= set(snapshot.all_source_paths)

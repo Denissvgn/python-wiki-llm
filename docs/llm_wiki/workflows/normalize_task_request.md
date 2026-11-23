@@ -1,7 +1,7 @@
 # normalize_task_request
 
 **Entry point:** `task_contract.normalize_task_request`
-**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_request_format](../modules/context_request_format.md), [documentation_query_builder](../modules/documentation_query_builder.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [canonical_json](../modules/canonical_json.md), [context_request_format](../modules/context_request_format.md), [query_request_format](../modules/query_request_format.md), [task_contract](../modules/task_contract.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -21,7 +21,7 @@
 13. `workflow_profile.WorkflowRequestError`
 14. `context_request_format.validate_changes`
 15. `workflow_profile.WorkflowRequestError`
-16. `documentation_query_builder.normalize_supplied_paths`
+16. `query_request_format.normalize_supplied_paths`
 17. `workflow_profile.normalize_profile`
 18. `workflow_profile.WorkflowRequestError`
 19. `workflow_profile.exact_fields`
@@ -33,7 +33,7 @@
 
 - [canonical_json](../modules/canonical_json.md)
 - [context_request_format](../modules/context_request_format.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [query_request_format](../modules/query_request_format.md)
 - [task_contract](../modules/task_contract.md)
 - [workflow_profile](../modules/workflow_profile.md)
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `export_documentation_run` (`api`)
 **Source:** [export](../modules/export.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [export](../modules/export.md), [filesystem_guard](../modules/filesystem_guard.md), and 8 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [export](../modules/export.md), [filesystem_guard](../modules/filesystem_guard.md), and 7 more
 
 **Complete modules touched:**
 
@@ -17,7 +17,6 @@
 - [site_html_check](../modules/site_html_check.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
-- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -40,21 +39,21 @@ sequenceDiagram
     participant p11 as _normalized_source_id
     participant p12 as _validate_existing_dir
     participant p13 as _validate_output_base
-    participant p14 as collect_wiki_pages
-    participant p15 as _preflight_knowledge_projection
-    participant p16 as _preflight_existing_unexpected_knowledge_pages
-    participant p17 as read_md
-    participant p18 as _build_display_titles
-    participant p19 as _load_surface_index_sources
-    participant p20 as _source_identity
-    participant p21 as _build_publication_selection
-    participant p22 as _preflight_publication_export
-    participant p23 as _check_publication_receipt
-    participant p24 as _selection_mismatch_issues
-    participant p25 as _begin_publication_export
-    participant p26 as _record_write_operation
-    participant p27 as _check_existing_unexpected_knowledge_pages
-    participant p28 as _build_user_index_page
+    participant p14 as _preflight_knowledge_projection
+    participant p15 as _preflight_existing_unexpected_knowledge_pages
+    participant p16 as read_md
+    participant p17 as _build_display_titles
+    participant p18 as _load_surface_index_sources
+    participant p19 as _source_identity
+    participant p20 as _build_publication_selection
+    participant p21 as _preflight_publication_export
+    participant p22 as _check_publication_receipt
+    participant p23 as _selection_mismatch_issues
+    participant p24 as _begin_publication_export
+    participant p25 as _record_write_operation
+    participant p26 as _check_existing_unexpected_knowledge_pages
+    participant p27 as _build_user_index_page
+    participant p28 as _build_generated_reference_page
     participant p29 as Path (src/llm_wiki_cli/services…port.py:check_site_mirror)
     participant p30 as _resolve_workspace_root_argument
     p0->>p1: export_site_mirror
@@ -70,28 +69,28 @@ sequenceDiagram
     p1->>p11: _normalized_source_id
     p1->>p12: _validate_existing_dir
     p1->>p13: _validate_output_base
-    p1->>p14: collect_wiki_pages
-    p1->>p15: _preflight_knowledge_projection
-    p1->>p16: _preflight_existing_unexpected_knowledge_pages
-    p1->>p17: read_md
-    p1->>p18: _build_display_titles
-    p1->>p19: _load_surface_index_sources
-    p1->>p20: _source_identity
-    p1->>p21: _build_publication_selection
-    p1->>p22: _preflight_publication_export
-    p3->>p23: _check_publication_receipt
-    p3->>p24: _selection_mismatch_issues
-    p1->>p25: _begin_publication_export
-    p1->>p26: _record_write_operation
-    p3->>p27: _check_existing_unexpected_knowledge_pages
-    p1->>p28: _build_user_index_page
+    p1->>p14: _preflight_knowledge_projection
+    p1->>p15: _preflight_existing_unexpected_knowledge_pages
+    p1->>p16: read_md
+    p1->>p17: _build_display_titles
+    p1->>p18: _load_surface_index_sources
+    p1->>p19: _source_identity
+    p1->>p20: _build_publication_selection
+    p1->>p21: _preflight_publication_export
+    p3->>p22: _check_publication_receipt
+    p3->>p23: _selection_mismatch_issues
+    p1->>p24: _begin_publication_export
+    p1->>p25: _record_write_operation
+    p3->>p26: _check_existing_unexpected_knowledge_pages
+    p1->>p27: _build_user_index_page
+    p1->>p28: _build_generated_reference_page
     p3-->>p29: Path (src/llm_wiki_cli/services…port.py:check_site_mirror)(wiki_dir)
     p0-->>p30: _resolve_workspace_root_argument(workspace)
 ```
 
-> Call sequence diagram shows 30 of 1748 interactions; 1718 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1694 interactions; 1664 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 355 (354 omitted); unresolved 1 of 757 (756 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 347 (346 omitted); unresolved 1 of 732 (731 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -105,7 +104,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 27 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 27 | - | external | 1 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 27 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
-> Omission summary shows 8 of 360 groups; 352 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 342 groups; 334 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -118,9 +117,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 637; effect analysis evaluated: 450, partial: 20, unavailable: 167. Counts include steps omitted from the displayed trace.
+Source steps: 616; effect analysis evaluated: 435, partial: 19, unavailable: 162. Counts include steps omitted from the displayed trace.
 
-Collector observations for 470 source steps with known totals: observed: 2326, emitted: 2236, omitted: 90. Unavailable totals are excluded.
+Collector observations for 454 source steps with known totals: observed: 2254, emitted: 2165, omitted: 89. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

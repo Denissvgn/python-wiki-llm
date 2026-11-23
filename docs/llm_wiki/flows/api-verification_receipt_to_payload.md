@@ -180,14 +180,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verification_receipt_to_payload | validate_verification_receipt | 810 | `validate_verification_receipt(value)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
-| validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
-| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
-| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
-| _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
-| validate_verification_receipt | _object | 838 | `_object(payload, 'receipt')` |
-| _object | require_mapping | 1470 | `require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))` |
+| verification_receipt_to_payload | validate_verification_receipt | 812 | `validate_verification_receipt(value)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_engine/verif…date_verification_receipt) | 837 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | _receipt_to_payload | 836 | `_receipt_to_payload(value)` |
+| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evidence)` |
+| _receipt_to_payload | dict (src/llm_wiki_engine/verif…ts.py:_receipt_to_payload) | 1134 | `dict(receipt.evaluated_snapshot)` |
+| _receipt_to_payload | check.to_payload | 1138 | `check.to_payload(data not statically known)` |
+| validate_verification_receipt | _object | 840 | `_object(payload, 'receipt')` |
+| _object | require_mapping | 1472 | `require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))` |
 | require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -200,8 +200,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_verification_receipt` | `isinstance` | 835 |
-| unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1136 |
+| external_call | `validate_verification_receipt` | `isinstance` | 837 |
+| unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1138 |
 | external_call | `require_mapping` | `isinstance` | 783 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | step_limit | `verification_receipt_to_payload` | `first 12 steps` | 0 |

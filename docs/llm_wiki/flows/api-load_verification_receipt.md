@@ -190,8 +190,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 985 | `Path(wiki_dir)` |
-| load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
+| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 987 | `Path(wiki_dir)` |
+| load_verification_receipt | first_unsafe_path_component | 988 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |
@@ -199,7 +199,7 @@ flowchart LR
 | first_unsafe_path_component | lexical.is_absolute | 61 | `lexical.is_absolute(data not statically known)` |
 | first_unsafe_path_component | current_host().cwd | 67 | `current_host().cwd(data not statically known)` |
 | first_unsafe_path_component | current_host | 67 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 68 | `Path(absolute.anchor)` |
 
 ### Boundary effects
@@ -216,7 +216,7 @@ flowchart LR
 | external_call | `first_unsafe_path_component` | `os.path.abspath` | 60 |
 | unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 61 |
 | unresolved_call | `first_unsafe_path_component` | `current_host().cwd` | 67 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `load_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `load_verification_receipt` | `depth limit` | 0 |
 

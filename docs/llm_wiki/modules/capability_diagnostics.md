@@ -27,6 +27,7 @@ overrides follow the same resolution rules as explicit preparation.
 | `.helper_cache` | `_profile_slots`, `cache_roots`, `preparation_cache_root`, `cache_roots` |
 | `.source_snapshot` | `build_source_snapshot` |
 | `__future__` | `annotations` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.path_policy` | `validate_source_root` |
 | `llm_wiki_engine.paths` | `render_shell_command` |
 | `os` | `os` |
@@ -47,11 +48,12 @@ flowchart LR
     n5["src/llm_wiki_cli/services/helper_cache.py"]
     n6["src/llm_wiki_cli/services/plugins.py"]
     n7["src/llm_wiki_cli/services/source_snapshot.py"]
-    n8["src/llm_wiki_engine/path_policy.py"]
-    n9["src/llm_wiki_engine/paths.py"]
+    n8["src/llm_wiki_engine/layout.py"]
+    n9["src/llm_wiki_engine/path_policy.py"]
+    n10["src/llm_wiki_engine/paths.py"]
     n0 --> n2
     n0 --> n3
-    n1 --> n8
+    n1 --> n9
     n2 --> n1
     n2 --> n3
     n2 --> n4
@@ -60,11 +62,13 @@ flowchart LR
     n2 --> n7
     n2 --> n8
     n2 --> n9
+    n2 --> n10
     n4 --> n5
-    n4 --> n9
+    n4 --> n10
     n5 --> n4
     n7 --> n1
-    n7 --> n8
+    n7 --> n9
+    n9 --> n8
     click n0 "../modules/doctor_cmd.md"
     click n1 "../modules/common.md"
     click n2 "../modules/capability_diagnostics.md"
@@ -73,8 +77,9 @@ flowchart LR
     click n5 "../modules/helper_cache.md"
     click n6 "../modules/plugins.md"
     click n7 "../modules/source_snapshot.md"
-    click n8 "../modules/path_policy.md"
-    click n9 "../modules/paths.md"
+    click n8 "../modules/layout.md"
+    click n9 "../modules/path_policy.md"
+    click n10 "../modules/paths.md"
 ```
 
 ### Internal neighbors
@@ -88,6 +93,7 @@ flowchart LR
 | Outbound | [helper_cache](../modules/helper_cache.md) |
 | Outbound | [plugins](../modules/plugins.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [layout](../modules/layout.md) |
 | Outbound | [path_policy](../modules/path_policy.md) |
 | Outbound | [paths](../modules/paths.md) |
 
@@ -96,5 +102,5 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `build_capability_diagnostics` | `(src_dir = '.', *, helper_cache_dir = None, source_selection = None, allow_external_src = False, include_tests = None)` | — | — |
-| `build_capability_doctor` | `(wiki_dir = 'docs/llm_wiki', src_dir = '.', **kwargs)` | — | — |
+| `build_capability_doctor` | `(wiki_dir = DEFAULT_LAYOUT.wiki_dir, src_dir = '.', **kwargs)` | — | — |
 | `render_capability_doctor` | `(report)` | — | — |

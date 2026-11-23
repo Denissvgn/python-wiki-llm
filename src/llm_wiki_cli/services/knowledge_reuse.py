@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import os
 import sys
 import hashlib
@@ -333,9 +335,9 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
     assert state.artifacts is not None
     writes = []
     for name in (
-        ".llm-wiki-surface.json",
-        ".llm-wiki-knowledge.json",
-        ".llm-wiki-manifest.json",
+        DEFAULT_LAYOUT.surface_index,
+        DEFAULT_LAYOUT.knowledge_index,
+        DEFAULT_LAYOUT.manifest,
     ):
         content = state.captured_bytes[name]
         assert isinstance(content, bytes)

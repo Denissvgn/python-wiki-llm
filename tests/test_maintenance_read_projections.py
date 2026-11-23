@@ -295,7 +295,7 @@ def test_source_deletion_retains_exact_old_targets_in_all_read_views(
 @pytest.mark.parametrize("change", ["snapshot-ack", "header-ack", "impossible-count"])
 def test_rehashed_context_packet_refuses_false_maintenance_qualification(owned, change):
     from copy import deepcopy
-    from llm_wiki_cli.services.context_packet import (
+    from llm_wiki_engine.context_packet import (
         ContextPacketMalformedError,
         validate_context_packet,
     )

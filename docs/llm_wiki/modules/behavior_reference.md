@@ -10,7 +10,7 @@ Versioned reference data derived from the llm-wiki provider's declarations.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `cli_reference`, `current_contracts`, `skills`, `task_compact`, `task_contract` |
+| `.` | `cli_reference`, `current_contracts`, `skills`, `task_compact` |
 | `..` | `config` |
 | `.helper_runtime` | `resolve_helper_policy` |
 | `__future__` | `annotations` |
@@ -18,6 +18,7 @@ Versioned reference data derived from the llm-wiki provider's declarations.
 | `functools` | `lru_cache` |
 | `importlib` | `resources` |
 | `json` | `json` |
+| `llm_wiki_engine` | `task_contract` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_json` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |

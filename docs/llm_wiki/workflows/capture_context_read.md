@@ -1,7 +1,7 @@
 # capture_context_read
 
 **Entry point:** `context_packet_builder.capture_context_read`
-**Modules involved:** [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), [context_request_format](../modules/context_request_format.md), [context_service](../modules/context_service.md), [data_flow](../modules/data_flow.md), [documentation_query_builder](../modules/documentation_query_builder.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_status](../modules/maintenance_status.md), [path_policy](../modules/path_policy.md), [plugins](../modules/plugins.md), [services_dependencies](../modules/services_dependencies.md), [source_retirement](../modules/source_retirement.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [wiki_surface_index](../modules/wiki_surface_index.md)
+**Modules involved:** [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), [context_request_format](../modules/context_request_format.md), [context_service](../modules/context_service.md), [data_flow](../modules/data_flow.md), [entrypoints](../modules/entrypoints.md), [extraction_service](../modules/extraction_service.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_status](../modules/maintenance_status.md), [path_policy](../modules/path_policy.md), [plugins](../modules/plugins.md), [query_request_format](../modules/query_request_format.md), [services_dependencies](../modules/services_dependencies.md), [source_retirement](../modules/source_retirement.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [wiki_surface_index](../modules/wiki_surface_index.md)
 
 > Capture one source inventory, wiki surface, and knowledge read view.
 
@@ -18,14 +18,14 @@ inconsistent capture rather than returning a partially detached view.
 4. `knowledge_loader.KnowledgeLoadIssue`
 5. `source_selection.resolve_source_selection`
 6. `source_snapshot.capture_source_selection_inputs`
-7. `documentation_query_builder.validate_live_query_source_selection`
+7. `query_request_format.validate_live_query_source_selection`
 8. `context_request_format.ProtocolRequestError`
 9. `context_request_format.ProtocolRequestError`
 10. `source_snapshot.build_source_snapshot`
 11. `source_retirement.retained_empty_module_paths_from_wiki`
 12. `context_request_format.ProtocolRequestError`
 13. `context_service._extractor_failure_message`
-14. `documentation_query_builder.validate_live_query_source_selection`
+14. `query_request_format.validate_live_query_source_selection`
 15. `context_request_format.ProtocolRequestError`
 16. `entrypoints.get_entry_points`
 17. `entrypoints.read_console_scripts`
@@ -41,7 +41,7 @@ inconsistent capture rather than returning a partially detached view.
 27. `context_packet.ContextPacketPathPolicyError`
 28. `context_request_format.ProtocolRequestError`
 29. `context_service._selected_git_changed_files`
-30. `documentation_query_builder.validate_live_query_source_selection`
+30. `query_request_format.validate_live_query_source_selection`
 31. `context_request_format.ProtocolRequestError`
 32. `knowledge_storage_io.read_guarded`
 33. `context_packet._freeze_json`
@@ -61,7 +61,6 @@ inconsistent capture rather than returning a partially detached view.
 - [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
@@ -70,6 +69,7 @@ inconsistent capture rather than returning a partially detached view.
 - [maintenance_status](../modules/maintenance_status.md)
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
+- [query_request_format](../modules/query_request_format.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)

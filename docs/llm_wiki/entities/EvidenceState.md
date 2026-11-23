@@ -31,11 +31,11 @@ flowchart LR
     n0["EvidenceState (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/context_service.py"]
-    n5["src/llm_wiki_cli/services/evidence_diagnostics.py"]
-    n6["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n3["src/llm_wiki_cli/services/context_service.py"]
+    n4["src/llm_wiki_cli/services/evidence_diagnostics.py"]
+    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n6["src/llm_wiki_cli/services/lint_service.py"]
+    n7["src/llm_wiki_engine/context_packet.py"]
     n8["src/llm_wiki_engine/context_request_format.py"]
     n9["src/llm_wiki_engine/knowledge_artifacts.py"]
     n10["src/llm_wiki_engine/knowledge_consumption.py"]
@@ -58,11 +58,11 @@ flowchart LR
     n13 --> n0
     n14 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/context_service.md"
-    click n5 "../modules/evidence_diagnostics.md"
-    click n6 "../modules/knowledge_projection.md"
-    click n7 "../modules/lint_service.md"
+    click n3 "../modules/context_service.md"
+    click n4 "../modules/evidence_diagnostics.md"
+    click n5 "../modules/knowledge_projection.md"
+    click n6 "../modules/lint_service.md"
+    click n7 "../modules/context_packet.md"
     click n8 "../modules/context_request_format.md"
     click n9 "../modules/knowledge_artifacts.md"
     click n10 "../modules/knowledge_consumption.md"
@@ -89,11 +89,11 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 | `evidence_diagnostics` | import | [evidence_diagnostics](../modules/evidence_diagnostics.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `context_request_format` | import | [context_request_format](../modules/context_request_format.md) | — |
 | `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |

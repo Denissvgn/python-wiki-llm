@@ -434,7 +434,7 @@ def test_pack_values_are_checked() -> None:
     assert NOTES.describe() == {
         "name": "team/notes",
         "source_kinds": {"notes": [".md", ".txt"]},
-        "classifier": "llm_wiki_cli.services.domain_pack.ExtensionSourceClassifier",
+        "classifier": "llm_wiki_engine.pack_interfaces.ExtensionSourceClassifier",
         "page_namer": "llm_wiki_cli.services.domain_pack.StemPageNamer",
         "page_renderer": "llm_wiki_cli.services.domain_pack.BuiltInPageRenderer",
         "context_source": "llm_wiki_cli.services.domain_pack.CodeContextSource",
@@ -442,3 +442,26 @@ def test_pack_values_are_checked() -> None:
         "helper_toolchain": "llm_wiki_cli.services.domain_pack.BundledHelperToolchain",
         "extractors": {},
     }
+
+
+def test_pack_interfaces_live_in_the_engine_and_stay_importable_here():
+    import llm_wiki_engine.pack_interfaces as engine_side
+    from llm_wiki_cli.services import domain_pack as cli_side
+
+    # The CLI keeps its own subclasses (with today's defaults) of these names.
+    specialized = {"BuiltInPageRenderer", "DomainPack", "StemPageNamer"}
+    for name in engine_side.__all__:
+        if name == "current_pack":
+            continue
+        if name in specialized:
+            assert issubclass(getattr(cli_side, name), getattr(engine_side, name)), name
+        elif hasattr(cli_side, name):
+            assert getattr(cli_side, name) is getattr(engine_side, name), name
+    assert cli_side.using_pack is engine_side.using_pack
+    # The CLI's current pack defaults to the code-documentation pack; the engine has none.
+    assert cli_side.current_pack() is cli_side.CODE_DOCS_PACK
+    with pytest.raises(LookupError):
+        engine_side.current_pack()
+    # The code-documentation pack and its defaults stay with the CLI.
+    assert cli_side.CODE_DOCS_PACK.classifier.__class__.__module__ == cli_side.__name__
+    assert not hasattr(engine_side, "CODE_DOCS_PACK")

@@ -285,6 +285,9 @@ def test_interrupted_sync_recovery_preserves_source_prose_and_durable_pending(
     previous_recoveries = set((project.root / ".llm-wiki-maintenance-recovery/maintenance-preimages").glob("*"))
 
     def interrupt(plan, **options):
+        if options.get("dry_run"):  # the adopted-wiki preflight writes nothing
+            return commit_knowledge_artifacts(plan, **options)
+
         def after_write(stage):
             if stage == CommitStage.KNOWLEDGE_INDEX_WRITTEN:
                 raise RuntimeError("owned interrupted sync publication")

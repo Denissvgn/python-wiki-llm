@@ -1,6 +1,6 @@
 # WikiScaffoldPathError
 
-**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:28`
+**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:30`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
