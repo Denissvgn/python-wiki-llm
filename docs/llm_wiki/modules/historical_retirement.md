@@ -55,6 +55,7 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `refuse` | `(message: str) -> NoReturn` | — | — |
+| `_portable_path` | `(path)` | — | — |
 | `_selected_paths` | `(values, maximum)` | — | — |
 | `selected_sources` | `(values)` | — | — |
 | `selected_pages` | `(values)` | — | — |

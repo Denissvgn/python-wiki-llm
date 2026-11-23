@@ -30695,9 +30695,9 @@
             "src/llm_wiki_cli/services/scoped_sync_repair.py",
             "src/llm_wiki_engine/validation.py",
             "src/llm_wiki_cli/services/historical_retirement.py",
-            "src/llm_wiki_engine/source_retirement.py",
             "src/llm_wiki_engine/wiki_surface.py",
             "src/llm_wiki_engine/knowledge_evidence.py",
+            "src/llm_wiki_engine/source_retirement.py",
             "src/llm_wiki_engine/path_policy.py",
             "src/llm_wiki_engine/filesystem_guard.py",
             "src/llm_wiki_engine/io.py",
@@ -30759,7 +30759,7 @@
             "src/llm_wiki_engine/sync_recovery.py",
             "src/llm_wiki_engine/knowledge_storage_diagnostics.py"
           ],
-          "step_count": 2302,
+          "step_count": 2301,
           "truncated": true
         }
       },
@@ -78139,5 +78139,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:c60307a34f97ee9a74ccff6a16c15a758a31a9049162cd201bd1bc7bfd2c6416"
+  "source_hash": "sha256:9b67c523a92a36ee95df6f3a943a6bfef68c516640a2209e053fd55d9489bcac"
 }

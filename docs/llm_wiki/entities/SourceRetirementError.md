@@ -25,7 +25,7 @@ flowchart LR
     n0["SourceRetirementError (src/llm_wiki_engine/source_retirement.py)"]
     n1["ValueError"]
     n2["run_release (src/llm_wiki_cli/services/historical_release.py)"]
-    n3["_selected_paths (src/llm_wiki_cli/services/historical_retirement.py)"]
+    n3["_portable_path (src/llm_wiki_cli/services/historical_retirement.py)"]
     n4["refuse (src/llm_wiki_cli/services/historical_retirement.py)"]
     n5["src/llm_wiki_cli/services/knowledge_generation.py"]
     n6["_historical_pages_for_lint (src/llm_wiki_cli/services/lint_service.py)"]
@@ -78,7 +78,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `run_release` | call | [historical_release](../modules/historical_release.md) | 6 |
-| `_selected_paths` | call | [historical_retirement](../modules/historical_retirement.md) | 1 |
+| `_portable_path` | call | [historical_retirement](../modules/historical_retirement.md) | 1 |
 | `refuse` | call | [historical_retirement](../modules/historical_retirement.md) | 1 |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_historical_pages_for_lint` | call | [lint_service](../modules/lint_service.md) | 1 |
