@@ -30,7 +30,12 @@ _PRELUDE = (
     f"sys.path.insert(0, {str(ROOT)!r})\n"
     "def refuse(*args, **kwargs):\n"
     "    raise SystemExit('a subprocess was started')\n"
-    "subprocess.run = subprocess.Popen = refuse\n"
+    # Still a class: on Windows, importing asyncio subclasses subprocess.Popen.
+    "class RefusedPopen(subprocess.Popen):\n"
+    "    def __init__(self, *args, **kwargs):\n"
+    "        refuse()\n"
+    "subprocess.run = refuse\n"
+    "subprocess.Popen = RefusedPopen\n"
 )
 _REPORT = (
     "import json\n"
@@ -72,6 +77,21 @@ def _run(tmp_path: Path, body: str) -> dict:
     )
     assert result.returncode == 0, result.stderr[-4000:]
     return json.loads(result.stdout.strip().splitlines()[-1])
+
+
+def test_process_refusal_still_lets_modules_subclass_popen(tmp_path):
+    # asyncio's Windows support defines ``class Popen(subprocess.Popen)``.
+    body = (
+        "class Subclass(subprocess.Popen):\n"
+        "    pass\n"
+        "try:\n"
+        "    subprocess.Popen(['never-started'])\n"
+        "except SystemExit as refused:\n"
+        "    assert str(refused) == 'a subprocess was started'\n"
+        "else:\n"
+        "    raise AssertionError('a subprocess was allowed')\n"
+    )
+    assert _run(tmp_path, body)["cli_loaded"] is False
 
 
 @pytest.fixture
