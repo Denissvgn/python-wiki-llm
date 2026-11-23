@@ -22,21 +22,25 @@ def refuse(message: str) -> NoReturn:
     raise SourceRetirementError(f"Historical source retirement refused: {message}. For enrolled pages, preview --release-historical-page PAGE before reconciling a replacement.")
 
 
+def _portable_path(path):
+    error = SourceRetirementError("Historical source retirement requires portable source-relative paths")
+    return require_repository_relative_path(
+        path, text_error=error, posix_error=error, normalized_error=error,
+        absolute_error=error, separator_error=error, control_error=error,
+        reject_delete_character=True, portability_error=error,
+    )
+
+
 def _selected_paths(values, maximum):
     if values is None:
         return ()
     if isinstance(values, (str, bytes)):
         refuse("supply a collection of repository-relative source paths")
     unique = set()
-    error = SourceRetirementError("Historical source retirement requires portable source-relative paths")
     for index, path in enumerate(values):
         if index >= maximum:
             refuse(f"select up to {maximum} paths per operation")
-        unique.add(require_repository_relative_path(
-            path, text_error=error, posix_error=error, normalized_error=error,
-            absolute_error=error, separator_error=error, control_error=error,
-            reject_delete_character=True, portability_error=error,
-        ))
+        unique.add(_portable_path(path))
     return tuple(sorted(unique))
 
 
