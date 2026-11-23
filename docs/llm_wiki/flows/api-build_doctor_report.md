@@ -2,7 +2,7 @@
 
 **Entry point:** `build_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 74 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 75 more
 
 **Complete modules touched:**
 
@@ -29,6 +29,7 @@
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
+- [historical_retirement](../modules/historical_retirement.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
@@ -154,9 +155,9 @@ sequenceDiagram
     p0-->>p30: ac.report_schema(report_schema, ...)
 ```
 
-> Call sequence diagram shows 30 of 3252 interactions; 3222 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3292 interactions; 3262 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 995 (994 omitted); unresolved 1 of 1058 (1057 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1008 (1007 omitted); unresolved 1 of 1068 (1067 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -170,7 +171,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | external | 10 |
-> Omission summary shows 8 of 885 groups; 877 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 902 groups; 894 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -183,9 +184,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1200; effect analysis evaluated: 909, partial: 47, unavailable: 244. Counts include steps omitted from the displayed trace.
+Source steps: 1217; effect analysis evaluated: 922, partial: 47, unavailable: 248. Counts include steps omitted from the displayed trace.
 
-Collector observations for 956 source steps with known totals: observed: 5774, emitted: 5529, omitted: 245. Unavailable totals are excluded.
+Collector observations for 969 source steps with known totals: observed: 5853, emitted: 5608, omitted: 245. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

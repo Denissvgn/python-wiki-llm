@@ -106,9 +106,9 @@ sequenceDiagram
     p1-->>p30: state.require_for(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 784 interactions; 754 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 785 interactions; 755 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 273 (272 omitted); unresolved 1 of 146 (145 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 273 (272 omitted); unresolved 1 of 147 (146 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 366; effect analysis evaluated: 197, partial: 25, unavailable: 144. Counts include steps omitted from the displayed trace.
 
-Collector observations for 222 source steps with known totals: observed: 1463, emitted: 1380, omitted: 83. Unavailable totals are excluded.
+Collector observations for 222 source steps with known totals: observed: 1464, emitted: 1380, omitted: 84. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -219,8 +219,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_governance_bundle_id | _previous_committed_artifacts | 785 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 772 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| committed_governance_bundle_id | _previous_committed_artifacts | 787 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 774 | `capture_committed_knowledge(wiki_dir, manifest)` |
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |

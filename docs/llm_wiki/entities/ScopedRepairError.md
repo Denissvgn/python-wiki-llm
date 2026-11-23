@@ -59,4 +59,4 @@ flowchart LR
 | `_repair_path` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |
 | `_require` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |
 | `_run_sync_options` | call | [sync_runtime](../modules/sync_runtime.md) | 3 |
-| `_sync_run_options_from_request` | call | [sync_runtime](../modules/sync_runtime.md) | 2 |
+| `_sync_run_options_from_request` | call | [sync_runtime](../modules/sync_runtime.md) | 3 |

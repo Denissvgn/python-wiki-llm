@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1759`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:1785`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)
@@ -43,6 +43,10 @@ requires built-in producers and cannot request storage or surface-policy changes
 | `knowledge_format` | `str \| None` | `None` | — |
 | `capture_cache_options` | `InventoryCacheOptions \| None` | `None` | — |
 | `repair_paths` | `tuple[str, ...]` | `()` | — |
+| `retire_missing_sources` | `tuple[str, ...]` | `()` | — |
+| `retire_missing_pages` | `tuple[str, ...]` | `()` | — |
+| `release_historical_pages` | `tuple[str, ...]` | `()` | — |
+| `expected_historical_release` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -97,7 +101,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_runtime](../modules/sync_runtime.md) | 0 | `allow_external_src`, `cache_options`, `cache_stats_enabled`, `capture_cache_options`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `flow_categories`, `force`, `helper_cache_dir`, `include_plugins`, `include_tests` |
+| [sync_runtime](../modules/sync_runtime.md) | 0 | `allow_external_src`, `cache_options`, `cache_stats_enabled`, `capture_cache_options`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `expected_historical_release`, `flow_categories`, `force`, `helper_cache_dir`, `include_plugins` |
 
 ### References
 

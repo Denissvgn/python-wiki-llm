@@ -96,9 +96,9 @@ sequenceDiagram
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 864 interactions; 834 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 868 interactions; 838 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 56 (55 omitted); unresolved 1 of 648 (647 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 56 (55 omitted); unresolved 1 of 652 (651 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -204,11 +204,11 @@ flowchart LR
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli_declarations.py:_build_parser) | 224 | `parser.add_subparsers(dest='command', required=True)` |
 | _build_parser | _register_commands | 225 | `_register_commands(subparsers)` |
 | _register_commands | _add_reference_command | 282 | `_add_reference_command(subparsers)` |
-| _add_reference_command | subparsers.add_parser (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2675 | `subparsers.add_parser('reference', help='Export deterministic command and behavior reference data')` |
-| _add_reference_command | parser.add_subparsers (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2678 | `parser.add_subparsers(dest='reference_action', required=True)` |
-| _add_reference_command | actions.add_parser (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2679 | `actions.add_parser('cli', help='Export the installed llm-wiki command contract')` |
-| _add_reference_command | actions.add_parser (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2682 | `actions.add_parser('behavior', help='Export installed package, setup, storage, task and skill declarations')` |
-| _add_reference_command | behavior.add_argument | 2686 | `behavior.add_argument('--input', help='Render a saved behavior facts contract')` |
+| _add_reference_command | subparsers.add_parser (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2687 | `subparsers.add_parser('reference', help='Export deterministic command and behavior reference data')` |
+| _add_reference_command | parser.add_subparsers (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2690 | `parser.add_subparsers(dest='reference_action', required=True)` |
+| _add_reference_command | actions.add_parser (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2691 | `actions.add_parser('cli', help='Export the installed llm-wiki command contract')` |
+| _add_reference_command | actions.add_parser (src/llm_wiki_cli/cli_decl…py:_add_reference_command) | 2694 | `actions.add_parser('behavior', help='Export installed package, setup, storage, task and skill declarations')` |
+| _add_reference_command | behavior.add_argument | 2698 | `behavior.add_argument('--input', help='Render a saved behavior facts contract')` |
 
 ### Boundary effects
 
@@ -221,11 +221,11 @@ flowchart LR
 | external_call | `_build_parser` | `argparse.ArgumentParser` | 220 |
 | unresolved_call | `_build_parser` | `parser.add_argument` | 221 |
 | unresolved_call | `_build_parser` | `parser.add_subparsers` | 224 |
-| unresolved_call | `_add_reference_command` | `subparsers.add_parser` | 2675 |
-| unresolved_call | `_add_reference_command` | `parser.add_subparsers` | 2678 |
-| unresolved_call | `_add_reference_command` | `actions.add_parser` | 2679 |
-| unresolved_call | `_add_reference_command` | `actions.add_parser` | 2682 |
-| unresolved_call | `_add_reference_command` | `behavior.add_argument` | 2686 |
+| unresolved_call | `_add_reference_command` | `subparsers.add_parser` | 2687 |
+| unresolved_call | `_add_reference_command` | `parser.add_subparsers` | 2690 |
+| unresolved_call | `_add_reference_command` | `actions.add_parser` | 2691 |
+| unresolved_call | `_add_reference_command` | `actions.add_parser` | 2694 |
+| unresolved_call | `_add_reference_command` | `behavior.add_argument` | 2698 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

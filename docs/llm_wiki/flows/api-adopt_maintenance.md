@@ -148,9 +148,9 @@ sequenceDiagram
     p1-->>p30: view.manifest_basis.with_maintenance_state(state)
 ```
 
-> Call sequence diagram shows 30 of 3191 interactions; 3161 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3196 interactions; 3166 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1024 (1023 omitted); unresolved 1 of 811 (810 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1026 (1025 omitted); unresolved 1 of 814 (813 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -164,7 +164,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 16 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
-> Omission summary shows 8 of 798 groups; 790 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 799 groups; 791 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,7 +179,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1357; effect analysis evaluated: 903, partial: 63, unavailable: 391. Counts include steps omitted from the displayed trace.
 
-Collector observations for 966 source steps with known totals: observed: 5841, emitted: 5554, omitted: 287. Unavailable totals are excluded.
+Collector observations for 966 source steps with known totals: observed: 5846, emitted: 5557, omitted: 289. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -262,10 +262,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1856 | `type(allow_external_src)` |
-| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1857 | `ValueError('Unsupported maintenance adoption options')` |
-| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1858 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
-| adopt_maintenance | adopt_maintenance_authority | 1858 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
+| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1864 | `type(allow_external_src)` |
+| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1865 | `ValueError('Unsupported maintenance adoption options')` |
+| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1866 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
+| adopt_maintenance | adopt_maintenance_authority | 1866 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
 | adopt_maintenance_authority | _absolute_path | 95 | `_absolute_path(wiki_dir)` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -286,9 +286,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `adopt_maintenance` | `type` | 1856 |
-| external_call | `adopt_maintenance` | `ValueError` | 1857 |
-| external_call | `adopt_maintenance` | `cast` | 1858 |
+| external_call | `adopt_maintenance` | `type` | 1864 |
+| external_call | `adopt_maintenance` | `ValueError` | 1865 |
+| external_call | `adopt_maintenance` | `cast` | 1866 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | external_call | `first_unsafe_path_component` | `os.fspath` | 52 |
 | step_limit | `adopt_maintenance` | `first 12 steps` | 0 |

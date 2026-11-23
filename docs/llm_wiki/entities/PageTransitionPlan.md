@@ -1,6 +1,6 @@
 # PageTransitionPlan
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:65`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:74`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)
@@ -19,6 +19,7 @@ _Auto-generated from `PageTransitionPlan` in `src/llm_wiki_cli/services/sync_tra
 | `staged_moves` | `tuple[StagedPageMove, ...]` | *required* | — |
 | `reserved_path_keys` | `tuple[str, ...]` | *required* | — |
 | `retained_page_repairs` | `tuple[RetainedPageRepair, ...]` | `()` | — |
+| `released_inputs` | `ReleasedPageInputs \| None` | `field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -55,7 +56,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_transitions](../modules/sync_transitions.md) | 0 | `reserved_path_keys`, `retained_page_repairs`, `staged_moves`, `transitions` |
+| [sync_transitions](../modules/sync_transitions.md) | 0 | `released_inputs`, `reserved_path_keys`, `retained_page_repairs`, `staged_moves`, `transitions` |
 
 ### References
 

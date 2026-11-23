@@ -211,11 +211,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_concept | _normalize_query_input | 2619 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2274 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
-| get_concept | normalize_concept_coordinate | 2620 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| get_concept | _normalize_query_input | 2627 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2282 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2284 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2285 | `str(exc)` |
+| get_concept | normalize_concept_coordinate | 2628 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 62 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 49 | `value.strip(data not statically known)` |
@@ -231,7 +231,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2274 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2282 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |

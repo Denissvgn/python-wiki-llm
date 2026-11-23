@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 788 | [Open section](#entities) |
-| Modules | 320 | [Open section](#modules) |
-| Workflows | 315 | [Open section](#workflows) |
+| Entities | 789 | [Open section](#entities) |
+| Modules | 323 | [Open section](#modules) |
+| Workflows | 325 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 512 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -581,6 +581,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [RelationshipLocation](entities/RelationshipLocation.md)
 - [RelationshipRecord](entities/RelationshipRecord.md)
 - [RelationshipTarget](entities/RelationshipTarget.md)
+- [ReleasedPageInputs](entities/ReleasedPageInputs.md)
 - [Remote](entities/Remote.md)
 - [RenderDecision](entities/RenderDecision.md)
 - [RenderReason](entities/RenderReason.md)
@@ -908,6 +909,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [helper_cache](modules/helper_cache.md) - Transactional, project-independent storage for bundled extractor helpers.
 - [helper_preparation](modules/helper_preparation.md) - Preparation of bundled helpers within a validated source boundary.
 - [helper_runtime](modules/helper_runtime.md) - Operation-owned helper policy and immutable prepared-artifact bindings.
+- [historical_release](modules/historical_release.md) - Release a verified historical binding without updating or adopting any source.
+- [historical_retirement](modules/historical_retirement.md) - Plan explicit whole-file archival from the authenticated *prior* source projection.
+- [historical_sources](modules/historical_sources.md) - Native custody of explicitly retained pages from a removed source file.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host](modules/host.md) - Host capabilities the engine uses instead of ambient process state.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
@@ -1223,6 +1227,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [check_data_flow_diagnostics](workflows/check_data_flow_diagnostics.md) - entry: `lint_service._check_data_flow_diagnostics`
 - [check_duplicate_removal_custody](workflows/check_duplicate_removal_custody.md) - entry: `source_retirement._check_duplicate_removal_custody`
 - [check_knowledge_concepts](workflows/check_knowledge_concepts.md) - entry: `lint_service._check_knowledge_concepts`
+- [check_prior_pages](workflows/check_prior_pages.md) - entry: `historical_retirement.check_prior_pages`
 - [check_sync_manifest](workflows/check_sync_manifest.md) - entry: `lint_service._check_sync_manifest`
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
 - [checked_artifact](workflows/checked_artifact.md) - entry: `publish.checked_artifact`
@@ -1277,6 +1282,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
 - [hash_addressed_storage](workflows/hash_addressed_storage.md) - entry: `maintenance_protocol._hash_addressed_storage`
 - [helper_identity](workflows/helper_identity.md) - entry: `extractor_helpers.helper_identity`
+- [historical_pages_for_lint](workflows/historical_pages_for_lint.md) - entry: `lint_service._historical_pages_for_lint`
 - [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
@@ -1309,6 +1315,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [mark_recovery_complete](workflows/mark_recovery_complete.md) - entry: `maintenance_recovery._mark_recovery_complete`
 - [merge_explicit_consumed_input](workflows/merge_explicit_consumed_input.md) - entry: `knowledge_orchestration._merge_explicit_consumed_input`
 - [merge_inventory_results](workflows/merge_inventory_results.md) - entry: `extraction_service._merge_inventory_results`
+- [merge_revived_source_page](workflows/merge_revived_source_page.md) - entry: `sync_runtime._merge_revived_source_page`
 - [migrate_knowledge_storage](workflows/migrate_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._migrate_knowledge_storage`
 - [migrate_reference_skill](workflows/migrate_reference_skill.md) - entry: `upgrade_runtime._migrate_reference_skill`
 - [migrate_wiki](workflows/migrate_wiki.md) - entry: `api.migrate_wiki`
@@ -1319,12 +1326,14 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [observe_requirement](workflows/observe_requirement.md) - entry: `task_evidence.observe_requirement`
 - [plan_generated_source_repairs](workflows/plan_generated_source_repairs.md) - entry: `sync_generated_sections.plan_generated_source_repairs`
 - [plan_page_transitions](workflows/plan_page_transitions.md) - entry: `sync_transitions.plan_page_transitions`
+- [plan_retirement](workflows/plan_retirement.md) - entry: `historical_retirement.plan_retirement`
 - [plan_rollback](workflows/plan_rollback.md) - entry: `publication_delivery.plan_rollback`
 - [plan_source_page_transitions](workflows/plan_source_page_transitions.md) - entry: `sync_runtime._plan_source_page_transitions`
 - [plan_source_read](workflows/plan_source_read.md) - entry: `task_context.plan_source_read`
 - [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_runtime._planned_generated_surface_prune`
 - [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
 - [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
+- [predecessor_records](workflows/predecessor_records.md) - entry: `historical_sources.predecessor_records`
 - [preflight](workflows/preflight.md) - entry: `knowledge_maintenance.preflight`
 - [preflight_bootstrap_analysis](workflows/preflight_bootstrap_analysis.md) - entry: `bootstrap_runtime._preflight_bootstrap_analysis`
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
@@ -1347,6 +1356,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [preview_maintenance_preimages](workflows/preview_maintenance_preimages.md) - entry: `sync_transition_execution.preview_maintenance_preimages`
 - [print_managed_lifecycle](workflows/print_managed_lifecycle.md) - entry: `status_cmd._print_managed_lifecycle`
 - [prior_ownership](workflows/prior_ownership.md) - entry: `sync_transitions._prior_ownership`
+- [project](workflows/project.md) - entry: `historical_release._project`
 - [project_maintenance_knowledge](workflows/project_maintenance_knowledge.md) - entry: `maintenance_projection.project_maintenance_knowledge`
 - [provider](workflows/provider.md) - entry: `publication_candidate._provider`
 - [prune_backup](workflows/prune_backup.md) - entry: `knowledge_storage_lifecycle._prune_backup`
@@ -1361,6 +1371,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [read_entity_retirement_state](workflows/read_entity_retirement_state.md) - entry: `source_retirement.read_entity_retirement_state`
 - [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`
+- [read_records](workflows/read_records.md) - entry: `historical_sources.read_records`
 - [read_recovery](workflows/read_recovery.md) - entry: `knowledge_storage_lifecycle._read_recovery`
 - [rebuild_index](workflows/rebuild_index.md) - entry: `sync_runtime._rebuild_index`
 - [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_runtime._rebuild_surface_only_index`
@@ -1375,6 +1386,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_runtime._regenerate_dependency_pages`
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_runtime._regenerate_flow_pages`
 - [regenerate_workflow_pages](workflows/regenerate_workflow_pages.md) - entry: `sync_runtime._regenerate_workflow_pages`
+- [released_inputs](workflows/released_inputs.md) - entry: `historical_retirement.released_inputs`
+- [released_revivals](workflows/released_revivals.md) - entry: `sync_transitions._released_revivals`
 - [remove_deselected_file_pages](workflows/remove_deselected_file_pages.md) - entry: `sync_runtime._remove_deselected_file_pages`
 - [resolve_call](workflows/resolve_call.md) - entry: `extraction_service._resolve_call`
 - [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
@@ -1390,6 +1403,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`
 - [run_packet_output](workflows/run_packet_output.md) - entry: `context_service._run_packet_output`
 - [run_protocol](workflows/run_protocol.md) - entry: `context_service._run_protocol`
+- [run_release](workflows/run_release.md) - entry: `historical_release.run_release`
 - [run_report_checks](workflows/run_report_checks.md) - entry: `lint_service._run_report_checks`
 - [run_request](workflows/run_request.md) - entry: `upgrade_runtime.run_request`
 - [run_status](workflows/run_status.md) - entry: `knowledge_cmd._run_status`

@@ -1,6 +1,6 @@
 # SyncOutcome
 
-**Location:** `src/llm_wiki_cli/services/sync_service.py:59`
+**Location:** `src/llm_wiki_cli/services/sync_service.py:63`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_service](../modules/sync_service.md)
@@ -20,6 +20,7 @@ What one sync did; human-readable progress went to the host streams.
 | `pages` | `Mapping[str, int]` | `field(default_factory=dict)` | — |
 | `regenerated_evidence_pages` | `tuple[str, ...]` | `()` | — |
 | `storage_cleanup` | `Mapping[str, Any] \| None` | `None` | — |
+| `historical_release` | `Mapping[str, Any] \| None` | `None` | — |
 
 ## Methods
 
@@ -49,7 +50,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_service](../modules/sync_service.md) | 1 | `dry_run`, `pages`, `regenerated_evidence_pages`, `status`, `storage_cleanup` |
+| [sync_service](../modules/sync_service.md) | 1 | `dry_run`, `historical_release`, `pages`, `regenerated_evidence_pages`, `status`, `storage_cleanup` |
 
 ### References
 

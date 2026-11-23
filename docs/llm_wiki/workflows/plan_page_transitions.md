@@ -20,16 +20,19 @@ when an unchanged source has not yet been scheduled by sync for refresh.
 5. `sync_ownership.PageTransitionError`
 6. `sync_ownership.PageTransitionError`
 7. `sync_manifest.ManifestPageSource`
-8. `validation.portable_path_key`
+8. `sync_ownership.PageTransitionError`
 9. `validation.portable_path_key`
-10. `sync_ownership.PageTransitionError`
-11. `validation.portable_path_key`
-12. `sync_ownership.PageTransitionError`
-13. `validation.portable_path_key`
-14. `sync_ownership.PageTransitionError`
+10. `validation.portable_path_key`
+11. `sync_ownership.PageTransitionError`
+12. `validation.portable_path_key`
+13. `sync_ownership.PageTransitionError`
+14. `validation.portable_path_key`
 15. `sync_ownership.PageTransitionError`
 16. `validation.portable_path_key`
 17. `sync_ownership.PageTransitionError`
+18. `sync_ownership.PageTransitionError`
+19. `validation.portable_path_key`
+20. `sync_ownership.PageTransitionError`
 
 ## Touches
 

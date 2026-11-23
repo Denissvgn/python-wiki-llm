@@ -37,22 +37,25 @@ Already evaluated values required to construct one knowledge index.
 ```mermaid
 flowchart LR
     n0["KnowledgeIndexInputs (src/llm_wiki_engine/knowledge_index.py)"]
-    n1["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n2["_assemble_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
-    n3["_validate_and_join_inputs (src/llm_wiki_engine/knowledge_index.py)"]
-    n4["build_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
-    n5["validate_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
+    n1["_project (src/llm_wiki_cli/services/historical_release.py)"]
+    n2["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n3["_assemble_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
+    n4["_validate_and_join_inputs (src/llm_wiki_engine/knowledge_index.py)"]
+    n5["build_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
+    n6["validate_knowledge_index (src/llm_wiki_engine/knowledge_index.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/knowledge_index.md"
-    click n1 "../modules/knowledge_generation.md"
-    click n2 "../modules/knowledge_index.md"
+    click n1 "../modules/historical_release.md"
+    click n2 "../modules/knowledge_generation.md"
     click n3 "../modules/knowledge_index.md"
     click n4 "../modules/knowledge_index.md"
     click n5 "../modules/knowledge_index.md"
+    click n6 "../modules/knowledge_index.md"
 ```
 
 ### Summary
@@ -65,6 +68,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_project` | call | [historical_release](../modules/historical_release.md) | 1 |
 | `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 | `_assemble_knowledge_index` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_validate_and_join_inputs` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |

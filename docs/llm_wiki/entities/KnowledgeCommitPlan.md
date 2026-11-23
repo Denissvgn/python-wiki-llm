@@ -1,6 +1,6 @@
 # KnowledgeCommitPlan
 
-**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:220`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:221`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

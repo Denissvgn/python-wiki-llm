@@ -33,43 +33,50 @@ index builder.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n1["src/llm_wiki_engine/knowledge_index.py"]
-    n2["src/llm_wiki_engine/knowledge_links.py"]
-    n3["src/llm_wiki_engine/knowledge_model.py"]
-    n4["src/llm_wiki_engine/validation.py"]
-    n5["src/llm_wiki_engine/wiki_media.py"]
-    n6["src/llm_wiki_engine/wiki_surface.py"]
-    n0 --> n1
+    n0["src/llm_wiki_cli/services/historical_release.py"]
+    n1["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n2["src/llm_wiki_engine/knowledge_index.py"]
+    n3["src/llm_wiki_engine/knowledge_links.py"]
+    n4["src/llm_wiki_engine/knowledge_model.py"]
+    n5["src/llm_wiki_engine/validation.py"]
+    n6["src/llm_wiki_engine/wiki_media.py"]
+    n7["src/llm_wiki_engine/wiki_surface.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n6
+    n0 --> n7
     n1 --> n2
     n1 --> n3
     n1 --> n4
-    n1 --> n5
-    n1 --> n6
+    n1 --> n7
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
+    n2 --> n7
     n3 --> n4
     n3 --> n5
     n3 --> n6
-    n6 --> n4
-    click n0 "../modules/knowledge_generation.md"
-    click n1 "../modules/knowledge_index.md"
-    click n2 "../modules/knowledge_links.md"
-    click n3 "../modules/knowledge_model.md"
-    click n4 "../modules/validation.md"
-    click n5 "../modules/wiki_media.md"
-    click n6 "../modules/wiki_surface.md"
+    n3 --> n7
+    n4 --> n5
+    n4 --> n6
+    n4 --> n7
+    n7 --> n5
+    click n0 "../modules/historical_release.md"
+    click n1 "../modules/knowledge_generation.md"
+    click n2 "../modules/knowledge_index.md"
+    click n3 "../modules/knowledge_links.md"
+    click n4 "../modules/knowledge_model.md"
+    click n5 "../modules/validation.md"
+    click n6 "../modules/wiki_media.md"
+    click n7 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [historical_release](../modules/historical_release.md) |
 | Inbound | [knowledge_generation](../modules/knowledge_generation.md) |
 | Inbound | [knowledge_index](../modules/knowledge_index.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |

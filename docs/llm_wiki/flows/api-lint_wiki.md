@@ -2,7 +2,7 @@
 
 **Entry point:** `lint_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [data_flow](../modules/data_flow.md), and 38 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [data_flow](../modules/data_flow.md), and 40 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [flow_followup](../modules/flow_followup.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [historical_retirement](../modules/historical_retirement.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -30,6 +31,7 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_request](../modules/lint_request.md)
 - [lint_service](../modules/lint_service.md)
@@ -119,9 +121,9 @@ sequenceDiagram
     p1-->>p30: current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 700 interactions; 670 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 715 interactions; 685 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 192 (191 omitted); unresolved 1 of 176 (175 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 194 (193 omitted); unresolved 1 of 183 (182 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -135,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 17 | - | external | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 20 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 201 groups; 193 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 208 groups; 200 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -148,9 +150,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 333; effect analysis evaluated: 263, partial: 17, unavailable: 53. Counts include steps omitted from the displayed trace.
+Source steps: 339; effect analysis evaluated: 267, partial: 17, unavailable: 55. Counts include steps omitted from the displayed trace.
 
-Collector observations for 280 source steps with known totals: observed: 1819, emitted: 1743, omitted: 76. Unavailable totals are excluded.
+Collector observations for 284 source steps with known totals: observed: 1847, emitted: 1771, omitted: 76. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -225,8 +227,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| lint_wiki | LintRequest | 1369 | `LintRequest(wiki_root=wiki_root, source_root=source_root, strict=strict, plugins=trust_source_plugins, knowledge_drift_report=knowledge_drift_report, include_tests=include_tests, helper_cache_dir=helper_cache_dir, source_selection=source_selection, media_size_warn_bytes=media_size_warn_bytes)` |
-| lint_wiki | discarding_output | 1381 | `discarding_output(data not statically known)` |
+| lint_wiki | LintRequest | 1377 | `LintRequest(wiki_root=wiki_root, source_root=source_root, strict=strict, plugins=trust_source_plugins, knowledge_drift_report=knowledge_drift_report, include_tests=include_tests, helper_cache_dir=helper_cache_dir, source_selection=source_selection, media_size_warn_bytes=media_size_warn_bytes)` |
+| lint_wiki | discarding_output | 1389 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 282 | `using_host(...)` |
 | using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
 | using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |

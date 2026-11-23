@@ -110,9 +110,9 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2468 interactions; 2438 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2469 interactions; 2439 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 704 (703 omitted); unresolved 1 of 429 (428 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 704 (703 omitted); unresolved 1 of 430 (429 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -141,7 +141,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1336; effect analysis evaluated: 755, partial: 41, unavailable: 540. Counts include steps omitted from the displayed trace.
 
-Collector observations for 796 source steps with known totals: observed: 4038, emitted: 3853, omitted: 185. Unavailable totals are excluded.
+Collector observations for 796 source steps with known totals: observed: 4039, emitted: 3853, omitted: 186. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -215,7 +215,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | _validator_identity | 320 | `_validator_identity(data not statically known)` |
+| validate_knowledge_artifacts | _validator_identity | 321 | `_validator_identity(data not statically known)` |
 | _validator_identity | maintenance_state.maintenance_core | 374 | `maintenance_state.maintenance_core(data not statically known)` |
 | _validator_identity | current_validators().identity | 377 | `current_validators().identity(data not statically known)` |
 | _validator_identity | current_validators | 377 | `current_validators(data not statically known)` |

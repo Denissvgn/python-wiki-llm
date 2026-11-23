@@ -1,6 +1,6 @@
 # KnowledgeGenerationError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:99`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:100`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -83,7 +83,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_application_knowledge_extensions` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
-| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 7 |
+| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 8 |
 | `_exact_source_mapping` | call | [knowledge_generation](../modules/knowledge_generation.md) | 3 |
 | `_next_manifest_mapping` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 | `_raise_page_map_parity` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |

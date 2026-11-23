@@ -1,6 +1,6 @@
 # RetainedPageRepair
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:56`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:58`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)

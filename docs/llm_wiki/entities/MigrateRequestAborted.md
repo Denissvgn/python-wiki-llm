@@ -1,6 +1,6 @@
 # MigrateRequestAborted
 
-**Location:** `src/llm_wiki_cli/services/migrate_runtime.py:1745`
+**Location:** `src/llm_wiki_cli/services/migrate_runtime.py:1754`
 **Kind:** Class
 **Bases:** `MigrateAborted`
 **Module:** [migrate_runtime](../modules/migrate_runtime.md)

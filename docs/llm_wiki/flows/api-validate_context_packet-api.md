@@ -162,8 +162,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet | context_packet_service.validate_context_packet | 2021 | `context_packet_service.validate_context_packet(packet_bytes)` |
-| validate_context_packet | _raise_context_packet_api_error | 2023 | `_raise_context_packet_api_error(exc)` |
+| validate_context_packet | context_packet_service.validate_context_packet | 2029 | `context_packet_service.validate_context_packet(packet_bytes)` |
+| validate_context_packet | _raise_context_packet_api_error | 2031 | `_raise_context_packet_api_error(exc)` |
 | _raise_context_packet_api_error | _raise_required_knowledge_api_error | 475 | `_raise_required_knowledge_api_error(exc)` |
 | _raise_required_knowledge_api_error | _required_knowledge_failure | 455 | `_required_knowledge_failure(exc)` |
 | _required_knowledge_failure | set (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 424 | `set(data not statically known)` |
@@ -184,7 +184,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 2021 |
+| unresolved_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 2029 |
 | external_call | `_required_knowledge_failure` | `id` | 425 |
 | external_call | `_required_knowledge_failure` | `getattr` | 427 |
 | external_call | `_required_knowledge_failure` | `type` | 428 |

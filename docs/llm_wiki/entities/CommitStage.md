@@ -1,6 +1,6 @@
 # CommitStage
 
-**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:110`
+**Location:** `src/llm_wiki_engine/knowledge_artifacts.py:111`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

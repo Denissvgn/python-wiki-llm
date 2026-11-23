@@ -40,6 +40,8 @@ flowchart LR
     n7["src/llm_wiki_engine/source_selection.py"]
     n1 --> n2
     n1 --> n4
+    n1 --> n5
+    n1 --> n6
     n1 --> n7
     n2 --> n0
     n2 --> n3

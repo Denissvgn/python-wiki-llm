@@ -1,6 +1,6 @@
 # PageTransition
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:25`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:26`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)
@@ -21,6 +21,7 @@ _Auto-generated from `PageTransition` in `src/llm_wiki_cli/services/sync_transit
 | `source_path` | `str \| None` | *required* | — |
 | `final_path` | `str` | *required* | — |
 | `refresh_requested` | `bool` | *required* | — |
+| `revival_body_hash` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -48,7 +49,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_transitions](../modules/sync_transitions.md) | 2 | `final_path`, `old_path`, `owner`, `previous_owner`, `refresh_requested`, `source_path` |
+| [sync_transitions](../modules/sync_transitions.md) | 2 | `final_path`, `old_path`, `owner`, `previous_owner`, `refresh_requested`, `revival_body_hash`, `source_path` |
 
 ### References
 

@@ -149,9 +149,9 @@ sequenceDiagram
     p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
-> Call sequence diagram shows 30 of 3253 interactions; 3223 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3258 interactions; 3228 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1070 (1069 omitted); unresolved 1 of 849 (848 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1072 (1071 omitted); unresolved 1 of 852 (851 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +165,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/integrations.py:provider` | 13 | [src/llm_wiki_engine/integrations.py](../modules/integrations.md) | internal | 2 |
 | `src/llm_wiki_engine/integrations.py:_resolve` | 15 | - | unresolved | 3 |
 | `src/llm_wiki_engine/integrations.py:attributes` | 12 | - | external | 2 |
-> Omission summary shows 8 of 785 groups; 777 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 786 groups; 778 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -180,7 +180,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1335; effect analysis evaluated: 931, partial: 57, unavailable: 347. Counts include steps omitted from the displayed trace.
 
-Collector observations for 988 source steps with known totals: observed: 5828, emitted: 5565, omitted: 263. Unavailable totals are excluded.
+Collector observations for 988 source steps with known totals: observed: 5833, emitted: 5568, omitted: 265. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -256,16 +256,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1897 | `type(allow_external_src)` |
-| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1898 | `ValueError('allow_external_src must be a boolean')` |
-| acknowledge_maintenance | _detached | 1899 | `_detached(expected_basis)` |
+| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1905 | `type(allow_external_src)` |
+| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1906 | `ValueError('allow_external_src must be a boolean')` |
+| acknowledge_maintenance | _detached | 1907 | `_detached(expected_basis)` |
 | _detached | deepcopy (src/llm_wiki_engine/maintenance_state.py:_detached) | 966 | `deepcopy(value)` |
 | _detached | MaintenanceError | 968 | `MaintenanceError('schema-invalid', 'maintenance owner must contain strict JSON')` |
 | _detached | require | 971 | `require(..., 'schema-invalid', 'maintenance owner must be an object')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
 | _detached | type (src/llm_wiki_engine/maintenance_state.py:_detached) | 972 | `type(result)` |
 | _detached | isinstance (src/llm_wiki_engine/maintenance_state.py:_detached) | 974 | `isinstance(result, dict)` |
-| acknowledge_maintenance | maintenance_core | 1900 | `maintenance_core(data not statically known)` |
+| acknowledge_maintenance | maintenance_core | 1908 | `maintenance_core(data not statically known)` |
 | maintenance_core | attributes | 958 | `attributes('implementation_evidence', 'validate_implementation_evidence')` |
 
 ### Boundary effects
@@ -276,8 +276,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `acknowledge_maintenance` | `type` | 1897 |
-| external_call | `acknowledge_maintenance` | `ValueError` | 1898 |
+| external_call | `acknowledge_maintenance` | `type` | 1905 |
+| external_call | `acknowledge_maintenance` | `ValueError` | 1906 |
 | external_call | `_detached` | `deepcopy` | 966 |
 | external_call | `_detached` | `type` | 972 |
 | external_call | `_detached` | `isinstance` | 974 |

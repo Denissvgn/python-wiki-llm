@@ -23,7 +23,7 @@ silently accept a different retirement claim.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
+| `.` | `historical_sources`, `knowledge_audit`, `knowledge_packs`, `knowledge_storage` |
 | `.infrastructure_state` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
 | `.knowledge_envelope` | `EvaluatedEnvelope`, `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
@@ -82,23 +82,23 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (33) |
-| Outbound | `src` (31) |
+| Inbound | `src` (36) |
+| Outbound | `src` (32) |
 
-> All 61 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 64 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 92 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
-| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 102 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
-| [CommitStage](../entities/CommitStage.md) | Enum | 110 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
-| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 121 | — | One exact-byte action in a knowledge artifact commit. |
-| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 134 | — | Validated canonical projections and their exact-byte commitments. |
-| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 155 | — | — |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 220 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 247 | — | Outcome of a real or dry-run commit. |
+| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 93 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
+| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 103 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
+| [CommitStage](../entities/CommitStage.md) | Enum | 111 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
+| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 122 | — | One exact-byte action in a knowledge artifact commit. |
+| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 135 | — | Validated canonical projections and their exact-byte commitments. |
+| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 156 | — | — |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 221 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 248 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 
@@ -112,11 +112,11 @@ flowchart LR
 | `_storage_validator_identity` | `() -> tuple` | — | Bind captured physical validation to its decoders, routes, and policy. |
 | `_reuse_same_store_candidate` | `(*, prior, prepared_store, knowledge, surface_index_bytes, knowledge_index_bytes, manifest, storage_validation_receipt, receipt_wiki_root) -> ValidatedKnowledgeArtifacts \| None` | — | Reuse one captured store only inside its planner, after exact comparisons. |
 | `build_knowledge_commit_plan` | `(wiki_dir: str \| Path, *, surface_index_bytes: bytes, knowledge_index_bytes: bytes \| None = None, manifest: SyncManifest, knowledge_format: str \| None = None, knowledge_index: KnowledgeIndex \| None = None, manifest_format: str \| None = None, prior: ValidatedKnowledgeArtifacts \| None = None, spool = None, maintenance_adoption: Mapping[str, Any] \| None = None) -> KnowledgeCommitPlan` | — | Validate and plan one manifest-last knowledge artifact commit. |
-| `commit_knowledge_artifacts` | `(plan: KnowledgeCommitPlan, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | `@observed_phase('artifact_commit')` | Apply *plan* in projection/projection/manifest order. |
-| `_commit_flat` | `(plan, fault_injector)` | — | — |
+| `commit_knowledge_artifacts` | `(plan: KnowledgeCommitPlan, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None, before_manifest: Callable[[], None] \| None = None) -> KnowledgeCommitResult` | `@observed_phase('artifact_commit')` | Apply *plan* in projection/projection/manifest order. |
+| `_commit_flat` | `(plan, fault_injector, before_manifest = None)` | — | — |
 | `_planned_write` | `(path: Path, relative_path: str, content: bytes, *, force_replace: bool = False, guarded: bool = False, spool = None) -> PlannedArtifactWrite \| SpooledArtifactWrite` | — | — |
 | `current_knowledge_format` | `(wiki_dir: str \| Path) -> str` | — | Preserve an adopted format; unknown versions never silently downgrade. |
-| `_commit_sharded` | `(plan: KnowledgeCommitPlan, fault: FaultInjector \| None) -> None` | — | — |
+| `_commit_sharded` | `(plan: KnowledgeCommitPlan, fault: FaultInjector \| None, before_manifest: Callable[[], None] \| None = None) -> None` | — | — |
 | `_apply_write` | `(artifact: PlannedArtifactWrite \| SpooledArtifactWrite, stage: CommitStage, fault_injector: FaultInjector \| None) -> None` | — | — |
 | `_verify_persisted` | `(artifact: PlannedArtifactWrite \| SpooledArtifactWrite) -> None` | — | — |
 | `_decode_json_object` | `(content: bytes, field: str) -> Mapping[str, Any]` | — | — |

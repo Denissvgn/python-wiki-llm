@@ -249,9 +249,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | inspect_concept | _normalize_query_input | 1149 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback | 2274 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2276 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2277 | `str(exc)` |
+| _normalize_query_input | callback | 2282 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2284 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2285 | `str(exc)` |
 | inspect_concept | normalize_concept_coordinate | 1150 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 62 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `isinstance(value, str)` |
@@ -268,7 +268,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2274 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2282 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |

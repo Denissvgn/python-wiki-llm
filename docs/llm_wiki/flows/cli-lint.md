@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 58 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 59 more
 
 **Complete modules touched:**
 
@@ -23,6 +23,7 @@
 - [gitignore](../modules/gitignore.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [historical_retirement](../modules/historical_retirement.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
@@ -139,9 +140,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 1795 interactions; 1765 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1817 interactions; 1787 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 560 (559 omitted); unresolved 1 of 584 (583 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 565 (564 omitted); unresolved 1 of 591 (590 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +156,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 36 | - | unresolved | 1 |
-> Omission summary shows 8 of 497 groups; 489 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 507 groups; 499 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -168,9 +169,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 652; effect analysis evaluated: 519, partial: 28, unavailable: 105. Counts include steps omitted from the displayed trace.
+Source steps: 662; effect analysis evaluated: 527, partial: 28, unavailable: 107. Counts include steps omitted from the displayed trace.
 
-Collector observations for 547 source steps with known totals: observed: 3606, emitted: 3435, omitted: 171. Unavailable totals are excluded.
+Collector observations for 555 source steps with known totals: observed: 3650, emitted: 3479, omitted: 171. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -242,17 +243,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | lint_request_from_args | 3418 | `lint_request_from_args(args)` |
-| lint_request_from_args | LintRequest | 3345 | `LintRequest(wiki_root=getattr(...), source_root=getattr(...), strict=bool(...), knowledge_drift_report=bool(...), allow_external_source=bool(...), source_selection=getattr(...), include_tests=getattr(...), helper_cache_dir=getattr(...), media_size_warn_bytes=getattr(...), jobs=getattr(...), requested_jobs=getattr(...), cache=..., rebuild_cache=bool(...), cache_dir=getattr(...), cache_stats=bool(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3346 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3347 | `getattr(args, 'src_dir', '.')` |
-| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3348 | `bool(getattr(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3348 | `getattr(args, 'strict', False)` |
-| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3349 | `bool(getattr(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3349 | `getattr(args, 'knowledge_drift_report', False)` |
-| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3350 | `bool(getattr(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3350 | `getattr(args, 'allow_external_src', False)` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3351 | `getattr(args, 'source_selection', None)` |
+| run | lint_request_from_args | 3465 | `lint_request_from_args(args)` |
+| lint_request_from_args | LintRequest | 3392 | `LintRequest(wiki_root=getattr(...), source_root=getattr(...), strict=bool(...), knowledge_drift_report=bool(...), allow_external_source=bool(...), source_selection=getattr(...), include_tests=getattr(...), helper_cache_dir=getattr(...), media_size_warn_bytes=getattr(...), jobs=getattr(...), requested_jobs=getattr(...), cache=..., rebuild_cache=bool(...), cache_dir=getattr(...), cache_stats=bool(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3393 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3394 | `getattr(args, 'src_dir', '.')` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3395 | `bool(getattr(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3395 | `getattr(args, 'strict', False)` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3396 | `bool(getattr(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3396 | `getattr(args, 'knowledge_drift_report', False)` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3397 | `bool(getattr(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3397 | `getattr(args, 'allow_external_src', False)` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3398 | `getattr(args, 'source_selection', None)` |
 
 ### Boundary effects
 
@@ -262,12 +263,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `lint_request_from_args` | `getattr` | 3346 |
-| external_call | `lint_request_from_args` | `getattr` | 3347 |
-| external_call | `lint_request_from_args` | `getattr` | 3348 |
-| external_call | `lint_request_from_args` | `getattr` | 3349 |
-| external_call | `lint_request_from_args` | `getattr` | 3350 |
-| external_call | `lint_request_from_args` | `getattr` | 3351 |
+| external_call | `lint_request_from_args` | `getattr` | 3393 |
+| external_call | `lint_request_from_args` | `getattr` | 3394 |
+| external_call | `lint_request_from_args` | `getattr` | 3395 |
+| external_call | `lint_request_from_args` | `getattr` | 3396 |
+| external_call | `lint_request_from_args` | `getattr` | 3397 |
+| external_call | `lint_request_from_args` | `getattr` | 3398 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

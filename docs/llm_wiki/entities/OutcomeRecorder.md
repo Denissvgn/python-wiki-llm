@@ -1,6 +1,6 @@
 # _OutcomeRecorder
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:282`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:284`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_runtime](../modules/sync_runtime.md)
@@ -18,6 +18,7 @@ _Auto-generated from `_OutcomeRecorder` in `src/llm_wiki_cli/services/sync_runti
 | `status` | `SyncStatus` | `'no-change'` | — |
 | `result` | `'SyncResult \| None'` | `None` | — |
 | `storage_cleanup` | `dict \| None` | `None` | — |
+| `historical_release` | `dict \| None` | `None` | — |
 
 ## Methods
 
@@ -39,7 +40,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_runtime](../modules/sync_runtime.md) | 0 | `result`, `status`, `storage_cleanup` |
+| [sync_runtime](../modules/sync_runtime.md) | 0 | `historical_release`, `result`, `status`, `storage_cleanup` |
 
 ### References
 

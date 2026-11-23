@@ -25,11 +25,13 @@ retry.
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `dataclass`, `field` |
-| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
-| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession` |
+| `llm_wiki_engine` | `historical_sources` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError`, `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `StorageReadSession` |
 | `llm_wiki_engine.markdown_sections` | `normalize_markdown` |
 | `llm_wiki_engine.source_retirement` | `retired_entity_mappings` |
-| `llm_wiki_engine.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
+| `llm_wiki_engine.sync_manifest` | `ManifestPageSource`, `SyncManifest`, `PRODUCER_BASIS_INCOMPATIBLE` |
 | `llm_wiki_engine.sync_ownership` | `PageTransitionError`, `SyncOwnershipError` |
 | `llm_wiki_engine.sync_retained_links` | `repair_retained_page_links` |
 | `llm_wiki_engine.validation` | `portable_path_key` |
@@ -56,20 +58,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (4) |
-| Outbound | `src` (11) |
+| Inbound | `src` (5) |
+| Outbound | `src` (13) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PageTransition](../entities/PageTransition.md) | 25 | — | — |
-| [StagedPageMove](../entities/StagedPageMove.md) | 49 | — | — |
-| [RetainedPageRepair](../entities/RetainedPageRepair.md) | 56 | — | — |
-| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 65 | — | — |
-| [_Ownership](../entities/Ownership.md) | 130 | — | — |
+| [PageTransition](../entities/PageTransition.md) | 26 | — | — |
+| [StagedPageMove](../entities/StagedPageMove.md) | 51 | — | — |
+| [RetainedPageRepair](../entities/RetainedPageRepair.md) | 58 | — | — |
+| [ReleasedPageInputs](../entities/ReleasedPageInputs.md) | 67 | — | Evidence from this run's source capture and its validated previous native projection. |
+| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 74 | — | — |
+| [_Ownership](../entities/Ownership.md) | 140 | — | — |
 
 ## Functions
 
@@ -82,5 +85,6 @@ flowchart LR
 | `_moved_entity_owner` | `(prior: _Ownership, target: str, owner: ManifestPageSource, inventory: Mapping[str, Mapping]) -> ManifestPageSource \| None` | — | Return the retired declaration whose page a moved declaration continues. |
 | `_existing_pages` | `(wiki_dir: Path) -> dict[str, tuple[str, bool]]` | — | Inventory names and file kinds without reading content or following links. |
 | `_current_pages` | `(inventory: Mapping[str, Mapping], module_pages: Mapping[str, str], entity_pages: Mapping[tuple[str, str, int], str]) -> dict[ManifestPageSource, str]` | — | — |
-| `plan_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: Mapping[str, Mapping], *, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], refresh_sources: frozenset[str] = frozenset(), moved_entities: Mapping[str, tuple[str, str]] \| None = None, deleted_source_paths: frozenset[str] = frozenset()) -> PageTransitionPlan` | — | Plan every live source-owned page using supplied names, without mutations. |
-| `find_missing_source_pages` | `(wiki_dir: Path, manifest: SyncManifest, inventory: Mapping[str, Mapping], *, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], refresh_sources: frozenset[str] = frozenset(), moved_entities: Mapping[str, tuple[str, str]] \| None = None) -> dict[str, ManifestPageSource]` | — | Find missing canonical paths without inventing source changes or ownership. |
+| `_released_revivals` | `(wiki_dir, manifest, current, existing, enrolled, inputs)` | — | — |
+| `plan_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: Mapping[str, Mapping], *, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], refresh_sources: frozenset[str] = frozenset(), moved_entities: Mapping[str, tuple[str, str]] \| None = None, deleted_source_paths: frozenset[str] = frozenset(), released_inputs: ReleasedPageInputs \| None = None) -> PageTransitionPlan` | — | Plan every live source-owned page using supplied names, without mutations. |
+| `find_missing_source_pages` | `(wiki_dir: Path, manifest: SyncManifest, inventory: Mapping[str, Mapping], *, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], refresh_sources: frozenset[str] = frozenset(), moved_entities: Mapping[str, tuple[str, str]] \| None = None, released_inputs: ReleasedPageInputs \| None = None) -> dict[str, ManifestPageSource]` | — | Find missing canonical paths without inventing source changes or ownership. |

@@ -38,14 +38,14 @@ flowchart LR
     n2["_write (src/llm_wiki_cli/commands/publication_cmd.py)"]
     n3["run (src/llm_wiki_cli/commands/reference_cmd.py)"]
     n4["inspect_targets (src/llm_wiki_cli/services/analysis_targets.py)"]
-    n5["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
-    n6["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
-    n7["_prepare (src/llm_wiki_cli/services/publication_candidate.py)"]
-    n8["_provider (src/llm_wiki_cli/services/publication_candidate.py)"]
-    n9["_read_tree (src/llm_wiki_cli/services/publication_candidate.py)"]
-    n10["_file_hash (src/llm_wiki_cli/services/publication_impact.py)"]
-    n11["_target_hash (src/llm_wiki_cli/services/publication_impact.py)"]
-    n12["capture_publication_basis (src/llm_wiki_cli/services/publication_impact.py)"]
+    n5["_read_originals (src/llm_wiki_cli/services/historical_release.py)"]
+    n6["check_prior_pages (src/llm_wiki_cli/services/historical_retirement.py)"]
+    n7["plan_retirement (src/llm_wiki_cli/services/historical_retirement.py)"]
+    n8["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n9["maintenance_reuse_check (src/llm_wiki_cli/services/knowledge_reuse.py)"]
+    n10["_historical_pages_for_lint (src/llm_wiki_cli/services/lint_service.py)"]
+    n11["_prepare (src/llm_wiki_cli/services/publication_candidate.py)"]
+    n12["_provider (src/llm_wiki_cli/services/publication_candidate.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -63,14 +63,14 @@ flowchart LR
     click n2 "../modules/publication_cmd.md"
     click n3 "../modules/reference_cmd.md"
     click n4 "../modules/analysis_targets.md"
-    click n5 "../modules/knowledge_maintenance.md"
-    click n6 "../modules/knowledge_reuse.md"
-    click n7 "../modules/publication_candidate.md"
-    click n8 "../modules/publication_candidate.md"
-    click n9 "../modules/publication_candidate.md"
-    click n10 "../modules/publication_impact.md"
-    click n11 "../modules/publication_impact.md"
-    click n12 "../modules/publication_impact.md"
+    click n5 "../modules/historical_release.md"
+    click n6 "../modules/historical_retirement.md"
+    click n7 "../modules/historical_retirement.md"
+    click n8 "../modules/knowledge_maintenance.md"
+    click n9 "../modules/knowledge_reuse.md"
+    click n10 "../modules/lint_service.md"
+    click n11 "../modules/publication_candidate.md"
+    click n12 "../modules/publication_candidate.md"
 ```
 
 ### Summary
@@ -87,13 +87,13 @@ flowchart LR
 | `_write` | call | [publication_cmd](../modules/publication_cmd.md) | 1 |
 | `run` | call | [reference_cmd](../modules/reference_cmd.md) | 1 |
 | `inspect_targets` | call | [analysis_targets](../modules/analysis_targets.md) | 1 |
+| `_read_originals` | call | [historical_release](../modules/historical_release.md) | 1 |
+| `check_prior_pages` | call | [historical_retirement](../modules/historical_retirement.md) | 1 |
+| `plan_retirement` | call | [historical_retirement](../modules/historical_retirement.md) | 1 |
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `maintenance_reuse_check` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 1 |
+| `_historical_pages_for_lint` | call | [lint_service](../modules/lint_service.md) | 1 |
 | `_prepare` | call | [publication_candidate](../modules/publication_candidate.md) | 1 |
 | `_provider` | call | [publication_candidate](../modules/publication_candidate.md) | 2 |
-| `_read_tree` | call | [publication_candidate](../modules/publication_candidate.md) | 1 |
-| `_file_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
-| `_target_hash` | type_reference | [publication_impact](../modules/publication_impact.md) | — |
-| `capture_publication_basis` | call | [publication_impact](../modules/publication_impact.md) | 2 |
 
-> References: showing 12 of 32 logical references; 20 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 46 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 47 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,7 @@
 - [concept_identity](../modules/concept_identity.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [gitignore](../modules/gitignore.md)
+- [historical_sources](../modules/historical_sources.md)
 - [host](../modules/host.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
@@ -71,28 +72,28 @@ sequenceDiagram
     participant p4 as with_source_selection_generation_input
     participant p5 as _infrastructure_extractor_component
     participant p6 as prepare_runtime_generation_options
-    participant p7 as confirmed_missing_source_paths
-    participant p8 as _stabilize_revision_only_noop
-    participant p9 as runtime_consumed_inputs
-    participant p10 as _tool_component
-    participant p11 as _previous_committed_producer
-    participant p12 as _manifest_extractor_refs
-    participant p13 as _runtime_manifest_generation_inputs
-    participant p14 as KnowledgeGenerationError
-    participant p15 as infrastructure_evidence_by_page
-    participant p16 as KnowledgeGenerationInputs
-    participant p17 as build_knowledge_generation_plan
-    participant p18 as committed_governance_bundle_id
-    participant p19 as _plugin_extractors_by_language
-    participant p20 as guard_maintenance_owner
-    participant p21 as load_governance
-    participant p22 as _decode_json_object
-    participant p23 as _merge_explicit_consumed_input
-    participant p24 as _confirmed_source_path
-    participant p25 as _validated_identity
-    participant p26 as natural_key_for (src/llm_wiki_engine/knowledge_governance.py)
-    participant p27 as validate_knowledge_artifacts
-    participant p28 as reconcile_concepts
+    participant p7 as read_records
+    participant p8 as confirmed_missing_source_paths
+    participant p9 as _stabilize_revision_only_noop
+    participant p10 as runtime_consumed_inputs
+    participant p11 as _tool_component
+    participant p12 as _previous_committed_producer
+    participant p13 as _manifest_extractor_refs
+    participant p14 as _runtime_manifest_generation_inputs
+    participant p15 as KnowledgeGenerationError
+    participant p16 as infrastructure_evidence_by_page
+    participant p17 as KnowledgeGenerationInputs
+    participant p18 as build_knowledge_generation_plan
+    participant p19 as committed_governance_bundle_id
+    participant p20 as _plugin_extractors_by_language
+    participant p21 as guard_maintenance_owner
+    participant p22 as load_governance
+    participant p23 as _refuse
+    participant p24 as _decode_json_object
+    participant p25 as _merge_explicit_consumed_input
+    participant p26 as _confirmed_source_path
+    participant p27 as _validated_identity
+    participant p28 as natural_key_for (src/llm_wiki_engine/knowledge_governance.py)
     participant p29 as isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
     participant p30 as committed_state.require_for
     p0->>p1: capture_committed_knowledge
@@ -101,35 +102,35 @@ sequenceDiagram
     p0->>p4: with_source_selection_generation_input
     p0->>p5: _infrastructure_extractor_component
     p0->>p6: prepare_runtime_generation_options
-    p0->>p7: confirmed_missing_source_paths
-    p0->>p8: _stabilize_revision_only_noop
-    p0->>p9: runtime_consumed_inputs
-    p0->>p10: _tool_component
-    p0->>p11: _previous_committed_producer
-    p0->>p12: _manifest_extractor_refs
-    p0->>p13: _runtime_manifest_generation_inputs
-    p0->>p14: KnowledgeGenerationError
-    p0->>p15: infrastructure_evidence_by_page
-    p0->>p16: KnowledgeGenerationInputs
-    p8->>p17: build_knowledge_generation_plan
-    p2->>p18: committed_governance_bundle_id
-    p3->>p19: _plugin_extractors_by_language
-    p1->>p20: guard_maintenance_owner
-    p2->>p21: load_governance
-    p1->>p22: _decode_json_object
-    p9->>p23: _merge_explicit_consumed_input
-    p7->>p24: _confirmed_source_path
-    p4->>p25: _validated_identity
-    p2->>p26: natural_key_for (src/llm_wiki_engine/knowledge_governance.py)
-    p1->>p27: validate_knowledge_artifacts
-    p2->>p28: reconcile_concepts
+    p0->>p7: read_records
+    p0->>p8: confirmed_missing_source_paths
+    p0->>p9: _stabilize_revision_only_noop
+    p0->>p10: runtime_consumed_inputs
+    p0->>p11: _tool_component
+    p0->>p12: _previous_committed_producer
+    p0->>p13: _manifest_extractor_refs
+    p0->>p14: _runtime_manifest_generation_inputs
+    p0->>p15: KnowledgeGenerationError
+    p0->>p16: infrastructure_evidence_by_page
+    p0->>p17: KnowledgeGenerationInputs
+    p9->>p18: build_knowledge_generation_plan
+    p2->>p19: committed_governance_bundle_id
+    p3->>p20: _plugin_extractors_by_language
+    p1->>p21: guard_maintenance_owner
+    p2->>p22: load_governance
+    p7->>p23: _refuse
+    p1->>p24: _decode_json_object
+    p10->>p25: _merge_explicit_consumed_input
+    p8->>p26: _confirmed_source_path
+    p4->>p27: _validated_identity
+    p2->>p28: natural_key_for (src/llm_wiki_engine/knowledge_governance.py)
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(inputs, RuntimeKnowledgeInputs)
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3441 interactions; 3411 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3476 interactions; 3446 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1063 (1062 omitted); unresolved 1 of 781 (780 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1074 (1073 omitted); unresolved 1 of 792 (791 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -143,7 +144,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 11 | - | unresolved | 6 |
-> Omission summary shows 8 of 821 groups; 813 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 829 groups; 821 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -156,9 +157,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1598; effect analysis evaluated: 925, partial: 68, unavailable: 605. Counts include steps omitted from the displayed trace.
+Source steps: 1611; effect analysis evaluated: 936, partial: 68, unavailable: 607. Counts include steps omitted from the displayed trace.
 
-Collector observations for 993 source steps with known totals: observed: 5836, emitted: 5516, omitted: 320. Unavailable totals are excluded.
+Collector observations for 1004 source steps with known totals: observed: 5881, emitted: 5559, omitted: 322. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -166,7 +167,7 @@ Collector observations for 993 source steps with known totals: observed: 5836, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `build_runtime_knowledge_plan` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `build_runtime_knowledge_plan` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `capture_committed_knowledge` | `available` | `partial` | `available` | `15` | `14` | `1` |
@@ -204,10 +205,12 @@ flowchart LR
     s8 -. "os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path)(path)" .-> s10
     s8 -->|"first_unsafe_path_component(path)"| s11
     s11 -. "Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component)(os.fspath(...))" .-> s12
-    b0["mutation captured.update"]
-    s4 -. "mutation captured.update" .-> b0
-    b1["mutation pending_parts.pop"]
-    s11 -. "mutation pending_parts.pop" .-> b1
+    b0["mutation old_paths.update"]
+    s1 -. "mutation old_paths.update" .-> b0
+    b1["mutation captured.update"]
+    s4 -. "mutation captured.update" .-> b1
+    b2["mutation pending_parts.pop"]
+    s11 -. "mutation pending_parts.pop" .-> b2
     click s1 "../modules/knowledge_orchestration.md"
     click s4 "../modules/knowledge_orchestration.md"
     click s7 "../modules/maintenance_protocol.md"
@@ -216,6 +219,7 @@ flowchart LR
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
+    class b2 boundary
 ```
 
 ### Step data
@@ -255,6 +259,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
+| mutation | `old_paths.update` | `build_runtime_knowledge_plan` | 458 |
 | mutation | `captured.update` | `capture_committed_knowledge` | 271 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 

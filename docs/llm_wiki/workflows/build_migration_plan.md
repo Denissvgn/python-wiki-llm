@@ -1,7 +1,7 @@
 # build_migration_plan
 
 **Entry point:** `migrate_runtime._build_migration_plan`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [extraction_service](../modules/extraction_service.md), [host](../modules/host.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [migrate_runtime](../modules/migrate_runtime.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [extraction_service](../modules/extraction_service.md), [historical_sources](../modules/historical_sources.md), [host](../modules/host.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [migrate_runtime](../modules/migrate_runtime.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md)
 
 ## Sequence
 
@@ -19,11 +19,13 @@
 11. `bootstrap_runtime.build_entity_occurrence_page_map`
 12. `host.current_host`
 13. `knowledge_orchestration.collect_runtime_repository_evidence`
+14. `historical_sources.bound_records`
 
 ## Touches
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [extraction_service](../modules/extraction_service.md)
+- [historical_sources](../modules/historical_sources.md)
 - [host](../modules/host.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [migrate_runtime](../modules/migrate_runtime.md)
