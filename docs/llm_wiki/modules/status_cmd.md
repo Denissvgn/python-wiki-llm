@@ -21,6 +21,7 @@ _Auto-generated from `src/llm_wiki_cli/commands/status_cmd.py`._
 | `llm_wiki_engine` | `circuit_breaker` |
 | `llm_wiki_engine.io` | `first_unsafe_path_component` |
 | `llm_wiki_engine.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.paths` | `display_project_path`, `shell_quote` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `canonical_path`, `iter_page_kinds` |
 | `pathlib` | `Path` |
@@ -44,9 +45,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (11) |
+| Outbound | `src` (12) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

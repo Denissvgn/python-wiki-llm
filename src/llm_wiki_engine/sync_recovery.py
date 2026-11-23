@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 import json
@@ -32,11 +34,11 @@ MAX_BYTES = 64 * 1024 * 1024
 MAX_FILE = 8 * 1024 * 1024
 MAX_PAGES = 10_000
 ANCHORS = (
-    ".llm-wiki-manifest.json",
-    ".llm-wiki-knowledge.json",
-    ".llm-wiki-surface.json",
-    ".llm-wiki-maintenance-adoption.json",
-    ".llm-wiki-governance.json",
+    DEFAULT_LAYOUT.manifest,
+    DEFAULT_LAYOUT.knowledge_index,
+    DEFAULT_LAYOUT.surface_index,
+    DEFAULT_LAYOUT.maintenance_adoption,
+    DEFAULT_LAYOUT.governance,
 )
 SCHEMA = "llm-wiki-sync-new-page-recovery/v1"
 
@@ -458,7 +460,7 @@ def recover_new_sync_pages(
 
         manifest = (
             SyncManifest.load(root)
-            if record["anchors"][".llm-wiki-manifest.json"] is not None
+            if record["anchors"][DEFAULT_LAYOUT.manifest] is not None
             else None
         )
         owned = _owned_pages(manifest)

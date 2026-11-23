@@ -14,6 +14,8 @@ already-validated in-memory knowledge values.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import errno
 import json
 import os
@@ -76,8 +78,8 @@ from llm_wiki_engine.validation import (
 )
 from llm_wiki_engine.wiki_media import contains_uri_authority_userinfo
 
-GOVERNANCE_FILENAME = ".llm-wiki-governance.json"
-GOVERNANCE_LOCK_FILENAME = "llm-wiki-governance.lock"
+GOVERNANCE_FILENAME = DEFAULT_LAYOUT.governance
+GOVERNANCE_LOCK_FILENAME = DEFAULT_LAYOUT.governance_lock
 
 DEFAULT_EVENT_LIMIT = 20
 MAX_EVENT_LIMIT = 1000
@@ -879,7 +881,7 @@ def governance_lock(
 ) -> Iterator[None]:
     """Hold the dedicated non-blocking governance mutation lock."""
 
-    if _lock_filename not in {GOVERNANCE_LOCK_FILENAME, "llm-wiki-storage.lock", "maintenance-recovery.lock", "llm-wiki-sync-analysis.lock"}:
+    if _lock_filename not in {GOVERNANCE_LOCK_FILENAME, DEFAULT_LAYOUT.storage_lock, "maintenance-recovery.lock", "llm-wiki-sync-analysis.lock"}:
         raise GovernanceError("lock", "unknown mutation lock")
     root = Path(wiki_dir)
     if first_unsafe_path_component(root) is not None:

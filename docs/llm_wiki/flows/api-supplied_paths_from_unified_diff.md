@@ -2,7 +2,7 @@
 
 **Entry point:** `supplied_paths_from_unified_diff` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), [validation](../modules/validation.md)
+**Modules touched:** [documentation_query_builder](../modules/documentation_query_builder.md), [query_request_format](../modules/query_request_format.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -77,15 +77,15 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:supplied_paths_from_unified_diff` | 1 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 13 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:supplied_paths_from_unified_diff` | 1 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 13 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | - | external | 2 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 3 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 27 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 4 |
+| `src/llm_wiki_engine/query_request_format.py:_portable_supplied_path` | 27 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 1 |
 | `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 29 | - | external | 4 |
 | `src/llm_wiki_engine/validation.py:require_portable_relative_path` | 29 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 7 |
-> Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_engine/validation.py:_syntax_key` | 36 | - | external | 6 |
+> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -149,10 +149,10 @@ flowchart LR
     b0["mutation selected.update"]
     s1 -. "mutation selected.update" .-> b0
     click s1 "../modules/documentation_query_builder.md"
-    click s3 "../modules/documentation_queries.md"
-    click s5 "../modules/documentation_queries.md"
-    click s7 "../modules/documentation_queries.md"
-    click s11 "../modules/documentation_queries.md"
+    click s3 "../modules/query_request_format.md"
+    click s5 "../modules/query_request_format.md"
+    click s7 "../modules/query_request_format.md"
+    click s11 "../modules/query_request_format.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
 ```
@@ -178,33 +178,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| supplied_paths_from_unified_diff | isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 175 | `isinstance(value, str)` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 176 | `DocumentationQueryError('diff must be a UTF-8 text string.')` |
-| supplied_paths_from_unified_diff | value.encode | 178 | `value.encode('utf-8')` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 180 | `DocumentationQueryError('diff must be valid UTF-8 text.')` |
-| supplied_paths_from_unified_diff | len (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 181 | `len(encoded)` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 182 | `DocumentationQueryError(...)` |
-| supplied_paths_from_unified_diff | set | 186 | `set(data not statically known)` |
-| supplied_paths_from_unified_diff | value.splitlines | 192 | `value.splitlines(data not statically known)` |
-| supplied_paths_from_unified_diff | line.startswith | 193 | `line.startswith('diff --git ')` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 195 | `DocumentationQueryError('diff contains unpaired file-header metadata.')` |
-| supplied_paths_from_unified_diff | shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 199 | `shlex.split(..., posix=True)` |
+| supplied_paths_from_unified_diff | isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 74 | `isinstance(value, str)` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 75 | `DocumentationQueryError('diff must be a UTF-8 text string.')` |
+| supplied_paths_from_unified_diff | value.encode | 77 | `value.encode('utf-8')` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 79 | `DocumentationQueryError('diff must be valid UTF-8 text.')` |
+| supplied_paths_from_unified_diff | len (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 80 | `len(encoded)` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 81 | `DocumentationQueryError(...)` |
+| supplied_paths_from_unified_diff | set | 85 | `set(data not statically known)` |
+| supplied_paths_from_unified_diff | value.splitlines | 91 | `value.splitlines(data not statically known)` |
+| supplied_paths_from_unified_diff | line.startswith | 92 | `line.startswith('diff --git ')` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 94 | `DocumentationQueryError('diff contains unpaired file-header metadata.')` |
+| supplied_paths_from_unified_diff | shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 98 | `shlex.split(..., posix=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `selected.update` | `supplied_paths_from_unified_diff` | 216 |
+| mutation | `selected.update` | `supplied_paths_from_unified_diff` | 115 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `supplied_paths_from_unified_diff` | `isinstance` | 175 |
-| unresolved_call | `supplied_paths_from_unified_diff` | `value.encode` | 178 |
-| unresolved_call | `supplied_paths_from_unified_diff` | `value.splitlines` | 192 |
-| unresolved_call | `supplied_paths_from_unified_diff` | `line.startswith` | 193 |
-| external_call | `supplied_paths_from_unified_diff` | `shlex.split` | 199 |
+| external_call | `supplied_paths_from_unified_diff` | `isinstance` | 74 |
+| unresolved_call | `supplied_paths_from_unified_diff` | `value.encode` | 77 |
+| unresolved_call | `supplied_paths_from_unified_diff` | `value.splitlines` | 91 |
+| unresolved_call | `supplied_paths_from_unified_diff` | `line.startswith` | 92 |
+| external_call | `supplied_paths_from_unified_diff` | `shlex.split` | 98 |
 | step_limit | `supplied_paths_from_unified_diff` | `first 12 steps` | 0 |
 | truncated_flow | `supplied_paths_from_unified_diff` | `depth limit` | 0 |
 

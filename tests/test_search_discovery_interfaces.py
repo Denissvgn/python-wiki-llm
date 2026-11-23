@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.services import search_service
+from llm_wiki_engine import search_service
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
 from llm_wiki_engine.search_discovery import DiscoveryError
 from tests.test_search_source_interfaces import owned_wiki as owned_wiki

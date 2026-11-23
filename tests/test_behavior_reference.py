@@ -14,12 +14,8 @@ from jsonschema import Draft202012Validator
 import llm_wiki_cli
 from llm_wiki_cli import config
 from llm_wiki_cli.services import behavior_reference as reference
-from llm_wiki_cli.services import (
-    cli_reference,
-    current_contracts,
-    skills,
-    task_contract,
-)
+from llm_wiki_cli.services import cli_reference, current_contracts, skills
+from llm_wiki_engine import task_contract
 from llm_wiki_engine.knowledge_evidence import hash_json
 
 

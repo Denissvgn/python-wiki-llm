@@ -1,9 +1,9 @@
 # EntityPageRequest
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:138`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:97`
 **Kind:** Class
 **Bases:** —
-**Module:** [domain_pack](../modules/domain_pack.md)
+**Module:** [pack_interfaces](../modules/pack_interfaces.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
@@ -35,37 +35,37 @@ Everything a renderer gets for one entity page.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["EntityPageRequest (src/llm_wiki_cli/services/domain_pack.py)"]
-    n1["src/llm_wiki_cli/engine/__init__.py"]
-    n2["_generate_entity_md (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n3["BuiltInPageRenderer.render_entity (src/llm_wiki_cli/services/domain_pack.py)"]
-    n4["PageRenderer.render_entity (src/llm_wiki_cli/services/domain_pack.py)"]
-    n5["render_with_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n0["EntityPageRequest (src/llm_wiki_engine/pack_interfaces.py)"]
+    n1["_generate_entity_md (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n2["render_with_pack (src/llm_wiki_cli/services/domain_pack.py)"]
+    n3["BuiltInPageRenderer.render_entity (src/llm_wiki_engine/pack_interfaces.py)"]
+    n4["PageRenderer.render_entity (src/llm_wiki_engine/pack_interfaces.py)"]
+    n5["_rendered_entity (src/llm_wiki_engine/wiki_operations.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
-    click n0 "../modules/domain_pack.md"
-    click n1 "../modules/engine___init__.md"
-    click n2 "../modules/bootstrap_runtime.md"
-    click n3 "../modules/domain_pack.md"
-    click n4 "../modules/domain_pack.md"
-    click n5 "../modules/domain_pack.md"
+    click n0 "../modules/pack_interfaces.md"
+    click n1 "../modules/bootstrap_runtime.md"
+    click n2 "../modules/domain_pack.md"
+    click n3 "../modules/pack_interfaces.md"
+    click n4 "../modules/pack_interfaces.md"
+    click n5 "../modules/wiki_operations.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [domain_pack](../modules/domain_pack.md) | 1 | `_builtin`, `diagram_style`, `entity`, `module_page`, `module_pages`, `relationship_summary`, `relationships`, `source_path` |
+| [pack_interfaces](../modules/pack_interfaces.md) | 1 | `_builtin`, `diagram_style`, `entity`, `module_page`, `module_pages`, `relationship_summary`, `relationships`, `source_path` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
 | `_generate_entity_md` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
-| `BuiltInPageRenderer.render_entity` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
-| `PageRenderer.render_entity` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
 | `render_with_pack` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `BuiltInPageRenderer.render_entity` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
+| `PageRenderer.render_entity` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |
+| `_rendered_entity` | call | [wiki_operations](../modules/wiki_operations.md) | 1 |

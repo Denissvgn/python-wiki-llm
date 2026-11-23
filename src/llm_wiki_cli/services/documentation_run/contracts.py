@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from typing import TYPE_CHECKING
 
 from .dependencies import *
@@ -140,8 +142,8 @@ _DO_NOT_EDIT_MARKER = "Do not edit by hand"
 # Dynamic immutable objects must stay outside this root-file transaction.
 _NATIVE_ARTIFACT_PATHS = frozenset(
     {
-        ".llm-wiki-manifest.json",
-        ".llm-wiki-surface.json",
+        DEFAULT_LAYOUT.manifest,
+        DEFAULT_LAYOUT.surface_index,
         KNOWLEDGE_INDEX_FILENAME,
         GOVERNANCE_FILENAME,
         VERIFICATION_RECEIPT_FILENAME,
@@ -165,7 +167,7 @@ def _native_ownership_coverage() -> dict[str, Any]:
             "markdown": "generated-sections-only",
         },
         "omitted": {
-            ".llm-wiki-maintenance-adoption.json": {
+            DEFAULT_LAYOUT.maintenance_adoption: {
                 "classification": "immutable-ordinary-authority-marker",
                 "owner": "ordinary-maintenance-owner",
                 "supervisor_action": "retain-only",

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [maintenance_cmd](../modules/maintenance_cmd.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 61 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [context_packet](../modules/context_packet.md), and 60 more
 
 **Complete modules touched:**
 
@@ -14,8 +14,6 @@
 - [context_request_format](../modules/context_request_format.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -57,6 +55,7 @@
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_implementation](../modules/python_implementation.md)
+- [query_request_format](../modules/query_request_format.md)
 - [request_json](../modules/request_json.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
@@ -142,9 +141,9 @@ sequenceDiagram
     p9-->>p30: result.get('requires_sync')
 ```
 
-> Call sequence diagram shows 30 of 2622 interactions; 2592 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2623 interactions; 2593 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 804 (803 omitted); unresolved 1 of 581 (580 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 804 (803 omitted); unresolved 1 of 580 (579 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -158,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 10 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/host.py:current_host` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 674 groups; 666 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 673 groups; 665 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -171,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1238; effect analysis evaluated: 848, partial: 57, unavailable: 333. Counts include steps omitted from the displayed trace.
+Source steps: 1240; effect analysis evaluated: 846, partial: 60, unavailable: 334. Counts include steps omitted from the displayed trace.
 
-Collector observations for 905 source steps with known totals: observed: 5440, emitted: 5193, omitted: 247. Unavailable totals are excluded.
+Collector observations for 906 source steps with known totals: observed: 5461, emitted: 5210, omitted: 251. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -274,7 +273,7 @@ flowchart LR
 | adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1857 | `ValueError('Unsupported maintenance adoption options')` |
 | adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1858 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
 | adopt_maintenance | adopt_maintenance_authority | 1858 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| adopt_maintenance_authority | _absolute_path | 93 | `_absolute_path(wiki_dir)` |
+| adopt_maintenance_authority | _absolute_path | 95 | `_absolute_path(wiki_dir)` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
@@ -289,8 +288,8 @@ flowchart LR
 | output | `print` | `run` | 122 |
 | output | `print` | `run` | 134 |
 | output | `print` | `run` | 136 |
-| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 120 |
-| mutation | `extensions.pop` | `adopt_maintenance_authority` | 123 |
+| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 122 |
+| mutation | `extensions.pop` | `adopt_maintenance_authority` | 125 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps

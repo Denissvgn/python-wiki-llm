@@ -1,6 +1,6 @@
 # VerificationDiagnostic
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:115`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:117`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)

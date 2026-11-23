@@ -20,7 +20,7 @@ from llm_wiki_engine.knowledge_model import parse_knowledge_index
 from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
 from llm_wiki_engine.knowledge_governance import GOVERNANCE_FILENAME
-from llm_wiki_cli.services.task_contract import (
+from llm_wiki_engine.task_contract import (
     TASK_REQUEST_SCHEMA_V2,
     normalize_task_request,
 )

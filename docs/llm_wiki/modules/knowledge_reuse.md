@@ -32,6 +32,7 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | `llm_wiki_engine.knowledge_reuse_format` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `_HASH_FIELDS`, `manifest_lifecycle_hash`, `repository_input_hash`, `validate_reuse_artifact_parity`, `validate_reuse_commitment` |
 | `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError`, `MAX_EXPANDED_BYTES`, `STORE_SCHEMA` |
 | `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `owner_key` |
 | `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner` |
 | `llm_wiki_engine.maintenance_state` | `MaintenanceError` |
@@ -62,15 +63,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (23) |
+| Outbound | `src` (25) |
 
-### External packages
-
-| Language | Used packages | Undeclared packages |
-|---|---:|---:|
-| python | 1 | 1 |
-
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

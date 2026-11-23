@@ -103,7 +103,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 7; effect analysis evaluated: 6, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
 
-Collector observations for 7 source steps with known totals: observed: 54, emitted: 40, omitted: 14. Unavailable totals are excluded.
+Collector observations for 7 source steps with known totals: observed: 55, emitted: 41, omitted: 14. Unavailable totals are excluded.
 
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
 
@@ -113,7 +113,7 @@ Collector observations for 7 source steps with known totals: observed: 54, emitt
 | `Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `manifest.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `manifest.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `is_pristine_wiki_target` | `available` | `partial` | `available` | `33` | `19` | `14` |
+| `is_pristine_wiki_target` | `available` | `partial` | `available` | `34` | `20` | `14` |
 | `Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `root.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -170,7 +170,7 @@ flowchart LR
 | `Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)` | - | - | - | - |
 | `manifest.exists` | - | - | - | - |
 | `manifest.is_symlink` | - | - | - | - |
-| `is_pristine_wiki_target` | `wiki_dir: Union[str, Path]` | `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN`, `AGENT_CHOICES`, `SchemaRenderProfile`, `SCHEMA_BLOCK_VERSION`, `RenderReason` | `paths_by_relative[...]` | `False`, `True`, `False`, `False`, `True`, `False`, `False`, `False` |
+| `is_pristine_wiki_target` | `wiki_dir: Union[str, Path]` | `DEFAULT_LAYOUT`, `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN`, `AGENT_CHOICES`, `SchemaRenderProfile`, `SCHEMA_BLOCK_VERSION`, `RenderReason` | `paths_by_relative[...]` | `False`, `True`, `False`, `False`, `True`, `False`, `False`, `False` |
 | `Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | - | - | - | - |
 | `root.is_symlink` | - | - | - | - |
 | `root.exists` | - | - | - | - |
@@ -183,37 +183,37 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 294 | `Path(wiki_dir)` |
-| classify_wiki_lifecycle | manifest.exists | 296 | `manifest.exists(data not statically known)` |
-| classify_wiki_lifecycle | manifest.is_symlink | 296 | `manifest.is_symlink(data not statically known)` |
-| classify_wiki_lifecycle | is_pristine_wiki_target | 298 | `is_pristine_wiki_target(root)` |
-| is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 157 | `Path(wiki_dir)` |
-| is_pristine_wiki_target | root.is_symlink | 158 | `root.is_symlink(data not statically known)` |
-| is_pristine_wiki_target | root.exists | 160 | `root.exists(data not statically known)` |
-| is_pristine_wiki_target | root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 162 | `root.is_dir(data not statically known)` |
-| is_pristine_wiki_target | iter_page_kinds | 166 | `iter_page_kinds(data not statically known)` |
-| is_pristine_wiki_target | sorted | 178 | `sorted(root.rglob(...))` |
-| is_pristine_wiki_target | root.rglob | 178 | `root.rglob('*')` |
+| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 296 | `Path(wiki_dir)` |
+| classify_wiki_lifecycle | manifest.exists | 298 | `manifest.exists(data not statically known)` |
+| classify_wiki_lifecycle | manifest.is_symlink | 298 | `manifest.is_symlink(data not statically known)` |
+| classify_wiki_lifecycle | is_pristine_wiki_target | 300 | `is_pristine_wiki_target(root)` |
+| is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 159 | `Path(wiki_dir)` |
+| is_pristine_wiki_target | root.is_symlink | 160 | `root.is_symlink(data not statically known)` |
+| is_pristine_wiki_target | root.exists | 162 | `root.exists(data not statically known)` |
+| is_pristine_wiki_target | root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 164 | `root.is_dir(data not statically known)` |
+| is_pristine_wiki_target | iter_page_kinds | 168 | `iter_page_kinds(data not statically known)` |
+| is_pristine_wiki_target | sorted | 180 | `sorted(root.rglob(...))` |
+| is_pristine_wiki_target | root.rglob | 180 | `root.rglob('*')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 219 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 222 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 225 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 221 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 224 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 227 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 296 |
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 296 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 158 |
-| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 160 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 162 |
-| external_call | `is_pristine_wiki_target` | `sorted` | 178 |
-| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 178 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 298 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 298 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 160 |
+| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 162 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 164 |
+| external_call | `is_pristine_wiki_target` | `sorted` | 180 |
+| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 180 |
 | step_limit | `classify_wiki_lifecycle` | `first 12 steps` | 0 |
 
 ## Behavior

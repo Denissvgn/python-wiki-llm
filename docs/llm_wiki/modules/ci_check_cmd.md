@@ -30,6 +30,7 @@ best effort.
 | `json` | `json` |
 | `llm_wiki_engine.io` | `write_bytes_atomic` |
 | `llm_wiki_engine.knowledge_storage_diagnostics` | `storage_report` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.progress` | `observed_phase` |
 | `llm_wiki_engine.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `prepare_destination`, `stderr_warning` |
 | `pathlib` | `Path` |
@@ -55,9 +56,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (12) |
+| Outbound | `src` (13) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

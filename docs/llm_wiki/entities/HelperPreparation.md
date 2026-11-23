@@ -1,6 +1,6 @@
 # HelperPreparation
 
-**Location:** `src/llm_wiki_cli/engine/__init__.py:238`
+**Location:** `src/llm_wiki_cli/engine/__init__.py:234`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [engine___init__](../modules/engine___init__.md)

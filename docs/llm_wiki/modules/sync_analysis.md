@@ -16,6 +16,7 @@ Read-only source/manifest diff analysis shared by sync and lint.
 | `dataclasses` | `dataclass`, `field` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_file`, `semantic_hash_for_file` |
 | `llm_wiki_engine.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
+| `llm_wiki_engine.sync_ownership` | `SyncOwnershipError` |
 | `llm_wiki_engine.validation` | `is_portable_path_component`, `portable_path_key` |
 | `pathlib` | `Path` |
 | `typing` | `Mapping` |
@@ -32,30 +33,33 @@ flowchart LR
     n4["src/llm_wiki_cli/services/sync_transitions.py"]
     n5["src/llm_wiki_engine/knowledge_evidence.py"]
     n6["src/llm_wiki_engine/sync_manifest.py"]
-    n7["src/llm_wiki_engine/validation.py"]
+    n7["src/llm_wiki_engine/sync_ownership.py"]
+    n8["src/llm_wiki_engine/validation.py"]
     n0 --> n6
-    n0 --> n7
+    n0 --> n8
     n1 --> n0
     n1 --> n2
     n1 --> n6
-    n1 --> n7
+    n1 --> n8
     n2 --> n0
     n2 --> n5
     n2 --> n6
     n2 --> n7
+    n2 --> n8
     n3 --> n0
     n3 --> n2
     n3 --> n4
     n3 --> n5
     n3 --> n6
-    n3 --> n7
+    n3 --> n8
     n4 --> n0
     n4 --> n2
     n4 --> n6
     n4 --> n7
-    n5 --> n7
+    n4 --> n8
+    n5 --> n8
     n6 --> n5
-    n6 --> n7
+    n6 --> n8
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/lint_service.md"
     click n2 "../modules/sync_analysis.md"
@@ -63,7 +67,8 @@ flowchart LR
     click n4 "../modules/sync_transitions.md"
     click n5 "../modules/knowledge_evidence.md"
     click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/validation.md"
+    click n7 "../modules/sync_ownership.md"
+    click n8 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -76,15 +81,15 @@ flowchart LR
 | Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [sync_manifest](../modules/sync_manifest.md) |
+| Outbound | [sync_ownership](../modules/sync_ownership.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncOwnershipError](../entities/SyncOwnershipError.md) | 26 | `ValueError` | A page cannot be safely assigned to one recorded source entity. |
-| [_RecordedEntityPages](../entities/RecordedEntityPages.md) | 46 | — | — |
-| [SyncDiff](../entities/SyncDiff.md) | 138 | — | Categorised difference between a persisted manifest and live inventory. |
+| [_RecordedEntityPages](../entities/RecordedEntityPages.md) | 43 | — | — |
+| [SyncDiff](../entities/SyncDiff.md) | 135 | — | Categorised difference between a persisted manifest and live inventory. |
 
 ## Functions
 

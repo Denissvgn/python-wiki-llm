@@ -7,6 +7,8 @@ only describes the committed records actually read, never a full-validity proof.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 from llm_wiki_engine.integrations import attributes
 
 from collections import Counter, defaultdict
@@ -24,7 +26,7 @@ STORE_SCHEMA = "llm-wiki-knowledge/v2"
 OBJECT_SCHEMA = "llm-wiki-knowledge-object/v1"
 SLICE_SCHEMA = "llm-wiki-knowledge-slice/v1"
 LOGICAL_SCHEMA = "llm-wiki-knowledge/v1"
-ROOT_FILENAME = ".llm-wiki-knowledge.json"
+ROOT_FILENAME = DEFAULT_LAYOUT.knowledge_index
 OBJECT_DIRECTORY = ".llm-wiki-knowledge/objects"
 MAX_ROOT_BYTES = 262_144
 TARGET_OBJECT_BYTES = 4_194_304

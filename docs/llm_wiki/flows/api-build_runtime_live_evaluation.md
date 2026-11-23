@@ -92,9 +92,9 @@ sequenceDiagram
     p0-->>p30: inputs.infrastructure_inventory.items
 ```
 
-> Call sequence diagram shows 30 of 706 interactions; 676 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 701 interactions; 671 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 229 (228 omitted); unresolved 1 of 147 (146 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 227 (226 omitted); unresolved 1 of 148 (147 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,7 +108,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/analysis_compatibility.py:validate_record` | 20 | - | unresolved | 2 |
 | `src/llm_wiki_engine/analysis_compatibility.py:validate_record` | 20 | [src/llm_wiki_engine/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 1 |
 | `src/llm_wiki_engine/analysis_compatibility.py:digest` | 43 | - | unresolved | 2 |
-> Omission summary shows 8 of 183 groups; 175 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 179 groups; 171 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -121,9 +121,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 331; effect analysis evaluated: 265, partial: 7, unavailable: 59. Counts include steps omitted from the displayed trace.
+Source steps: 327; effect analysis evaluated: 261, partial: 7, unavailable: 59. Counts include steps omitted from the displayed trace.
 
-Collector observations for 272 source steps with known totals: observed: 1376, emitted: 1352, omitted: 24. Unavailable totals are excluded.
+Collector observations for 268 source steps with known totals: observed: 1354, emitted: 1330, omitted: 24. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -193,17 +193,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 602 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 603 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 604 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 605 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 606 | `isinstance(inputs.manifest, SyncManifest)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 607 | `TypeError('inputs.manifest must be a SyncManifest')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 608 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 609 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 610 | `isinstance(inputs.inventory, Mapping)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 611 | `TypeError('inputs.inventory must be a mapping')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 612 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 607 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 608 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 609 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 610 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 611 | `isinstance(inputs.manifest, SyncManifest)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 612 | `TypeError('inputs.manifest must be a SyncManifest')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 613 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 614 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 615 | `isinstance(inputs.inventory, Mapping)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 616 | `TypeError('inputs.inventory must be a mapping')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 617 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
 
 ### Boundary effects
 
@@ -213,17 +213,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 602 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 603 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 604 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 605 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 606 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 607 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 608 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 609 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 610 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 611 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 612 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 607 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 608 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 609 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 610 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 611 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 612 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 613 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 614 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 615 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 616 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 617 |
 | step_limit | `build_runtime_live_evaluation` | `first 12 steps` | 0 |
 
 ## Behavior

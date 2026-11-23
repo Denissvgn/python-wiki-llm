@@ -1,6 +1,6 @@
 # WikiScaffoldProvision
 
-**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:33`
+**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:35`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_lifecycle](../modules/wiki_lifecycle.md)

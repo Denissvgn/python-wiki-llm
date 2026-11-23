@@ -32,8 +32,8 @@ flowchart LR
     n0["Verification (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_engine/context_packet.py"]
     n5["src/llm_wiki_engine/knowledge_index.py"]
     n0 --> n1
     n0 --> n2
@@ -41,8 +41,8 @@ flowchart LR
     n4 --> n0
     n5 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/knowledge_projection.md"
+    click n3 "../modules/knowledge_projection.md"
+    click n4 "../modules/context_packet.md"
     click n5 "../modules/knowledge_index.md"
 ```
 
@@ -63,6 +63,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |

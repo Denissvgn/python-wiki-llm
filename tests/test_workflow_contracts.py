@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from llm_wiki_cli.services.task_contract import TASK_REQUEST_SCHEMA, normalize_task_request
+from llm_wiki_engine.task_contract import TASK_REQUEST_SCHEMA, normalize_task_request
 from llm_wiki_engine.workflow_profile import (
     PROFILE_SCHEMA, WorkflowPolicy, WorkflowRequestError, load_profile, normalize_profile,
 )

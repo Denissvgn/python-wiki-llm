@@ -1,18 +1,19 @@
 # prior_ownership
 
 **Entry point:** `sync_transitions._prior_ownership`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [source_retirement](../modules/source_retirement.md), [sync_analysis](../modules/sync_analysis.md), [sync_manifest](../modules/sync_manifest.md), [sync_transitions](../modules/sync_transitions.md)
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [source_retirement](../modules/source_retirement.md), [sync_analysis](../modules/sync_analysis.md), [sync_manifest](../modules/sync_manifest.md), [sync_ownership](../modules/sync_ownership.md), [sync_transitions](../modules/sync_transitions.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `sync_analysis._recorded_entity_pages`
-2. `sync_manifest.ManifestPageSource`
+1. `sync_ownership.PageTransitionError`
+2. `sync_analysis._recorded_entity_pages`
 3. `sync_manifest.ManifestPageSource`
 4. `sync_manifest.ManifestPageSource`
 5. `sync_manifest.ManifestPageSource`
-6. `bootstrap_runtime._module_name_from_path`
-7. `source_retirement.retired_entity_mappings`
+6. `sync_manifest.ManifestPageSource`
+7. `bootstrap_runtime._module_name_from_path`
+8. `source_retirement.retired_entity_mappings`
 
 ## Touches
 
@@ -20,6 +21,7 @@
 - [source_retirement](../modules/source_retirement.md)
 - [sync_analysis](../modules/sync_analysis.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [sync_transitions](../modules/sync_transitions.md)
 
 ## Behavior

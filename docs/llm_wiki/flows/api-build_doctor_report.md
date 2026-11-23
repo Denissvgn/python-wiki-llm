@@ -17,7 +17,6 @@
 - [dependency_versions](../modules/dependency_versions.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
 - [doctor_service](../modules/doctor_service.md)
-- [documentation_queries](../modules/documentation_queries.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
@@ -68,6 +67,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
+- [query_request_format](../modules/query_request_format.md)
 - [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
@@ -75,11 +75,11 @@
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_analysis](../modules/sync_analysis.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_ownership](../modules/sync_ownership.md)
 - [team](../modules/team.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
-- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [yaml_formats](../modules/yaml_formats.md)
 - [yaml_syntax](../modules/yaml_syntax.md)
@@ -96,67 +96,67 @@ sequenceDiagram
     participant p2 as validate_source_root
     participant p3 as build_report
     participant p4 as compose_doctor_report
-    participant p5 as report_schema
-    participant p6 as _new_lint_report
-    participant p7 as _preflight_lint_inputs
-    participant p8 as _availability_section
-    participant p9 as _finalize_lint_report
-    participant p10 as _freshness_section
-    participant p11 as prepare_cache_options
-    participant p12 as _collect_lint_inputs
-    participant p13 as _governance_section
-    participant p14 as _drift_section
-    participant p15 as _run_report_checks
-    participant p16 as _verification_section
-    participant p17 as windows_current_user_sid
-    participant p18 as first_unsafe_path_component
-    participant p19 as resolve_team_policy
-    participant p20 as capture_health_details
-    participant p21 as _knowledge_declared
-    participant p22 as _current_windows_user_sid
-    participant p23 as _profile_phase
-    participant p24 as _coerce_plugin_issue
-    participant p25 as resolve_inventory_cache_path
-    participant p26 as _check_unsupported_source_diagnostics
-    participant p27 as knowledge_freshness_disclosure
-    participant p28 as team_config_issue
+    participant p5 as _new_lint_report
+    participant p6 as _preflight_lint_inputs
+    participant p7 as _availability_section
+    participant p8 as _finalize_lint_report
+    participant p9 as _freshness_section
+    participant p10 as prepare_cache_options
+    participant p11 as _collect_lint_inputs
+    participant p12 as _governance_section
+    participant p13 as _drift_section
+    participant p14 as _run_report_checks
+    participant p15 as _verification_section
+    participant p16 as windows_current_user_sid
+    participant p17 as first_unsafe_path_component
+    participant p18 as resolve_team_policy
+    participant p19 as capture_health_details
+    participant p20 as _knowledge_declared
+    participant p21 as _current_windows_user_sid
+    participant p22 as _profile_phase
+    participant p23 as _coerce_plugin_issue
+    participant p24 as resolve_inventory_cache_path
+    participant p25 as _check_unsupported_source_diagnostics
+    participant p26 as knowledge_freshness_disclosure
+    participant p27 as team_config_issue
+    participant p28 as _check_broken_links
     participant p29 as isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)
-    participant p30 as lint.health_details.to_payload
+    participant p30 as ac.report_schema
     p0->>p1: validate_path
     p0->>p2: validate_source_root
     p0->>p3: build_report
     p0->>p4: compose_doctor_report
-    p0->>p5: report_schema
-    p3->>p6: _new_lint_report
-    p3->>p7: _preflight_lint_inputs
-    p4->>p8: _availability_section
-    p3->>p9: _finalize_lint_report
-    p4->>p10: _freshness_section
-    p3->>p11: prepare_cache_options
-    p3->>p12: _collect_lint_inputs
-    p4->>p13: _governance_section
-    p4->>p14: _drift_section
-    p3->>p15: _run_report_checks
-    p4->>p16: _verification_section
-    p2->>p17: windows_current_user_sid
-    p2->>p18: first_unsafe_path_component
-    p7->>p19: resolve_team_policy
-    p9->>p20: capture_health_details
-    p8->>p21: _knowledge_declared
-    p17->>p22: _current_windows_user_sid
-    p12->>p23: _profile_phase
-    p7->>p24: _coerce_plugin_issue
-    p11->>p25: resolve_inventory_cache_path
-    p15->>p26: _check_unsupported_source_diagnostics
-    p10->>p27: knowledge_freshness_disclosure
-    p7->>p28: team_config_issue
+    p3->>p5: _new_lint_report
+    p3->>p6: _preflight_lint_inputs
+    p4->>p7: _availability_section
+    p3->>p8: _finalize_lint_report
+    p4->>p9: _freshness_section
+    p3->>p10: prepare_cache_options
+    p3->>p11: _collect_lint_inputs
+    p4->>p12: _governance_section
+    p4->>p13: _drift_section
+    p3->>p14: _run_report_checks
+    p4->>p15: _verification_section
+    p2->>p16: windows_current_user_sid
+    p2->>p17: first_unsafe_path_component
+    p6->>p18: resolve_team_policy
+    p8->>p19: capture_health_details
+    p7->>p20: _knowledge_declared
+    p16->>p21: _current_windows_user_sid
+    p11->>p22: _profile_phase
+    p6->>p23: _coerce_plugin_issue
+    p10->>p24: resolve_inventory_cache_path
+    p14->>p25: _check_unsupported_source_diagnostics
+    p9->>p26: knowledge_freshness_disclosure
+    p6->>p27: team_config_issue
+    p14->>p28: _check_broken_links
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(strict, bool)
-    p0-->>p30: lint.health_details.to_payload
+    p0-->>p30: ac.report_schema(report_schema, ...)
 ```
 
-> Call sequence diagram shows 30 of 3438 interactions; 3408 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3252 interactions; 3222 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1052 (1051 omitted); unresolved 1 of 1113 (1112 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 995 (994 omitted); unresolved 1 of 1058 (1057 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -170,7 +170,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | external | 10 |
-> Omission summary shows 8 of 935 groups; 927 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 885 groups; 877 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -183,9 +183,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1274; effect analysis evaluated: 977, partial: 48, unavailable: 249. Counts include steps omitted from the displayed trace.
+Source steps: 1200; effect analysis evaluated: 909, partial: 47, unavailable: 244. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1025 source steps with known totals: observed: 6102, emitted: 5855, omitted: 247. Unavailable totals are excluded.
+Collector observations for 956 source steps with known totals: observed: 5774, emitted: 5529, omitted: 245. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

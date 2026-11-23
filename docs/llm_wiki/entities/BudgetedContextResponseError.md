@@ -1,6 +1,6 @@
 # BudgetedContextResponseError
 
-**Location:** `src/llm_wiki_cli/services/context_budget_format.py:80`
+**Location:** `src/llm_wiki_engine/context_budget_format.py:80`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_budget_format](../modules/context_budget_format.md)
@@ -22,20 +22,20 @@ A budgeted context response does not follow ``llm-wiki-context/v3``.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["BudgetedContextResponseError (src/llm_wiki_cli/services/context_budget_format.py)"]
+    n0["BudgetedContextResponseError (src/llm_wiki_engine/context_budget_format.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["_accounting (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n4["_exact (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n5["_object (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n6["_portable_paths (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n7["_sha256 (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n8["_text (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n9["_validate (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n10["_validate_changes (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n11["_validate_context (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n12["_validate_invalid_request (src/llm_wiki_cli/services/context_budget_format.py)"]
-    n13["_validate_metadata (src/llm_wiki_cli/services/context_budget_format.py)"]
+    n3["_accounting (src/llm_wiki_engine/context_budget_format.py)"]
+    n4["_exact (src/llm_wiki_engine/context_budget_format.py)"]
+    n5["_object (src/llm_wiki_engine/context_budget_format.py)"]
+    n6["_portable_paths (src/llm_wiki_engine/context_budget_format.py)"]
+    n7["_sha256 (src/llm_wiki_engine/context_budget_format.py)"]
+    n8["_text (src/llm_wiki_engine/context_budget_format.py)"]
+    n9["_validate (src/llm_wiki_engine/context_budget_format.py)"]
+    n10["_validate_changes (src/llm_wiki_engine/context_budget_format.py)"]
+    n11["_validate_context (src/llm_wiki_engine/context_budget_format.py)"]
+    n12["_validate_invalid_request (src/llm_wiki_engine/context_budget_format.py)"]
+    n13["_validate_metadata (src/llm_wiki_engine/context_budget_format.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0

@@ -30,62 +30,62 @@ Guarded snapshot inputs for opt-in discovery; no extraction or writes.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/search_service.py"]
-    n1["src/llm_wiki_engine/knowledge_artifacts.py"]
-    n2["src/llm_wiki_engine/knowledge_model.py"]
-    n3["src/llm_wiki_engine/knowledge_storage.py"]
-    n4["src/llm_wiki_engine/knowledge_storage_access.py"]
-    n5["src/llm_wiki_engine/knowledge_storage_io.py"]
-    n6["src/llm_wiki_engine/maintenance_protocol.py"]
-    n7["src/llm_wiki_engine/maintenance_status.py"]
-    n8["src/llm_wiki_engine/search_discovery_capture.py"]
+    n0["src/llm_wiki_engine/knowledge_artifacts.py"]
+    n1["src/llm_wiki_engine/knowledge_model.py"]
+    n2["src/llm_wiki_engine/knowledge_storage.py"]
+    n3["src/llm_wiki_engine/knowledge_storage_access.py"]
+    n4["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n5["src/llm_wiki_engine/maintenance_protocol.py"]
+    n6["src/llm_wiki_engine/maintenance_status.py"]
+    n7["src/llm_wiki_engine/search_discovery_capture.py"]
+    n8["src/llm_wiki_engine/search_service.py"]
     n9["src/llm_wiki_engine/search_source.py"]
     n10["src/llm_wiki_engine/sync_manifest.py"]
-    n0 --> n3
+    n0 --> n1
+    n0 --> n2
+    n0 --> n4
     n0 --> n5
-    n0 --> n8
-    n0 --> n9
-    n1 --> n2
-    n1 --> n3
-    n1 --> n5
-    n1 --> n6
-    n1 --> n10
+    n0 --> n10
+    n2 --> n1
+    n3 --> n0
+    n3 --> n1
     n3 --> n2
-    n4 --> n1
+    n3 --> n4
+    n3 --> n5
+    n3 --> n10
     n4 --> n2
-    n4 --> n3
-    n4 --> n5
-    n4 --> n6
-    n4 --> n10
-    n5 --> n3
-    n6 --> n3
-    n6 --> n5
-    n6 --> n10
+    n5 --> n2
+    n5 --> n4
+    n5 --> n10
+    n6 --> n2
+    n7 --> n0
+    n7 --> n1
+    n7 --> n2
     n7 --> n3
-    n8 --> n1
+    n7 --> n4
+    n7 --> n5
+    n7 --> n6
+    n7 --> n9
+    n7 --> n10
     n8 --> n2
-    n8 --> n3
     n8 --> n4
-    n8 --> n5
-    n8 --> n6
     n8 --> n7
     n8 --> n9
-    n8 --> n10
-    n9 --> n1
-    n9 --> n3
-    n9 --> n5
+    n9 --> n0
+    n9 --> n2
+    n9 --> n4
     n9 --> n10
-    n10 --> n3
-    n10 --> n5
-    click n0 "../modules/search_service.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_model.md"
-    click n3 "../modules/knowledge_storage.md"
-    click n4 "../modules/knowledge_storage_access.md"
-    click n5 "../modules/knowledge_storage_io.md"
-    click n6 "../modules/maintenance_protocol.md"
-    click n7 "../modules/maintenance_status.md"
-    click n8 "../modules/search_discovery_capture.md"
+    n10 --> n2
+    n10 --> n4
+    click n0 "../modules/knowledge_artifacts.md"
+    click n1 "../modules/knowledge_model.md"
+    click n2 "../modules/knowledge_storage.md"
+    click n3 "../modules/knowledge_storage_access.md"
+    click n4 "../modules/knowledge_storage_io.md"
+    click n5 "../modules/maintenance_protocol.md"
+    click n6 "../modules/maintenance_status.md"
+    click n7 "../modules/search_discovery_capture.md"
+    click n8 "../modules/search_service.md"
     click n9 "../modules/search_source.md"
     click n10 "../modules/sync_manifest.md"
 ```

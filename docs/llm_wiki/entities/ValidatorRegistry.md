@@ -36,18 +36,21 @@ Ordered model validators plus the modules that define core parsing.
 flowchart LR
     n0["ValidatorRegistry (src/llm_wiki_engine/knowledge_validators.py)"]
     n1["Engine.__init__ (src/llm_wiki_cli/engine/__init__.py)"]
-    n2["current_validators (src/llm_wiki_engine/knowledge_validators.py)"]
-    n3["using_validators (src/llm_wiki_engine/knowledge_validators.py)"]
-    n4["ValidatorRegistry.with_validator (src/llm_wiki_engine/knowledge_validators.py)"]
+    n2["Engine.__init__ (src/llm_wiki_engine/engine.py)"]
+    n3["current_validators (src/llm_wiki_engine/knowledge_validators.py)"]
+    n4["using_validators (src/llm_wiki_engine/knowledge_validators.py)"]
+    n5["ValidatorRegistry.with_validator (src/llm_wiki_engine/knowledge_validators.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/knowledge_validators.md"
     click n1 "../modules/engine___init__.md"
-    click n2 "../modules/knowledge_validators.md"
+    click n2 "../modules/engine.md"
     click n3 "../modules/knowledge_validators.md"
     click n4 "../modules/knowledge_validators.md"
+    click n5 "../modules/knowledge_validators.md"
 ```
 
 ### Summary
@@ -61,6 +64,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `Engine.__init__` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
+| `Engine.__init__` | type_reference | [engine](../modules/engine.md) | — |
 | `current_validators` | type_reference | [knowledge_validators](../modules/knowledge_validators.md) | — |
 | `using_validators` | type_reference | [knowledge_validators](../modules/knowledge_validators.md) | — |
 | `ValidatorRegistry.with_validator` | type_reference | [knowledge_validators](../modules/knowledge_validators.md) | — |

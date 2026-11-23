@@ -13,13 +13,7 @@ from llm_wiki_engine.contracts import (
 
 
 _PROTOCOL_RE = re.compile(r"^llm-wiki-.+/v[1-9][0-9]*$")
-_CONTRACTS_PATH = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "services"
-    / "contracts.py"
-)
+_CONTRACTS_PATH = Path(__file__).parents[1] / "src" / "llm_wiki_engine" / "contracts.py"
 _DOCUMENTATION_PATH = (
     Path(__file__).parents[1] / "docs" / "standalone-documentation.md"
 )

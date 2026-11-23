@@ -9,7 +9,8 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import context_packet, context_service, documentation_query_builder
+from llm_wiki_cli.services import context_service, documentation_query_builder
+from llm_wiki_engine import context_packet
 from llm_wiki_engine import knowledge_consumption
 from llm_wiki_cli.services import context_packet_builder
 from llm_wiki_cli.services import mcp_server

@@ -2,11 +2,10 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), and 37 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [host](../modules/host.md), [immutable](../modules/immutable.md), and 36 more
 
 **Complete modules touched:**
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [host](../modules/host.md)
@@ -118,9 +117,9 @@ sequenceDiagram
     p1-->>p30: Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection)
 ```
 
-> Call sequence diagram shows 30 of 2158 interactions; 2128 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2163 interactions; 2133 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 695 (694 omitted); unresolved 1 of 492 (491 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 696 (695 omitted); unresolved 1 of 496 (495 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -147,9 +146,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 972; effect analysis evaluated: 520, partial: 48, unavailable: 404. Counts include steps omitted from the displayed trace.
+Source steps: 972; effect analysis evaluated: 519, partial: 48, unavailable: 405. Counts include steps omitted from the displayed trace.
 
-Collector observations for 568 source steps with known totals: observed: 3420, emitted: 3136, omitted: 284. Unavailable totals are excluded.
+Collector observations for 567 source steps with known totals: observed: 3418, emitted: 3134, omitted: 284. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -223,9 +222,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability) | 555 | `time.perf_counter(data not statically known)` |
-| load_snapshot_knowledge_observability | Path (src/llm_wiki_engine/knowl…t_knowledge_observability) | 556 | `Path(wiki_dir)` |
-| load_snapshot_knowledge_observability | resolve_source_selection | 561 | `resolve_source_selection(effective_src_dir, source_selection)` |
+| load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_engine/knowl…t_knowledge_observability) | 557 | `time.perf_counter(data not statically known)` |
+| load_snapshot_knowledge_observability | Path (src/llm_wiki_engine/knowl…t_knowledge_observability) | 558 | `Path(wiki_dir)` |
+| load_snapshot_knowledge_observability | resolve_source_selection | 563 | `resolve_source_selection(effective_src_dir, source_selection)` |
 | resolve_source_selection | Path(…).resolve (src/llm_wiki_engine/sourc…:resolve_source_selection) | 606 | `Path(root).resolve(data not statically known)` |
 | resolve_source_selection | Path (src/llm_wiki_engine/sourc…:resolve_source_selection) | 606 | `Path(root)` |
 | resolve_source_selection | SourceSelectionError | 608 | `SourceSelectionError('source_root', 'must resolve to a repository path')` |
@@ -243,7 +242,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 555 |
+| external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 557 |
 | unresolved_call | `resolve_source_selection` | `Path(root).resolve` | 606 |
 | external_call | `_override_text` | `isinstance` | 583 |
 | unresolved_call | `_override_text` | `override.as_posix` | 583 |

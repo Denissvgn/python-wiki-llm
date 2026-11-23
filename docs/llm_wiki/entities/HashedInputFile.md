@@ -1,6 +1,6 @@
 # _HashedInputFile
 
-**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:366`
+**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:368`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_wiki_input](../modules/documentation_wiki_input.md)

@@ -165,17 +165,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verify | build_verification_receipt | 799 | `build_verification_receipt(context, run_verification(...))` |
-| build_verification_receipt | isinstance (src/llm_wiki_engine/verif…build_verification_receipt) | 760 | `isinstance(context, VerificationContext)` |
-| build_verification_receipt | TypeError (src/llm_wiki_engine/verif…build_verification_receipt) | 761 | `TypeError('context must be a VerificationContext')` |
-| build_verification_receipt | tuple (src/llm_wiki_engine/verif…build_verification_receipt) | 762 | `tuple(checks)` |
-| build_verification_receipt | VerificationContractError | 764 | `VerificationContractError('checks must not be empty')` |
-| build_verification_receipt | any | 765 | `any(...)` |
-| build_verification_receipt | isinstance (src/llm_wiki_engine/verif…build_verification_receipt) | 766 | `isinstance(check, VerificationCheckResult)` |
-| build_verification_receipt | VerificationContractError | 769 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
-| build_verification_receipt | all | 774 | `all(...)` |
-| build_verification_receipt | VerificationReceipt | 780 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
-| verify | run_verification | 801 | `run_verification(context, checker_ids)` |
+| verify | build_verification_receipt | 801 | `build_verification_receipt(context, run_verification(...))` |
+| build_verification_receipt | isinstance (src/llm_wiki_engine/verif…build_verification_receipt) | 762 | `isinstance(context, VerificationContext)` |
+| build_verification_receipt | TypeError (src/llm_wiki_engine/verif…build_verification_receipt) | 763 | `TypeError('context must be a VerificationContext')` |
+| build_verification_receipt | tuple (src/llm_wiki_engine/verif…build_verification_receipt) | 764 | `tuple(checks)` |
+| build_verification_receipt | VerificationContractError | 766 | `VerificationContractError('checks must not be empty')` |
+| build_verification_receipt | any | 767 | `any(...)` |
+| build_verification_receipt | isinstance (src/llm_wiki_engine/verif…build_verification_receipt) | 768 | `isinstance(check, VerificationCheckResult)` |
+| build_verification_receipt | VerificationContractError | 771 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
+| build_verification_receipt | all | 776 | `all(...)` |
+| build_verification_receipt | VerificationReceipt | 782 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
+| verify | run_verification | 803 | `run_verification(context, checker_ids)` |
 
 ### Boundary effects
 
@@ -185,11 +185,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_verification_receipt` | `isinstance` | 760 |
-| external_call | `build_verification_receipt` | `TypeError` | 761 |
-| external_call | `build_verification_receipt` | `any` | 765 |
-| external_call | `build_verification_receipt` | `isinstance` | 766 |
-| external_call | `build_verification_receipt` | `all` | 774 |
+| external_call | `build_verification_receipt` | `isinstance` | 762 |
+| external_call | `build_verification_receipt` | `TypeError` | 763 |
+| external_call | `build_verification_receipt` | `any` | 767 |
+| external_call | `build_verification_receipt` | `isinstance` | 768 |
+| external_call | `build_verification_receipt` | `all` | 776 |
 | step_limit | `verify` | `first 12 steps` | 0 |
 
 ## Behavior

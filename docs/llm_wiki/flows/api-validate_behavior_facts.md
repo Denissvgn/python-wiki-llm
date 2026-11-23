@@ -187,9 +187,9 @@ flowchart LR
 | validate_behavior_facts (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3753 | `isinstance(contract, Mapping)` |
 | validate_behavior_facts (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:validate_behavior_facts) | 3754 | `ValueError('Behavior facts must be a mapping')` |
 | validate_behavior_facts (src/llm_wiki_cli/api.py) | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 3755 | `validate(dict(...))` |
-| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 150 | `isinstance(contract, Mapping)` |
-| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `dict(contract)` |
-| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _json_tree | 152 | `cli_reference._json_tree(contract)` |
+| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `isinstance(contract, Mapping)` |
+| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 152 | `dict(contract)` |
+| validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _json_tree | 153 | `cli_reference._json_tree(contract)` |
 | _json_tree | CLIReferenceError | 291 | `CLIReferenceError('CLI contract exceeds its structural bounds')` |
 | _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 292 | `type(value)` |
 | _json_tree | type (src/llm_wiki_cli/services…i_reference.py:_json_tree) | 294 | `type(value)` |
@@ -206,7 +206,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_behavior_facts` | `isinstance` | 3753 |
 | external_call | `validate_behavior_facts` | `ValueError` | 3754 |
-| external_call | `validate_behavior_facts` | `isinstance` | 150 |
+| external_call | `validate_behavior_facts` | `isinstance` | 151 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |
 | external_call | `_json_tree` | `math.isfinite` | 294 |

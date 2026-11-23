@@ -32,8 +32,8 @@ flowchart LR
     n1["Enum"]
     n2["str"]
     n3["src/llm_wiki_cli/commands/knowledge_cmd.py"]
-    n4["src/llm_wiki_cli/services/context_packet.py"]
-    n5["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n5["src/llm_wiki_engine/context_packet.py"]
     n6["_lifecycle_event_digest_payload (src/llm_wiki_engine/knowledge_governance.py)"]
     n7["_lifecycle_event_summary (src/llm_wiki_engine/knowledge_governance.py)"]
     n8["_ordered_lifecycle_events (src/llm_wiki_engine/knowledge_governance.py)"]
@@ -57,8 +57,8 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/knowledge_cmd.md"
-    click n4 "../modules/context_packet.md"
-    click n5 "../modules/knowledge_projection.md"
+    click n4 "../modules/knowledge_projection.md"
+    click n5 "../modules/context_packet.md"
     click n6 "../modules/knowledge_governance.md"
     click n7 "../modules/knowledge_governance.md"
     click n8 "../modules/knowledge_governance.md"
@@ -87,8 +87,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `_lifecycle_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_lifecycle_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

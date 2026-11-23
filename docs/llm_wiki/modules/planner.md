@@ -21,9 +21,9 @@ repositories, or probe capabilities.
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_cli.services` | `context_packet_builder` |
-| `llm_wiki_cli.services.context_packet` | `ContextPacketError`, `QualifiedContextPacket`, `validate_context_packet` |
 | `llm_wiki_cli.services.context_packet_builder` | `build_qualified_context`, `reconcile_context_packet` |
 | `llm_wiki_engine.canonical_json` | `compact_bytes` |
+| `llm_wiki_engine.context_packet` | `ContextPacketError`, `QualifiedContextPacket`, `validate_context_packet` |
 | `llm_wiki_engine.contracts` | `EVAL_LITE_PLAN_SCHEMA_VERSION`, `EVAL_LITE_TASK_SCHEMA_VERSION` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `require_portable_relative_path` |
 | `math` | `math` |
@@ -38,9 +38,9 @@ repositories, or probe capabilities.
 flowchart LR
     n0["src/llm_wiki_cli/eval_lite/__init__.py"]
     n1["src/llm_wiki_cli/eval_lite/planner.py"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
-    n3["src/llm_wiki_cli/services/context_packet_builder.py"]
-    n4["src/llm_wiki_engine/canonical_json.py"]
+    n2["src/llm_wiki_cli/services/context_packet_builder.py"]
+    n3["src/llm_wiki_engine/canonical_json.py"]
+    n4["src/llm_wiki_engine/context_packet.py"]
     n5["src/llm_wiki_engine/contracts.py"]
     n6["src/llm_wiki_engine/validation.py"]
     n0 --> n1
@@ -49,16 +49,15 @@ flowchart LR
     n1 --> n4
     n1 --> n5
     n1 --> n6
-    n2 --> n3
+    n2 --> n4
     n2 --> n5
-    n2 --> n6
-    n3 --> n2
-    n3 --> n5
+    n4 --> n5
+    n4 --> n6
     click n0 "../modules/eval_lite___init__.md"
     click n1 "../modules/planner.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/context_packet_builder.md"
-    click n4 "../modules/canonical_json.md"
+    click n2 "../modules/context_packet_builder.md"
+    click n3 "../modules/canonical_json.md"
+    click n4 "../modules/context_packet.md"
     click n5 "../modules/llm_wiki_engine_contracts.md"
     click n6 "../modules/validation.md"
 ```
@@ -68,9 +67,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [eval_lite___init__](../modules/eval_lite___init__.md) |
-| Outbound | [context_packet](../modules/context_packet.md) |
 | Outbound | [context_packet_builder](../modules/context_packet_builder.md) |
 | Outbound | [canonical_json](../modules/canonical_json.md) |
+| Outbound | [context_packet](../modules/context_packet.md) |
 | Outbound | [llm_wiki_engine_contracts](../modules/llm_wiki_engine_contracts.md) |
 | Outbound | [validation](../modules/validation.md) |
 

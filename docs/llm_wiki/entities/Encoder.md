@@ -1,6 +1,6 @@
 # _Encoder
 
-**Location:** `src/llm_wiki_engine/knowledge_storage.py:212`
+**Location:** `src/llm_wiki_engine/knowledge_storage.py:214`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)

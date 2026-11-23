@@ -1,7 +1,7 @@
 # prepare_boundary
 
 **Entry point:** `scoped_sync_repair.prepare_boundary`
-**Modules involved:** [analysis_compatibility](../modules/analysis_compatibility.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_storage](../modules/knowledge_storage.md), [scoped_sync_repair](../modules/scoped_sync_repair.md)
+**Modules involved:** [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [knowledge_storage](../modules/knowledge_storage.md), [scoped_sync_repair](../modules/scoped_sync_repair.md)
 
 > Accept an adopted unchanged-source repair after complete revalidation.
 
@@ -14,13 +14,11 @@
 4. `knowledge_orchestration.runtime_generation_options`
 5. `knowledge_storage.canonical_bytes`
 6. `knowledge_storage.canonical_bytes`
-7. `analysis_compatibility.component_record`
-8. `knowledge_orchestration.runtime_source_snapshot_hash`
-9. `knowledge_reuse.implementation_hash`
+7. `knowledge_orchestration.runtime_source_snapshot_hash`
+8. `knowledge_reuse.implementation_hash`
 
 ## Touches
 
-- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)

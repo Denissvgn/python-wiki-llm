@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import search_service
+from llm_wiki_engine import search_service
 from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
 from llm_wiki_engine.knowledge_storage_io import StorageReadSession
 from llm_wiki_engine.knowledge_storage_lifecycle import migrate_knowledge_storage

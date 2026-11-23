@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context_from_captured_read` (`api`)
 **Source:** [context_packet_builder](../modules/context_packet_builder.md)
-**Modules touched:** [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), [context_request_format](../modules/context_request_format.md), and 8 more
+**Modules touched:** [context_packet](../modules/context_packet.md), [context_packet_builder](../modules/context_packet_builder.md), [context_request_format](../modules/context_request_format.md), and 9 more
 
 **Complete modules touched:**
 
@@ -13,10 +13,11 @@
 - [documentation_queries](../modules/documentation_queries.md)
 - [domain_pack](../modules/domain_pack.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [implementation_summary](../modules/implementation_summary.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_status](../modules/maintenance_status.md)
-- [wiki_surface](../modules/wiki_surface.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 
 ## Call sequence
 
@@ -52,8 +53,8 @@ sequenceDiagram
     participant p24 as _fit_explicit_knowledge_response
     participant p25 as _surface_filter_payload
     participant p26 as _append_knowledge_context_warning
-    participant p27 as _build_entry
-    participant p28 as _entry_tokens
+    participant p27 as current_pack
+    participant p28 as _build_entry
     participant p29 as isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
     participant p30 as warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)
     p0->>p1: _normalized_request
@@ -82,15 +83,15 @@ sequenceDiagram
     p14->>p24: _fit_explicit_knowledge_response
     p6->>p25: _surface_filter_payload
     p6->>p26: _append_knowledge_context_warning
-    p16->>p27: _build_entry
-    p16->>p28: _entry_tokens
+    p15->>p27: current_pack
+    p16->>p28: _build_entry
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)
     p2-->>p30: warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)('Could not get changed files from git. Treating all files as high priority.')
 ```
 
-> Call sequence diagram shows 30 of 672 interactions; 642 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 673 interactions; 643 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 288 (287 omitted); unresolved 1 of 217 (216 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 288 (287 omitted); unresolved 1 of 218 (217 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -104,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | - | external | 13 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 13 |
-> Omission summary shows 8 of 166 groups; 158 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 167 groups; 159 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -119,7 +120,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 168; effect analysis evaluated: 128, partial: 2, unavailable: 38. Counts include steps omitted from the displayed trace.
 
-Collector observations for 130 source steps with known totals: observed: 797, emitted: 794, omitted: 3. Unavailable totals are excluded.
+Collector observations for 130 source steps with known totals: observed: 796, emitted: 793, omitted: 3. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -192,16 +193,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context_from_captured_read | isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2) | 891 | `isinstance(captured, CapturedContextRead)` |
-| build_context_from_captured_read | TypeError (src/llm_wiki_cli/services…ontext_from_captured_read) | 892 | `TypeError('captured must be a CapturedContextRead')` |
-| build_context_from_captured_read | _normalized_request | 893 | `_normalized_request(request)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…er.py:_normalized_request) | 1763 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1764 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy | 1768 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…er.py:_normalized_request) | 1768 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1771 | `candidate.setdefault('knowledge_mode', 'auto')` |
-| _normalized_request | candidate.setdefault | 1772 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1773 | `context_service._validate_protocol_request(candidate)` |
+| build_context_from_captured_read | isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2) | 874 | `isinstance(captured, CapturedContextRead)` |
+| build_context_from_captured_read | TypeError (src/llm_wiki_cli/services…ontext_from_captured_read) | 875 | `TypeError('captured must be a CapturedContextRead')` |
+| build_context_from_captured_read | _normalized_request | 876 | `_normalized_request(request)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…er.py:_normalized_request) | 1746 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1747 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy | 1751 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…er.py:_normalized_request) | 1751 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1754 | `candidate.setdefault('knowledge_mode', 'auto')` |
+| _normalized_request | candidate.setdefault | 1755 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1756 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_engine/conte…validate_protocol_request) | 136 | `isinstance(data, dict)` |
 
 ### Boundary effects
@@ -212,12 +213,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_context_from_captured_read` | `isinstance` | 891 |
-| external_call | `build_context_from_captured_read` | `TypeError` | 892 |
-| external_call | `_normalized_request` | `isinstance` | 1763 |
-| external_call | `_normalized_request` | `deepcopy` | 1768 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1771 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1772 |
+| external_call | `build_context_from_captured_read` | `isinstance` | 874 |
+| external_call | `build_context_from_captured_read` | `TypeError` | 875 |
+| external_call | `_normalized_request` | `isinstance` | 1746 |
+| external_call | `_normalized_request` | `deepcopy` | 1751 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1754 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1755 |
 | external_call | `_validate_protocol_request` | `isinstance` | 136 |
 | step_limit | `build_context_from_captured_read` | `first 12 steps` | 0 |
 | truncated_flow | `build_context_from_captured_read` | `depth limit` | 0 |

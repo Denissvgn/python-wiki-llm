@@ -6,6 +6,8 @@ agent worktrees and validation of wiki and source roots.
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import os
 import sys
 import warnings
@@ -21,7 +23,7 @@ from llm_wiki_engine.host import current_host
 from .io import first_unsafe_path_component
 
 
-DEFAULT_WIKI_DIR = "docs/llm_wiki"
+DEFAULT_WIKI_DIR = DEFAULT_LAYOUT.wiki_dir
 
 # Directories excluded from source-file scans.  This intentionally covers both
 # conventional environment names (``.venv``) and environment internals
@@ -32,8 +34,8 @@ EXCLUDED_DIRS: set[str] = {
     ".eggs",
     ".env",
     ".git",
-    ".llm-wiki-knowledge",
-    ".llm-wiki-manifest",
+    DEFAULT_LAYOUT.knowledge_store,
+    DEFAULT_LAYOUT.manifest_objects,
     ".mypy_cache",
     ".next",
     ".nox",

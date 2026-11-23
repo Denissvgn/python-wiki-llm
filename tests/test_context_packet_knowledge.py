@@ -9,9 +9,9 @@ from typing import Any, Callable
 import pytest
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services import context_packet
+from llm_wiki_engine import context_packet
 from llm_wiki_cli.services import context_packet_builder
-from llm_wiki_cli.services.context_packet import (
+from llm_wiki_engine.context_packet import (
     CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     ContextPacketError,
     ContextPacketMalformedError,

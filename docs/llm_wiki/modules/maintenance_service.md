@@ -31,6 +31,7 @@ Authored pages/assets, unreferenced files, changed existing bytes, another ident
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `validate_governance_projection` |
 | `llm_wiki_engine.knowledge_storage` | `canonical_bytes`, `digest`, `MAX_EXPANDED_BYTES` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded`, `_absolute_path` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `reconcile_pending_maintenance`, `owner_key` |
 | `llm_wiki_engine.maintenance_projection` | `project_maintenance_knowledge`, `validate_maintenance_projection`, `project_maintenance_knowledge` |
 | `llm_wiki_engine.maintenance_protocol` | `ADOPTION_FILENAME`, `MaintenanceProtocolError`, `WikiWriteBasis`, `governance_writer_lock`, `storage_writer_lock`, `guard_maintenance_owner`, `load_adoption_marker`, `snapshot_wiki`, `save_recovery_snapshot`, `maintenance_write_operation` |
@@ -63,9 +64,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (23) |
+| Outbound | `src` (24) |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

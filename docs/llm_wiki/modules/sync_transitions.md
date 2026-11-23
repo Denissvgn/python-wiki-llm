@@ -21,7 +21,7 @@ retry.
 | Source | Symbols |
 |--------|---------|
 | `.bootstrap_runtime` | `_module_name_from_path` |
-| `.sync_analysis` | `SyncOwnershipError`, `_recorded_entity_pages` |
+| `.sync_analysis` | `_recorded_entity_pages` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `dataclass`, `field` |
@@ -30,6 +30,7 @@ retry.
 | `llm_wiki_engine.markdown_sections` | `normalize_markdown` |
 | `llm_wiki_engine.source_retirement` | `retired_entity_mappings` |
 | `llm_wiki_engine.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
+| `llm_wiki_engine.sync_ownership` | `PageTransitionError`, `SyncOwnershipError` |
 | `llm_wiki_engine.sync_retained_links` | `repair_retained_page_links` |
 | `llm_wiki_engine.validation` | `portable_path_key` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path` |
@@ -55,8 +56,8 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (5) |
-| Outbound | `src` (10) |
+| Inbound | `src` (4) |
+| Outbound | `src` (11) |
 
 > All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
@@ -64,12 +65,11 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PageTransitionError](../entities/PageTransitionError.md) | 23 | `SyncOwnershipError` | The intended page writes cannot preserve verified ownership. |
-| [PageTransition](../entities/PageTransition.md) | 28 | — | — |
-| [StagedPageMove](../entities/StagedPageMove.md) | 52 | — | — |
-| [RetainedPageRepair](../entities/RetainedPageRepair.md) | 59 | — | — |
-| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 68 | — | — |
-| [_Ownership](../entities/Ownership.md) | 133 | — | — |
+| [PageTransition](../entities/PageTransition.md) | 25 | — | — |
+| [StagedPageMove](../entities/StagedPageMove.md) | 49 | — | — |
+| [RetainedPageRepair](../entities/RetainedPageRepair.md) | 56 | — | — |
+| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 65 | — | — |
+| [_Ownership](../entities/Ownership.md) | 130 | — | — |
 
 ## Functions
 

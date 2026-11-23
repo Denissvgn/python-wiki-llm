@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 41 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 42 more
 
 **Complete modules touched:**
 
@@ -17,7 +17,6 @@
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
@@ -41,11 +40,13 @@
 - [path_policy](../modules/path_policy.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
+- [query_request_format](../modules/query_request_format.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [token_counters](../modules/token_counters.md)
 - [token_counting](../modules/token_counting.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -122,9 +123,9 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1530 interactions; 1500 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1477 interactions; 1447 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 501 (500 omitted); unresolved 1 of 466 (465 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 496 (495 omitted); unresolved 1 of 463 (462 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -138,7 +139,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | [src/llm_wiki_engine/context_request_format.py](../modules/context_request_format.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet_builder.py:_normalized_request` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_engine/context_request_format.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 320 groups; 312 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 314 groups; 306 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -151,9 +152,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 564; effect analysis evaluated: 403, partial: 29, unavailable: 132. Counts include steps omitted from the displayed trace.
+Source steps: 519; effect analysis evaluated: 384, partial: 29, unavailable: 106. Counts include steps omitted from the displayed trace.
 
-Collector observations for 432 source steps with known totals: observed: 2995, emitted: 2711, omitted: 284. Unavailable totals are excluded.
+Collector observations for 413 source steps with known totals: observed: 2921, emitted: 2637, omitted: 284. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

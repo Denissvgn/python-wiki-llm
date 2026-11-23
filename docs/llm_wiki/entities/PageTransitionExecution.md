@@ -1,6 +1,6 @@
 # PageTransitionExecution
 
-**Location:** `src/llm_wiki_cli/services/sync_transition_execution.py:48`
+**Location:** `src/llm_wiki_engine/sync_transition_execution.py:55`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transition_execution](../modules/sync_transition_execution.md)
@@ -21,13 +21,13 @@ subsequent sync refuses to guess ownership from that partial state.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(wiki_dir: Path, plan: PageTransitionPlan, *, preview: bool = False)` | — | — |
+| `__init__` | `(wiki_dir: Path, plan: Any, *, preview: bool = False)` | — | — |
 | `__enter__` | `()` | — | — |
 | `__exit__` | `(exc_type, exc, traceback)` | — | — |
 | `_journal` | `(state: str) -> None` | — | — |
 | `_verified_recovery_manifest` | `()` | — | — |
 | `_cleanup` | `() -> None` | — | — |
-| `apply` | `(current_plan: PageTransitionPlan) -> None` | — | — |
+| `apply` | `(current_plan: Any) -> None` | — | — |
 | `_expected` | `(relative: str) -> bytes \| None` | — | — |
 | `read_text` | `(relative: str) -> str \| None` | — | — |
 | `write` | `(relative: str, text: str) -> str` | — | — |
@@ -37,7 +37,7 @@ subsequent sync refuses to guess ownership from that partial state.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageTransitionExecution (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n0["PageTransitionExecution (src/llm_wiki_engine/sync_transition_execution.py)"]
     n1["_apply_diff (src/llm_wiki_cli/services/sync_runtime.py)"]
     n2["_apply_planned_diff (src/llm_wiki_cli/services/sync_runtime.py)"]
     n3["_apply_sync_changes (src/llm_wiki_cli/services/sync_runtime.py)"]

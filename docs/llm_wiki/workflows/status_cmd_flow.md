@@ -1,7 +1,7 @@
 # status_cmd_flow
 
 **Entry point:** `status_cmd.run`
-**Modules involved:** [circuit_breaker](../modules/circuit_breaker.md), [config](../modules/config.md), [io](../modules/io.md), [legacy_hooks](../modules/legacy_hooks.md), [path_policy](../modules/path_policy.md), [paths](../modules/paths.md), [status_cmd](../modules/status_cmd.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules involved:** [config](../modules/config.md), [io](../modules/io.md), [legacy_hooks](../modules/legacy_hooks.md), [path_policy](../modules/path_policy.md), [paths](../modules/paths.md), [status_cmd](../modules/status_cmd.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Sequence
 
@@ -24,13 +24,9 @@
 16. `io.first_unsafe_path_component`
 17. `paths.display_project_path`
 18. `paths.display_project_path`
-19. `circuit_breaker.load_state`
-20. `circuit_breaker.breaker_ttl_seconds`
-21. `circuit_breaker.breaker_ttl_seconds`
 
 ## Touches
 
-- [circuit_breaker](../modules/circuit_breaker.md)
 - [config](../modules/config.md)
 - [io](../modules/io.md)
 - [legacy_hooks](../modules/legacy_hooks.md)

@@ -1,6 +1,6 @@
 # DiagnosticCoverage
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:139`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:141`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)

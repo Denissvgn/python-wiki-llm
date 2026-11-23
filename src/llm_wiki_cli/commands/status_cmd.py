@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -959,7 +961,7 @@ def run(args) -> None:
 
     # Circuit breaker
     git_unsafe = first_unsafe_path_component(git_dir)
-    breaker_path = git_dir / "llm-wiki-breaker.json"
+    breaker_path = git_dir / DEFAULT_LAYOUT.breaker_state
     breaker_unsafe = first_unsafe_path_component(breaker_path)
     if git_unsafe is not None:
         print(

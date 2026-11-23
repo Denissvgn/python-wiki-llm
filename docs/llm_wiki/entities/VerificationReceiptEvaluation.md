@@ -1,6 +1,6 @@
 # VerificationReceiptEvaluation
 
-**Location:** `src/llm_wiki_engine/verification_contracts.py:566`
+**Location:** `src/llm_wiki_engine/verification_contracts.py:568`
 **Kind:** Class
 **Bases:** —
 **Module:** [verification_contracts](../modules/verification_contracts.md)

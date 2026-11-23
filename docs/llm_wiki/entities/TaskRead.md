@@ -1,6 +1,6 @@
 # TaskRead
 
-**Location:** `src/llm_wiki_cli/services/task_context.py:48`
+**Location:** `src/llm_wiki_cli/services/task_context.py:49`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_context](../modules/task_context.md)

@@ -1,8 +1,8 @@
 # using_pack
 
 **Entry point:** `using_pack` (`api`)
-**Source:** [domain_pack](../modules/domain_pack.md)
-**Modules touched:** [domain_pack](../modules/domain_pack.md)
+**Source:** [pack_interfaces](../modules/pack_interfaces.md)
+**Modules touched:** [pack_interfaces](../modules/pack_interfaces.md)
 
 ## Call sequence
 
@@ -50,7 +50,7 @@ flowchart LR
     s1 -. "TypeError('pack must be a DomainPack')" .-> s3
     s1 -. "_ACTIVE_PACK.set(pack)" .-> s4
     s1 -. "_ACTIVE_PACK.reset(token)" .-> s5
-    click s1 "../modules/domain_pack.md"
+    click s1 "../modules/pack_interfaces.md"
 ```
 
 ### Step data
@@ -67,10 +67,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| using_pack | isinstance | 864 | `isinstance(pack, DomainPack)` |
-| using_pack | TypeError | 865 | `TypeError('pack must be a DomainPack')` |
-| using_pack | _ACTIVE_PACK.set | 866 | `_ACTIVE_PACK.set(pack)` |
-| using_pack | _ACTIVE_PACK.reset | 870 | `_ACTIVE_PACK.reset(token)` |
+| using_pack | isinstance | 661 | `isinstance(pack, DomainPack)` |
+| using_pack | TypeError | 662 | `TypeError('pack must be a DomainPack')` |
+| using_pack | _ACTIVE_PACK.set | 663 | `_ACTIVE_PACK.set(pack)` |
+| using_pack | _ACTIVE_PACK.reset | 667 | `_ACTIVE_PACK.reset(token)` |
 
 ### Boundary effects
 
@@ -80,9 +80,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_pack` | `isinstance` | 864 |
-| external_call | `using_pack` | `TypeError` | 865 |
-| unresolved_call | `using_pack` | `_ACTIVE_PACK.reset` | 870 |
+| external_call | `using_pack` | `isinstance` | 661 |
+| external_call | `using_pack` | `TypeError` | 662 |
+| unresolved_call | `using_pack` | `_ACTIVE_PACK.reset` | 667 |
 
 ## Behavior
 

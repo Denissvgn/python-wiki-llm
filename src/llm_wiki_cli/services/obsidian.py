@@ -7,6 +7,8 @@ sidecar human notes without modifying the canonical wiki.
 
 from __future__ import annotations
 
+from llm_wiki_engine.layout import DEFAULT_LAYOUT
+
 import json
 import os
 import re
@@ -199,7 +201,7 @@ class ObsidianReport:
 def export_obsidian_vault(
     *,
     src_dir: str = ".",
-    wiki_dir: str | Path = "docs/llm_wiki",
+    wiki_dir: str | Path = DEFAULT_LAYOUT.wiki_dir,
     vault_dir: str | Path,
     notes_dir: str | Path = DEFAULT_NOTES_DIR,
     dry_run: bool = False,
@@ -343,7 +345,7 @@ def export_obsidian_vault(
 
 def check_obsidian_vault(
     *,
-    wiki_dir: str | Path = "docs/llm_wiki",
+    wiki_dir: str | Path = DEFAULT_LAYOUT.wiki_dir,
     vault_dir: str | Path,
     knowledge_metadata: str | None = None,
     knowledge_projection: KnowledgeProjection | None = None,

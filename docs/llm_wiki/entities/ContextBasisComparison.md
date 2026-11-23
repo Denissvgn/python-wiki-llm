@@ -1,6 +1,6 @@
 # ContextBasisComparison
 
-**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:345`
+**Location:** `src/llm_wiki_cli/services/context_packet_builder.py:328`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet_builder](../modules/context_packet_builder.md)

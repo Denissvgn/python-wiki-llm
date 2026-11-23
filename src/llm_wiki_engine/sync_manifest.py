@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .layout import DEFAULT_LAYOUT
+
 import json
 import re
 from collections import Counter
@@ -43,7 +45,7 @@ def current_pack():
     """The host's active domain pack, which classifies sources and names pages."""
     return provider("domain_packs").current_pack()
 
-MANIFEST_FILENAME = ".llm-wiki-manifest.json"
+MANIFEST_FILENAME = DEFAULT_LAYOUT.manifest
 MANIFEST_VERSION = 5
 MAINTENANCE_MANIFEST_VERSION = 7
 LEGACY_MANIFEST_VERSION = 4
@@ -1250,7 +1252,7 @@ class SyncManifest:
             from .knowledge_storage_io import read_guarded
             from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
             store = build_manifest_store(self.to_payload())
-            with governance_lock(wiki_dir, _lock_filename="llm-wiki-storage.lock"):
+            with governance_lock(wiki_dir, _lock_filename=DEFAULT_LAYOUT.storage_lock):
                 for name, content in store.objects.items():
                     path = wiki_dir / name
                     ensure_guarded_directory(path.parent)

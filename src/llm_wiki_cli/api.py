@@ -73,14 +73,14 @@ from .config import (
     validate_path,
     validate_source_root,
 )
-from .services import context_packet as context_packet_service
+from llm_wiki_engine import context_packet as context_packet_service
 from .services import context_packet_builder
 from .services.context_budget import BudgetedContext as BudgetedContext
 from .services.token_counting import TokenCounter as TokenCounter
 from llm_wiki_engine.workflow_profile import (
     WorkflowProfile as WorkflowProfile, WorkflowPolicy as WorkflowPolicy, WorkflowRequestError,
 )
-from .services.task_contract import TaskContext as TaskContext
+from llm_wiki_engine.task_contract import TaskContext as TaskContext
 from .services.task_compact import CompactTaskContext as CompactTaskContext
 from .services.context_session import (
     ContextSession as _ContextSession, SessionReply as SessionReply,
@@ -1615,7 +1615,7 @@ def search_wiki(
     discovery: Literal["qualified-v1"] | None = None,
 ) -> SearchResult:
     """Search canonical wiki pages with bounded, deterministic lexical ranking."""
-    from .services.search_service import search_wiki as search
+    from llm_wiki_engine.search_service import search_wiki as search
     from llm_wiki_engine.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
     try:

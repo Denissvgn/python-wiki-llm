@@ -187,7 +187,8 @@ import subprocess
 import sys
 import threading
 import time
-from llm_wiki_cli.services import extraction_service, knowledge_envelope
+from llm_wiki_cli.services import extraction_service
+from llm_wiki_engine import knowledge_envelope
 """ + _DIRECT_PYTHON + r"""
 
 source = Path(sys.argv[1])

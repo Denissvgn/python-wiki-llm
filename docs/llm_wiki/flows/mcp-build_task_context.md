@@ -93,15 +93,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_task_context | _native_tool_call | 1636 | `_native_tool_call(service.build_task_context, request)` |
-| _native_tool_call | callback | 1385 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1393 | `str(exc)` |
-| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1397 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1399 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1399 | `json.dumps(failure, sort_keys=True)` |
-| build_task_context | isinstance | 1637 | `isinstance(result, str)` |
-| build_task_context | CallToolResult (src/llm_wiki_cli/services…rver.py:build_task_context) | 1637 | `CallToolResult(content=[...])` |
-| build_task_context | TextContent (src/llm_wiki_cli/services…rver.py:build_task_context) | 1637 | `TextContent(type='text', text=result)` |
+| build_task_context | _native_tool_call | 1638 | `_native_tool_call(service.build_task_context, request)` |
+| _native_tool_call | callback | 1387 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1395 | `str(exc)` |
+| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1399 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1401 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1401 | `json.dumps(failure, sort_keys=True)` |
+| build_task_context | isinstance | 1639 | `isinstance(result, str)` |
+| build_task_context | CallToolResult (src/llm_wiki_cli/services…rver.py:build_task_context) | 1639 | `CallToolResult(content=[...])` |
+| build_task_context | TextContent (src/llm_wiki_cli/services…rver.py:build_task_context) | 1639 | `TextContent(type='text', text=result)` |
 
 ### Boundary effects
 
@@ -111,13 +111,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1385 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1397 |
-| external_call | `_native_tool_call` | `TextContent` | 1399 |
-| external_call | `_native_tool_call` | `json.dumps` | 1399 |
-| external_call | `build_task_context` | `isinstance` | 1637 |
-| external_call | `build_task_context` | `CallToolResult` | 1637 |
-| external_call | `build_task_context` | `TextContent` | 1637 |
+| unresolved_call | `_native_tool_call` | `callback` | 1387 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1399 |
+| external_call | `_native_tool_call` | `TextContent` | 1401 |
+| external_call | `_native_tool_call` | `json.dumps` | 1401 |
+| external_call | `build_task_context` | `isinstance` | 1639 |
+| external_call | `build_task_context` | `CallToolResult` | 1639 |
+| external_call | `build_task_context` | `TextContent` | 1639 |
 
 ## Behavior
 

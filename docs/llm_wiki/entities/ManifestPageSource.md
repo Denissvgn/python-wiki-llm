@@ -1,6 +1,6 @@
 # ManifestPageSource
 
-**Location:** `src/llm_wiki_engine/sync_manifest.py:152`
+**Location:** `src/llm_wiki_engine/sync_manifest.py:154`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)

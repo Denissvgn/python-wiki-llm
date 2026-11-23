@@ -18,8 +18,6 @@
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [dockerfile_parser](../modules/dockerfile_parser.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [domain_pack](../modules/domain_pack.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -57,6 +55,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [normalization_diagnostics](../modules/normalization_diagnostics.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -64,6 +63,7 @@
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
+- [query_request_format](../modules/query_request_format.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
@@ -147,9 +147,9 @@ sequenceDiagram
     p1-->>p30: counts
 ```
 
-> Call sequence diagram shows 30 of 3995 interactions; 3965 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3999 interactions; 3969 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1239 (1238 omitted); unresolved 1 of 1305 (1304 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1239 (1238 omitted); unresolved 1 of 1309 (1308 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -163,7 +163,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet_builder.py:capture_context_read` | 35 | - | external | 37 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 48 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 49 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
-> Omission summary shows 8 of 1020 groups; 1012 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1019 groups; 1011 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,7 +178,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1452; effect analysis evaluated: 997, partial: 59, unavailable: 396. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1056 source steps with known totals: observed: 6021, emitted: 5750, omitted: 271. Unavailable totals are excluded.
+Collector observations for 1056 source steps with known totals: observed: 6018, emitted: 5747, omitted: 271. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

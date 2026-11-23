@@ -1,6 +1,6 @@
 # NewPageJournal
 
-**Location:** `src/llm_wiki_engine/sync_recovery.py:140`
+**Location:** `src/llm_wiki_engine/sync_recovery.py:142`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_recovery](../modules/sync_recovery.md)

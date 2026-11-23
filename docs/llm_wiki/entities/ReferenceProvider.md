@@ -41,7 +41,7 @@ flowchart LR
     n1["_CommandSelector (src/llm_wiki_cli/services/reference_providers.py)"]
     n2["BehaviorFactsProvider (src/llm_wiki_cli/services/reference_providers.py)"]
     n3["src/llm_wiki_cli/engine/__init__.py"]
-    n4["DomainPack.with_reference_provider (src/llm_wiki_cli/services/domain_pack.py)"]
+    n4["src/llm_wiki_cli/services/domain_pack.py"]
     n5["check_reference_providers (src/llm_wiki_cli/services/reference_providers.py)"]
     n6["current_reference_providers (src/llm_wiki_cli/services/reference_providers.py)"]
     n7["reference_provider (src/llm_wiki_cli/services/reference_providers.py)"]
@@ -83,7 +83,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
-| `DomainPack.with_reference_provider` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |
 | `check_reference_providers` | type_reference | [reference_providers](../modules/reference_providers.md) | — |
 | `current_reference_providers` | type_reference | [reference_providers](../modules/reference_providers.md) | — |
 | `reference_provider` | type_reference | [reference_providers](../modules/reference_providers.md) | — |

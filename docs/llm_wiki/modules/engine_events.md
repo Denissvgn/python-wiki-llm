@@ -54,14 +54,18 @@ loading the engine.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/engine/__init__.py"]
-    n1["src/llm_wiki_engine/engine_events.py"]
-    n2["src/llm_wiki_engine/host.py"]
-    n0 --> n1
+    n1["src/llm_wiki_engine/engine.py"]
+    n2["src/llm_wiki_engine/engine_events.py"]
+    n3["src/llm_wiki_engine/host.py"]
     n0 --> n2
-    n2 --> n1
+    n0 --> n3
+    n1 --> n2
+    n1 --> n3
+    n3 --> n2
     click n0 "../modules/engine___init__.md"
-    click n1 "../modules/engine_events.md"
-    click n2 "../modules/host.md"
+    click n1 "../modules/engine.md"
+    click n2 "../modules/engine_events.md"
+    click n3 "../modules/host.md"
 ```
 
 ### Internal neighbors
@@ -69,6 +73,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [engine___init__](../modules/engine___init__.md) |
+| Inbound | [engine](../modules/engine.md) |
 | Inbound | [host](../modules/host.md) |
 
 ## Classes

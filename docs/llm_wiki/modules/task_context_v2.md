@@ -10,7 +10,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `context_packet`, `context_service`, `context_packet_builder` |
+| `.` | `context_service`, `context_packet_builder` |
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render` |
 | `.dependencies` | `analyze_dependencies` |
@@ -20,12 +20,12 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `.python_implementation` | `analysis_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
 | `.task_context` | `TaskRead`, `_LIVE_FACETS`, `_NATIVE_FACETS`, `_cancel`, `_counter`, `_result_body`, `plan_source_read`, `_result_fields` |
-| `.task_contract` | `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `.task_evidence` | `declaration_records`, `observe_requirement` |
 | `.task_implementation` | `attach_capture`, `attach_bindings`, `native_bindings` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
+| `llm_wiki_engine` | `context_packet` |
 | `llm_wiki_engine.contracts` | `GOVERNANCE_EXTENSION_KEY` |
 | `llm_wiki_engine.knowledge_envelope` | `ConsumedInput`, `hash_source_snapshot` |
 | `llm_wiki_engine.knowledge_graph` | `KnowledgeGraphError`, `_normalise_edge` |
@@ -33,12 +33,14 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError`, `_concept_aliases`, `digest`, `COLLECTIONS`, `COLLECTIONS` |
 | `llm_wiki_engine.knowledge_storage_access` | `ScopedKnowledgeRead`, `capture_knowledge_slice` |
 | `llm_wiki_engine.knowledge_storage_io` | `ReadObservation`, `StorageReadSession`, `range_batches` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_status` | `LIMITATIONS`, `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `llm_wiki_engine.markdown_sections` | `parse_markdown_document` |
 | `llm_wiki_engine.path_policy` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `llm_wiki_engine.section_ownership` | `observe_page_sections` |
 | `llm_wiki_engine.source_selection` | `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.storage_receipts` | `compact_storage_receipt`, `compact_storage_receipt`, `expand_storage_receipt` |
+| `llm_wiki_engine.task_contract` | `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `pathlib` | `Path` |
@@ -65,15 +67,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 276 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 279 | — | — |
 
 ## Functions
 

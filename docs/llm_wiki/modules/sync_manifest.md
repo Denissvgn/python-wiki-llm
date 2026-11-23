@@ -25,6 +25,7 @@ also selects exact retention paths for future lint and live native reads.
 | `.knowledge_reuse_format` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
 | `.knowledge_storage` | `decode_bytes`, `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `.maintenance_state` | `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.manifest_storage` | `ManifestStoreReader`, `build_manifest_store`, `current_manifest_format` |
 | `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
@@ -62,22 +63,22 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (44) |
-| Outbound | `src` (13) |
+| Inbound | `src` (45) |
+| Outbound | `src` (14) |
 
-> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncManifestError](../entities/SyncManifestError.md) | 65 | `ValueError` | Field-specific validation failure for decoded manifest state. |
-| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 76 | — | Manifest state removed because it falls outside a selected source set. |
-| [ManifestPageSource](../entities/ManifestPageSource.md) | 152 | — | Last observed source coordinate for one module or entity page. |
-| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 257 | — | Known or explicitly unknown evidence for one active concept page. |
-| [ManifestTombstone](../entities/ManifestTombstone.md) | 362 | — | Evidence retained for a stale module/entity page. |
-| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 451 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 864 | — | Operational state; maintenance is present only after explicit adoption. |
+| [SyncManifestError](../entities/SyncManifestError.md) | 67 | `ValueError` | Field-specific validation failure for decoded manifest state. |
+| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 78 | — | Manifest state removed because it falls outside a selected source set. |
+| [ManifestPageSource](../entities/ManifestPageSource.md) | 154 | — | Last observed source coordinate for one module or entity page. |
+| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 259 | — | Known or explicitly unknown evidence for one active concept page. |
+| [ManifestTombstone](../entities/ManifestTombstone.md) | 364 | — | Evidence retained for a stale module/entity page. |
+| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 453 | — | All-or-none exact-byte commitment to the generated artifact set. |
+| [SyncManifest](../entities/SyncManifest.md) | 866 | — | Operational state; maintenance is present only after explicit adoption. |
 
 ## Functions
 

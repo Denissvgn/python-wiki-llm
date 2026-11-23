@@ -1,6 +1,6 @@
 # IntegrationUnavailable
 
-**Location:** `src/llm_wiki_engine/integrations.py:52`
+**Location:** `src/llm_wiki_engine/integrations.py:64`
 **Kind:** Class
 **Bases:** `LookupError`
 **Module:** [integrations](../modules/integrations.md)
@@ -24,11 +24,14 @@ The application did not provide a capability the knowledge core needs.
 flowchart LR
     n0["IntegrationUnavailable (src/llm_wiki_engine/integrations.py)"]
     n1["LookupError"]
-    n2["provider (src/llm_wiki_engine/integrations.py)"]
+    n2["src/llm_wiki_engine/context_packet.py"]
+    n3["provider (src/llm_wiki_engine/integrations.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/integrations.md"
-    click n2 "../modules/integrations.md"
+    click n2 "../modules/context_packet.md"
+    click n3 "../modules/integrations.md"
 ```
 
 ### Summary
@@ -47,4 +50,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `provider` | call | [integrations](../modules/integrations.md) | 1 |

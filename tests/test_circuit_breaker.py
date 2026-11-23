@@ -1,4 +1,4 @@
-"""Tests for services/circuit_breaker.py"""
+"""Tests for llm_wiki_engine/circuit_breaker.py"""
 
 import json
 from datetime import datetime, timedelta, timezone

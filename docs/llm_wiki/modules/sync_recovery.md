@@ -33,6 +33,7 @@ syncs discard only verified private scratch and retain unexpected contents.
 | `.knowledge_governance` | `_governance_lock_root` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `_identity`, `read_guarded` |
+| `.layout` | `DEFAULT_LAYOUT` |
 | `.maintenance_protocol` | `governance_writer_lock`, `storage_writer_lock` |
 | `.sync_manifest` | `SyncManifest` |
 | `__future__` | `annotations` |
@@ -69,16 +70,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (10) |
+| Outbound | `src` (11) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncRecoveryError](../entities/SyncRecoveryError.md) | 44 | `ValueError` | A recovery proof or operation cannot be admitted safely. |
-| [NewPageJournal](../entities/NewPageJournal.md) | 140 | — | — |
+| [SyncRecoveryError](../entities/SyncRecoveryError.md) | 46 | `ValueError` | A recovery proof or operation cannot be admitted safely. |
+| [NewPageJournal](../entities/NewPageJournal.md) | 142 | — | — |
 
 ## Functions
 

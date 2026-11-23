@@ -2,7 +2,7 @@
 
 **Entry point:** `render_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 26 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 23 more
 
 **Complete modules touched:**
 
@@ -11,11 +11,9 @@
 - [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
 - [context_budget](../modules/context_budget.md)
-- [context_packet](../modules/context_packet.md)
 - [context_request_format](../modules/context_request_format.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [implementation_summary](../modules/implementation_summary.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
@@ -23,7 +21,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_status](../modules/maintenance_status.md)
-- [packet_field_policy](../modules/packet_field_policy.md)
+- [query_request_format](../modules/query_request_format.md)
 - [storage_receipts](../modules/storage_receipts.md)
 - [task_compact](../modules/task_compact.md)
 - [task_compact_readable](../modules/task_compact_readable.md)
@@ -32,9 +30,8 @@
 - [task_contract](../modules/task_contract.md)
 - [task_evidence](../modules/task_evidence.md)
 - [task_implementation](../modules/task_implementation.md)
-- [token_counting](../modules/token_counting.md)
+- [token_counters](../modules/token_counters.md)
 - [validation](../modules/validation.md)
-- [wiki_surface](../modules/wiki_surface.md)
 - [workflow_profile](../modules/workflow_profile.md)
 
 ## Call sequence
@@ -64,15 +61,15 @@ sequenceDiagram
     participant p17 as validate_changes
     participant p18 as normalize_profile
     participant p19 as content_id
-    participant p20 as validate_context_packet
-    participant p21 as validate_task_implementations
-    participant p22 as validate_scoped_bindings
-    participant p23 as _coerce_packet_bytes
-    participant p24 as normalize_supplied_paths
-    participant p25 as _strict_json_payload
-    participant p26 as normalize_concept_coordinate
-    participant p27 as _packet_contract_for_schema
-    participant p28 as expand_storage_receipt
+    participant p20 as validate_task_implementations
+    participant p21 as validate_scoped_bindings
+    participant p22 as normalize_supplied_paths
+    participant p23 as normalize_concept_coordinate
+    participant p24 as expand_storage_receipt
+    participant p25 as _settings
+    participant p26 as hash_source_snapshot
+    participant p27 as _paths
+    participant p28 as validate_implementation_comparison
     participant p29 as isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)
     participant p30 as facts[…][…].items
     p0->>p1: render_compact_task_context (src/llm_wiki_cli/services/task_compact.py)
@@ -94,22 +91,22 @@ sequenceDiagram
     p6->>p17: validate_changes
     p6->>p18: normalize_profile
     p6->>p19: content_id
-    p8->>p20: validate_context_packet
-    p8->>p21: validate_task_implementations
-    p8->>p22: validate_scoped_bindings
-    p20->>p23: _coerce_packet_bytes
-    p14->>p24: normalize_supplied_paths
-    p20->>p25: _strict_json_payload
-    p14->>p26: normalize_concept_coordinate
-    p20->>p27: _packet_contract_for_schema
-    p22->>p28: expand_storage_receipt
+    p8->>p20: validate_task_implementations
+    p8->>p21: validate_scoped_bindings
+    p14->>p22: normalize_supplied_paths
+    p14->>p23: normalize_concept_coordinate
+    p21->>p24: expand_storage_receipt
+    p18->>p25: _settings
+    p20->>p26: hash_source_snapshot
+    p15->>p27: _paths
+    p20->>p28: validate_implementation_comparison
     p2-->>p29: isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)(canonical_text, TaskContext)
     p4-->>p30: facts[…][…].items
 ```
 
-> Call sequence diagram shows 30 of 915 interactions; 885 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 851 interactions; 821 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 453 (452 omitted); unresolved 1 of 214 (213 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 444 (443 omitted); unresolved 1 of 213 (212 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -119,11 +116,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 3 | - | external | 2 |
 | `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 9 | - | external | 5 |
 | `src/llm_wiki_engine/workflow_profile.py:exact_fields` | 9 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | unresolved | 22 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 8 | - | unresolved | 22 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
+| `src/llm_wiki_engine/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_engine/workflow_profile.py](../modules/workflow_profile.md) | internal | 15 |
 | `src/llm_wiki_engine/workflow_profile.py:bounded_text` | 20 | - | external | 2 |
-> Omission summary shows 8 of 164 groups; 156 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 137 groups; 129 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -136,9 +133,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 249; effect analysis evaluated: 174, partial: 3, unavailable: 72. Counts include steps omitted from the displayed trace.
+Source steps: 195; effect analysis evaluated: 139, partial: 3, unavailable: 53. Counts include steps omitted from the displayed trace.
 
-Collector observations for 177 source steps with known totals: observed: 806, emitted: 801, omitted: 5. Unavailable totals are excluded.
+Collector observations for 142 source steps with known totals: observed: 690, emitted: 683, omitted: 7. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

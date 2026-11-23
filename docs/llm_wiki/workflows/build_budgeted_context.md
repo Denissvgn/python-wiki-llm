@@ -1,13 +1,13 @@
 # build_budgeted_context
 
 **Entry point:** `context_budget.build_budgeted_context`
-**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet_builder](../modules/context_packet_builder.md), [context_request_format](../modules/context_request_format.md), [token_counting](../modules/token_counting.md)
+**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet_builder](../modules/context_packet_builder.md), [context_request_format](../modules/context_request_format.md), [token_counters](../modules/token_counters.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `context_request_format.validate_budget_request`
-2. `token_counting.EstimatedCounter`
+2. `token_counters.EstimatedCounter`
 3. `context_packet_builder.capture_context_read`
 4. `change_selection.select_changes`
 5. `change_selection.affected_page_map`
@@ -22,7 +22,7 @@
 - [context_budget](../modules/context_budget.md)
 - [context_packet_builder](../modules/context_packet_builder.md)
 - [context_request_format](../modules/context_request_format.md)
-- [token_counting](../modules/token_counting.md)
+- [token_counters](../modules/token_counters.md)
 
 ## Behavior
 

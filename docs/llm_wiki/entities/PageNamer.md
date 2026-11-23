@@ -1,9 +1,9 @@
 # PageNamer
 
-**Location:** `src/llm_wiki_cli/services/domain_pack.py:103`
+**Location:** `src/llm_wiki_engine/pack_interfaces.py:62`
 **Kind:** Class
 **Bases:** `Protocol`
-**Module:** [domain_pack](../modules/domain_pack.md)
+**Module:** [pack_interfaces](../modules/pack_interfaces.md)
 
 **Decorators:** `@runtime_checkable`
 
@@ -27,23 +27,23 @@ Names the generated module and entity pages for an inventory.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["PageNamer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n0["PageNamer (src/llm_wiki_engine/pack_interfaces.py)"]
     n1["Protocol"]
-    n2["src/llm_wiki_cli/engine/__init__.py"]
-    n3["DomainPack.with_page_namer (src/llm_wiki_cli/services/domain_pack.py)"]
+    n2["src/llm_wiki_cli/services/domain_pack.py"]
+    n3["DomainPack.with_page_namer (src/llm_wiki_engine/pack_interfaces.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
-    click n0 "../modules/domain_pack.md"
-    click n2 "../modules/engine___init__.md"
-    click n3 "../modules/domain_pack.md"
+    click n0 "../modules/pack_interfaces.md"
+    click n2 "../modules/domain_pack.md"
+    click n3 "../modules/pack_interfaces.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [domain_pack](../modules/domain_pack.md) | 2 | — |
+| [pack_interfaces](../modules/pack_interfaces.md) | 2 | — |
 
 ### Structure
 
@@ -55,5 +55,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `__init__` | import | [engine___init__](../modules/engine___init__.md) | — |
-| `DomainPack.with_page_namer` | type_reference | [domain_pack](../modules/domain_pack.md) | — |
+| `domain_pack` | import | [domain_pack](../modules/domain_pack.md) | — |
+| `DomainPack.with_page_namer` | type_reference | [pack_interfaces](../modules/pack_interfaces.md) | — |

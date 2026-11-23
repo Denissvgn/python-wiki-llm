@@ -191,9 +191,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_and_evaluate_verification_receipt | load_verification_receipt | 1116 | `load_verification_receipt(wiki_dir, missing_ok=missing_ok)` |
-| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 985 | `Path(wiki_dir)` |
-| load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
+| load_and_evaluate_verification_receipt | load_verification_receipt | 1118 | `load_verification_receipt(wiki_dir, missing_ok=missing_ok)` |
+| load_verification_receipt | Path (src/llm_wiki_engine/verif…load_verification_receipt) | 987 | `Path(wiki_dir)` |
+| load_verification_receipt | first_unsafe_path_component | 988 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 52 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 52 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_engine/io.py…rst_unsafe_path_component) | 60 | `Path(os.path.abspath(...))` |

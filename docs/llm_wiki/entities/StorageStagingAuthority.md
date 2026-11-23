@@ -1,6 +1,6 @@
 # _StorageStagingAuthority
 
-**Location:** `src/llm_wiki_engine/maintenance_protocol.py:179`
+**Location:** `src/llm_wiki_engine/maintenance_protocol.py:181`
 **Kind:** Class
 **Bases:** —
 **Module:** [maintenance_protocol](../modules/maintenance_protocol.md)

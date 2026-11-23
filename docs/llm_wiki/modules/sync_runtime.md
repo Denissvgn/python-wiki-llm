@@ -125,40 +125,42 @@ still stop the operation.
 | `.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
 | `.sync_generated_sections` | `plan_generated_source_repairs` |
 | `.sync_service` | `SYNC_PAGE_COUNTERS`, `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError`, `SyncStatus` |
-| `.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
-| `contextlib` | `nullcontext` |
+| `contextlib` | `contextmanager`, `nullcontext` |
 | `contextvars` | `ContextVar` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `json` | `json` |
 | `llm_wiki_engine.contracts` | `INITIALIZABLE_SURFACES` |
 | `llm_wiki_engine.host` | `current_host`, `discarding_stdout`, `emit`, `recording_errors` |
-| `llm_wiki_engine.io` | `read_md`, `write_md` |
+| `llm_wiki_engine.io` | `MarkdownEncodingError`, `read_md`, `write_md` |
 | `llm_wiki_engine.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
 | `llm_wiki_engine.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
 | `llm_wiki_engine.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `llm_wiki_engine.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
-| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
-| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `StorageReadSession` |
+| `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES` |
+| `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `StorageReadSession`, `_absolute_path` |
 | `llm_wiki_engine.knowledge_storage_lifecycle` | `_outside_tree`, `finalize_knowledge_storage` |
-| `llm_wiki_engine.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
+| `llm_wiki_engine.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `WikiWriteBasis`, `_capture_spooled_wiki`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `llm_wiki_engine.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `llm_wiki_engine.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
 | `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
 | `llm_wiki_engine.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
 | `llm_wiki_engine.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `llm_wiki_engine.storage_spool` | `ByteSpool` |
 | `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
 | `llm_wiki_engine.sync_recovery` | `capture_new_sync_pages`, `SyncRecoveryError` |
+| `llm_wiki_engine.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
 | `llm_wiki_engine.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
 | `llm_wiki_engine.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |
-| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
+| `llm_wiki_engine.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -185,31 +187,31 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (49) |
+| Outbound | `src` (51) |
 
-> All 52 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAborted](../entities/SyncAborted.md) | 264 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
-| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 274 | `SyncAborted` | The request's options were rejected before any sync work started. |
-| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 279 | — | — |
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 340 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 344 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 676 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 715 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 737 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1756 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1784 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1791 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1797 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1803 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1819 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1863 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1896 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1902 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [SyncAborted](../entities/SyncAborted.md) | 263 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
+| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 273 | `SyncAborted` | The request's options were rejected before any sync work started. |
+| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 278 | — | — |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 339 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 343 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/sync_runtime_SyncResult.md) | 675 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 714 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 736 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1755 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1783 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1790 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1796 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1802 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1818 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1862 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1895 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1901 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -352,9 +354,12 @@ flowchart LR
 | `_print_selection_prune_summary` | `(prepared: _PreparedSyncRun) -> None` | — | — |
 | `_print_sync_artifact_actions` | `(result: KnowledgeCommitResult) -> None` | — | — |
 | `_run_sync_dry_run` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | — |
+| `_live_page_error` | `(exc: MarkdownEncodingError, staged_wiki: Path, live_wiki: Path) -> MarkdownEncodingError` | — | Name the user's page, not its copy in the discarded preview directory. |
+| `_staged_write_basis` | `(staged_wiki: Path, *, adopted: bool)` | `@contextmanager` | Give a dry run's staged copy the write basis a writing sync would have. |
 | `_unsafe_dry_run_symlink` | `(wiki_dir: Path) -> str \| None` | — | Return the first symlink that would escape an isolated preview tree. |
 | `_enforce_sync_write_safety` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | Require write authorization before a prepared sync can mutate the wiki. |
 | `_execute_prepared_sync` | `(options, prepared, *, target_wiki_dir = None, dry_run = False) -> None` | — | — |
+| `_preflight_on_staged_copy` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | Run the dry run exactly as a standalone one would, before any live write. |
 | `_run_prepared_sync` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | — |
 | `run` | `(args) -> None` | — | CLI entry point: sync from argparse options, exiting like the command. |
 | `execute_sync` | `(request: SyncRequest) -> SyncOutcome` | — | Run one sync without argparse or process exits. |

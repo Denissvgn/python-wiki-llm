@@ -2,7 +2,7 @@
 
 **Entry point:** `install_documentation_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 17 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [ci_installer](../modules/ci_installer.md), [concept_identity](../modules/concept_identity.md), [domain_pack](../modules/domain_pack.md), and 18 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [pack_interfaces](../modules/pack_interfaces.md)
 - [path_policy](../modules/path_policy.md)
 - [publication_config](../modules/publication_config.md)
 - [publication_targets](../modules/publication_targets.md)
@@ -100,7 +101,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 1479 interactions; 1449 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 533 (532 omitted); unresolved 1 of 317 (316 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 533 (532 omitted); unresolved 1 of 316 (315 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,9 +128,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 630; effect analysis evaluated: 329, partial: 21, unavailable: 280. Counts include steps omitted from the displayed trace.
+Source steps: 631; effect analysis evaluated: 330, partial: 21, unavailable: 280. Counts include steps omitted from the displayed trace.
 
-Collector observations for 350 source steps with known totals: observed: 1953, emitted: 1886, omitted: 67. Unavailable totals are excluded.
+Collector observations for 351 source steps with known totals: observed: 1954, emitted: 1887, omitted: 67. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -217,36 +218,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| install_documentation_ci_workflow | any (src/llm_wiki_cli/services…documentation_ci_workflow) | 366 | `any(...)` |
-| install_documentation_ci_workflow | type (src/llm_wiki_cli/services…documentation_ci_workflow) | 366 | `type(value)` |
-| install_documentation_ci_workflow | InstallCiError | 367 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
-| install_documentation_ci_workflow | _project_root | 368 | `_project_root(project_root)` |
-| _project_root | (…).resolve | 509 | `(Path.cwd() if project_root is None else Path(project_root)).resolve(data not statically known)` |
-| _project_root | Path.cwd | 509 | `Path.cwd(data not statically known)` |
-| _project_root | Path (src/llm_wiki_cli/services…nstaller.py:_project_root) | 509 | `Path(project_root)` |
-| _project_root | InstallCiError | 511 | `InstallCiError('project root cannot be resolved')` |
-| _project_root | root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root) | 512 | `root.is_dir(data not statically known)` |
-| _project_root | InstallCiError | 513 | `InstallCiError('project root must be an existing directory')` |
-| install_documentation_ci_workflow | normalize_action_ref | 369 | `normalize_action_ref(action_ref)` |
+| install_documentation_ci_workflow | any (src/llm_wiki_cli/services…documentation_ci_workflow) | 368 | `any(...)` |
+| install_documentation_ci_workflow | type (src/llm_wiki_cli/services…documentation_ci_workflow) | 368 | `type(value)` |
+| install_documentation_ci_workflow | InstallCiError | 369 | `InstallCiError('require_ready, force and dry_run must be booleans')` |
+| install_documentation_ci_workflow | _project_root | 370 | `_project_root(project_root)` |
+| _project_root | (…).resolve | 511 | `(Path.cwd() if project_root is None else Path(project_root)).resolve(data not statically known)` |
+| _project_root | Path.cwd | 511 | `Path.cwd(data not statically known)` |
+| _project_root | Path (src/llm_wiki_cli/services…nstaller.py:_project_root) | 511 | `Path(project_root)` |
+| _project_root | InstallCiError | 513 | `InstallCiError('project root cannot be resolved')` |
+| _project_root | root.is_dir (src/llm_wiki_cli/services…nstaller.py:_project_root) | 514 | `root.is_dir(data not statically known)` |
+| _project_root | InstallCiError | 515 | `InstallCiError('project root must be an existing directory')` |
+| install_documentation_ci_workflow | normalize_action_ref | 371 | `normalize_action_ref(action_ref)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `authored.extend` | `install_documentation_ci_workflow` | 409 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 417 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 427 |
-| mutation | `protected.append` | `install_documentation_ci_workflow` | 444 |
+| mutation | `authored.extend` | `install_documentation_ci_workflow` | 411 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 419 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 429 |
+| mutation | `protected.append` | `install_documentation_ci_workflow` | 446 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `install_documentation_ci_workflow` | `any` | 366 |
-| external_call | `install_documentation_ci_workflow` | `type` | 366 |
-| unresolved_call | `_project_root` | `(Path.cwd() if project_root is None else Path(project_root)).resolve` | 509 |
-| external_call | `_project_root` | `Path.cwd` | 509 |
-| unresolved_call | `_project_root` | `root.is_dir` | 512 |
+| external_call | `install_documentation_ci_workflow` | `any` | 368 |
+| external_call | `install_documentation_ci_workflow` | `type` | 368 |
+| unresolved_call | `_project_root` | `(Path.cwd() if project_root is None else Path(project_root)).resolve` | 511 |
+| external_call | `_project_root` | `Path.cwd` | 511 |
+| unresolved_call | `_project_root` | `root.is_dir` | 514 |
 | step_limit | `install_documentation_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_documentation_ci_workflow` | `depth limit` | 0 |
 

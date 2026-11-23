@@ -84,6 +84,7 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 | `llm_wiki_engine.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
+| `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
 | `llm_wiki_engine.maintenance_state` | `MaintenanceError`, `_identity` |
 | `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
 | `llm_wiki_engine.runtime_output` | `warn` |
@@ -109,15 +110,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (19) |
+| Outbound | `src` (20) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAnalysisMutationError](../entities/SyncAnalysisMutationError.md) | 30 | `ValueError` | A matched static-input snapshot changed before publication. |
+| [SyncAnalysisMutationError](../entities/SyncAnalysisMutationError.md) | 32 | `ValueError` | A matched static-input snapshot changed before publication. |
 
 ## Functions
 
