@@ -94,4 +94,4 @@ flowchart LR
 | `find_missing_source_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
 | `plan_page_transitions` | call | [sync_transitions](../modules/sync_transitions.md) | 9 |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

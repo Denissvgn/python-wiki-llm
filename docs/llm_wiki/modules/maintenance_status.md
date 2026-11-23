@@ -69,6 +69,7 @@ flowchart LR
 | `_history` | `(row, count)` | — | — |
 | `_trim_coverage` | `(result)` | — | Auxiliary details yield to existing record and basis observations. |
 | `_source_location` | `(coordinate, scope, envelope)` | — | — |
+| `_observed_coverage` | `(capture, known)` | — | — |
 | `build_maintenance_status` | `(state, marker, capture: MaintenanceCapture \| None = None, *, implementation_observations = None, analysis_scope = 'snapshot', native_prose_coherent = True, coverage = None, analysis_compatibility_hash = None) -> MaintenanceStatusReport` | — | Project existing records only; no transition, allocation or storage writes. |
 | `compact_maintenance_summary` | `(value) -> dict` | — | No coordinates, hashes, actor history or prose enter curated context. |
 | `_summary` | `(payload, rows, *, truncated = False, untracked = 0)` | — | — |

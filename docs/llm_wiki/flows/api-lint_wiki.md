@@ -227,15 +227,15 @@ flowchart LR
 |---|---|---:|---|
 | lint_wiki | LintRequest | 1369 | `LintRequest(wiki_root=wiki_root, source_root=source_root, strict=strict, plugins=trust_source_plugins, knowledge_drift_report=knowledge_drift_report, include_tests=include_tests, helper_cache_dir=helper_cache_dir, source_selection=source_selection, media_size_warn_bytes=media_size_warn_bytes)` |
 | lint_wiki | discarding_output | 1381 | `discarding_output(data not statically known)` |
-| discarding_output | using_host | 255 | `using_host(...)` |
-| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 172 | `isinstance(host, Host)` |
-| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 173 | `TypeError('host must be a Host instance')` |
-| using_host | _ACTIVE.set | 174 | `_ACTIVE.set(host)` |
-| using_host | _ACTIVE.reset | 178 | `_ACTIVE.reset(token)` |
-| discarding_output | current_host().with_output | 255 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
-| discarding_output | current_host | 255 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
-| discarding_output | _Discard | 255 | `_Discard(data not statically known)` |
+| discarding_output | using_host | 282 | `using_host(...)` |
+| using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
+| using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |
+| using_host | _ACTIVE.set | 175 | `_ACTIVE.set(host)` |
+| using_host | _ACTIVE.reset | 179 | `_ACTIVE.reset(token)` |
+| discarding_output | current_host().with_output | 282 | `current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))` |
+| discarding_output | current_host | 282 | `current_host(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
+| discarding_output | _Discard | 282 | `_Discard(data not statically known)` |
 
 ### Boundary effects
 
@@ -245,11 +245,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `using_host` | `isinstance` | 172 |
-| external_call | `using_host` | `TypeError` | 173 |
-| unresolved_call | `using_host` | `_ACTIVE.reset` | 178 |
-| unresolved_call | `discarding_output` | `current_host().with_output` | 255 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| external_call | `using_host` | `isinstance` | 173 |
+| external_call | `using_host` | `TypeError` | 174 |
+| unresolved_call | `using_host` | `_ACTIVE.reset` | 179 |
+| unresolved_call | `discarding_output` | `current_host().with_output` | 282 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `lint_wiki` | `first 12 steps` | 0 |
 | truncated_flow | `lint_wiki` | `depth limit` | 0 |
 

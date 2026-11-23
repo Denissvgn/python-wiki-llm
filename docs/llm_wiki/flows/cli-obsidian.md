@@ -134,9 +134,9 @@ sequenceDiagram
     p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3090 interactions; 3060 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3083 interactions; 3053 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 913 (912 omitted); unresolved 1 of 838 (837 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 906 (905 omitted); unresolved 1 of 836 (835 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -163,9 +163,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1340; effect analysis evaluated: 909, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
+Source steps: 1342; effect analysis evaluated: 911, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
 
-Collector observations for 948 source steps with known totals: observed: 5154, emitted: 4919, omitted: 235. Unavailable totals are excluded.
+Collector observations for 950 source steps with known totals: observed: 5160, emitted: 4925, omitted: 235. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -254,7 +254,7 @@ flowchart LR
 | validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
 | validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 103 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 | validate_path | current_host().cwd().resolve | 104 | `current_host().cwd().resolve(data not statically known)` |
 
 ### Boundary effects
@@ -274,7 +274,7 @@ flowchart LR
 | external_call | `run` | `getattr` | 80 |
 | unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
 | unresolved_call | `validate_path` | `current_host().cwd` | 103 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |

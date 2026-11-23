@@ -184,7 +184,7 @@ flowchart LR
 | first_unsafe_path_component | lexical.is_absolute | 61 | `lexical.is_absolute(data not statically known)` |
 | first_unsafe_path_component | current_host().cwd | 67 | `current_host().cwd(data not statically known)` |
 | first_unsafe_path_component | current_host | 67 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -200,7 +200,7 @@ flowchart LR
 | external_call | `first_unsafe_path_component` | `os.path.abspath` | 60 |
 | unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 61 |
 | unresolved_call | `first_unsafe_path_component` | `current_host().cwd` | 67 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | step_limit | `governance_lock` | `first 12 steps` | 0 |
 
 ## Behavior

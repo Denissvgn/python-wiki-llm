@@ -1,6 +1,6 @@
 # HostCapabilityError
 
-**Location:** `src/llm_wiki_engine/host.py:51`
+**Location:** `src/llm_wiki_engine/host.py:52`
 **Kind:** Class
 **Bases:** `PermissionError`
 **Module:** [host](../modules/host.md)

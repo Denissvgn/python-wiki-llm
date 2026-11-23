@@ -1,6 +1,6 @@
 # NoProcessHost
 
-**Location:** `src/llm_wiki_engine/host.py:142`
+**Location:** `src/llm_wiki_engine/host.py:143`
 **Kind:** Class
 **Bases:** `Host`
 **Module:** [host](../modules/host.md)

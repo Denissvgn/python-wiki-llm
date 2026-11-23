@@ -54,9 +54,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MaintenanceCapture](../entities/MaintenanceCapture.md) | 111 | — | — |
-| [_StrictMaintenanceReconciliation](../entities/StrictMaintenanceReconciliation.md) | 558 | — | — |
-| [MaintenanceTransfers](../entities/MaintenanceTransfers.md) | 719 | — | — |
+| [MaintenanceCapture](../entities/MaintenanceCapture.md) | 119 | — | — |
+| [_StrictMaintenanceReconciliation](../entities/StrictMaintenanceReconciliation.md) | 568 | — | — |
+| [MaintenanceTransfers](../entities/MaintenanceTransfers.md) | 729 | — | — |
 
 ## Functions
 
@@ -67,6 +67,7 @@ flowchart LR
 | `comparison_id` | `(*args, **kwargs)` | — | — |
 | `captured_semantic_sections` | `(markdown: str, page_locator: str, page_kind, *, raw_content: bytes \| None = None) -> dict` | — | Exact raw section bytes joined to existing normalized ownership locators. |
 | `owner_key` | `(coordinate, target) -> str` | — | — |
+| `_has_registration_basis` | `(observed)` | — | — |
 | `_mapping_values` | `(mapping)` | — | — |
 | `_unavailable` | `(evidence, *, reason, source_hash)` | — | — |
 | `_current_evidence` | `(concept, mapping, captures, hashes, selected, analysis_hash)` | — | — |

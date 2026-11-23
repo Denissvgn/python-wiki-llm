@@ -1,6 +1,6 @@
 # TextSink
 
-**Location:** `src/llm_wiki_engine/host.py:43`
+**Location:** `src/llm_wiki_engine/host.py:44`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [host](../modules/host.md)

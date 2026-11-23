@@ -1,6 +1,6 @@
 # Stream
 
-**Location:** `src/llm_wiki_engine/host.py:181`
+**Location:** `src/llm_wiki_engine/host.py:182`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [host](../modules/host.md)

@@ -261,7 +261,7 @@ flowchart LR
 | validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
 | validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 103 | `current_host(data not statically known)` |
-| current_host | _ACTIVE.get | 166 | `_ACTIVE.get(data not statically known)` |
+| current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
 | validate_path | current_host().cwd().resolve | 104 | `current_host().cwd().resolve(data not statically known)` |
 | validate_path | current_host().cwd (src/llm_wiki_engine/path_policy.py:validate_path) | 104 | `current_host().cwd(data not statically known)` |
 | validate_path | current_host | 104 | `current_host(data not statically known)` |
@@ -276,7 +276,7 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
 | unresolved_call | `validate_path` | `current_host().cwd` | 103 |
-| unresolved_call | `current_host` | `_ACTIVE.get` | 166 |
+| unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
 | unresolved_call | `validate_path` | `current_host().cwd().resolve` | 104 |
 | unresolved_call | `validate_path` | `current_host().cwd` | 104 |
 | step_limit | `run` | `first 12 steps` | 0 |
