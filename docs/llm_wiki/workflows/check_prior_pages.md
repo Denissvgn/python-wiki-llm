@@ -12,6 +12,7 @@
 2. `historical_sources.remove_bound_registry`
 3. `historical_sources.page_matches`
 4. `canonical_json.sha256_digest`
+5. `historical_sources.committed_text`
 
 ## Touches
 

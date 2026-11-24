@@ -35,7 +35,7 @@ flowchart TD
 | [validation](modules/validation.md) | 87 | 0 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 60 | 3 |
 | [llm_wiki_engine_contracts](modules/llm_wiki_engine_contracts.md) | 58 | 0 |
-| [io](modules/io.md) | 53 | 3 |
+| [io](modules/io.md) | 54 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 52 | 10 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 52 | 4 |
 | [knowledge_storage](modules/knowledge_storage.md) | 51 | 10 |
@@ -89,7 +89,7 @@ flowchart TD
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 1 |
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 11 | 28 |
 | [context_packet](modules/context_packet.md) | 11 | 14 |
-| [historical_sources](modules/historical_sources.md) | 11 | 9 |
+| [historical_sources](modules/historical_sources.md) | 11 | 10 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [workspace](modules/workspace.md) | 10 | 3 |
 | [lint_service](modules/lint_service.md) | 10 | 49 |

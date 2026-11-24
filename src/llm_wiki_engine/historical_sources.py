@@ -7,6 +7,7 @@ from pathlib import PurePosixPath
 from urllib.parse import quote
 
 from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from .io import decode_markdown_bytes
 from .knowledge_evidence import hash_json, is_valid_sha256, sha256_bytes
 from .knowledge_envelope import EvaluatedEnvelope
 from .source_retirement import SourceRetirementError
@@ -29,6 +30,21 @@ STALE_HEADER = (
 
 def _refuse(message: str) -> SourceRetirementError:
     return SourceRetirementError(f"Historical source retirement: {message}")
+
+
+def committed_text(data: bytes, path: str) -> bytes:
+    """Return the page text a section-ownership commitment covers.
+
+    Sync observes Markdown decoded and newline-normalized, so a predecessor
+    authenticates text, not one byte spelling of it. A CRLF checkout of the
+    same page (``core.autocrlf``, a Windows editor) is that same text.
+    Enrollment rewrites the page in this canonical form, and every later
+    custody and release check holds those exact bytes.
+    """
+    try:
+        return decode_markdown_bytes(data, page=path).encode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise _refuse(f"{path!r} is not decodable Markdown") from exc
 
 
 def read_records(inputs: Mapping) -> dict:
@@ -184,10 +200,11 @@ def predecessor_records(manifest, artifacts, pages):
                 or native.source_content_hash != basis.source_content_hash or native.extractor_ref != basis.extractor_ref
                 or native.concept_observation_hash != basis.concept_observation_hash or not is_valid_sha256(page_hash)):
             raise _refuse(f"inconsistent structural evidence or missing Markdown commitment at {path!r}")
-        if sha256_bytes(raw) != page_hash:
+        text = committed_text(raw, path)
+        if sha256_bytes(text) != page_hash:
             raise _refuse(f"{path!r} has no exact Markdown preimage in the authenticated predecessor")
         result[path] = {"owner": owner.to_payload(), "basis": historic, "page_hash": page_hash,
-                        "marked_page_hash": sha256_bytes(STALE_HEADER.encode("utf-8") + raw),
+                        "marked_page_hash": sha256_bytes(STALE_HEADER.encode("utf-8") + text),
                         "producer_hash": producer_hash, "knowledge_hash": artifacts.knowledge_index_hash}
     return result
 
@@ -215,6 +232,7 @@ def validate_transition(previous, prior_artifacts, manifest, confirmed_missing, 
                 value = value.encode("utf-8")
             if not isinstance(value, bytes):
                 raise _refuse(f"enrolled page {path!r} has no Markdown")
+            value = committed_text(value, path)
             originals[path] = value if sha256_bytes(value) == new[path]["page_hash"] else value.removeprefix(STALE_HEADER.encode("utf-8"))
         required = predecessor_records(previous, prior_artifacts, originals)
         if any(new[path] != required[path] for path in added):
