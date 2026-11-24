@@ -78,7 +78,7 @@ def project(tmp_path, monkeypatch):
     src = tmp_path / "src"
     src.mkdir()
     (src / SOURCE_PATH).write_bytes(SOURCE.encode())
-    (src / "current.py").write_text('"""Current data."""\n\nclass CurrentReading:\n    value: int = 1\n', encoding="utf-8")
+    (src / "current.py").write_text('"""Current data."""\n\nclass CurrentReading:\n    value: int = 1\n', encoding="utf-8", newline="\n")
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1", skip_flows=True, skip_workflows=True)
     wiki = tmp_path / "wiki"
     for path, (old, edited) in PROSE.items():
@@ -89,7 +89,7 @@ def project(tmp_path, monkeypatch):
         page.write_text(
             before.replace(section, "\n## Description\n\n" + edited + "\n")
             + f"\n## Notes\n\nPreserve these author-owned bytes — {path}.\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
     api.sync_wiki("src", "wiki")
     return src, wiki
@@ -265,7 +265,7 @@ def test_whole_source_preserves_canonical_pages_and_truthful_historical_evidence
     _call(capsys, "sync")
     assert _snapshot(wiki) == stable
 
-    (src / SOURCE_PATH).write_text(SOURCE.replace("values[:3]", "values[:2]"), encoding="utf-8")
+    (src / SOURCE_PATH).write_text(SOURCE.replace("values[:3]", "values[:2]"), encoding="utf-8", newline="\n")
     _call(capsys, "sync", success=False)
     assert _snapshot(wiki) == stable
     (src / SOURCE_PATH).write_bytes(SOURCE.encode())
@@ -310,7 +310,7 @@ def test_unowned_stale_page_is_not_an_enrolled_source(project, capsys):
     (src / SOURCE_PATH).unlink()
     _retire(capsys)
     unrelated = wiki / "entities/Unowned.md"
-    unrelated.write_text(HEADER + "# Unowned\n\n**Location:** `former.py:3`\n\n## Description\n\nUnauthenticated note.\n", encoding="utf-8")
+    unrelated.write_text(HEADER + "# Unowned\n\n**Location:** `former.py:3`\n\n## Description\n\nUnauthenticated note.\n", encoding="utf-8", newline="\n")
     saved = _snapshot(wiki)
     lint = api.lint_wiki("src", "wiki", strict=True)
     assert not lint["ok"] and "Unowned" in json.dumps(lint["issues"])
@@ -365,7 +365,7 @@ def test_manifest_only_history_cannot_exempt_stale_pages(project, capsys, target
     manifest.save(wiki)
     after = _snapshot(wiki)
     assert {name for name in before.keys() | after.keys() if before.get(name) != after.get(name)} == {MANIFEST_FILENAME}
-    (src / "pending.py").write_text("class PendingReading:\n    count: int = 1\n", encoding="utf-8")
+    (src / "pending.py").write_text("class PendingReading:\n    count: int = 1\n", encoding="utf-8", newline="\n")
     _assert_invalid_history_reports(capsys, entity_present=True, undocumented="PendingReading")
     assert _snapshot(wiki) == after
 
@@ -737,7 +737,7 @@ def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_ow
         new_code = SOURCE.replace("retained sample", "fresh station").replace("values[:3]", "values[:2]")
     source_file = src / new_source
     source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text(new_code, encoding="utf-8")
+    source_file.write_text(new_code, encoding="utf-8", newline="\n")
     before = _snapshot(wiki)
     refusal = _call(capsys, "sync", success=False)
     assert "--release-historical-page" in refusal
@@ -786,7 +786,7 @@ def test_release_and_separate_tracked_archive_allow_a_genuinely_fresh_current_ow
     _call(capsys, "sync")
     deleted = SyncManifest.load(wiki)
     assert all(path in deleted.tombstones and deleted.page_source_mappings[path].source_path == new_source for path in pages)
-    source_file.write_text(new_code, encoding="utf-8")
+    source_file.write_text(new_code, encoding="utf-8", newline="\n")
     if replacement != "edited-original":
         companion, = (path for path, owner in deleted.page_source_mappings.items()
                       if owner.source_path == new_source and path in deleted.tombstones and path not in pages)
@@ -838,16 +838,16 @@ def test_release_frees_a_real_generated_link_repair_without_altering_its_origina
     src.mkdir()
     (src / SOURCE_PATH).write_text(
         '"""Prior readings."""\nfrom current import CurrentReading\n\nclass ReadingWindow(CurrentReading):\n'
-        '    """Prior measurement."""\n    def measurement(self):\n        return CurrentReading()\n', encoding="utf-8",
+        '    """Prior measurement."""\n    def measurement(self):\n        return CurrentReading()\n', encoding="utf-8", newline="\n",
     )
-    (src / "current.py").write_text('class CurrentReading:\n    """A live measurement."""\n    count: int = 1\n', encoding="utf-8")
+    (src / "current.py").write_text('class CurrentReading:\n    """A live measurement."""\n    count: int = 1\n', encoding="utf-8", newline="\n")
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1", skip_flows=True, skip_workflows=True)
     (src / SOURCE_PATH).unlink()
     _retire(capsys)
     before = {path: (wiki / path).read_bytes() for path in PAGES}
     assert all(b'../modules/current.md' in data for data in before.values())
     (src / "nested").mkdir()
-    (src / "nested/current.py").write_text('class AnotherReading:\n    separate: str = "north"\n', encoding="utf-8")
+    (src / "nested/current.py").write_text('class AnotherReading:\n    separate: str = "north"\n', encoding="utf-8", newline="\n")
     original = _snapshot(wiki)
     refusal = _call(capsys, "sync", success=False)
     assert "--release-historical-page" in refusal
@@ -871,23 +871,23 @@ def test_fresh_enrollment_refuses_a_different_source_claiming_the_canonical_modu
     src, wiki = tmp_path / "src", tmp_path / "wiki"
     old = src / "old/path/report.py"
     old.parent.mkdir(parents=True)
-    old.write_text('"""Describe the former report."""\nclass FormerReport:\n    count: int = 3\n', encoding="utf-8")
+    old.write_text('"""Describe the former report."""\nclass FormerReport:\n    count: int = 3\n', encoding="utf-8", newline="\n")
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     page = "modules/report.md"
     assert SyncManifest.load(wiki).page_source_mappings[page].source_path == "old/path/report.py"
     original = (wiki / page).read_text(encoding="utf-8")
     assert "Describe the former report." in original
-    (wiki / page).write_text(original.replace("Describe the former report.", "Authors documented this earlier report."), encoding="utf-8")
+    (wiki / page).write_text(original.replace("Describe the former report.", "Authors documented this earlier report."), encoding="utf-8", newline="\n")
     api.sync_wiki("src", "wiki")
     old.unlink()
     replaced = src / "new/path/report.py"
     replaced.parent.mkdir(parents=True)
-    replaced.write_text('"""Format a fresh report."""\nclass ReplacementReport:\n    account: str = ""\n', encoding="utf-8")
+    replaced.write_text('"""Format a fresh report."""\nclass ReplacementReport:\n    account: str = ""\n', encoding="utf-8", newline="\n")
     # Establish that the new source genuinely owns this canonical path when
     # bootstrapped independently; a same-named file alone is not a transfer.
     api.bootstrap_wiki("src", "new-surface", knowledge_format="v1")
     assert SyncManifest.load(tmp_path / "new-surface").page_source_mappings[page].source_path == "new/path/report.py"
-    (tmp_path / ".gitignore").write_text("# Preserve existing workspace rules\n", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text("# Preserve existing workspace rules\n", encoding="utf-8", newline="\n")
     before = _snapshot(tmp_path)
     refusal = _call(capsys, "sync", "--retire-missing-source", "old/path/report.py", success=False)
     assert "historical" in refusal.lower()
@@ -904,22 +904,22 @@ def mixed_transfer(tmp_path, monkeypatch):
         '"""Earlier counters."""\n\nclass ObsoleteCounter:\n    """An earlier counter."""\n    size: int = 4\n\n'
         + moving
     )
-    (src / SOURCE_PATH).write_text(former, encoding="utf-8")
-    (src / "other.py").write_text('class OtherCounter:\n    value: int = 1\n', encoding="utf-8")
+    (src / SOURCE_PATH).write_text(former, encoding="utf-8", newline="\n")
+    (src / "other.py").write_text('class OtherCounter:\n    value: int = 1\n', encoding="utf-8", newline="\n")
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1", skip_flows=True, skip_workflows=True)
     paths = ["modules/former.md", "entities/ObsoleteCounter.md", "entities/TransferCounter.md"]
     for path in paths:
         page = wiki / path
         text = page.read_text(encoding="utf-8")
         assert "\n## Description\n\n" in text
-        page.write_text(text.replace("\n## Description\n\n", "\n## Description\n\nOriginal editorial context. ", 1), encoding="utf-8")
+        page.write_text(text.replace("\n## Description\n\n", "\n## Description\n\nOriginal editorial context. ", 1), encoding="utf-8", newline="\n")
     api.sync_wiki("src", "wiki")
     before = SyncManifest.load(wiki)
     assert all(before.page_source_mappings[p].source_path == SOURCE_PATH for p in paths)
     original = {p: (wiki / p).read_bytes() for p in paths}
     (src / SOURCE_PATH).unlink()
-    (src / "relocated.py").write_text('"""Current counters."""\n\n' + moving, encoding="utf-8")
-    (tmp_path / ".gitignore").write_text("# Human-maintained rules\n*.scratch\n", encoding="utf-8")
+    (src / "relocated.py").write_text('"""Current counters."""\n\n' + moving, encoding="utf-8", newline="\n")
+    (tmp_path / ".gitignore").write_text("# Human-maintained rules\n*.scratch\n", encoding="utf-8", newline="\n")
     return src, wiki, original
 
 
