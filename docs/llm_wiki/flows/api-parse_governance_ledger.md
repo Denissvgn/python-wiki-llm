@@ -193,7 +193,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_governance_ledger | _object | 425 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3478 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| _object | require_mapping | 3293 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -202,7 +202,7 @@ flowchart LR
 | require_mapping | _validation_error | 788 | `_validation_error(..., error_context)` |
 | require_mapping | key.encode | 792 | `key.encode('utf-8')` |
 | require_mapping | _validation_error | 794 | `_validation_error(..., error_context)` |
-| _object | GovernanceError | 3480 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3295 | `GovernanceError(path, 'must be an object')` |
 
 ### Boundary effects
 

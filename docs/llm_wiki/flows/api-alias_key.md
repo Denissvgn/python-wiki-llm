@@ -184,11 +184,11 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | alias_key | _alias_type | 384 | `_alias_type(alias_type, 'alias.type')` |
-| _alias_type | isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type) | 3606 | `isinstance(value, str)` |
-| _alias_type | GovernanceError | 3607 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
+| _alias_type | isinstance (src/llm_wiki_engine/knowl…governance.py:_alias_type) | 3421 | `isinstance(value, str)` |
+| _alias_type | GovernanceError | 3422 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
 | alias_key | _identity_value | 385 | `_identity_value(value, selected_type, 'alias.value')` |
-| _identity_value | _alias_type | 3615 | `_alias_type(alias_type, ...)` |
-| _identity_value | validate_alias_value | 3617 | `validate_alias_value(..., value)` |
+| _identity_value | _alias_type | 3430 | `_alias_type(alias_type, ...)` |
+| _identity_value | validate_alias_value | 3432 | `validate_alias_value(..., value)` |
 | validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
 | validate_alias_type | isinstance (src/llm_wiki_engine/conce…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
 | validate_alias_type | AliasType | 475 | `AliasType(value)` |
@@ -203,7 +203,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_alias_type` | `isinstance` | 3606 |
+| external_call | `_alias_type` | `isinstance` | 3421 |
 | external_call | `validate_alias_type` | `isinstance` | 475 |
 | step_limit | `alias_key` | `first 12 steps` | 0 |
 | truncated_flow | `alias_key` | `depth limit` | 0 |

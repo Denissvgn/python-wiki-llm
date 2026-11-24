@@ -15,7 +15,7 @@ Recover only journaled first-use output before capturing fresh evidence.
 | `contextlib` | `contextmanager` |
 | `json` | `json` |
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `remove_guarded_tree`, `unlink_guarded_bytes` |
-| `llm_wiki_engine.knowledge_governance` | `_governance_lock_root`, `repository_metadata` |
+| `llm_wiki_engine.knowledge_governance` | `_governance_lock_root` |
 | `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES`, `canonical_bytes`, `digest` |
 | `llm_wiki_engine.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
 | `llm_wiki_engine.layout` | `DEFAULT_LAYOUT` |
@@ -111,9 +111,6 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_record_below` | `(parent: Path, root: Path) -> Path` | — | — |
-| `_earlier_record_parents` | `(root: Path, current: Path) -> list[Path]` | — | Places where releases up to 6.1.0 kept a linked worktree's record. |
-| `_is_interrupted_record` | `(path: Path, root: Path) -> bool` | — | — |
 | `_record_path` | `(root: Path) -> Path` | — | — |
 | `_json` | `(raw: bytes)` | — | — |
 | `_invalid` | `(message: str) -> MaintenanceProtocolError` | — | — |

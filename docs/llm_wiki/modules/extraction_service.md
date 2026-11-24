@@ -57,7 +57,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.helper_runtime` | `current_helper_operation`, `current_helper_operation` |
 | `.implementation_evidence` | `_row` |
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
-| `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `cache_representation`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
+| `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry`, `extraction_bundle_hash` |
 | `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
@@ -119,15 +119,15 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 149 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 157 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 189 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 231 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 251 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 278 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 291 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 304 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 330 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 148 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 156 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 188 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 230 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 250 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 277 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 290 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 303 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 329 | — | — |
 
 ## Functions
 
@@ -174,7 +174,6 @@ flowchart LR
 | `_run_inventory_plans` | `(plans: list[_ExtractionPlan], parallel_jobs: int) -> dict[str, _ExtractionOutcome]` | — | — |
 | `_run_parallel_safe_inventory_plans` | `(parallel_safe_plans: list[_ExtractionPlan], parallel_jobs: int, outcomes_by_language: dict[str, _ExtractionOutcome]) -> None` | — | — |
 | `_collect_inventory_outcomes` | `(context: _InventoryBuildContext, planning: _InventoryPlanningResult, outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict[str, dict]` | — | — |
-| `_as_served_from_cache` | `(extracted: dict) -> dict` | — | Give freshly extracted files the form the extraction cache serves. |
 | `_update_inventory_cache_entries` | `(context: _InventoryBuildContext, plan: _ExtractionPlan, extracted: dict) -> None` | — | — |
 | `_merge_inventory_results` | `(context: _InventoryBuildContext, cached_by_language: dict[str, dict], extracted_by_language: dict[str, dict]) -> dict` | — | — |
 | `_ordered_inventory_statuses` | `(registry: dict[str, str], status_by_language: dict[str, ExtractorStatus]) -> dict[str, ExtractorStatus]` | — | — |

@@ -55,11 +55,11 @@ sequenceDiagram
     participant p21 as first_unsafe_path_component
     participant p22 as guard_windows_directory_chain
     participant p23 as maintenance_core
-    participant p24 as _governance_lock_root
-    participant p25 as open_windows_readonly_file
-    participant p26 as _assert_windows_file_binding
-    participant p27 as StorageReadSession.read
-    participant p28 as SyncManifest.from_payload
+    participant p24 as open_windows_readonly_file
+    participant p25 as _assert_windows_file_binding
+    participant p26 as StorageReadSession.read
+    participant p27 as SyncManifest.from_payload
+    participant p28 as StorageReadSession.recheck
     participant p29 as isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)
     participant p30 as path.exists
     p0->>p1: storage_writer_lock
@@ -85,18 +85,18 @@ sequenceDiagram
     p8->>p21: first_unsafe_path_component
     p12->>p22: guard_windows_directory_chain
     p15->>p23: maintenance_core
-    p13->>p24: _governance_lock_root
-    p12->>p25: open_windows_readonly_file
-    p12->>p26: _assert_windows_file_binding
-    p14->>p27: StorageReadSession.read
-    p14->>p28: SyncManifest.from_payload
+    p12->>p24: open_windows_readonly_file
+    p12->>p25: _assert_windows_file_binding
+    p14->>p26: StorageReadSession.read
+    p14->>p27: SyncManifest.from_payload
+    p14->>p28: StorageReadSession.recheck
     p0-->>p29: isinstance (src/llm_wiki_engine/knowl…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)
     p2-->>p30: path.exists
 ```
 
-> Call sequence diagram shows 30 of 880 interactions; 850 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 842 interactions; 812 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 358 (357 omitted); unresolved 1 of 156 (155 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 347 (346 omitted); unresolved 1 of 153 (152 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -110,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/host.py:current_host` | 21 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 11 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 11 | - | unresolved | 3 |
-> Omission summary shows 8 of 214 groups; 206 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 206 groups; 198 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -123,9 +123,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 367; effect analysis evaluated: 204, partial: 15, unavailable: 148. Counts include steps omitted from the displayed trace.
+Source steps: 343; effect analysis evaluated: 186, partial: 15, unavailable: 142. Counts include steps omitted from the displayed trace.
 
-Collector observations for 219 source steps with known totals: observed: 1143, emitted: 1106, omitted: 37. Unavailable totals are excluded.
+Collector observations for 201 source steps with known totals: observed: 1006, emitted: 969, omitted: 37. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
