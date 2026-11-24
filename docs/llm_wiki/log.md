@@ -5150,3 +5150,19 @@ Existing permissions, validation bounds and native authority remain separate.
 - Pages deprecated: 0
 - Semantic fields preserved: 0
 - Moved entities: none
+
+## 2026-11-24
+
+### Wiki sync
+- Source: `.`
+- Generator version: `6.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
+- Source snapshot digest: `sha256:4b2996168f8d4dbd874944a759e51535d8f74f39a0ad9c79171f72e9e333eba9`
+- Pages created: 1
+- Pages updated: 81
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1870
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
