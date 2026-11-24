@@ -475,6 +475,24 @@ class InventoryCache:
             )
 
 
+def cache_representation(value: Any) -> Any:
+    """Return *value* exactly as reading it back from the cache file returns it.
+
+    The cache file is JSON with sorted keys, so a served entry has sorted
+    mappings, lists instead of tuples and string keys. Analysis that walks a
+    mapping would otherwise see one order for a file extracted in this run
+    and another for the same file served from the cache.
+
+    A value the cache file cannot hold is returned unchanged; it has no
+    cache-served form to match.
+    """
+
+    try:
+        return json.loads(json.dumps(value, sort_keys=True, allow_nan=False))
+    except (TypeError, ValueError, RecursionError):
+        return value
+
+
 def is_valid_cache_entry(entry: Any, source_file: SourceFile, file_hash: str) -> bool:
     if not isinstance(entry, dict):
         return False
