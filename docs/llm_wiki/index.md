@@ -6,7 +6,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 789 | [Open section](#entities) |
+| Entities | 790 | [Open section](#entities) |
 | Modules | 323 | [Open section](#modules) |
 | Workflows | 325 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
@@ -588,6 +588,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [RepositoryEvidence](entities/RepositoryEvidence.md)
 - [RepositoryHygieneCoverage](entities/RepositoryHygieneCoverage.md)
 - [RepositoryIdentitySource](entities/RepositoryIdentitySource.md)
+- [RepositoryMetadata](entities/RepositoryMetadata.md)
 - [RepositoryRecord](entities/RepositoryRecord.md)
 - [RequiredKnowledgeErrorDetails](entities/RequiredKnowledgeErrorDetails.md)
 - [RequirementOptions](entities/RequirementOptions.md)

@@ -85,6 +85,7 @@ flowchart LR
 | `cache_options_from_args` | `(args) -> InventoryCacheOptions` | — | — |
 | `cache_options_for` | `(*, disabled: bool = False, rebuild: bool = False, cache_dir: str \| None = None, stats_enabled: bool = False) -> InventoryCacheOptions` | — | Validated inventory cache options for one run. |
 | `prepare_cache_options` | `(src_dir: str \| Path, options: InventoryCacheOptions \| None) -> InventoryCacheOptions \| None` | — | — |
+| `cache_representation` | `(value: Any) -> Any` | — | Return *value* exactly as reading it back from the cache file returns it. |
 | `is_valid_cache_entry` | `(entry: Any, source_file: SourceFile, file_hash: str) -> bool` | — | — |
 | `make_cache_entry` | `(source_file: SourceFile, file_hash: str, inventory_entry: dict) -> dict` | — | — |
 | `extraction_bundle_hash` | `(entry: dict) -> str` | — | Commit every raw analysis value reused together, excluding file metadata. |
