@@ -1,10 +1,10 @@
 {
   "activation": {
     "attempt": 1,
-    "comparison_sha256": "e52df677b8ad217f86ad389caeaedba994740ad596903722c477f9f66e387872",
-    "implementation_sha256": "801ec3409a50457d6c91395cf3cc2ef89ef7b14dd2b577c1f416a7b0f7e642cb",
-    "proof_source_sha": "7bb525538558f33fed340e932ac6b4a3520620e7",
-    "run_id": 45074367679
+    "comparison_sha256": "608d68d0ec61107b73b6c2cb1d65d68646607ac5c8a5a4fc75b7c1c7c55f0921",
+    "implementation_sha256": "46c349caf5a61d4c84b69cd16c0fd1c7c1da18e6a96ee40f3143be5194a34a5c",
+    "proof_source_sha": "27dcf66373adb705dfd1a9e7eff83437da47d7a6",
+    "run_id": 45291450611
   },
   "mode": "required",
   "policy": "strict-repository-health/v2",
