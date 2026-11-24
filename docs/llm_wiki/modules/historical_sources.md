@@ -11,6 +11,7 @@ Native custody of explicitly retained pages from a removed source file.
 | Source | Symbols |
 |--------|---------|
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
+| `.io` | `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
 | `.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
@@ -43,15 +44,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_refuse` | `(message: str) -> SourceRetirementError` | — | — |
+| `committed_text` | `(data: bytes, path: str) -> bytes` | — | Return the page text a section-ownership commitment covers. |
 | `read_records` | `(inputs: Mapping) -> dict` | — | — |
 | `release_events` | `(inputs: Mapping) -> list` | — | Validate append order, subject commitments and the retained original proofs. |
 | `latest_released_pages` | `(inputs: Mapping) -> dict` | — | Return the most recent release entry for each canonical page. |

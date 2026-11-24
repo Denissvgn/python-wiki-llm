@@ -14,7 +14,7 @@ Plan explicit whole-file archival from the authenticated *prior* source projecti
 | `.sync_transitions` | `ReleasedPageInputs` |
 | `collections` | `Counter` |
 | `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
-| `llm_wiki_engine.historical_sources` | `INPUT`, `SCHEMA`, `bound_records`, `page_matches`, `predecessor_records`, `read_records`, `remove_bound_registry`, `RELEASES`, `latest_released_pages` |
+| `llm_wiki_engine.historical_sources` | `INPUT`, `SCHEMA`, `bound_records`, `committed_text`, `page_matches`, `predecessor_records`, `read_records`, `remove_bound_registry`, `RELEASES`, `latest_released_pages` |
 | `llm_wiki_engine.host` | `emit` |
 | `llm_wiki_engine.knowledge_artifacts` | `require_validated_artifacts` |
 | `llm_wiki_engine.knowledge_evidence` | `is_valid_sha256`, `sha256_bytes` |
