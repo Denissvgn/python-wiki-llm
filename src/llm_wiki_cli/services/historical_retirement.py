@@ -5,7 +5,8 @@ from pathlib import PurePosixPath
 from typing import NoReturn
 
 from llm_wiki_engine.historical_sources import (
-    INPUT, SCHEMA, bound_records, page_matches, predecessor_records, read_records, remove_bound_registry,
+    INPUT, SCHEMA, bound_records, committed_text, page_matches, predecessor_records, read_records,
+    remove_bound_registry,
 )
 from llm_wiki_engine.host import emit
 from llm_wiki_engine.knowledge_evidence import is_valid_sha256, sha256_bytes
@@ -79,7 +80,8 @@ def check_prior_pages(wiki_root, previous, next_records):
             if path in previous:
                 matched = page_matches(raw, row["page_hash"])
             else:
-                matched = sha256_bytes(raw) == row["page_hash"]
+                # Enrollment binds the committed text; the write that follows is canonical.
+                matched = sha256_bytes(committed_text(raw, path)) == row["page_hash"]
             if not matched:
                 refuse(f"original page {path!r} changed after the historical source plan")
 

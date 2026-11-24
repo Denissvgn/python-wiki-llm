@@ -609,6 +609,51 @@ def test_release_is_recoverable_only_after_restoring_the_exact_approved_bytes(pr
     assert confirmed in _release_events(wiki)
 
 
+def test_crlf_authored_pages_are_retired_by_their_committed_text_and_released(tmp_path, monkeypatch, capsys):
+    """A Windows checkout (core.autocrlf, CRLF editors) commits the same page text as LF."""
+    monkeypatch.chdir(tmp_path)
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / SOURCE_PATH).write_bytes(SOURCE.encode())
+    (src / "current.py").write_text('"""Current data."""\n\nclass CurrentReading:\n    value: int = 1\n', encoding="utf-8", newline="\n")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1", skip_flows=True, skip_workflows=True)
+    wiki = tmp_path / "wiki"
+    for path, (old, edited) in PROSE.items():
+        page = wiki / path
+        before = page.read_text(encoding="utf-8")
+        page.write_text(
+            before.replace("\n## Description\n\n" + old + "\n", "\n## Description\n\n" + edited + "\n")
+            + f"\n## Notes\n\nPreserve these author-owned bytes — {path}.\n",
+            encoding="utf-8", newline="\r\n",
+        )
+    api.sync_wiki("src", "wiki")
+    authored = {path: (wiki / path).read_bytes() for path in PAGES}
+    assert all(b"\r\n" in raw and PROSE[path][1].encode() in raw for path, raw in authored.items())
+    text = {path: raw.replace(b"\r\n", b"\n") for path, raw in authored.items()}
+
+    (src / SOURCE_PATH).unlink()
+    _retire(capsys)
+    registry = _input(SyncManifest.load(wiki), REGISTRY)["pages"]
+    for path in PAGES:
+        # Retirement writes the canonical marked text; both commitments name what is on disk.
+        assert (wiki / path).read_bytes() == HEADER.encode() + text[path]
+        assert registry[path]["page_hash"] == _hash(text[path])
+        assert registry[path]["marked_page_hash"] == _hash(HEADER.encode() + text[path])
+    assert api.lint_wiki("src", "wiki", strict=True)["ok"]
+    stable = _snapshot(wiki)
+    _call(capsys, "sync")
+    assert _snapshot(wiki) == stable
+
+    digest = _preview_release(capsys, wiki, list(PAGES))
+    _release(capsys, list(PAGES), digest)
+    event = _release_events(wiki)[digest]
+    assert {path: page["retained_page_hash"] for path, page in event["pages"].items()} == {
+        path: _hash(HEADER.encode() + text[path]) for path in PAGES
+    }
+    assert REGISTRY not in SyncManifest.load(wiki).generation_inputs
+    assert all((wiki / path).read_bytes() == HEADER.encode() + text[path] for path in PAGES)
+
+
 @pytest.mark.parametrize("phase", ["preview", "apply"])
 def test_concurrent_author_edit_is_kept_and_no_release_is_committed(project, capsys, monkeypatch, phase):
     from llm_wiki_cli.services import historical_release

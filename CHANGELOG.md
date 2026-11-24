@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `sync --retire-missing-source` now accepts pages with CRLF line endings,
+  for example from git `core.autocrlf=true` or a Windows editor. It used to
+  refuse them, saying the page had "no exact Markdown preimage in the
+  authenticated predecessor". The predecessor commits to the page text as
+  sync reads it, with newlines normalized, so enrollment now compares that
+  text. Retirement then writes the marked page with LF line endings. Later
+  custody checks and `--release-historical-page` still require those exact
+  bytes, so line endings changed after enrollment or after a release preview
+  are still refused.
+
 ## [6.1.0] - 2026-11-24
 
 ### Added
