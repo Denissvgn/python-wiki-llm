@@ -313,6 +313,7 @@ def test_interrupted_bootstrap_recorded_at_the_earlier_location_stays_pending(tm
     assert bootstrap_recovery.pending_bootstrap(wiki)
 
     record = bootstrap_recovery._load_record(wiki)
+    assert record is not None
     bootstrap_recovery._complete(wiki, record)
 
     assert not bootstrap_recovery.pending_bootstrap(wiki)
