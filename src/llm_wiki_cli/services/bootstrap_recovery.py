@@ -17,7 +17,7 @@ from llm_wiki_engine.filesystem_guard import (
     remove_guarded_tree,
     unlink_guarded_bytes,
 )
-from llm_wiki_engine.knowledge_governance import _governance_lock_root
+from llm_wiki_engine.knowledge_governance import _governance_lock_root, repository_metadata
 from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES, canonical_bytes, digest
 from llm_wiki_engine.knowledge_storage_io import _absolute_path, read_guarded
 from llm_wiki_engine.maintenance_protocol import (
@@ -38,6 +38,43 @@ MAX_RECORD_BYTES = 8 * 1024 * 1024
 LOCK_FILES = {DEFAULT_LAYOUT.governance_lock, DEFAULT_LAYOUT.storage_lock}
 
 
+def _record_below(parent: Path, root: Path) -> Path:
+    return (
+        parent / "bootstrap-recovery" / digest(str(root).encode())[7:] / "active.json"
+    )
+
+
+def _earlier_record_parents(root: Path, current: Path) -> list[Path]:
+    """Places where releases up to 6.1.0 kept a linked worktree's record.
+
+    Those releases did not recognize a worktree's ``.git`` file. They used the
+    main checkout's Git directory when the worktree was nested in it and the
+    temporary directory otherwise. A Git directory of any other enclosing
+    repository is never consulted.
+    """
+
+    metadata = repository_metadata(root)
+    if metadata.kind != "linked-worktree" or metadata.common_dir is None:
+        return []
+    parents = [Path(tempfile.gettempdir()).resolve() / "llm-wiki"]
+    common = metadata.common_dir
+    if common.name == ".git" and root.resolve(strict=False).is_relative_to(common.parent):
+        parents.insert(0, common)
+    return [parent for parent in parents if parent != current]
+
+
+def _is_interrupted_record(path: Path, root: Path) -> bool:
+    try:
+        record = _json(read_guarded(path, MAX_RECORD_BYTES).content)
+    except (OSError, ValueError, TypeError):
+        return False
+    return (
+        isinstance(record, dict)
+        and record.get("status") == "writing"
+        and record.get("wiki_root") == str(root)
+    )
+
+
 def _record_path(root: Path) -> Path:
     lock_root = _governance_lock_root(root)
     # A non-Git source adapter can place its wiki inside a read-only source
@@ -47,9 +84,15 @@ def _record_path(root: Path) -> Path:
         if lock_root != root
         else Path(tempfile.gettempdir()).resolve() / "llm-wiki"
     )
-    return (
-        parent / "bootstrap-recovery" / digest(str(root).encode())[7:] / "active.json"
-    )
+    current = _record_below(parent, root)
+    if not current.exists() and not current.is_symlink():
+        # An interrupted bootstrap from an earlier release stays recoverable
+        # where it was journaled; every later operation uses the current place.
+        for earlier_parent in _earlier_record_parents(root, parent):
+            earlier = _record_below(earlier_parent, root)
+            if earlier.exists() and _is_interrupted_record(earlier, root):
+                return earlier
+    return current
 
 
 def _json(raw: bytes):

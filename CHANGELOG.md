@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A wiki in a linked Git worktree or a submodule keeps its locks and recovery
+  journals in that checkout's own Git directory. Before, the search ignored
+  the checkout's `.git` file and used the `.git` directory of an enclosing
+  repository, so lock files could be written into an unrelated repository and
+  a worktree nested in its main checkout shared one lock with it. A `.git`
+  file is followed only when the Git directory it names refers back to the
+  checkout; otherwise the wiki directory holds the locks, as it does outside
+  Git. A bootstrap interrupted in a linked worktree by an earlier release
+  remains recoverable. Do not run this release and an earlier one against the
+  same linked worktree at the same time: they use different lock files.
+- `llm-wiki sync --dry-run` and the sync that follows it record the same
+  `sync-analysis` commitment for the same inputs. Before, a file read from
+  the extraction cache and the same file extracted in the current run could
+  list keyword-derived entries, such as unresolved `FastAPI(...)` settings,
+  in different orders, so the two runs disagreed and the sync rewrote
+  knowledge objects whose content had not changed. The first sync after
+  upgrading may update this commitment once.
 - `sync --retire-missing-source` now accepts pages with CRLF line endings,
   for example from git `core.autocrlf=true` or a Windows editor. It used to
   refuse them, saying the page had "no exact Markdown preimage in the

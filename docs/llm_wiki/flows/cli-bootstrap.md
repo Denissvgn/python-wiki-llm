@@ -101,19 +101,19 @@ sequenceDiagram
     participant p13 as _load_record
     participant p14 as _preflight_bootstrap_source_selection
     participant p15 as _start_bootstrap
-    participant p16 as _first_use_guidance
-    participant p17 as _preflight_bootstrap_governance
-    participant p18 as _extract_bootstrap_inventory
-    participant p19 as attributes
-    participant p20 as _is_pristine_bootstrap_target
-    participant p21 as governance_writer_lock
-    participant p22 as _finish_if_empty_bootstrap_inventory
-    participant p23 as load_adoption_marker
-    participant p24 as storage_writer_lock
-    participant p25 as _bootstrap_result
-    participant p26 as SyncManifest.load
-    participant p27 as _recover
-    participant p28 as build_source_snapshot
+    participant p16 as _absolute_path
+    participant p17 as _first_use_guidance
+    participant p18 as _preflight_bootstrap_governance
+    participant p19 as _extract_bootstrap_inventory
+    participant p20 as attributes
+    participant p21 as _is_pristine_bootstrap_target
+    participant p22 as governance_writer_lock
+    participant p23 as _finish_if_empty_bootstrap_inventory
+    participant p24 as load_adoption_marker
+    participant p25 as storage_writer_lock
+    participant p26 as _bootstrap_result
+    participant p27 as SyncManifest.load
+    participant p28 as _recover
     participant p29 as SystemExit
     participant p30 as (…).resolve
     p0->>p1: _bootstrap_run_options_from_args
@@ -131,26 +131,26 @@ sequenceDiagram
     p4->>p13: _load_record
     p11->>p14: _preflight_bootstrap_source_selection
     p12->>p15: _start_bootstrap
-    p7->>p16: _first_use_guidance
-    p11->>p17: _preflight_bootstrap_governance
-    p12->>p18: _extract_bootstrap_inventory
-    p6->>p19: attributes
-    p7->>p20: _is_pristine_bootstrap_target
-    p9->>p21: governance_writer_lock
-    p12->>p22: _finish_if_empty_bootstrap_inventory
-    p6->>p23: load_adoption_marker
-    p9->>p24: storage_writer_lock
-    p12->>p25: _bootstrap_result
-    p6->>p26: SyncManifest.load
-    p10->>p27: _recover
-    p11->>p28: build_source_snapshot
+    p4->>p16: _absolute_path
+    p7->>p17: _first_use_guidance
+    p11->>p18: _preflight_bootstrap_governance
+    p12->>p19: _extract_bootstrap_inventory
+    p6->>p20: attributes
+    p7->>p21: _is_pristine_bootstrap_target
+    p9->>p22: governance_writer_lock
+    p12->>p23: _finish_if_empty_bootstrap_inventory
+    p6->>p24: load_adoption_marker
+    p9->>p25: storage_writer_lock
+    p12->>p26: _bootstrap_result
+    p6->>p27: SyncManifest.load
+    p10->>p28: _recover
     p0-->>p29: SystemExit(1)
     p5-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 3524 interactions; 3494 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3416 interactions; 3386 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1176 (1175 omitted); unresolved 1 of 930 (929 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1119 (1118 omitted); unresolved 1 of 920 (919 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -164,7 +164,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 16 | - | external | 10 |
-> Omission summary shows 8 of 894 groups; 886 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 882 groups; 874 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -177,9 +177,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1419; effect analysis evaluated: 1053, partial: 69, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 1378; effect analysis evaluated: 1032, partial: 66, unavailable: 280. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1122 source steps with known totals: observed: 6592, emitted: 6283, omitted: 309. Unavailable totals are excluded.
+Collector observations for 1098 source steps with known totals: observed: 6474, emitted: 6168, omitted: 306. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

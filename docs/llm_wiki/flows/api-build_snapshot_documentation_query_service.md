@@ -59,27 +59,27 @@ sequenceDiagram
     participant p5 as load_knowledge_state
     participant p6 as verification_summaries_for_concepts
     participant p7 as _domain_hash
-    participant p8 as build_knowledge_read_view
-    participant p9 as attach_machine_verification_read_view
-    participant p10 as _assert_wiki_integrity
-    participant p11 as compact_bytes
-    participant p12 as _read_mode
-    participant p13 as _validate_load_result
-    participant p14 as load_machine_verification_read_view
-    participant p15 as _loaded_freshness
-    participant p16 as _knowledge_counts
-    participant p17 as guard_maintenance_owner
-    participant p18 as _loaded_retired_locators
-    participant p19 as _snapshot_maintenance_report
-    participant p20 as _implementation_report
-    participant p21 as _load_once
-    participant p22 as _deep_copy
-    participant p23 as _absolute_path
-    participant p24 as _read_artifact
-    participant p25 as build_maintenance_status
-    participant p26 as evaluate_knowledge_freshness
-    participant p27 as marker_from_validated_state
-    participant p28 as attributes
+    participant p8 as _governance_lock_root
+    participant p9 as build_knowledge_read_view
+    participant p10 as attach_machine_verification_read_view
+    participant p11 as _assert_wiki_integrity
+    participant p12 as repository_metadata
+    participant p13 as compact_bytes
+    participant p14 as _read_mode
+    participant p15 as _validate_load_result
+    participant p16 as load_machine_verification_read_view
+    participant p17 as _loaded_freshness
+    participant p18 as _knowledge_counts
+    participant p19 as guard_maintenance_owner
+    participant p20 as _loaded_retired_locators
+    participant p21 as _snapshot_maintenance_report
+    participant p22 as _implementation_report
+    participant p23 as _load_once
+    participant p24 as _deep_copy
+    participant p25 as _absolute_path
+    participant p26 as _read_artifact
+    participant p27 as build_maintenance_status
+    participant p28 as evaluate_knowledge_freshness
     participant p29 as str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)
     participant p30 as current.exists
     p0->>p1: _wiki_anchor
@@ -89,34 +89,34 @@ sequenceDiagram
     p2->>p5: load_knowledge_state
     p3->>p6: verification_summaries_for_concepts
     p1->>p7: _domain_hash
-    p2->>p8: build_knowledge_read_view
-    p2->>p9: attach_machine_verification_read_view
-    p1->>p10: _assert_wiki_integrity
-    p7->>p11: compact_bytes
-    p8->>p12: _read_mode
-    p8->>p13: _validate_load_result
-    p9->>p14: load_machine_verification_read_view
-    p8->>p15: _loaded_freshness
-    p8->>p16: _knowledge_counts
-    p5->>p17: guard_maintenance_owner
-    p8->>p18: _loaded_retired_locators
-    p8->>p19: _snapshot_maintenance_report
-    p8->>p20: _implementation_report
-    p5->>p21: _load_once
-    p6->>p22: _deep_copy
-    p17->>p23: _absolute_path
-    p21->>p24: _read_artifact
-    p19->>p25: build_maintenance_status
-    p15->>p26: evaluate_knowledge_freshness
-    p19->>p27: marker_from_validated_state
-    p17->>p28: attributes
+    p1->>p8: _governance_lock_root
+    p2->>p9: build_knowledge_read_view
+    p2->>p10: attach_machine_verification_read_view
+    p1->>p11: _assert_wiki_integrity
+    p8->>p12: repository_metadata
+    p7->>p13: compact_bytes
+    p9->>p14: _read_mode
+    p9->>p15: _validate_load_result
+    p10->>p16: load_machine_verification_read_view
+    p9->>p17: _loaded_freshness
+    p9->>p18: _knowledge_counts
+    p5->>p19: guard_maintenance_owner
+    p9->>p20: _loaded_retired_locators
+    p9->>p21: _snapshot_maintenance_report
+    p9->>p22: _implementation_report
+    p5->>p23: _load_once
+    p6->>p24: _deep_copy
+    p19->>p25: _absolute_path
+    p23->>p26: _read_artifact
+    p21->>p27: build_maintenance_status
+    p17->>p28: evaluate_knowledge_freshness
     p1-->>p29: str (src/llm_wiki_cli/services…t_builder.py:_wiki_anchor)(current)
     p1-->>p30: current.exists
 ```
 
-> Call sequence diagram shows 30 of 1089 interactions; 1059 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1166 interactions; 1136 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 381 (380 omitted); unresolved 1 of 202 (201 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 413 (412 omitted); unresolved 1 of 221 (220 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -130,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/canonical_json.py:sha256_digest` | 9 | - | external | 1 |
 | `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_engine/canonical_json.py:compact_bytes` | 12 | [src/llm_wiki_engine/canonical_json.py](../modules/canonical_json.md) | internal | 1 |
-> Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 283 groups; 275 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -143,9 +143,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 507; effect analysis evaluated: 291, partial: 27, unavailable: 189. Counts include steps omitted from the displayed trace.
+Source steps: 533; effect analysis evaluated: 311, partial: 27, unavailable: 195. Counts include steps omitted from the displayed trace.
 
-Collector observations for 318 source steps with known totals: observed: 2110, emitted: 1910, omitted: 200. Unavailable totals are excluded.
+Collector observations for 338 source steps with known totals: observed: 2253, emitted: 2053, omitted: 200. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

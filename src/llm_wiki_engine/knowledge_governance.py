@@ -3215,23 +3215,208 @@ def _fsync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
-def _governance_lock_root(wiki_dir: Path) -> Path:
-    resolved = wiki_dir.resolve(strict=False)
+_GIT_FILE_MAX_BYTES = 8192
+_GIT_CONFIG_MAX_BYTES = 1024 * 1024
+_GIT_FILE_PREFIX = "gitdir: "
+_GIT_CONFIG_SECTION = re.compile(r'\[\s*([A-Za-z0-9.-]+)\s*("(?:[^"\\]|\\.)*")?\s*\]')
+
+
+@dataclass(frozen=True)
+class RepositoryMetadata:
+    """Where the repository that owns one wiki keeps its Git metadata.
+
+    ``kind`` is ``directory`` for an ordinary ``.git`` directory,
+    ``linked-worktree`` for a worktree added with ``git worktree``,
+    ``separate-git-dir`` for a submodule or another checkout whose Git
+    directory lives elsewhere, ``unverified`` when the nearest ``.git`` entry
+    cannot be tied to this checkout, and ``none`` outside Git.
+
+    ``git_dir`` holds the metadata of this one checkout and ``common_dir`` the
+    metadata shared by all worktrees of the repository. Both are ``None`` for
+    ``unverified`` and ``none``.
+    """
+
+    kind: str
+    worktree_root: Path | None = None
+    git_dir: Path | None = None
+    common_dir: Path | None = None
+
+
+def _is_reparse_point(metadata: os.stat_result) -> bool:
+    attributes = getattr(metadata, "st_file_attributes", 0)
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return bool(reparse_flag) and bool(attributes & reparse_flag)
+
+
+def _is_plain_directory(path: Path) -> bool:
+    try:
+        metadata = path.lstat()
+    except OSError:
+        return False
+    return stat.S_ISDIR(metadata.st_mode) and not _is_reparse_point(metadata)
+
+
+def _read_plain_text_file(path: Path, maximum: int) -> str | None:
+    """Read one small regular file without following a link at its final name."""
+
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
+    flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode) or _is_reparse_point(before):
+            return None
+        descriptor = os.open(path, flags)
+    except OSError:
+        return None
+    try:
+        opened = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or opened.st_size > maximum
+            or (opened.st_ino and before.st_ino and not os.path.samestat(before, opened))
+        ):
+            return None
+        raw = os.read(descriptor, maximum + 1)
+    except OSError:
+        return None
+    finally:
+        os.close(descriptor)
+    if len(raw) > maximum:
+        return None
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+
+
+def _single_line(text: str | None) -> str | None:
+    if text is None:
+        return None
+    line = text.rstrip("\r\n")
+    if not line or any(character in line for character in "\r\n\0"):
+        return None
+    return line
+
+
+def _same_filesystem_entry(left: Path, right: Path) -> bool:
+    try:
+        first, second = os.stat(left), os.stat(right)
+    except OSError:
+        return False
+    if first.st_ino and second.st_ino:
+        return os.path.samestat(first, second)
+    return os.path.normcase(os.path.abspath(left)) == os.path.normcase(
+        os.path.abspath(right)
+    )
+
+
+def _git_config_worktree(text: str) -> str | None:
+    """Return ``core.worktree`` from Git configuration text, if it is set."""
+
+    section: str | None = None
+    value: str | None = None
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line[0] in "#;":
+            continue
+        if line[0] == "[":
+            header = _GIT_CONFIG_SECTION.match(line)
+            section = (
+                header.group(1).lower()
+                if header is not None and header.group(2) is None
+                else None
+            )
+            continue
+        key, separator, rest = line.partition("=")
+        if section == "core" and separator and key.strip().lower() == "worktree":
+            value = rest.strip()
+    if value is None:
+        return None
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    return value or None
+
+
+def _git_file_metadata(worktree_root: Path, git_file: Path) -> RepositoryMetadata | None:
+    """Tie a ``.git`` file to the Git directory that names this checkout back."""
+
+    line = _single_line(_read_plain_text_file(git_file, _GIT_FILE_MAX_BYTES))
+    if line is None or not line.startswith(_GIT_FILE_PREFIX):
+        return None
+    git_dir = Path(os.path.abspath(worktree_root / line[len(_GIT_FILE_PREFIX):]))
+    if (
+        not _is_plain_directory(git_dir)
+        or first_unsafe_path_component(git_dir) is not None
+        or _read_plain_text_file(git_dir / "HEAD", _GIT_FILE_MAX_BYTES) is None
+    ):
+        return None
+    common_location = _single_line(
+        _read_plain_text_file(git_dir / "commondir", _GIT_FILE_MAX_BYTES)
+    )
+    if common_location is not None:
+        # A linked worktree: its administrative directory records the path of
+        # the ``.git`` file that may use it, so a copied checkout is refused.
+        common_dir = Path(os.path.abspath(git_dir / common_location))
+        owner = _single_line(
+            _read_plain_text_file(git_dir / "gitdir", _GIT_FILE_MAX_BYTES)
+        )
+        if (
+            owner is None
+            or not _is_plain_directory(common_dir)
+            or first_unsafe_path_component(common_dir) is not None
+            or not _same_filesystem_entry(Path(os.path.abspath(git_dir / owner)), git_file)
+        ):
+            return None
+        return RepositoryMetadata("linked-worktree", worktree_root, git_dir, common_dir)
+    if (git_dir / "commondir").exists() or (git_dir / "commondir").is_symlink():
+        return None
+    configuration = _read_plain_text_file(git_dir / "config", _GIT_CONFIG_MAX_BYTES)
+    owner = None if configuration is None else _git_config_worktree(configuration)
+    if owner is None or not _same_filesystem_entry(
+        Path(os.path.abspath(git_dir / owner)), worktree_root
+    ):
+        return None
+    return RepositoryMetadata("separate-git-dir", worktree_root, git_dir, git_dir)
+
+
+def repository_metadata(wiki_dir: str | Path) -> RepositoryMetadata:
+    """Find the Git metadata of the repository that owns ``wiki_dir``.
+
+    The nearest ``.git`` entry at or above the wiki decides. A directory is
+    the repository itself. A regular file is followed only when the Git
+    directory it names refers back to this checkout. Any other entry, and a
+    file that cannot be verified, still ends the search: an enclosing
+    repository further up is never the answer for a nested checkout.
+    """
+
+    resolved = Path(wiki_dir).resolve(strict=False)
     for candidate in (resolved, *resolved.parents):
         git = candidate / ".git"
         try:
             metadata = git.lstat()
         except (FileNotFoundError, OSError):
             continue
-        attributes = getattr(metadata, "st_file_attributes", 0)
-        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
-        if stat.S_ISDIR(metadata.st_mode) and not (
-            bool(reparse_flag) and bool(attributes & reparse_flag)
-        ):
-            return git
-    # A non-Git wiki is itself the lock root. Preserve its absolute spelling:
-    # resolving a Windows short name can otherwise make recovery mistake the
-    # same directory for an external Git root and publish journals into it.
+        if _is_reparse_point(metadata):
+            return RepositoryMetadata("unverified", candidate)
+        if stat.S_ISDIR(metadata.st_mode):
+            return RepositoryMetadata("directory", candidate, git, git)
+        verified = (
+            _git_file_metadata(candidate, git)
+            if stat.S_ISREG(metadata.st_mode)
+            else None
+        )
+        return verified or RepositoryMetadata("unverified", candidate)
+    return RepositoryMetadata("none")
+
+
+def _governance_lock_root(wiki_dir: Path) -> Path:
+    git_dir = repository_metadata(wiki_dir).git_dir
+    if git_dir is not None:
+        return git_dir
+    # A wiki without verified Git metadata is itself the lock root. Preserve
+    # its absolute spelling: resolving a Windows short name can otherwise make
+    # recovery mistake the same directory for an external Git root and publish
+    # journals into it.
     return Path(os.path.abspath(wiki_dir))
 
 

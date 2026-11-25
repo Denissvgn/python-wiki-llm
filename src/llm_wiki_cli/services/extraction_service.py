@@ -76,6 +76,7 @@ from .inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
     build_inventory_cache_key,
+    cache_representation,
     is_valid_cache_entry,
     make_cache_entry,
     extraction_bundle_hash,
@@ -1451,22 +1452,49 @@ def _collect_inventory_outcomes(
                 continue
             extracted_by_language[plan.language] = outcome.extracted
             continue
-        extracted_by_language[plan.language] = outcome.extracted
+        # A built-in extraction is reusable from the cache, so every consumer
+        # reads it in the cache's representation whether or not this run
+        # extracted it. Analysis then cannot depend on which files were cached.
+        extracted = _as_served_from_cache(outcome.extracted) if plan.is_builtin else outcome.extracted
+        extracted_by_language[plan.language] = extracted
         if plan.language == "python" and plan.is_builtin:
             context.python_sidecars.update(
-                partition_sidecars(
-                    outcome.data_effect_observations,
-                    outcome.import_observations,
-                    plan.fresh_source_files,
+                cache_representation(
+                    partition_sidecars(
+                        outcome.data_effect_observations,
+                        outcome.import_observations,
+                        plan.fresh_source_files,
+                    )
                 )
             )
             if isinstance(outcome.implementation_observations, dict):
-                context.python_implementations.update(deepcopy(outcome.implementation_observations.get("files", {})))
-        _update_inventory_cache_entries(context, plan, outcome.extracted)
+                context.python_implementations.update(
+                    cache_representation(outcome.implementation_observations.get("files", {}))
+                )
+        _update_inventory_cache_entries(context, plan, extracted)
         planning.status_by_language[plan.language] = ExtractorStatus(
             plan.language, "ok", outcome.files_found
         )
     return extracted_by_language
+
+
+_RESTAMPED_INVENTORY_KEYS = ("package", "python_import_scope")
+
+
+def _as_served_from_cache(extracted: dict) -> dict:
+    """Give freshly extracted files the form the extraction cache serves.
+
+    The package and import-scope keys are left out, as they are in a cache
+    entry: the merge stamps them again on every file.
+    """
+    served: dict = {}
+    for rel_path, entry in extracted.items():
+        if isinstance(entry, dict):
+            entry = cache_representation(
+                {key: value for key, value in entry.items() if key not in _RESTAMPED_INVENTORY_KEYS}
+            )
+        served[rel_path] = entry
+    return served
 
 
 def _update_inventory_cache_entries(

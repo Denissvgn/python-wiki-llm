@@ -108,6 +108,7 @@ flowchart LR
 | [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 342 | — | Current generated concept coordinates used for reconciliation. |
 | [ReviewValidity](../entities/ReviewValidity.md) | Class | 351 | — | Computed review validity; this is never persisted in the ledger. |
 | [FaultInjector](../entities/FaultInjector.md) | Type alias | 363 | `Callable[[GovernanceWriteStage], None]` | — |
+| [RepositoryMetadata](../entities/RepositoryMetadata.md) | Class | 3225 | — | Where the repository that owns one wiki keeps its Git metadata. |
 
 ## Functions
 
@@ -171,6 +172,14 @@ flowchart LR
 | `_put_alias` | `(aliases: dict[str, GovernanceAlias], alias: GovernanceAlias, allocations: Mapping[str, GovernanceAllocation]) -> dict[str, GovernanceAlias]` | — | — |
 | `_write_durable_atomic` | `(path: Path, content: bytes, *, fault_injector: FaultInjector \| None) -> None` | — | — |
 | `_fsync_directory` | `(path: Path) -> None` | — | — |
+| `_is_reparse_point` | `(metadata: os.stat_result) -> bool` | — | — |
+| `_is_plain_directory` | `(path: Path) -> bool` | — | — |
+| `_read_plain_text_file` | `(path: Path, maximum: int) -> str \| None` | — | Read one small regular file without following a link at its final name. |
+| `_single_line` | `(text: str \| None) -> str \| None` | — | — |
+| `_same_filesystem_entry` | `(left: Path, right: Path) -> bool` | — | — |
+| `_git_config_worktree` | `(text: str) -> str \| None` | — | Return ``core.worktree`` from Git configuration text, if it is set. |
+| `_git_file_metadata` | `(worktree_root: Path, git_file: Path) -> RepositoryMetadata \| None` | — | Tie a ``.git`` file to the Git directory that names this checkout back. |
+| `repository_metadata` | `(wiki_dir: str \| Path) -> RepositoryMetadata` | — | Find the Git metadata of the repository that owns ``wiki_dir``. |
 | `_governance_lock_root` | `(wiki_dir: Path) -> Path` | — | — |
 | `_decode_unique_json` | `(content: bytes) -> object` | — | — |
 | `_parse_actor` | `(value: object, path: str) -> GovernanceActor` | — | — |
