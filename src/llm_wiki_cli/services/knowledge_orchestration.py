@@ -70,6 +70,7 @@ from llm_wiki_engine.knowledge_governance import (
     GovernanceConflictError,
     GovernanceError,
     GovernanceLedger,
+    MUTATION_LOCK_FILENAMES,
     governance_bundle_id_from_knowledge,
     load_governance,
     natural_key_for,
@@ -1130,7 +1131,10 @@ def collect_runtime_repository_evidence(
                 KNOWLEDGE_INDEX_FILENAME,
                 MANIFEST_FILENAME,
             )
-        ),
+        )
+        # A wiki outside a verified Git checkout holds its own lock files;
+        # the run that creates them must not count them as a source change.
+        + tuple(target / filename for filename in sorted(MUTATION_LOCK_FILENAMES)),
         excluded_worktree_globs=(
             *(f"**/{name}/**" for name in sorted(EXCLUDED_DIRS)),
             *(
