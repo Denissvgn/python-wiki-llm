@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.1] - 2026-11-25
+
 ### Fixed
 
 - A wiki in a linked Git worktree or a submodule keeps its locks and recovery
@@ -2127,7 +2129,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.1.1...HEAD
+[6.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.1.0...v6.1.1
 [6.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v5.0.0...v6.0.0
 [5.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.1...v5.0.0
