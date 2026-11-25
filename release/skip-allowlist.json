@@ -3800,6 +3800,24 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_governance_lock_root.py::test_git_file_cannot_send_locks_through_a_symbolic_link",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "creating symbolic links needs a privilege on Windows"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_governance_lock_root.py::test_symbolic_git_entry_is_a_boundary[directory-link]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "creating symbolic links needs a privilege on Windows"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_governance_lock_root.py::test_symbolic_git_entry_is_a_boundary[file-link]",
+      "owner_lane": "core-ubuntu-3.11",
+      "reason": "creating symbolic links needs a privilege on Windows"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
