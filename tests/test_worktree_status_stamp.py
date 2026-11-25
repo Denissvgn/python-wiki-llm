@@ -39,12 +39,13 @@ def git_environment(monkeypatch, tmp_path):
 
 
 def _git(root: Path, *arguments: str) -> str:
-    return subprocess.run(
+    result = subprocess.run(
         ["git", "-C", str(root), *arguments],
-        check=True,
         capture_output=True,
         text=True,
-    ).stdout.strip()
+    )
+    assert result.returncode == 0, f"git {' '.join(arguments)}: {result.stderr}"
+    return result.stdout.strip()
 
 
 def _run(monkeypatch, root: Path, *arguments: str) -> None:
@@ -67,6 +68,9 @@ def _adopted_repository_with_pending_change(monkeypatch, tmp_path: Path) -> Path
     _git(repository, "init", "--quiet", "-b", "main")
     _git(repository, "config", "user.email", "worktree-stamp@example.invalid")
     _git(repository, "config", "user.name", "Worktree Stamp Tests")
+    # Knowledge object paths exceed the Windows path limit under pytest's
+    # temporary directory; the linked worktree shares this setting.
+    _git(repository, "config", "core.longpaths", "true")
     (repository / "app" / "__init__.py").write_text("", encoding="utf-8")
     (repository / "app" / "service.py").write_text(SERVICE, encoding="utf-8", newline="\n")
     _commit_all(repository, "source")
