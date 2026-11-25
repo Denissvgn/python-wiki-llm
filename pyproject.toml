@@ -174,7 +174,6 @@ include = ["llm_wiki_cli*"]
     "skills/wiki-semantic-enhance/SKILL.md",
     "skills/wiki-semantic-enhance/reference.md",
     "skills/wiki-sync/SKILL.md",
-    "skills/wiki-sync/reference.md",
 ]
 
 [tool.setuptools.data-files]

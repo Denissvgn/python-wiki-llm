@@ -55,21 +55,9 @@ def test_canonical_wiki_mutators_require_repository_aware_handoff():
         assert (
             "llm-wiki knowledge git-check --wiki-dir <wiki-dir>" in manifest
         ), skill_id
-        assert "git-eligible" in normalized_lower and "--staged" in normalized, skill_id
+        assert "git-eligible" in normalized_lower, skill_id
         assert "local-only" in normalized_lower, skill_id
-        assert (
-            "fails closed" in normalized_lower
-            or ("indeterminate" in normalized_lower and "local-only" in normalized_lower)
-        ), skill_id
-        assert "force-add" in normalized_lower, skill_id
-        assert "ignore/exclude" in normalized_lower, skill_id
-        assert (
-            ".claude/skills/wiki-reference/references/repository-handoff.md" in manifest
-        ), skill_id
-        assert (
-            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
-            in manifest
-        ), skill_id
+        assert "repository-handoff" in normalized_lower, skill_id
         assert skills.SKILL_DEPENDENCIES[skill_id] == (
             skills.REFERENCE_SKILL_ID,
         ), skill_id
@@ -246,13 +234,11 @@ class TestBundledWikiSyncSkill:
         wiki_sync = by_id["wiki-sync"]
         assert wiki_sync.name == "wiki-sync"
         assert "sync" in wiki_sync.description.lower()
-        assert wiki_sync.files[0] == "SKILL.md"
-        assert "reference.md" in wiki_sync.files
+        assert wiki_sync.files == ("SKILL.md",)
 
     def test_wiki_sync_skill_encodes_core_loop_and_guardrails(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-sync"
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
-        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
         maintenance = (
             skills.BUNDLED_SKILLS_ROOT
             / "wiki-reference"
@@ -288,8 +274,7 @@ class TestBundledWikiSyncSkill:
         assert "docs(wiki):" in handoff
         assert "LLM_WIKI_AUTO_COMMIT" in handoff
         assert "auto-update [bot]" in handoff
-        assert "compatibility reference" in reference
-        assert "not an active route" in reference
+        assert not (skill_dir / "reference.md").exists()
 
     def test_wiki_sync_skill_documents_external_team_check_contract(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-sync"
@@ -347,14 +332,8 @@ class TestBundledWikiBootstrapSkill:
         assert "lint --strict" in manifest
         assert "docs(wiki): bootstrap" in manifest
         assert "local-only" in manifest
-        assert "force-add" in manifest
-        assert "ignore/exclude" in manifest
         assert (
-            ".claude/skills/wiki-reference/references/repository-handoff.md"
-            in manifest
-        )
-        assert (
-            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
+            "../wiki-reference/references/repository-handoff.md"
             in manifest
         )
         assert skills.SKILL_DEPENDENCIES["wiki-bootstrap"] == (
@@ -429,7 +408,7 @@ class TestBundledWikiBootstrapSkill:
         assert "external_agent_docs" in combined
         assert "wiki-semantic-enhance" in combined
         assert "wiki-reference/references/repository-handoff.md" in combined
-        assert "packet-authorized Markdown/result writes" in combined
+        assert "the packet governs instead of the managed steps" in " ".join(combined.split())
         assert skills.SKILL_DEPENDENCIES["wiki-bootstrap"] == (
             skills.REFERENCE_SKILL_ID,
         )
@@ -743,14 +722,8 @@ class TestBundledOnboardingGuideSkill:
         assert "llm-wiki ci-check" in combined
         assert "docs(wiki): add navigation guides" in combined
         assert "local-only" in manifest
-        assert "force-add" in manifest
-        assert "ignore/exclude" in manifest
         assert (
-            ".claude/skills/wiki-reference/references/repository-handoff.md"
-            in manifest
-        )
-        assert (
-            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
+            "../wiki-reference/references/repository-handoff.md"
             in manifest
         )
         assert skills.SKILL_DEPENDENCIES["onboarding-guide"] == (
@@ -780,11 +753,7 @@ class TestBundledOnboardingGuideSkill:
         assert "must not launch a heavy gate unless explicitly assigned" in resources
         assert "unfinished gates inconclusive until capacity is recovered" in resources
         assert (
-            ".claude/skills/wiki-reference/references/resources-context.md"
-            in manifest
-        )
-        assert (
-            ".llm-wiki/skills/wiki-reference/references/resources-context.md"
+            "../wiki-reference/references/resources-context.md"
             in manifest
         )
         assert "full deep" in combined
@@ -1136,11 +1105,7 @@ class TestBundledUserDocsAuthorSkill:
         assert "subagents may inspect bounded pages" in combined
         assert "inconclusive until capacity is recovered" in combined
         assert (
-            ".claude/skills/wiki-reference/references/resources-context.md"
-            in manifest
-        )
-        assert (
-            ".llm-wiki/skills/wiki-reference/references/resources-context.md"
+            "../wiki-reference/references/resources-context.md"
             in manifest
         )
         assert "The supervisor owns the schedule" in resources
@@ -1272,10 +1237,9 @@ class TestExternalDocumentationSkillChain:
     def _combined(skill_id: str) -> str:
         skill_dir = skills.BUNDLED_SKILLS_ROOT / skill_id
         return "\n".join(
-            [
-                (skill_dir / "SKILL.md").read_text(encoding="utf-8"),
-                (skill_dir / "reference.md").read_text(encoding="utf-8"),
-            ]
+            path.read_text(encoding="utf-8")
+            for path in (skill_dir / "SKILL.md", skill_dir / "reference.md")
+            if path.is_file()
         )
 
     def test_existing_skills_preserve_managed_defaults_and_add_external_gates(self):
@@ -1284,7 +1248,9 @@ class TestExternalDocumentationSkillChain:
         normalized_sync = " ".join(sync.split())
         onboarding = self._combined("onboarding-guide")
 
-        assert "Managed knowledge-base behavior remains the default" in bootstrap
+        assert "the packet governs instead of the managed steps" in " ".join(
+            bootstrap.split()
+        )
         assert "docs(wiki): bootstrap <project>" in bootstrap
         assert "external_agent_docs" in bootstrap
         assert "wiki-semantic-enhance" in bootstrap
@@ -1294,7 +1260,8 @@ class TestExternalDocumentationSkillChain:
         assert "local-only handoff" in sync
         assert "external_agent_docs" in sync
         assert "resume from the recorded wiki snapshot" in normalized_sync
-        assert "packet-authorized workspace paths" in normalized_sync
+        assert "the packet governs instead" in normalized_sync
+        assert "never stages or commits" in normalized_sync
         assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (
             skills.REFERENCE_SKILL_ID,
         )
@@ -1304,7 +1271,7 @@ class TestExternalDocumentationSkillChain:
         assert "Never re-ask intake on resume" in onboarding
         assert "wiki-only runs" in onboarding.lower()
         assert "wiki-reference/references/repository-handoff.md" in onboarding
-        assert "return changed workspace paths and deferrals" in onboarding
+        assert "through the assigned result" in " ".join(onboarding.split())
         assert skills.SKILL_DEPENDENCIES["onboarding-guide"] == (
             skills.REFERENCE_SKILL_ID,
         )
@@ -1319,7 +1286,7 @@ class TestExternalDocumentationSkillChain:
         assert "one-time recorded intake" in author
         assert "Wiki-only runs" in author
         assert "unverified imported claims" in author
-        assert "return normalized deferrals" in author
+        assert "through the assigned result" in " ".join(author.split())
 
         assert "capture is optional and separately authorized" in capture
         assert "already-running caller-owned staging/demo service" in capture
@@ -1359,7 +1326,7 @@ class TestSkillExport:
         assert (tmp_path / "out" / "agent-docs" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "agent-docs" / "reference.md").is_file()
         assert (tmp_path / "out" / "wiki-sync" / "SKILL.md").is_file()
-        assert (tmp_path / "out" / "wiki-sync" / "reference.md").is_file()
+        assert not (tmp_path / "out" / "wiki-sync" / "reference.md").exists()
         assert (tmp_path / "out" / "wiki-bootstrap" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "wiki-bootstrap" / "reference.md").is_file()
         assert (tmp_path / "out" / "attack-surface" / "SKILL.md").is_file()

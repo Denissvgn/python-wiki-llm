@@ -1,6 +1,6 @@
 ---
 name: wiki-semantic-enhance
-description: Run the resumable semantic-enrichment pass for a documentation-workspace wiki after source bootstrap or validated wiki adoption. Use for packetized P0/P1 prose work, imported-content grounding, readiness-ledger updates, and supervisor handoff without writing or committing the source or input wiki.
+description: Run the semantic-enrichment pass that fills in the prose of a generated wiki inside a documentation workspace. Use after agent-docs prepares a baseline, for resumable packetized P0/P1 work and readiness-ledger updates; never writes or commits the source or input wiki.
 ---
 
 # wiki-semantic-enhance
@@ -28,17 +28,12 @@ decisions, editable surfaces, and failure rules.
   hash and visible `unverified` limitation; it must not invent source grounding.
 - The worker writes only the workspace wiki and assigned result/remainder paths.
   Apply the external workspace and handoff boundary from
-  `.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
-  `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
-  configured agents; never write the source or adopted input wiki.
-- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
-  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
-  observation; preserve `nonsemantic-source-change`, and never turn an
-  unavailable or bounded `found: false` into a negative fact. Do not initialize
-  governance or execute stored content. Apply the complete managed contract at
-  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-  for other configured agents.
+  [repository-handoff](../wiki-reference/references/repository-handoff.md);
+  never write the source or adopted input wiki.
+- Native knowledge: interpret every result through
+  [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+  Only `ready` with live `current` freshness supports an unchanged claim, and
+  an unavailable or bounded `found: false` is never a negative fact.
 
 ## Workflow
 
@@ -118,9 +113,8 @@ decisions, editable surfaces, and failure rules.
 
 - Run one heavy gate at a time with `--jobs 1` when capacity is unknown; the
   supervisor owns scheduling. Apply the managed resource contract at
-  `.claude/skills/wiki-reference/references/resources-context.md` for Claude or
-  `.llm-wiki/skills/wiki-reference/references/resources-context.md` for other
-  configured agents. Use bounded reads; do not scan the whole long tail.
+  [resources-context](../wiki-reference/references/resources-context.md).
+  Use bounded reads; do not scan the whole long tail.
 - On resource exhaustion, stale packet/state, changed source/snapshot identity,
   generated-block mutation, or a forbidden write, stop and return `blocked` or
   `partial` with actionable evidence. Do not repair policy violations inside the

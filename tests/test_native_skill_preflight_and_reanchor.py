@@ -212,7 +212,7 @@ def test_native_consuming_skill_keeps_kernel_and_managed_dependency(
     manifest = _manifest(skill_id)
     normalized = " ".join(manifest.split())
 
-    for required in ("ready", "current", "nonsemantic-source-change"):
+    for required in ("ready", "current"):
         assert required in normalized, f"{skill_id} omits {required!r}"
     assert "found: false" in normalized or "empty-native-graph" in normalized
     assert "| Result | Permitted interpretation" not in manifest
@@ -233,13 +233,10 @@ def test_native_consuming_skill_routes_to_managed_knowledge_topic(
     manifest = _manifest(skill_id)
 
     assert (
-        ".claude/skills/wiki-reference/references/knowledge-consumption.md" in manifest
+        "../wiki-reference/references/knowledge-consumption.md" in manifest
     )
-    assert (
-        ".llm-wiki/skills/wiki-reference/references/knowledge-consumption.md"
-        in manifest
-    )
-    assert manifest.count("wiki-reference/references/knowledge-consumption.md") == 2
+    assert manifest.count("wiki-reference/references/knowledge-consumption.md") == 1
+    assert ".claude/skills" not in manifest and ".llm-wiki/skills" not in manifest
     assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
     assert (
         SKILLS_ROOT / skills.REFERENCE_SKILL_ID / "references/knowledge-consumption.md"
@@ -447,8 +444,7 @@ def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> N
         )
     ]
 
-    assert ".claude/skills/wiki-reference/references/governance.md" in manifest
-    assert ".llm-wiki/skills/wiki-reference/references/governance.md" in manifest
+    assert "../wiki-reference/references/governance.md" in manifest
     assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (skills.REFERENCE_SKILL_ID,)
 
     filesystem_rename = section.index("filesystem/source rename")

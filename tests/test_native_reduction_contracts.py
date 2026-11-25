@@ -125,8 +125,7 @@ def test_onboarding_skill_disclaims_human_outcomes_and_runtime_assurance():
     assert skills.SKILL_DEPENDENCIES["onboarding-guide"] == (
         skills.REFERENCE_SKILL_ID,
     )
-    for root in (".claude/skills", ".llm-wiki/skills"):
-        assert f"{root}/wiki-reference/references/repository-handoff.md" in skill
+    assert "../wiki-reference/references/repository-handoff.md" in skill
     handoff = (
         skills.BUNDLED_SKILLS_ROOT
         / skills.REFERENCE_SKILL_ID

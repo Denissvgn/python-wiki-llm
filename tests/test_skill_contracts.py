@@ -518,7 +518,7 @@ def test_wiki_bootstrap_carries_active_selection_through_source_recipes():
         for path in (skill_root / "SKILL.md", skill_root / "reference.md")
     )
 
-    assert "never replace a configured non-default profile" in documented
+    assert "never widen a configured selection" in " ".join(documented.split())
     for command in (
         "prepare-extractors",
         "bootstrap",
@@ -710,7 +710,7 @@ def test_independent_source_reading_skills_preserve_active_selection():
         ).read_text(encoding="utf-8")
         normalized = " ".join(text.split())
         assert "--source-selection <profile>" in normalized
-        assert "omit the whole option only when no profile exists" in normalized
+        assert "omit the option only when none exists" in normalized
         for fragment in fragments:
             assert fragment in normalized
 

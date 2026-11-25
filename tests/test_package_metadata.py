@@ -156,7 +156,7 @@ def test_package_data_includes_bundled_skills():
     assert "skills/agent-docs/SKILL.md" in package_data
     assert "skills/agent-docs/reference.md" in package_data
     assert "skills/wiki-sync/SKILL.md" in package_data
-    assert "skills/wiki-sync/reference.md" in package_data
+    assert "skills/wiki-sync/reference.md" not in package_data
     assert "skills/wiki-bootstrap/SKILL.md" in package_data
     assert "skills/wiki-bootstrap/reference.md" in package_data
     assert "skills/wiki-reference/SKILL.md" in package_data

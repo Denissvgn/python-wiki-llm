@@ -1,6 +1,6 @@
 ---
 name: wiki-sync
-description: Synchronize an existing LLM Wiki after source changes, preserve semantic prose, re-anchor generated artifacts, validate strictly, and hand off safely. Use after code changes or before review; route absent wikis to wiki-bootstrap and legacy layouts to migration.
+description: Sync an existing LLM Wiki after code changes. Use after editing source or before review to regenerate pages, refresh affected prose, re-anchor, validate strictly, and hand off; route a missing wiki to wiki-bootstrap and legacy layouts to migration.
 ---
 
 # wiki-sync
@@ -17,29 +17,20 @@ The installed `wiki-reference` skill is a required dependency. Read only the
 exact topic needed; do not fall back to a missing local summary:
 
 - Routine starting-state, recovery, final re-anchor, extended validation, and
-  external-source rules: `.claude/skills/wiki-reference/references/maintenance.md`
-  for Claude or `.llm-wiki/skills/wiki-reference/references/maintenance.md`
-  for another configured agent.
+  external-source rules: [maintenance](../wiki-reference/references/maintenance.md).
 - Semantic edit boundaries and canonical naming:
-  `.claude/skills/wiki-reference/references/surfaces-naming.md` or
-  `.llm-wiki/skills/wiki-reference/references/surfaces-naming.md`.
+  [surfaces-naming](../wiki-reference/references/surfaces-naming.md).
 - Governed rename identity, conflicts, moves, and ledger recovery:
-  `.claude/skills/wiki-reference/references/governance.md` or
-  `.llm-wiki/skills/wiki-reference/references/governance.md`.
+  [governance](../wiki-reference/references/governance.md).
 - Optional-surface initialization plus OpenAPI, infrastructure, and analyzer
-  exceptions: `.claude/skills/wiki-reference/references/extractors-dependencies.md`
-  or `.llm-wiki/skills/wiki-reference/references/extractors-dependencies.md`.
+  exceptions: [extractors-dependencies](../wiki-reference/references/extractors-dependencies.md).
 - Native evidence interpretation:
-  `.claude/skills/wiki-reference/references/knowledge-consumption.md` or
-  `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`.
+  [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
 - Git/local/external delivery:
-  `.claude/skills/wiki-reference/references/repository-handoff.md` or
-  `.llm-wiki/skills/wiki-reference/references/repository-handoff.md`.
-- Heavy-gate capacity: `.claude/skills/wiki-reference/references/resources-context.md`
-  or `.llm-wiki/skills/wiki-reference/references/resources-context.md`.
+  [repository-handoff](../wiki-reference/references/repository-handoff.md).
+- Heavy-gate capacity: [resources-context](../wiki-reference/references/resources-context.md).
 - Optional bounded query/context selection:
-  `.claude/skills/wiki-reference/references/context-query.md` or
-  `.llm-wiki/skills/wiki-reference/references/context-query.md`.
+  [context-query](../wiki-reference/references/context-query.md).
 
 If a required topic is absent or locally modified, stop the affected mutation
 and restore the complete managed dependency. Do not improvise a safety
@@ -47,12 +38,10 @@ contract from this entry skill.
 
 ## Managed repository preflight
 
-Follow the user and applicable repository rules. Before the first wiki write,
-check root/index ignore policy using the repository-handoff topic. After sync,
-run `llm-wiki knowledge git-check --wiki-dir <wiki-dir>`; require `git-eligible`
-before separately authorized staging, then require the command with `--staged`
-before commit. Ignored, mixed or indeterminate stays local-only. Never force-add
-or change ignore/exclude rules. Apply the exact repository-handoff topic above.
+Before the first wiki write and again before delivery, follow the
+repository-handoff topic above. Stage
+only after `llm-wiki knowledge git-check --wiki-dir <wiki-dir>` reports
+`git-eligible`; any other result stays local-only.
 
 ## Preconditions
 
@@ -62,7 +51,9 @@ or change ignore/exclude rules. Apply the exact repository-handoff topic above.
   source-reading command below; omit it only when no profile is configured.
   Keep `--allow-external-src` on every source-reading gate for a continued
   authorized external source.
-- No other `sync` or `trigger-agent` run may target the same wiki. The
+- Plain `sync` has no lock: no other `sync` or `trigger-agent` run may target
+  the same wiki, and an authorized unattended caller uses `llm-wiki
+  trigger-agent` for its lock, timeout, and bounds. The
   supervisor owns heavy-gate scheduling; subagents must not launch a heavy gate
   unless explicitly assigned. Capacity failures leave unfinished gates
   inconclusive until recovery; use the resource topic rather than retrying a
@@ -133,10 +124,10 @@ or change ignore/exclude rules. Apply the exact repository-handoff topic above.
    conditionally eligible commit still requires separate user and repository
    authorization.
 
-   In `external_agent_docs`, the supervisor owns the refresh/re-anchor. A
-   worker returns packet-authorized workspace paths and never stages or commits
-   the source or adopted input wiki. If source is unavailable, resume from the
-   recorded wiki snapshot and retain the freshness limitation.
+   In an `external_agent_docs` run the packet governs instead: the supervisor
+   owns the refresh/re-anchor, and a worker never stages or commits. If source
+   is unavailable, resume from the recorded wiki snapshot and retain the
+   freshness limitation.
 
 For a page whose semantics need more than the changed summary and targeted
 diff, choose one bounded read through the context-query topic. Do not turn the

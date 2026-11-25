@@ -1,6 +1,6 @@
 ---
 name: wiki-reference
-description: Route an LLM Wiki task to one bounded managed contract. Use for substantive development, maintenance, canonical surfaces, repository handoff, qualified knowledge, context queries, governance, extraction, publishing, or resource-aware execution without loading unrelated policy.
+description: Reference policy for working in a repository that has an LLM Wiki. Use before editing wiki pages, interpreting wiki or knowledge query results, choosing a context query, handing wiki changes to Git, or running extraction, governance, publishing, or heavy validation.
 ---
 
 # wiki-reference
@@ -37,13 +37,9 @@ repository policy, or calling application did not provide.
 - [Resource-aware execution](references/resources-context.md) — use before a
   heavy gate or when diagnosing job concurrency and host-capacity failures.
 
-Claude follows the native installed route at
-`.claude/skills/wiki-reference/SKILL.md`. A configured non-Claude agent reads
-ordinary Markdown at `.llm-wiki/skills/wiki-reference/SKILL.md`; resolve the
-relative links above directly from that installed directory.
-
-`reference.md` is a compatibility index for legacy anchors, not an active
-task route. If a required topic is missing or modified, stop only the affected
+Resolve these links relative to this file, wherever the skill tree is installed
+or exported. `reference.md` is a compatibility index for legacy anchors, not an
+active task route. If a required topic is missing or modified, stop only the affected
 mutation workflow and restore the complete managed tree. Supported read-only
 knowledge/context interfaces may continue with their explicit availability,
 bounds, and fallback disclosures.

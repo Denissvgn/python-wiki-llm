@@ -44,14 +44,11 @@ If user docs need captured examples before publishing, run `usage-examples` firs
    identity.
 
    When native metadata is selected, follow the complete contract at
-   `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-   Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-   for another configured agent. Apply the projection/receipt boundary at
-   `.claude/skills/wiki-reference/references/publishing.md` or
-   `.llm-wiki/skills/wiki-reference/references/publishing.md`. Schedule
+   [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+   Apply the projection/receipt boundary at
+   [publishing](../wiki-reference/references/publishing.md). Schedule
    export/check/build through
-   `.claude/skills/wiki-reference/references/resources-context.md` or
-   `.llm-wiki/skills/wiki-reference/references/resources-context.md`. Carry
+   [resources-context](../wiki-reference/references/resources-context.md). Carry
    every limitation unchanged, never initialize governance for publication,
    and serialize heavy gates when capacity is unknown; the supervisor owns
    fan-out.
@@ -192,10 +189,3 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 ## Context budget
 
 This skill has almost no LLM judgment budget by design — every step is a deterministic command whose JSON/exit-code result is the primary workflow evidence. Native metadata redaction does not sanitize canonical prose or media, so public publication still requires its separate content review. Content authoring belongs to `wiki-sync`, `doc-review`, or `user-docs-author`, not this workflow.
-
-## Ownership compatibility
-
-All `llm-wiki site` CLI forms remain supported. Existing callers that used
-this skill to begin a multi-wiki export should run `doc-hub` for aggregation,
-export, and the first check, then resume here with the returned checked mirror
-and immutable selection. Single-wiki export/build behavior is unchanged.

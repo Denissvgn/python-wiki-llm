@@ -20,15 +20,12 @@ Aggregate several already-documented repositories into one static-site hub witho
    When `--knowledge-metadata summary` is selected, follow the complete
    availability, freshness, bounds, fallback, and inert-data contract in the
    configured managed reference at
-   `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-   Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-   for another configured agent. Apply it independently to every source and
+   [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+   Apply it independently to every source and
    preserve every limitation; this workflow never initializes governance.
    Apply the projection/receipt boundary at
-   `.claude/skills/wiki-reference/references/publishing.md` or
-   `.llm-wiki/skills/wiki-reference/references/publishing.md`. Schedule the
-   export/check through `.claude/skills/wiki-reference/references/resources-context.md`
-   or `.llm-wiki/skills/wiki-reference/references/resources-context.md`. When
+   [publishing](../wiki-reference/references/publishing.md). Schedule the
+   export/check through [resources-context](../wiki-reference/references/resources-context.md). When
    capacity is unknown, serialize heavy gates; the supervisor owns fan-out.
 
 2. **Export the hub.**
@@ -67,10 +64,6 @@ Aggregate several already-documented repositories into one static-site hub witho
 5. **Report the supported result.** The supported hub is the generated mechanical index plus namespaced source-wiki pages. State explicitly that no durable authored hub-level overview surface exists. Evidence-backed cross-repository synthesis may live in an independently canonical, validated source wiki selected into the hub, but it is not a special hub overview and this workflow does not create it.
 
 6. **Hand off the checked mirror.** Report the export/check results, complete frozen hub selection, source set, output path, selection receipt/marker, unsupported authored-overview limitation, and any source wiki that required synchronization. `publish-docs` consumes this checked mirror when a real builder or deploy handoff is requested; it must not repeat or reinterpret aggregation. Do not run a builder or deploy here.
-
-## Ownership compatibility
-
-The public `site export --wiki-root` and `site check --wiki-root` commands are unchanged. Existing workflows that began multi-wiki aggregation inside `publish-docs` should route that aggregation stage here, then pass the checked mirror and exact selection to `publish-docs` for building. No generated layout, receipt, or command spelling changes at this boundary.
 
 ## Context budget
 

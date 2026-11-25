@@ -75,12 +75,9 @@ def test_hub_handoff_routes_common_policy_without_repeating_native_table() -> No
 
     for manifest in (hub_manifest, publish_manifest):
         normalized = " ".join(manifest.split())
-        assert ".claude/skills/wiki-reference/references/knowledge-consumption.md" in manifest
-        assert ".llm-wiki/skills/wiki-reference/references/knowledge-consumption.md" in manifest
-        assert ".claude/skills/wiki-reference/references/publishing.md" in manifest
-        assert ".llm-wiki/skills/wiki-reference/references/publishing.md" in manifest
-        assert ".claude/skills/wiki-reference/references/resources-context.md" in manifest
-        assert ".llm-wiki/skills/wiki-reference/references/resources-context.md" in manifest
+        assert "../wiki-reference/references/knowledge-consumption.md" in manifest
+        assert "../wiki-reference/references/publishing.md" in manifest
+        assert "../wiki-reference/references/resources-context.md" in manifest
         assert "supervisor owns fan-out" in normalized
         assert "repository-handoff.md" not in manifest
 

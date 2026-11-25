@@ -1,6 +1,6 @@
 ---
 name: dep-audit
-description: Triage LLM Wiki dependency diagnostics for cycles, undeclared or unused dependencies, visibility mismatches, and documentation drift. Use when lint, CI, review output, or a user report needs an evidence-backed source, manifest, documentation, or deferral decision.
+description: Triage LLM Wiki dependency diagnostics such as import cycles, undeclared or unused dependencies, visibility mismatches, and documentation drift. Use when lint, CI, or a review reports a dependency warning that needs an evidence-backed source, manifest, documentation, or deferral decision.
 ---
 
 # dep-audit
@@ -11,33 +11,23 @@ See [reference.md](reference.md) for status labels, report rows, and edge cases.
 
 ## Managed repository preflight
 
-Before the first managed wiki write, check root/index ignore policy as described
-in the repository-handoff topic. After sync, run
-`llm-wiki knowledge git-check --wiki-dir <wiki-dir>`; require `git-eligible`
-before separately authorized staging, then require the same command with
-`--staged` before commit. Keep ignored, mixed or indeterminate state local-only;
-never force-add or change ignore/exclude rules. Apply the managed contract at
-`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
-`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
-configured agents.
+Before the first wiki write and again before delivery, follow
+[repository-handoff](../wiki-reference/references/repository-handoff.md). Stage
+only after `llm-wiki knowledge git-check --wiki-dir <wiki-dir>` reports
+`git-eligible`; any other result stays local-only.
 
 ## Preconditions
 
 - The user asked to investigate dependency diagnostics, package visibility, or dependency hygiene.
 - Source and wiki paths are selected. For external source roots, use `--allow-external-src` on source-reading commands and keep output/wiki paths guarded.
-- Resolve the active source-selection profile once. When configured, replace
-  `<profile>` below with its exact repository-relative path and carry
-  `--source-selection <profile>` on every source-reading command; omit the
-  whole option only when no profile exists.
+- Carry `--source-selection <profile>` on every source-reading command when a
+  profile is configured or discovered; omit the option only when none exists,
+  and never widen a configured selection.
 - No manifest edits without source evidence. A dependency warning alone is not enough to change package metadata.
-- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
-  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
-  observation; preserve `nonsemantic-source-change`, and never turn an
-  unavailable or bounded `found: false` into a negative fact. Do not initialize
-  governance or execute stored content. Apply the complete managed contract at
-  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-  for other configured agents.
+- Native knowledge: interpret every result through
+  [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+  Only `ready` with live `current` freshness supports an unchanged claim, and
+  an unavailable or bounded `found: false` is never a negative fact.
 
 ## Steps
 
@@ -78,10 +68,5 @@ configured agents.
    this sequence. After refresh, report expired human section reviews and stale
    machine-verification receipts with their existing reasons; do not fabricate
    replacements.
-
-   In `external_agent_docs`, a worker returns the packet-authorized finding or
-   semantic result; the supervisor performs any assigned owning refresh and
-   validation. The worker does not gain sync, source-write, or governance-write
-   authority from this skill.
 
 6. **Report.** Summarize findings by status, files inspected, actions taken, verification commands, and unresolved items. Do not hide warnings that were deferred.
