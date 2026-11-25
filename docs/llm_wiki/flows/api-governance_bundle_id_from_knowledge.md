@@ -201,25 +201,25 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| governance_bundle_id_from_knowledge | validate_governance_projection | 2126 | `validate_governance_projection(knowledge)` |
-| validate_governance_projection | require_validated_artifacts | 1875 | `require_validated_artifacts(_validated_artifacts)` |
+| governance_bundle_id_from_knowledge | validate_governance_projection | 2134 | `validate_governance_projection(knowledge)` |
+| validate_governance_projection | require_validated_artifacts | 1883 | `require_validated_artifacts(_validated_artifacts)` |
 | require_validated_artifacts | isinstance (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 188 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 189 | `TypeError('expected validator-issued knowledge artifacts')` |
 | require_validated_artifacts | isinstance (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 192 | `isinstance(validation, _ArtifactValidation)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_engine/knowl…quire_validated_artifacts) | 207 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
-| validate_governance_projection | TypeError (src/llm_wiki_engine/knowl…ate_governance_projection) | 1877 | `TypeError('governance validation requires its exact validated knowledge')` |
-| validate_governance_projection | isinstance (src/llm_wiki_engine/knowl…ate_governance_projection) | 1879 | `isinstance(knowledge, KnowledgeIndex)` |
-| validate_governance_projection | TypeError (src/llm_wiki_engine/knowl…ate_governance_projection) | 1880 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| validate_governance_projection | knowledge.extensions.get (src/llm_wiki_engine/knowl…ate_governance_projection) | 1881 | `knowledge.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
-| validate_governance_projection | knowledge.bundle.snapshot.extensions.get | 1882 | `knowledge.bundle.snapshot.extensions.get(GOVERNANCE_HASH_EXTENSION_KEY)` |
+| validate_governance_projection | TypeError (src/llm_wiki_engine/knowl…ate_governance_projection) | 1885 | `TypeError('governance validation requires its exact validated knowledge')` |
+| validate_governance_projection | isinstance (src/llm_wiki_engine/knowl…ate_governance_projection) | 1887 | `isinstance(knowledge, KnowledgeIndex)` |
+| validate_governance_projection | TypeError (src/llm_wiki_engine/knowl…ate_governance_projection) | 1888 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| validate_governance_projection | knowledge.extensions.get (src/llm_wiki_engine/knowl…ate_governance_projection) | 1889 | `knowledge.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
+| validate_governance_projection | knowledge.bundle.snapshot.extensions.get | 1890 | `knowledge.bundle.snapshot.extensions.get(GOVERNANCE_HASH_EXTENSION_KEY)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `declared_limits.add` | `validate_governance_projection` | 1984 |
-| mutation | `seen_uids.add` | `validate_governance_projection` | 1991 |
-| mutation | `successor_pairs.add` | `validate_governance_projection` | 2006 |
+| mutation | `declared_limits.add` | `validate_governance_projection` | 1992 |
+| mutation | `seen_uids.add` | `validate_governance_projection` | 1999 |
+| mutation | `successor_pairs.add` | `validate_governance_projection` | 2014 |
 
 ### Static analysis gaps
 
@@ -229,11 +229,11 @@ flowchart LR
 | external_call | `require_validated_artifacts` | `TypeError` | 189 |
 | external_call | `require_validated_artifacts` | `isinstance` | 192 |
 | external_call | `require_validated_artifacts` | `TypeError` | 207 |
-| external_call | `validate_governance_projection` | `TypeError` | 1877 |
-| external_call | `validate_governance_projection` | `isinstance` | 1879 |
-| external_call | `validate_governance_projection` | `TypeError` | 1880 |
-| unresolved_call | `validate_governance_projection` | `knowledge.extensions.get` | 1881 |
-| unresolved_call | `validate_governance_projection` | `knowledge.bundle.snapshot.extensions.get` | 1882 |
+| external_call | `validate_governance_projection` | `TypeError` | 1885 |
+| external_call | `validate_governance_projection` | `isinstance` | 1887 |
+| external_call | `validate_governance_projection` | `TypeError` | 1888 |
+| unresolved_call | `validate_governance_projection` | `knowledge.extensions.get` | 1889 |
+| unresolved_call | `validate_governance_projection` | `knowledge.bundle.snapshot.extensions.get` | 1890 |
 | step_limit | `governance_bundle_id_from_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `governance_bundle_id_from_knowledge` | `depth limit` | 0 |
 

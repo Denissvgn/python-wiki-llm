@@ -130,17 +130,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| authored_event_time | current_host().now | 1443 | `current_host().now(data not statically known)` |
-| authored_event_time | current_host | 1443 | `current_host(data not statically known)` |
+| authored_event_time | current_host().now | 1451 | `current_host().now(data not statically known)` |
+| authored_event_time | current_host | 1451 | `current_host(data not statically known)` |
 | current_host | _ACTIVE.get | 167 | `_ACTIVE.get(data not statically known)` |
-| authored_event_time | isinstance | 1444 | `isinstance(selected, str)` |
-| authored_event_time | datetime.fromisoformat | 1447 | `datetime.fromisoformat(raw.replace(...))` |
-| authored_event_time | raw.replace | 1447 | `raw.replace('Z', '+00:00')` |
-| authored_event_time | GovernanceError | 1449 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')` |
-| authored_event_time | isinstance | 1453 | `isinstance(selected, datetime)` |
-| authored_event_time | GovernanceError | 1456 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')` |
-| authored_event_time | parsed.utcoffset | 1460 | `parsed.utcoffset(data not statically known)` |
-| authored_event_time | GovernanceError | 1461 | `GovernanceError('authored_at', 'must include a timezone')` |
+| authored_event_time | isinstance | 1452 | `isinstance(selected, str)` |
+| authored_event_time | datetime.fromisoformat | 1455 | `datetime.fromisoformat(raw.replace(...))` |
+| authored_event_time | raw.replace | 1455 | `raw.replace('Z', '+00:00')` |
+| authored_event_time | GovernanceError | 1457 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')` |
+| authored_event_time | isinstance | 1461 | `isinstance(selected, datetime)` |
+| authored_event_time | GovernanceError | 1464 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')` |
+| authored_event_time | parsed.utcoffset | 1468 | `parsed.utcoffset(data not statically known)` |
+| authored_event_time | GovernanceError | 1469 | `GovernanceError('authored_at', 'must include a timezone')` |
 
 ### Boundary effects
 
@@ -150,13 +150,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `authored_event_time` | `current_host().now` | 1443 |
+| unresolved_call | `authored_event_time` | `current_host().now` | 1451 |
 | unresolved_call | `current_host` | `_ACTIVE.get` | 167 |
-| external_call | `authored_event_time` | `isinstance` | 1444 |
-| external_call | `authored_event_time` | `datetime.fromisoformat` | 1447 |
-| unresolved_call | `authored_event_time` | `raw.replace` | 1447 |
-| external_call | `authored_event_time` | `isinstance` | 1453 |
-| unresolved_call | `authored_event_time` | `parsed.utcoffset` | 1460 |
+| external_call | `authored_event_time` | `isinstance` | 1452 |
+| external_call | `authored_event_time` | `datetime.fromisoformat` | 1455 |
+| unresolved_call | `authored_event_time` | `raw.replace` | 1455 |
+| external_call | `authored_event_time` | `isinstance` | 1461 |
+| unresolved_call | `authored_event_time` | `parsed.utcoffset` | 1468 |
 | step_limit | `authored_event_time` | `first 12 steps` | 0 |
 
 ## Behavior

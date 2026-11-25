@@ -82,16 +82,16 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)
 ```
 
-> Call sequence diagram shows 30 of 241 interactions; 211 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 243 interactions; 213 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 94 (93 omitted); unresolved 1 of 80 (79 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 96 (95 omitted); unresolved 1 of 80 (79 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:collect_runtime_repository_evidence` | 1 | - | unresolved | 11 |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:collect_runtime_repository_evidence` | 1 | - | external | 20 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:collect_runtime_repository_evidence` | 1 | - | external | 22 |
 | `src/llm_wiki_cli/extractors/common.py:_normalize_path_text` | 28 | - | external | 3 |
 | `src/llm_wiki_cli/extractors/common.py:_normalize_path_text` | 28 | - | unresolved | 2 |
 | `src/llm_wiki_cli/extractors/common.py:is_bundled_helper_implementation_path` | 27 | [src/llm_wiki_cli/extractors/common.py](../modules/common.md) | internal | 3 |
@@ -111,9 +111,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 68; effect analysis evaluated: 56, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
+Source steps: 68; effect analysis evaluated: 55, partial: 4, unavailable: 9. Counts include steps omitted from the displayed trace.
 
-Collector observations for 59 source steps with known totals: observed: 360, emitted: 345, omitted: 15. Unavailable totals are excluded.
+Collector observations for 59 source steps with known totals: observed: 361, emitted: 345, omitted: 16. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -121,7 +121,7 @@ Collector observations for 59 source steps with known totals: observed: 360, emi
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `collect_runtime_repository_evidence` | `available` | `evaluated` | `available` | `17` | `17` | `0` |
+| `collect_runtime_repository_evidence` | `available` | `partial` | `available` | `18` | `17` | `1` |
 | `Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -182,7 +182,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `collect_runtime_repository_evidence` | `source_root: str \| Path`, `target_wiki_dir: str \| Path`, `source_snapshot: SourceSnapshot \| None` | `SourceSnapshot`, `ConsumedInputKind`, `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `EXCLUDED_DIRS`, `AGENT_WORKTREE_DIR_PATTERNS` | - | `collect_git_repository_evidence(...)` |
+| `collect_runtime_repository_evidence` | `source_root: str \| Path`, `target_wiki_dir: str \| Path`, `source_snapshot: SourceSnapshot \| None` | `SourceSnapshot`, `ConsumedInputKind`, `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MUTATION_LOCK_FILENAMES`, `EXCLUDED_DIRS` | - | `collect_git_repository_evidence(...)` |
 | `Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…ntime_repository_evidence)` | - | - | - | - |
 | `Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1)` | - | - | - | - |
@@ -199,39 +199,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence) | 1053 | `Path(source_root).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1053 | `Path(source_root)` |
-| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1) | 1054 | `Path(target_wiki_dir).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1054 | `Path(target_wiki_dir)` |
-| collect_runtime_repository_evidence | isinstance (src/llm_wiki_cli/services…ntime_repository_evidence) | 1059 | `isinstance(source_snapshot, SourceSnapshot)` |
-| collect_runtime_repository_evidence | TypeError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1060 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
-| collect_runtime_repository_evidence | source_snapshot.root.resolve | 1061 | `source_snapshot.root.resolve(data not statically known)` |
-| collect_runtime_repository_evidence | ValueError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1062 | `ValueError('source_snapshot root must match source_root')` |
-| collect_runtime_repository_evidence | selected_paths.add | 1070 | `selected_paths.add(...)` |
-| collect_runtime_repository_evidence | selected_paths.update | 1071 | `selected_paths.update(...)` |
-| collect_runtime_repository_evidence | source_snapshot.captured_input_kinds.items | 1073 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
+| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence) | 1054 | `Path(source_root).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1054 | `Path(source_root)` |
+| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1) | 1055 | `Path(target_wiki_dir).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1055 | `Path(target_wiki_dir)` |
+| collect_runtime_repository_evidence | isinstance (src/llm_wiki_cli/services…ntime_repository_evidence) | 1060 | `isinstance(source_snapshot, SourceSnapshot)` |
+| collect_runtime_repository_evidence | TypeError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1061 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
+| collect_runtime_repository_evidence | source_snapshot.root.resolve | 1062 | `source_snapshot.root.resolve(data not statically known)` |
+| collect_runtime_repository_evidence | ValueError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1063 | `ValueError('source_snapshot root must match source_root')` |
+| collect_runtime_repository_evidence | selected_paths.add | 1071 | `selected_paths.add(...)` |
+| collect_runtime_repository_evidence | selected_paths.update | 1072 | `selected_paths.update(...)` |
+| collect_runtime_repository_evidence | source_snapshot.captured_input_kinds.items | 1074 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 1070 |
-| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 1071 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1086 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1088 |
-| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 1094 |
+| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 1071 |
+| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 1072 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1087 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1089 |
+| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 1095 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 1053 |
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 1054 |
-| external_call | `collect_runtime_repository_evidence` | `isinstance` | 1059 |
-| external_call | `collect_runtime_repository_evidence` | `TypeError` | 1060 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 1061 |
-| external_call | `collect_runtime_repository_evidence` | `ValueError` | 1062 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 1073 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 1054 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 1055 |
+| external_call | `collect_runtime_repository_evidence` | `isinstance` | 1060 |
+| external_call | `collect_runtime_repository_evidence` | `TypeError` | 1061 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 1062 |
+| external_call | `collect_runtime_repository_evidence` | `ValueError` | 1063 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 1074 |
 | step_limit | `collect_runtime_repository_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `collect_runtime_repository_evidence` | `depth limit` | 0 |
 

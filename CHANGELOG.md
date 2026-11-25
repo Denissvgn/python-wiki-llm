@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.1] - 2026-11-25
+
 ### Fixed
 
 - A wiki in a linked Git worktree or a submodule keeps its locks and recovery
@@ -19,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Git. A bootstrap interrupted in a linked worktree by an earlier release
   remains recoverable. Do not run this release and an earlier one against the
   same linked worktree at the same time: they use different lock files.
+- A sync in a clean linked worktree records the working tree as `clean`, and
+  a later `sync --dry-run` on the committed wiki reports no changes. Before,
+  the first sync in a new worktree created its lock files inside the wiki
+  directory and then counted them as uncommitted changes, so it recorded
+  `dirty` and every later preview reported changed knowledge objects. Lock
+  files that a wiki keeps in its own directory no longer count as changes.
+  A wiki already committed with a `dirty` record is corrected by its next
+  sync.
 - `llm-wiki sync --dry-run` and the sync that follows it record the same
   `sync-analysis` commitment for the same inputs. Before, a file read from
   the extraction cache and the same file extracted in the current run could
@@ -2127,7 +2137,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.1.1...HEAD
+[6.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.1.0...v6.1.1
 [6.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v5.0.0...v6.0.0
 [5.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v4.1.1...v5.0.0

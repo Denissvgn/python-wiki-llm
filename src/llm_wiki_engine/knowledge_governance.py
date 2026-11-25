@@ -80,6 +80,14 @@ from llm_wiki_engine.wiki_media import contains_uri_authority_userinfo
 
 GOVERNANCE_FILENAME = DEFAULT_LAYOUT.governance
 GOVERNANCE_LOCK_FILENAME = DEFAULT_LAYOUT.governance_lock
+# Every mutation lock file a wiki can hold.  Outside a verified Git checkout
+# they are created in the wiki directory itself.
+MUTATION_LOCK_FILENAMES = frozenset({
+    GOVERNANCE_LOCK_FILENAME,
+    DEFAULT_LAYOUT.storage_lock,
+    "maintenance-recovery.lock",
+    "llm-wiki-sync-analysis.lock",
+})
 
 DEFAULT_EVENT_LIMIT = 20
 MAX_EVENT_LIMIT = 1000
@@ -881,7 +889,7 @@ def governance_lock(
 ) -> Iterator[None]:
     """Hold the dedicated non-blocking governance mutation lock."""
 
-    if _lock_filename not in {GOVERNANCE_LOCK_FILENAME, DEFAULT_LAYOUT.storage_lock, "maintenance-recovery.lock", "llm-wiki-sync-analysis.lock"}:
+    if _lock_filename not in MUTATION_LOCK_FILENAMES:
         raise GovernanceError("lock", "unknown mutation lock")
     root = Path(wiki_dir)
     if first_unsafe_path_component(root) is not None:

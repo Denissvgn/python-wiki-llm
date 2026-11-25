@@ -191,11 +191,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 529 | `isinstance(ledger, GovernanceLedger)` |
-| validate_governance_ledger | TypeError | 530 | `TypeError('ledger must be a GovernanceLedger')` |
-| validate_governance_ledger | GovernanceError | 532 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
-| validate_governance_ledger | _bundle_id | 537 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3692 | `validate_bundle_id(value)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 537 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | TypeError | 538 | `TypeError('ledger must be a GovernanceLedger')` |
+| validate_governance_ledger | GovernanceError | 540 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
+| validate_governance_ledger | _bundle_id | 545 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
+| _bundle_id | validate_bundle_id | 3700 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -211,8 +211,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_ledger` | `isinstance` | 529 |
-| external_call | `validate_governance_ledger` | `TypeError` | 530 |
+| external_call | `validate_governance_ledger` | `isinstance` | 537 |
+| external_call | `validate_governance_ledger` | `TypeError` | 538 |
 | external_call | `_machine_text` | `isinstance` | 942 |
 | unresolved_call | `_machine_text` | `value.strip` | 946 |
 | step_limit | `validate_governance_ledger` | `first 12 steps` | 0 |

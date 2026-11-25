@@ -150,9 +150,9 @@ sequenceDiagram
     p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 2300 interactions; 2270 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2302 interactions; 2272 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 658 (657 omitted); unresolved 1 of 599 (598 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 660 (659 omitted); unresolved 1 of 599 (598 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

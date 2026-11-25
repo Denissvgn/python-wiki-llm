@@ -5,7 +5,7 @@ backend-path = ["."]
 
 [project]
 name = "llm-wiki-engine"
-version = "6.1.0"
+version = "6.1.1"
 description = "Standard-library-only core of the LLM Wiki engine: canonical encodings, host boundary and format validators."
 readme = "README.md"
 license = "MIT"

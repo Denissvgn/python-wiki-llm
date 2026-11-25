@@ -154,9 +154,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1396; effect analysis evaluated: 802, partial: 64, unavailable: 530. Counts include steps omitted from the displayed trace.
+Source steps: 1396; effect analysis evaluated: 804, partial: 62, unavailable: 530. Counts include steps omitted from the displayed trace.
 
-Collector observations for 866 source steps with known totals: observed: 5197, emitted: 4893, omitted: 304. Unavailable totals are excluded.
+Collector observations for 866 source steps with known totals: observed: 5195, emitted: 4893, omitted: 302. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -237,12 +237,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 883 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 884 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| finalize_runtime_knowledge | capture_committed_knowledge | 887 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 242 | `Path(wiki_dir)` |
-| capture_committed_knowledge | guard_maintenance_owner | 245 | `guard_maintenance_owner(root, manifest)` |
+| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 884 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 885 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| finalize_runtime_knowledge | capture_committed_knowledge | 888 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 243 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 243 | `Path(wiki_dir)` |
+| capture_committed_knowledge | guard_maintenance_owner | 246 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 114 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_engine/knowl…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -253,16 +253,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 271 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 272 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `finalize_runtime_knowledge` | `isinstance` | 883 |
-| external_call | `finalize_runtime_knowledge` | `TypeError` | 884 |
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 242 |
+| external_call | `finalize_runtime_knowledge` | `isinstance` | 884 |
+| external_call | `finalize_runtime_knowledge` | `TypeError` | 885 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 243 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `finalize_runtime_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `finalize_runtime_knowledge` | `depth limit` | 0 |

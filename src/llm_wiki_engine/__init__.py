@@ -13,7 +13,7 @@ package. Import these modules from ``llm_wiki_engine``; the few
 deprecated aliases.
 """
 
-__version__ = "6.1.0"
+__version__ = "6.1.1"
 
 
 def __getattr__(name: str):
