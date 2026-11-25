@@ -93,22 +93,22 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [GovernanceError](../entities/GovernanceError.md) | Class | 116 | `ValueError` | A field-specific governance validation or mutation failure. |
-| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 132 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
-| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 139 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
-| [GovernanceActor](../entities/GovernanceActor.md) | Class | 148 | — | Explicit event author; never inferred from Git metadata. |
-| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 159 | — | One authoritative stable concept allocation. |
-| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 176 | — | A historical locator or natural key owned by one UID. |
-| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 196 | — | One predecessor-linked lifecycle transition. |
-| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 225 | — | The explicit evidence basis to which a review was authored. |
-| [ReviewEvent](../entities/ReviewEvent.md) | Class | 243 | — | One section-scoped, digest-bound human review event. |
-| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 269 | — | Validated non-rebuildable governance authority. |
-| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 327 | — | — |
-| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 334 | — | — |
-| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 342 | — | Current generated concept coordinates used for reconciliation. |
-| [ReviewValidity](../entities/ReviewValidity.md) | Class | 351 | — | Computed review validity; this is never persisted in the ledger. |
-| [FaultInjector](../entities/FaultInjector.md) | Type alias | 363 | `Callable[[GovernanceWriteStage], None]` | — |
-| [RepositoryMetadata](../entities/RepositoryMetadata.md) | Class | 3225 | — | Where the repository that owns one wiki keeps its Git metadata. |
+| [GovernanceError](../entities/GovernanceError.md) | Class | 124 | `ValueError` | A field-specific governance validation or mutation failure. |
+| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 140 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
+| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 147 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
+| [GovernanceActor](../entities/GovernanceActor.md) | Class | 156 | — | Explicit event author; never inferred from Git metadata. |
+| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 167 | — | One authoritative stable concept allocation. |
+| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 184 | — | A historical locator or natural key owned by one UID. |
+| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 204 | — | One predecessor-linked lifecycle transition. |
+| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 233 | — | The explicit evidence basis to which a review was authored. |
+| [ReviewEvent](../entities/ReviewEvent.md) | Class | 251 | — | One section-scoped, digest-bound human review event. |
+| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 277 | — | Validated non-rebuildable governance authority. |
+| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 335 | — | — |
+| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 342 | — | — |
+| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 350 | — | Current generated concept coordinates used for reconciliation. |
+| [ReviewValidity](../entities/ReviewValidity.md) | Class | 359 | — | Computed review validity; this is never persisted in the ledger. |
+| [FaultInjector](../entities/FaultInjector.md) | Type alias | 371 | `Callable[[GovernanceWriteStage], None]` | — |
+| [RepositoryMetadata](../entities/RepositoryMetadata.md) | Class | 3233 | — | Where the repository that owns one wiki keeps its Git metadata. |
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # RepositoryMetadata
 
-**Location:** `src/llm_wiki_engine/knowledge_governance.py:3225`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:3233`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

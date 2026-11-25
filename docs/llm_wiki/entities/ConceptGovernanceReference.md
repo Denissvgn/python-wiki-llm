@@ -1,6 +1,6 @@
 # ConceptGovernanceReference
 
-**Location:** `src/llm_wiki_engine/knowledge_governance.py:342`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:350`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

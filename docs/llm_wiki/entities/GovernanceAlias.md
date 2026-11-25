@@ -1,6 +1,6 @@
 # GovernanceAlias
 
-**Location:** `src/llm_wiki_engine/knowledge_governance.py:176`
+**Location:** `src/llm_wiki_engine/knowledge_governance.py:184`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

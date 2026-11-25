@@ -189,7 +189,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_source_snapshot_hash | hash_source_snapshot | 1567 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
+| runtime_source_snapshot_hash | hash_source_snapshot | 1571 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
 | hash_source_snapshot | set (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot) | 735 | `set(data not statically known)` |
 | hash_source_snapshot | enumerate | 736 | `enumerate(inputs)` |
 | hash_source_snapshot | isinstance (src/llm_wiki_engine/knowl…pe.py:hash_source_snapshot) | 737 | `isinstance(item, ConsumedInput)` |

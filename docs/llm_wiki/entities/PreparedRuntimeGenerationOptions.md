@@ -1,6 +1,6 @@
 # PreparedRuntimeGenerationOptions
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:329`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:330`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)

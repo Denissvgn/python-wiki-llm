@@ -173,16 +173,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options_hash | prepare_runtime_generation_options | 1240 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
-| prepare_runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 346 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 347 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 348 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 350 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple (src/llm_wiki_cli/services…runtime_generation_options) | 352 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | dict.fromkeys | 353 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 355 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
-| runtime_generation_options_hash | tuple (src/llm_wiki_cli/services…me_generation_options_hash) | 1243 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
-| runtime_generation_options_hash | hash_generation_options | 1246 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
+| runtime_generation_options_hash | prepare_runtime_generation_options | 1244 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
+| prepare_runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 347 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 348 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 349 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 351 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple (src/llm_wiki_cli/services…runtime_generation_options) | 353 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | dict.fromkeys | 354 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 356 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| runtime_generation_options_hash | tuple (src/llm_wiki_cli/services…me_generation_options_hash) | 1247 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
+| runtime_generation_options_hash | hash_generation_options | 1250 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
 | hash_generation_options | isinstance (src/llm_wiki_engine/knowl…py:hash_generation_options) | 828 | `isinstance(values, Mapping)` |
 
 ### Boundary effects
@@ -193,9 +193,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prepare_runtime_generation_options` | `isinstance` | 346 |
-| external_call | `prepare_runtime_generation_options` | `TypeError` | 347 |
-| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 353 |
+| external_call | `prepare_runtime_generation_options` | `isinstance` | 347 |
+| external_call | `prepare_runtime_generation_options` | `TypeError` | 348 |
+| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 354 |
 | external_call | `hash_generation_options` | `isinstance` | 828 |
 | step_limit | `runtime_generation_options_hash` | `first 12 steps` | 0 |
 

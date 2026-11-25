@@ -212,12 +212,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_review_event | validate_governance_ledger | 1599 | `validate_governance_ledger(ledger)` |
-| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 529 | `isinstance(ledger, GovernanceLedger)` |
-| validate_governance_ledger | TypeError (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 530 | `TypeError('ledger must be a GovernanceLedger')` |
-| validate_governance_ledger | GovernanceError | 532 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
-| validate_governance_ledger | _bundle_id | 537 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3692 | `validate_bundle_id(value)` |
+| evaluate_review_event | validate_governance_ledger | 1607 | `validate_governance_ledger(ledger)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 537 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | TypeError (src/llm_wiki_engine/knowl…alidate_governance_ledger) | 538 | `TypeError('ledger must be a GovernanceLedger')` |
+| validate_governance_ledger | GovernanceError | 540 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
+| validate_governance_ledger | _bundle_id | 545 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
+| _bundle_id | validate_bundle_id | 3700 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_engine/conce…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -228,19 +228,19 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `reasons.append` | `evaluate_review_event` | 1610 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1613 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1617 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1619 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1623 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1628 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1618 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1621 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1625 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1627 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1631 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1636 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_ledger` | `isinstance` | 529 |
-| external_call | `validate_governance_ledger` | `TypeError` | 530 |
+| external_call | `validate_governance_ledger` | `isinstance` | 537 |
+| external_call | `validate_governance_ledger` | `TypeError` | 538 |
 | external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `evaluate_review_event` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_review_event` | `depth limit` | 0 |
