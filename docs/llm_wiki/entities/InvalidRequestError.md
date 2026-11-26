@@ -1,6 +1,6 @@
 # InvalidRequestError
 
-**Location:** `src/llm_wiki_cli/api.py:384`
+**Location:** `src/llm_wiki_cli/api.py:387`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -92,6 +92,6 @@ flowchart LR
 | `_raise_maintenance_api_error` | call | [api](../modules/api.md) | 1 |
 | `_require_full_inventory_opt_in` | call | [api](../modules/api.md) | 2 |
 | `_run_query` | call | [api](../modules/api.md) | 1 |
-| `_validate_documentation_query_request` | call | [api](../modules/api.md) | 9 |
+| `_validate_documentation_query_request` | call | [api](../modules/api.md) | 10 |
 
 > References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.

@@ -1,6 +1,6 @@
 # DocumentationGraphQueryService
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:985`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:1050`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)

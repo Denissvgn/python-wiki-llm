@@ -227,8 +227,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| lint_wiki | LintRequest | 1377 | `LintRequest(wiki_root=wiki_root, source_root=source_root, strict=strict, plugins=trust_source_plugins, knowledge_drift_report=knowledge_drift_report, include_tests=include_tests, helper_cache_dir=helper_cache_dir, source_selection=source_selection, media_size_warn_bytes=media_size_warn_bytes)` |
-| lint_wiki | discarding_output | 1389 | `discarding_output(data not statically known)` |
+| lint_wiki | LintRequest | 1383 | `LintRequest(wiki_root=wiki_root, source_root=source_root, strict=strict, plugins=trust_source_plugins, knowledge_drift_report=knowledge_drift_report, include_tests=include_tests, helper_cache_dir=helper_cache_dir, source_selection=source_selection, media_size_warn_bytes=media_size_warn_bytes)` |
+| lint_wiki | discarding_output | 1395 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 282 | `using_host(...)` |
 | using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
 | using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |

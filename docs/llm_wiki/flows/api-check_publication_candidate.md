@@ -217,9 +217,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| check_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:check_publication_candidate) | 3825 | `isinstance(receipt, Mapping)` |
-| check_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:check_publication_candidate) | 3826 | `ValueError('Publication receipt must be a mapping')` |
-| check_publication_candidate (src/llm_wiki_cli/api.py) | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 3827 | `check(consumer_root, candidate_dir=candidate_dir, receipt=dict(...), config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
+| check_publication_candidate (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:check_publication_candidate) | 4074 | `isinstance(receipt, Mapping)` |
+| check_publication_candidate (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:check_publication_candidate) | 4075 | `ValueError('Publication receipt must be a mapping')` |
+| check_publication_candidate (src/llm_wiki_cli/api.py) | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | 4076 | `check(consumer_root, candidate_dir=candidate_dir, receipt=dict(...), config_path=config_path, target_dir=target_dir, baseline=baseline, reviews=reviews, previous_receipt=previous_receipt, candidate_review=candidate_review, source_revision=source_revision, target_revision=target_revision)` |
 | check_publication_candidate (src/llm_wiki_cli/services/publication_candidate.py) | validate_publication_receipt | 991 | `validate_publication_receipt(receipt)` |
 | validate_publication_receipt | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 340 | `ValueError('Candidate receipt must be a mapping')` |
@@ -242,8 +242,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `check_publication_candidate` | `isinstance` | 3825 |
-| external_call | `check_publication_candidate` | `ValueError` | 3826 |
+| external_call | `check_publication_candidate` | `isinstance` | 4074 |
+| external_call | `check_publication_candidate` | `ValueError` | 4075 |
 | external_call | `validate_publication_receipt` | `isinstance` | 339 |
 | external_call | `validate_publication_receipt` | `ValueError` | 340 |
 | step_limit | `check_publication_candidate` | `first 12 steps` | 0 |

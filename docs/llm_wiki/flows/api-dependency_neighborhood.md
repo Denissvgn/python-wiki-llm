@@ -214,11 +214,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| dependency_neighborhood | _normalize_query_input | 2563 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2282 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2284 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2285 | `str(exc)` |
-| dependency_neighborhood | normalize_supplied_paths | 2563 | `normalize_supplied_paths((...))` |
+| dependency_neighborhood | _normalize_query_input | 2569 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2288 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2290 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2291 | `str(exc)` |
+| dependency_neighborhood | normalize_supplied_paths | 2569 | `normalize_supplied_paths((...))` |
 | normalize_supplied_paths | _portable_supplied_path | 124 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 102 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 105 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
@@ -234,7 +234,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2282 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2288 |
 | external_call | `require_portable_relative_path` | `isinstance` | 221 |
 | step_limit | `dependency_neighborhood` | `first 12 steps` | 0 |
 | truncated_flow | `dependency_neighborhood` | `depth limit` | 0 |
