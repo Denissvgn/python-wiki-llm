@@ -128,8 +128,11 @@ On a branch that may not write the wiki:
   change the policy or copy the wiki from another branch to get around the
   refusal.
 
-On the trunk or a writer branch, sync and validate as usual and add
-`--require-fresh` to `lint --strict` and `ci-check`.
+On the trunk or a writer branch, refresh in one run:
+`llm-wiki sync --prune-storage --verify` with the project's usual roots and
+options. It writes the wiki, removes unreferenced storage and runs the strict
+checks once. Skip the separate preview and the repeat preview. Then stage the
+wiki directory alone and require `git-check --staged` to succeed.
 
 ## Governance and external-workspace boundaries
 

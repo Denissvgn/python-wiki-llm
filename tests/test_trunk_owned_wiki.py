@@ -310,3 +310,48 @@ def test_strict_lint_still_fails_a_stale_manifest_on_the_trunk(monkeypatch, caps
 
     assert code == 1
     assert "Sync manifest is stale" in capsys.readouterr().out
+
+
+def test_verify_checks_the_written_wiki_in_the_same_run(monkeypatch, capsys, repository):
+    _append_service(repository)
+    _commit_all(repository, "source change")
+    capsys.readouterr()
+
+    code = _run(
+        monkeypatch, repository, "sync", "--prune-storage", "--verify",
+        "--src-dir", ".", "--wiki-dir", WIKI,
+    )
+
+    output = capsys.readouterr().out
+    assert code == 0
+    assert "Sync manifest is fresh." in output
+    assert "Verification passed." in output
+    assert (repository / "docs" / "llm_wiki" / "entities" / "InvoiceService.md").exists()
+
+
+def test_verify_fails_the_run_when_the_written_wiki_has_issues(monkeypatch, capsys, repository):
+    policy_path = repository / ".llm-wiki" / "team.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    policy["conventions"]["required_files"].append("guides/handbook.md")
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    _append_service(repository)
+    _commit_all(repository, "source change")
+    capsys.readouterr()
+
+    code = _run(monkeypatch, repository, "sync", "--verify", "--src-dir", ".", "--wiki-dir", WIKI)
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "failed verification" in captured.err
+    assert "Verification passed." not in captured.out
+
+
+def test_verify_is_rejected_for_a_dry_run(monkeypatch, capsys, repository):
+    capsys.readouterr()
+
+    code = _run(
+        monkeypatch, repository, "sync", "--dry-run", "--verify", "--src-dir", ".", "--wiki-dir", WIKI
+    )
+
+    assert code == 2
+    assert "without --dry-run" in capsys.readouterr().err

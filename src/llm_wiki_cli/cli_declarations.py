@@ -2140,6 +2140,8 @@ def _add_sync_command(subparsers):
                              help="After successful sync, validate and prune unreferenced storage with verified recovery")
     sync_parser.add_argument("--storage-recovery-dir", default=None,
                              help="Cleanup recovery directory outside the wiki (requires --prune-storage)")
+    sync_parser.add_argument("--verify", action="store_true",
+                             help="After a writing sync, run the strict checks once with the same options and fail on any issue")
     sync_parser.add_argument(
         "--force",
         action="store_true",

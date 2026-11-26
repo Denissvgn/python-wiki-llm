@@ -2541,6 +2541,7 @@ def sync_request_from_args(args) -> SyncRequest:
         cache_stats=bool(getattr(args, "cache_stats", False)),
         prune_storage=bool(getattr(args, "prune_storage", False)),
         storage_recovery_dir=getattr(args, "storage_recovery_dir", None),
+        verify=bool(getattr(args, "verify", False)),
     )
 
 
@@ -5782,6 +5783,9 @@ def run_request(request: SyncRequest) -> None:
             raise ValueError("--storage-recovery-dir requires --prune-storage")
         from llm_wiki_engine.knowledge_storage_lifecycle import _outside_tree
         _outside_tree(Path(recovery), options.wiki_dir)
+    if request.verify and options.dry_run:
+        emit("Error: --verify checks a written wiki; use it without --dry-run.", stream="stderr")
+        raise SyncRequestAborted(2)
     if not options.dry_run:
         from .wiki_git_delivery import ownership_write_refusal
 
@@ -5822,6 +5826,42 @@ def run_request(request: SyncRequest) -> None:
         emit(f"Storage cleanup removed {len(cleaned['removed'])} objects ({cleaned['bytes']} bytes).")
         if cleaned["recovery_manifest"] is not None:
             emit("Storage recovery manifest " + cleaned["recovery_manifest"])
+    if request.verify:
+        _verify_written_wiki(request, options)
+
+
+def _verify_written_wiki(request: SyncRequest, options: _SyncRunOptions) -> None:
+    """Run the strict checks once on the wiki this sync just wrote.
+
+    The checks use the request's own source selection, helpers and inventory
+    cache, so the source is not analysed a second time when the cache holds
+    the sync's extraction.
+    """
+    from .lint_service import build_report, render_text
+
+    emit("Verifying the written wiki...")
+    report = build_report(
+        options.wiki_dir,
+        os.fspath(request.source_root),
+        strict=True,
+        require_fresh=True,
+        cache_options=cache_options_for(
+            disabled=not request.cache, rebuild=False,
+            cache_dir=None if request.cache_dir is None else os.fspath(request.cache_dir),
+            stats_enabled=request.cache_stats,
+        ),
+        parallel_jobs=request.jobs,
+        helper_cache_dir=None if request.helper_cache_dir is None else os.fspath(request.helper_cache_dir),
+        include_tests=request.include_tests,
+        job_request=_job_request(request),
+        include_plugins=request.plugins,
+        source_selection=request.source_selection,
+    )
+    emit(render_text(report), end="")
+    if not report.passed:
+        emit(f"Error: the written wiki failed verification with {report.issue_count} issue(s).", stream="stderr")
+        raise SyncAborted(1)
+    emit("Verification passed.")
 
 
 def _run_sync_options(options, write_basis=None) -> None:

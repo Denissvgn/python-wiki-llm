@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   undocumented or stale generated pages as pending refresh without failing;
   `--require-fresh` restores the failure for the branch that refreshes the
   wiki. Integrity checks stay blocking everywhere.
+- `sync --verify` runs the strict checks once on the wiki it just wrote and
+  exits with status 1 when they find an issue. The checks reuse the sync's
+  cached extraction, so the source is analysed once. One command replaces a
+  preview, a sync, a repeat preview and separate `lint`, `ci-check` and
+  `team check` runs.
 
 ### Changed
 

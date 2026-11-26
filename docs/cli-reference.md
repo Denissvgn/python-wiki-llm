@@ -541,6 +541,12 @@ Use `knowledge storage-check --full --require-referenced` for a read-only gate.
 The [storage lifecycle guide](knowledge-storage.md) describes recovery and the
 complete audit.
 
+Add `--verify` to run the strict checks on the wiki the sync just wrote. The
+run exits with status 1 when they report an issue; the written wiki stays in
+place for inspection. The checks use the same roots, source selection, helper
+cache and inventory cache as the sync and apply `--require-fresh`. `--verify`
+does not combine with `--dry-run`.
+
 For a narrowly authorized repair of captured invalid evidence, use
 `--repair-evidence` with canonical POSIX source paths relative to `--src-dir`:
 
@@ -2073,9 +2079,21 @@ Under trunk ownership:
 - `knowledge git-check --base REF` fails when such a branch changed a
   generated wiki path.
 
-Refresh the wiki from the trunk after merging: run `sync` on the trunk or a
-writer branch and deliver the result on its own. One refresh covers every
-change merged since the previous one. Until it lands, the wiki on the trunk
+Refresh the wiki from the trunk after merging. One refresh covers every
+change merged since the previous one:
+
+```bash
+git switch -C llm-wiki/refresh origin/main
+llm-wiki sync --prune-storage --verify --src-dir . --wiki-dir docs/llm_wiki
+git add -A docs/llm_wiki
+llm-wiki knowledge git-check --wiki-dir docs/llm_wiki --staged
+```
+
+`--verify` runs the strict checks on the written wiki in the same run, with
+`--require-fresh` applied, and reuses the sync's cached extraction. A sync
+that would change an unusually large share of the wiki still stops and asks
+for `--force`, so no separate preview is needed. Commit the wiki directory on
+its own and deliver it through the project's usual review. Until it lands, the wiki on the trunk
 describes an earlier commit; freshness reports name the sources that changed
 since then.
 
