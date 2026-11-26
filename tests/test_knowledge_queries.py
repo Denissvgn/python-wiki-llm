@@ -28,6 +28,7 @@ from llm_wiki_engine.knowledge_consumption import (
     build_knowledge_read_view,
 )
 from llm_wiki_engine.knowledge_evidence import formatted_json_bytes
+from llm_wiki_engine.query_result_format import validate_documentation_query_result
 from llm_wiki_engine.knowledge_loader import (
     KnowledgeMismatchPolicy,
     load_knowledge_state,
@@ -1491,6 +1492,156 @@ def test_public_query_result_caps_one_oversized_valid_concept_record(tmp_path):
         "truncated": True,
     }
     assert result["bounds"]["result_bytes"]["total"] > len(encoded)
+
+
+def _query_envelope(operation: str, **payload):
+    return {
+        "schema_version": "llm-wiki-documentation-query/v1",
+        "operation": operation,
+        "query": "core.py",
+        "found": True,
+        "ambiguous": False,
+        "truncated": False,
+        "cost": {
+            "scope": "snapshot-index-only",
+            "full_inventory_performed": False,
+            "supplied_paths": 0,
+        },
+        **payload,
+    }
+
+
+def _bound(count: int) -> dict[str, int | bool]:
+    return {"total": count, "returned": count, "truncated": False}
+
+
+def _record(index: int) -> dict[str, object]:
+    # Nested records hold no presentation text, so only dropping whole
+    # records can bring them under the result limit.
+    return {"key": f"edge-{index:02d}", "maintenance": {"records": ["m" * 6000]}}
+
+
+def _encoded_size(result) -> int:
+    return len(
+        json.dumps(
+            result, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+        ).encode("utf-8")
+    )
+
+
+def test_oversized_typed_result_returns_the_leading_edges_that_fit():
+    edges = [_record(index) for index in range(12)]
+    result = documentation_queries.fit_documentation_query_result(
+        _query_envelope(
+            "typed",
+            matches=[{"locator": USER_LOCATOR}],
+            concept={"locator": USER_LOCATOR},
+            edges=edges,
+            total=12,
+            returned=12,
+            bounds={"matches": _bound(1), "edges": _bound(12)},
+        )
+    )
+
+    validate_documentation_query_result(result)
+    kept = len(result["edges"])
+    assert 0 < kept < 12
+    assert result["edges"] == edges[:kept]
+    assert result["concept"] == {"locator": USER_LOCATOR}
+    assert result["matches"] == [{"locator": USER_LOCATOR}]
+    assert result["bounds"]["edges"] == {
+        "total": 12,
+        "returned": kept,
+        "truncated": True,
+    }
+    assert (result["total"], result["returned"]) == (12, kept)
+    assert result["truncated"] is True
+    assert "result_omitted" not in result
+    assert _encoded_size(result) == result["bounds"]["result_bytes"]["returned"]
+    assert _encoded_size(result) <= documentation_queries.QUERY_RESULT_SERIALIZED_BYTE_LIMIT
+
+
+def test_oversized_impact_result_cuts_every_record_list_to_one_prefix():
+    paths = [f"mod_{index}.py" for index in range(12)]
+    payload = _query_envelope(
+        "impact",
+        matches=[{"path": path} for path in paths],
+        impacted_paths=paths,
+        concepts=[_record(index) for index in range(12)],
+        pages=[{"source_path": path} for path in paths],
+        relationships=[{"source_path": path} for path in paths],
+        knowledge={},
+        limitations=["snapshot attribution"],
+        bounds={
+            "matches": _bound(12),
+            "paths": _bound(12),
+            "concepts": _bound(12),
+            "pages": _bound(12),
+            "relationships": _bound(12),
+        },
+    )
+    result = documentation_queries.fit_documentation_query_result(payload)
+
+    validate_documentation_query_result(result)
+    kept = len(result["concepts"])
+    assert 0 < kept < 12
+    for name in ("matches", "impacted_paths", "concepts", "pages", "relationships"):
+        assert result[name] == payload[name][:kept]
+    for name in ("matches", "paths", "concepts", "pages", "relationships"):
+        assert result["bounds"][name]["returned"] == kept
+    assert result["limitations"] == ["snapshot attribution"]
+    assert "result_omitted" not in result
+
+
+def test_oversized_result_trims_a_nested_bounded_list():
+    relationships = [_record(index) for index in range(12)]
+    result = documentation_queries.fit_documentation_query_result(
+        _query_envelope(
+            "explain",
+            matches=[{"locator": USER_LOCATOR}],
+            concept={"locator": USER_LOCATOR},
+            evidence={"relationships": relationships},
+            knowledge={},
+            total=12,
+            returned=12,
+            bounds={"matches": _bound(1), "evidence.relationships": _bound(12)},
+        )
+    )
+
+    validate_documentation_query_result(result)
+    kept = len(result["evidence"]["relationships"])
+    assert 0 < kept < 12
+    assert result["evidence"]["relationships"] == relationships[:kept]
+    assert result["bounds"]["evidence.relationships"]["returned"] == kept
+    assert result["returned"] == kept
+
+
+def test_omitted_impact_result_keeps_every_impact_field():
+    payload = _query_envelope(
+        "impact",
+        matches=[{"path": "core.py"}],
+        impacted_paths=["core.py"],
+        concepts=[_record(0)],
+        pages=[],
+        relationships=[],
+        knowledge={},
+        limitations=["snapshot attribution"],
+        bounds={
+            "matches": _bound(1),
+            "paths": _bound(1),
+            "concepts": _bound(1),
+            "pages": _bound(0),
+            "relationships": _bound(0),
+        },
+    )
+    fallback = documentation_queries._minimal_oversized_query_result(
+        payload, total_bytes=100_000
+    )
+
+    validate_documentation_query_result(fallback)
+    assert fallback["concepts"] == [] and fallback["impacted_paths"] == []
+    assert fallback["limitations"] == ["snapshot attribution"]
+    assert fallback["result_omitted"]["records_returned"] == 0
 
 
 def test_oversized_exact_query_identity_is_rejected_without_mutation():

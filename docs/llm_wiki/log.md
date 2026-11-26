@@ -5270,15 +5270,11 @@ Existing permissions, validation bounds and native authority remain separate.
 - Generator version: `6.1.1`
 - Source selection profile: `.llm-wiki/source-selection.json`
 - Source selection fingerprint: `sha256:fc733e85dd0785a78de7a13b0ec18e8858f5715bbf36ea107bf848264a33ac3d`
-- Source snapshot digest: `sha256:6627dd9c899abc0a0dbebf85216f880c73318300020f30c466ca8904bfb8c553`
-- Pages created: 1
-- Pages updated: 86
+- Source snapshot digest: `sha256:d7cc4f62fb9705e88c7b0f2b4c5623057117d40eb5a1b6cdcc71dc76938bbc6f`
+- Pages created: 0
+- Pages updated: 5
 - Pages metadata-only: 0
-- Pages skipped (unchanged): 1866
+- Pages skipped (unchanged): 1947
 - Pages deprecated: 0
-- Semantic fields preserved: 4
+- Semantic fields preserved: 2
 - Moved entities: none
-- Flow pages initialized: 0 (none)
-- Workflow pages created: 1
-- Dependency pages initialized: 0
-- Surface policy updated: no

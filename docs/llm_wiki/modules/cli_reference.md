@@ -42,8 +42,6 @@ flowchart LR
     n8["src/llm_wiki_engine/knowledge_storage_io.py"]
     n1 --> n4
     n1 --> n5
-    n1 --> n7
-    n1 --> n8
     n2 --> n0
     n3 --> n4
     n3 --> n5

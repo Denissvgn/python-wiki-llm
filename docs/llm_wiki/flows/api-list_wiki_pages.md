@@ -169,8 +169,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_wiki_pages | _validate_wiki_dir | 2096 | `_validate_wiki_dir(wiki_dir)` |
-| _validate_wiki_dir | validate_path | 3832 | `validate_path(wiki_dir, '--wiki-dir')` |
+| list_wiki_pages | _validate_wiki_dir | 2090 | `_validate_wiki_dir(wiki_dir)` |
+| _validate_wiki_dir | validate_path | 3583 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 102 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
 | validate_path | current_host().cwd | 103 | `current_host().cwd(data not statically known)` |
