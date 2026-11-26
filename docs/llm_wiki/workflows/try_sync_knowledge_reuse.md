@@ -13,13 +13,14 @@
 5. `validation.resolve_portable_workspace_path`
 6. `knowledge_evidence.hash_file`
 7. `knowledge_reuse.wiki_input_hashes`
-8. `knowledge_orchestration.collect_runtime_repository_evidence`
-9. `knowledge_reuse_format.repository_input_hash`
-10. `knowledge_envelope.build_repository_record`
-11. `knowledge_reuse.implementation_hash`
-12. `knowledge_storage_io._absolute_path`
-13. `progress.record_counts`
-14. `knowledge_reuse.unchanged_commit_result`
+8. `knowledge_orchestration.retain_recorded_repository_identity`
+9. `knowledge_orchestration.collect_runtime_repository_evidence`
+10. `knowledge_reuse_format.repository_input_hash`
+11. `knowledge_envelope.build_repository_record`
+12. `knowledge_reuse.implementation_hash`
+13. `knowledge_storage_io._absolute_path`
+14. `progress.record_counts`
+15. `knowledge_reuse.unchanged_commit_result`
 
 ## Touches
 

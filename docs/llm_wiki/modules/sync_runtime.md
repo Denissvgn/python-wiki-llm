@@ -118,7 +118,7 @@ still stop the operation.
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
-| `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
+| `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `retain_recorded_repository_identity`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.scoped_sync_repair` | `ScopedRepairBoundary`, `ScopedRepairError`, `prepare_boundary`, `repair_paths` |
@@ -197,23 +197,23 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncAborted](../entities/SyncAborted.md) | 269 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
-| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 279 | `SyncAborted` | The request's options were rejected before any sync work started. |
-| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 284 | — | — |
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 343 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 347 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/sync_runtime_SyncResult.md) | 679 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 718 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 740 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1785 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1817 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1824 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1830 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1836 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1852 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1896 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1929 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1935 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [SyncAborted](../entities/SyncAborted.md) | 270 | `SystemExit` | Sync stopped after writing why to the host's stderr. |
+| [SyncRequestAborted](../entities/SyncRequestAborted.md) | 280 | `SyncAborted` | The request's options were rejected before any sync work started. |
+| [_OutcomeRecorder](../entities/OutcomeRecorder.md) | 285 | — | — |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 344 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 348 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/sync_runtime_SyncResult.md) | 680 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 719 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 741 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1786 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1818 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1825 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1831 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1837 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1853 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1897 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1930 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1936 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
