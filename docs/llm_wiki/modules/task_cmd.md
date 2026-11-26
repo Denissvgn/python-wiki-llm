@@ -38,6 +38,7 @@ flowchart LR
     n8["src/llm_wiki_engine/request_json.py"]
     n0 --> n3
     n0 --> n6
+    n0 --> n7
     n1 --> n2
     n2 --> n0
     n2 --> n3
