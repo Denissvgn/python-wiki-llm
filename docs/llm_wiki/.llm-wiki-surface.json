@@ -22370,7 +22370,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/documentation_queries.py"
           ],
-          "step_count": 2505,
+          "step_count": 2548,
           "truncated": true
         }
       },
@@ -38565,7 +38565,7 @@
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_engine/wiki_write_basis.py"
           ],
-          "step_count": 1823,
+          "step_count": 1828,
           "truncated": true
         }
       },
@@ -78158,5 +78158,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:690cb5f969fb7522a6baced1d2c34e08a35c0030bbc1af1d5565b180d0a90f7b"
+  "source_hash": "sha256:5f780963c73116162e4e5d07f18d3d39ad4202ab1dc4c448d8380d22b6992e70"
 }

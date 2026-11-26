@@ -94,6 +94,7 @@ _QUERY_PRESENTATION_TEXT_FIELDS = frozenset(
         "title",
     }
 )
+_QUERY_BOUND_LIST_ALIASES = {"paths": "impacted_paths"}
 _KNOWLEDGE_SELECTION_REJECTING_FINDINGS = frozenset(
     {
         "governance-missing",
@@ -207,6 +208,132 @@ def _attach_query_result_byte_bound(
     raise DocumentationQueryError("query result byte accounting did not converge.")
 
 
+def _query_record_lists(
+    result: Mapping[str, Any],
+) -> list[tuple[str, dict[str, Any], str]]:
+    """Return each returned record list that a count bound describes exactly.
+
+    A bound names its list by key, or by a dotted path for a nested list. The
+    impact ``paths`` bound counts the ``impacted_paths`` list.
+    """
+
+    bounds = result.get("bounds")
+    if not isinstance(bounds, Mapping):
+        return []
+    found: list[tuple[str, dict[str, Any], str]] = []
+    for name, bound in bounds.items():
+        if not isinstance(name, str) or not isinstance(bound, Mapping):
+            continue
+        returned = bound.get("returned")
+        if isinstance(returned, bool) or not isinstance(returned, int):
+            continue
+        parts = name.split(".")
+        if name not in result and name in _QUERY_BOUND_LIST_ALIASES:
+            parts = [_QUERY_BOUND_LIST_ALIASES[name]]
+        container: object = result
+        for part in parts[:-1]:
+            container = container.get(part) if isinstance(container, dict) else None
+        if not isinstance(container, dict):
+            continue
+        records = container.get(parts[-1])
+        if isinstance(records, list) and len(records) == returned:
+            found.append((name, container, parts[-1]))
+    return found
+
+
+def _query_result_prefix(
+    result: Mapping[str, Any],
+    count: int,
+    *,
+    total_bytes: int,
+) -> tuple[dict[str, Any], int]:
+    """Return the result with every record list cut to its first ``count`` items."""
+
+    candidate = cast(
+        dict[str, Any],
+        _cap_query_result_strings(result, QUERY_RESULT_TEXT_BYTE_LIMIT),
+    )
+    bounds = cast(dict[str, Any], candidate["bounds"])
+    record_lists = _query_record_lists(candidate)
+    top_total, top_returned = candidate.get("total"), candidate.get("returned")
+    primary = next(
+        (
+            name
+            for name, _, _ in record_lists
+            if name != "matches"
+            and bounds[name].get("total") == top_total
+            and bounds[name].get("returned") == top_returned
+        ),
+        None,
+    )
+    for name, container, key in record_lists:
+        records = container[key]
+        if len(records) <= count:
+            continue
+        container[key] = records[:count]
+        bound = bounds[name]
+        bounds[name] = {
+            **bound,
+            "returned": count,
+            "truncated": bound["total"] > count,
+        }
+    if primary is not None:
+        candidate["returned"] = bounds[primary]["returned"]
+    raw_bound = bounds.get("raw_evidence_bytes")
+    if isinstance(raw_bound, Mapping):
+        evidence: list[Any] | None = None
+        if isinstance(candidate.get("raw_evidence"), list):
+            evidence = candidate["raw_evidence"]
+        elif isinstance(candidate.get("edges"), list):
+            evidence = [
+                edge["evidence"]
+                for edge in candidate["edges"]
+                if isinstance(edge, Mapping) and "evidence" in edge
+            ]
+        if evidence is not None:
+            raw_returned = min(
+                raw_bound["total"],
+                len(_canonical_json(evidence).encode("utf-8")),
+            )
+            bounds["raw_evidence_bytes"] = {
+                **raw_bound,
+                "returned": raw_returned,
+                "truncated": raw_bound["total"] > raw_returned,
+            }
+    candidate["truncated"] = True
+    return _attach_query_result_byte_bound(candidate, total=total_bytes)
+
+
+def _fit_query_result_prefix(
+    result: Mapping[str, Any],
+    *,
+    total_bytes: int,
+) -> dict[str, Any] | None:
+    """Return the largest record prefix that fits, or ``None`` when none does.
+
+    Every bounded record list keeps the same number of leading items, so the
+    returned records stay in each operation's deterministic order and a caller
+    sees exactly how many of each it received.
+    """
+
+    longest = max(
+        (len(container[key]) for _, container, key in _query_record_lists(result)),
+        default=0,
+    )
+    best: dict[str, Any] | None = None
+    low, high = 0, longest - 1
+    while low <= high:
+        count = (low + high) // 2
+        candidate, returned = _query_result_prefix(
+            result, count, total_bytes=total_bytes
+        )
+        if returned <= QUERY_RESULT_SERIALIZED_BYTE_LIMIT:
+            best, low = candidate, count + 1
+        else:
+            high = count - 1
+    return best
+
+
 def _minimal_oversized_query_result(
     result: Mapping[str, Any],
     *,
@@ -254,6 +381,7 @@ def _minimal_oversized_query_result(
         "direction",
         "include_evidence",
         "knowledge",
+        "limitations",
         "operation",
         "origins",
         "resolutions",
@@ -269,9 +397,11 @@ def _minimal_oversized_query_result(
     for name in (
         "callers",
         "callees",
+        "concepts",
         "cycle_groups",
         "edges",
         "external_targets",
+        "impacted_paths",
         "inbound",
         "kinds",
         "outbound",
@@ -320,6 +450,9 @@ def _fit_query_result(result: dict[str, Any]) -> dict[str, Any]:
         )
         if returned <= QUERY_RESULT_SERIALIZED_BYTE_LIMIT:
             return candidate
+    prefix = _fit_query_result_prefix(result, total_bytes=total_bytes)
+    if prefix is not None:
+        return prefix
     fallback = _minimal_oversized_query_result(result, total_bytes=total_bytes)
     if (
         len(_canonical_json(fallback).encode("utf-8"))

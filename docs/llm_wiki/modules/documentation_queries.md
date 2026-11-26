@@ -90,8 +90,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedResult](../entities/BoundedResult.md) | 353 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 852 | — | Read-only graph query service over already-derived documentation payloads. |
+| [_BoundedResult](../entities/BoundedResult.md) | 486 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 985 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 
@@ -103,6 +103,9 @@ flowchart LR
 | `_cap_query_result_strings` | `(value: object, limit: int, *, field: str \| None = None) -> object` | — | — |
 | `_query_result_byte_bound` | `(total: int, returned: int) -> dict[str, int \| bool]` | — | — |
 | `_attach_query_result_byte_bound` | `(result: dict[str, Any], *, total: int) -> tuple[dict[str, Any], int]` | — | — |
+| `_query_record_lists` | `(result: Mapping[str, Any]) -> list[tuple[str, dict[str, Any], str]]` | — | Return each returned record list that a count bound describes exactly. |
+| `_query_result_prefix` | `(result: Mapping[str, Any], count: int, *, total_bytes: int) -> tuple[dict[str, Any], int]` | — | Return the result with every record list cut to its first ``count`` items. |
+| `_fit_query_result_prefix` | `(result: Mapping[str, Any], *, total_bytes: int) -> dict[str, Any] \| None` | — | Return the largest record prefix that fits, or ``None`` when none does. |
 | `_minimal_oversized_query_result` | `(result: Mapping[str, Any], *, total_bytes: int) -> dict[str, Any]` | — | Preserve query status while omitting every oversized returned record. |
 | `_fit_query_result` | `(result: dict[str, Any]) -> dict[str, Any]` | — | Enforce a shared serialized-byte ceiling for every public query result. |
 | `fit_documentation_query_result` | `(result: Mapping[str, Any]) -> dict[str, Any]` | — | Return a detached public query payload within the shared byte limit. |
