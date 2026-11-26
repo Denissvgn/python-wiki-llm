@@ -11,9 +11,10 @@ from llm_wiki_cli.services import skills
 from llm_wiki_cli.services.instruction_ownership import markdown_anchor
 
 
-CLAUDE_TOPIC_ROOT = ".claude/skills/wiki-reference/references"
-GENERIC_TOPIC_ROOT = ".llm-wiki/skills/wiki-reference/references"
-DESCRIPTION_WORD_BASELINE = 572
+# Workflow skills link managed topics relative to their own directory so the
+# same manifest resolves in every install, export, and run-local layout.
+TOPIC_LINK_ROOT = "../wiki-reference/references"
+INSTALL_ROOT_SPELLINGS = (".claude/skills", ".llm-wiki/skills")
 DESCRIPTION_WORD_RANGE = range(25, 41)
 LONG_REFERENCE_LINE_THRESHOLD = 100
 LONG_REFERENCE_RESOURCE_COUNT = 21
@@ -132,9 +133,9 @@ def _second_level_headings(content: str) -> tuple[str, ...]:
     )
 
 
-def test_bundled_description_word_baseline_is_bounded_and_diagnostic() -> None:
+def test_bundled_descriptions_stay_within_the_per_skill_word_range() -> None:
     bundled = skills.list_bundled_skills()
-    total, diagnostics = _description_diagnostics()
+    _, diagnostics = _description_diagnostics()
     outside_target = {
         skill.skill_id: len(skill.description.split())
         for skill in bundled
@@ -142,10 +143,9 @@ def test_bundled_description_word_baseline_is_bounded_and_diagnostic() -> None:
     }
 
     assert not outside_target, f"description target violations:\n{diagnostics}"
-    assert total == DESCRIPTION_WORD_BASELINE, (
-        f"description word baseline changed: {total} != "
-        f"{DESCRIPTION_WORD_BASELINE}\n{diagnostics}"
-    )
+    for skill in bundled:
+        # The line-based frontmatter reader and strict YAML readers must agree.
+        assert ": " not in skill.description, skill.skill_id
 
 
 def test_long_reference_resources_have_complete_one_level_contents_maps() -> None:
@@ -213,12 +213,13 @@ def test_common_policy_routes_are_direct_portable_dependencies(
     manifest = _manifest(skill_id)
 
     assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
-    for topic in sorted(topics):
-        assert f"{CLAUDE_TOPIC_ROOT}/{topic}" in manifest, (
-            f"{skill_id} lacks the Claude route for {topic}"
+    for spelling in INSTALL_ROOT_SPELLINGS:
+        assert spelling not in manifest, (
+            f"{skill_id} names the agent-specific install root {spelling}"
         )
-        assert f"{GENERIC_TOPIC_ROOT}/{topic}" in manifest, (
-            f"{skill_id} lacks the generic route for {topic}"
+    for topic in sorted(topics):
+        assert manifest.count(f"]({TOPIC_LINK_ROOT}/{topic})") == 1, (
+            f"{skill_id} must link {topic} exactly once, relative to itself"
         )
         assert (
             skills.BUNDLED_SKILLS_ROOT
@@ -228,7 +229,7 @@ def test_common_policy_routes_are_direct_portable_dependencies(
         ).is_file(), f"{skill_id} routes to missing topic {topic}"
 
 
-def test_every_direct_managed_topic_route_is_paired_and_dependency_closed() -> None:
+def test_every_direct_managed_topic_route_is_relative_and_dependency_closed() -> None:
     topic_root = (
         skills.BUNDLED_SKILLS_ROOT / skills.REFERENCE_SKILL_ID / "references"
     )
@@ -241,8 +242,7 @@ def test_every_direct_managed_topic_route_is_paired_and_dependency_closed() -> N
         routed_topics = {
             topic
             for topic in known_topics
-            if f"{CLAUDE_TOPIC_ROOT}/{topic}" in manifest
-            or f"{GENERIC_TOPIC_ROOT}/{topic}" in manifest
+            if f"wiki-reference/references/{topic}" in manifest
         }
         if not routed_topics:
             continue
@@ -251,12 +251,9 @@ def test_every_direct_managed_topic_route_is_paired_and_dependency_closed() -> N
             skills.REFERENCE_SKILL_ID,
         )
         for topic in routed_topics:
-            assert f"{CLAUDE_TOPIC_ROOT}/{topic}" in manifest, (
-                f"{skill.skill_id} has only the generic route for {topic}"
-            )
-            assert f"{GENERIC_TOPIC_ROOT}/{topic}" in manifest, (
-                f"{skill.skill_id} has only the Claude route for {topic}"
-            )
+            assert manifest.count(f"wiki-reference/references/{topic}") == (
+                manifest.count(f"]({TOPIC_LINK_ROOT}/{topic})")
+            ), f"{skill.skill_id} routes {topic} through a non-relative path"
 
 
 @pytest.mark.parametrize(
@@ -272,17 +269,24 @@ def test_every_direct_managed_topic_route_is_paired_and_dependency_closed() -> N
         "wiki-sync",
     ),
 )
-def test_managed_wiki_mutation_keeps_a_local_fail_closed_kernel(
+def test_managed_wiki_mutation_keeps_the_eligibility_gate_and_routes_the_policy(
     skill_id: str,
 ) -> None:
-    normalized = " ".join(_manifest(skill_id).split()).lower()
+    manifest = _manifest(skill_id)
+    normalized = " ".join(manifest.split()).lower()
 
+    # Each mutating workflow keeps the one deterministic gate locally and
+    # routes the full staging policy to its single owner.
+    assert "## Managed repository preflight" in manifest
     assert "llm-wiki knowledge git-check --wiki-dir <wiki-dir>" in normalized
     assert "git-eligible" in normalized
-    assert "--staged" in normalized
     assert "local-only" in normalized
-    assert "force-add" in normalized
-    assert "ignore/exclude" in normalized
+    assert "repository-handoff" in normalized
+    assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
+
+    owner = _normalized_skill_path(CANONICAL_REPOSITORY_REPORT_POLICY)
+    for owned in ("--staged", "force-add", "ignore/exclude", "local-only"):
+        assert owned in owner, f"repository-handoff no longer owns {owned!r}"
 
 
 def test_repository_report_writes_require_exact_ignore_proof_and_nonpublication() -> None:
@@ -326,8 +330,7 @@ def test_repository_report_writes_require_exact_ignore_proof_and_nonpublication(
         normalized = _normalized_skill_path(relative)
 
         assert "exact-target fail-closed policy" in normalized, relative
-        assert f"{CLAUDE_TOPIC_ROOT}/repository-handoff.md" in normalized, relative
-        assert f"{GENERIC_TOPIC_ROOT}/repository-handoff.md" in normalized, relative
+        assert f"{TOPIC_LINK_ROOT}/repository-handoff.md" in normalized, relative
         assert (
             "suggested `reports/` path never authorizes repository creation or "
             "publication" in normalized

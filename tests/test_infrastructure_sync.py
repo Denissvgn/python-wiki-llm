@@ -1175,11 +1175,7 @@ def test_wiki_sync_skill_exposes_incremental_infrastructure_contract() -> None:
     assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (
         skills.REFERENCE_SKILL_ID,
     )
-    for root in (".claude/skills", ".llm-wiki/skills"):
-        assert (
-            f"{root}/wiki-reference/references/extractors-dependencies.md"
-            in manifest
-        )
+    assert "../wiki-reference/references/extractors-dependencies.md" in manifest
     for expected in (
         "Docker, Compose, Kubernetes, GitHub Actions",
         "infrastructure add/change/move/remove counts",

@@ -78,7 +78,7 @@ def test_topic_tree_has_explicit_triggers_and_bounded_scopes() -> None:
         )
 
 
-def test_router_links_every_topic_directly_and_documents_install_roots() -> None:
+def test_router_links_every_topic_directly_and_stays_install_root_neutral() -> None:
     router = (REFERENCE_ROOT / "SKILL.md").read_text(encoding="utf-8")
     assert re.match(
         r"\A---\nname: wiki-reference\ndescription: [^\n]+\n---\n",
@@ -89,8 +89,9 @@ def test_router_links_every_topic_directly_and_documents_install_roots() -> None
         assert router.count(f"](references/{name})") == 1
 
     assert "[reference.md](reference.md)" not in router
-    assert ".claude/skills/wiki-reference/SKILL.md" in router
-    assert ".llm-wiki/skills/wiki-reference/SKILL.md" in router
+    assert ".claude/skills" not in router
+    assert ".llm-wiki/skills" not in router
+    assert "relative to this file" in _normalized(router)
     assert "compatibility index" in router
     assert "stop only the affected mutation workflow" in _normalized(router)
     assert "read-only" in router

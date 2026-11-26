@@ -1,6 +1,6 @@
 ---
 name: native-coding
-description: Gather qualified source or committed wiki evidence for an explicitly chosen coding workflow, support an authorized source change, and preserve a validated handoff for resume.
+description: Gather qualified source and committed-wiki evidence before and during a code change. Use when the caller has explicitly chosen the native coding workflow for an authorized edit and needs task context, bounded follow-up queries, and a validated handoff for resume.
 ---
 
 # Native coding workflow
@@ -10,14 +10,12 @@ skill does not activate a profile or grant source, command, network, or publicat
 permissions. The host chooses the profile, workspace roots and context inclusion.
 
 Use the shared development procedure at
-`.claude/skills/wiki-reference/references/development-workflow.md` for Claude or
-`.llm-wiki/skills/wiki-reference/references/development-workflow.md` for other
-configured agents. This recipe adds explicitly chosen interface details; it does
+[development-workflow](../wiki-reference/references/development-workflow.md).
+This recipe adds explicitly chosen interface details; it does
 not activate its profile.
 
-Claude reads `.claude/skills/wiki-reference/references/context-query.md`; other
-configured agents read `.llm-wiki/skills/wiki-reference/references/context-query.md`.
-Use that installed route for the shared context and query contract.
+Use [context-query](../wiki-reference/references/context-query.md) for the
+shared context and query contract.
 
 1. Choose evidence before setup. Prefer task request v2 with canonical delivery
    for compatible integrations; legacy task calls retain their existing contract

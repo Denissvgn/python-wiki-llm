@@ -1,6 +1,6 @@
 ---
 name: impact-analysis
-description: Trace a proposed change's blast radius through exact native concepts, bounded typed relationships, and authorized source topology. Use to identify affected code, wiki pages, and semantic sections and produce a qualified documentation-update checklist.
+description: Trace a change's blast radius, finding what else is affected when a symbol, file, entrypoint, or concept changes. Use for what-breaks-if-I-change-this and which-docs-need-updating questions; reports affected code, wiki pages, and a documentation-update checklist without editing anything.
 ---
 
 # impact-analysis
@@ -22,24 +22,17 @@ the checklist vocabulary shared with `doc-review`.
 - The user has named a specific concept UID/locator/alias, symbol, file, or
   entrypoint to analyze—this skill traces one target, not a whole-repo audit.
 - For external-source repositories, source-reading commands take `--allow-external-src`; the wiki path stays inside the current project.
-- Resolve the active source-selection profile once. When configured, replace
-  `<profile>` below with its exact repository-relative path and retain
-  `--source-selection <profile>` on every live source query; omit the whole
-  option only when no profile exists.
+- Carry `--source-selection <profile>` on every source-reading command when a
+  profile is configured or discovered; omit the option only when none exists,
+  and never widen a configured selection.
 
 ## Native trust preflight
 
-Branch on `availability`, reason, `freshness_evaluated`, and bounds. Only
-`ready` with live `current` qualifies an unchanged-since-observation claim;
-preserve `nonsemantic-source-change`, and never turn an unavailable or bounded
-`found: false` into a negative fact. Do not initialize governance or execute
-stored content. Apply the complete managed contract at
-`.claude/skills/wiki-reference/references/knowledge-consumption.md` for Claude
-or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md` for
-other configured agents. Choose the native, supplied-diff, or full-inventory
-route through `.claude/skills/wiki-reference/references/context-query.md` for
-Claude or `.llm-wiki/skills/wiki-reference/references/context-query.md` for
-other configured agents.
+Native knowledge: interpret every result through
+[knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+Only `ready` with live `current` freshness supports an unchanged claim, and an
+unavailable or bounded `found: false` is never a negative fact. Choose the native, supplied-diff, or full-inventory
+route through [context-query](../wiki-reference/references/context-query.md).
 
 ## Steps
 

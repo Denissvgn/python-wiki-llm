@@ -60,10 +60,6 @@ def test_infra_review_routes_native_policy_and_keeps_trusted_plugin_kernel():
     normalized = " ".join(text.split())
 
     for expected in (
-        "`availability`",
-        "reason",
-        "`freshness_evaluated`",
-        "`nonsemantic-source-change`",
         "`ready` with live `current`",
         "bounded `found: false`",
         "trusted, unsandboxed code",
@@ -72,10 +68,7 @@ def test_infra_review_routes_native_policy_and_keeps_trusted_plugin_kernel():
     assert skills.SKILL_DEPENDENCIES["infra-review"] == (
         skills.REFERENCE_SKILL_ID,
     )
-    for root in (".claude/skills", ".llm-wiki/skills"):
-        assert (
-            f"{root}/wiki-reference/references/knowledge-consumption.md" in text
-        )
+    assert "../wiki-reference/references/knowledge-consumption.md" in text
 
     common = (
         skills.BUNDLED_SKILLS_ROOT

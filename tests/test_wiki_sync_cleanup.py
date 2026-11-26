@@ -77,11 +77,8 @@ def test_wiki_sync_routes_every_specialized_concern_to_exact_managed_topics() ->
         skills.REFERENCE_SKILL_ID,
     )
     for topic in routed_topics:
-        claude_route = f".claude/skills/wiki-reference/references/{topic}"
-        generic_route = f".llm-wiki/skills/wiki-reference/references/{topic}"
-        assert claude_route in manifest
-        assert generic_route in manifest
-        assert manifest.count(f"wiki-reference/references/{topic}") == 2
+        assert manifest.count(f"](../wiki-reference/references/{topic})") == 1
+        assert manifest.count(f"wiki-reference/references/{topic}") == 1
         assert (REFERENCE_ROOT / topic).is_file()
 
     assert "[reference.md](reference.md)" not in manifest
@@ -158,18 +155,7 @@ def test_extended_validation_and_handoff_live_in_their_direct_topics() -> None:
         assert contract in handoff
 
 
-def test_legacy_companion_is_small_and_cannot_shadow_managed_contracts() -> None:
-    companion_path = SYNC_ROOT / "reference.md"
-    companion = _text(companion_path)
-
-    assert len(companion.encode("utf-8")) <= 2_000
-    assert "compatibility reference" in companion
-    assert "cannot substitute for a missing or modified dependency" in companion
-    assert "not an active route" in companion
-    for forbidden_heading in (
-        "## Governed rename decision table",
-        "## Validation loop details",
-        "## Semantic-only edit guardrail",
-        "## Failure modes and edge cases",
-    ):
-        assert forbidden_heading not in companion
+def test_wiki_sync_ships_no_companion_that_could_shadow_managed_contracts() -> None:
+    assert not (SYNC_ROOT / "reference.md").exists()
+    assert sorted(path.name for path in SYNC_ROOT.iterdir()) == ["SKILL.md"]
+    assert "trigger-agent" in _text(SYNC_ROOT / "SKILL.md")

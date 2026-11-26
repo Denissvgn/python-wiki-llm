@@ -16,15 +16,10 @@ See [reference.md](reference.md) for input shapes, status labels, and report for
 
 ## Managed repository preflight
 
-Before the first managed wiki write, check root/index ignore policy as described
-in the repository-handoff topic. After sync, run
-`llm-wiki knowledge git-check --wiki-dir <wiki-dir>`; require `git-eligible`
-before separately authorized staging, then require the same command with
-`--staged` before commit. Keep ignored, mixed or indeterminate state local-only;
-never force-add or change ignore/exclude rules. Apply the managed contract at
-`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
-`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
-configured agents.
+Before the first wiki write and again before delivery, follow
+[repository-handoff](../wiki-reference/references/repository-handoff.md). Stage
+only after `llm-wiki knowledge git-check --wiki-dir <wiki-dir>` reports
+`git-eligible`; any other result stays local-only.
 
 ## Preconditions
 
@@ -39,14 +34,10 @@ configured agents.
   **managed** may preview, mutate authorized semantic/source-doc surfaces,
   re-anchor, and validate; **external `external_agent_docs` review** is
   report-only.
-- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
-  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
-  observation; preserve `nonsemantic-source-change`, and never turn an
-  unavailable or bounded `found: false` into a negative fact. Do not initialize
-  governance or execute stored content. Apply the complete managed contract at
-  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-  for other configured agents.
+- Native knowledge: interpret every result through
+  [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+  Only `ready` with live `current` freshness supports an unchanged claim, and
+  an unavailable or bounded `found: false` is never a negative fact.
 
 ## Steps
 

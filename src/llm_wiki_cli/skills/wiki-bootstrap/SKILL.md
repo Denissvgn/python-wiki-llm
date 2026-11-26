@@ -1,29 +1,23 @@
 ---
 name: wiki-bootstrap
-description: Bootstrap a first LLM Wiki for an existing codebase, complete a bounded semantic pass, record deferred pages, validate, and hand off safely. Use only for first-time wiki creation; route existing wikis to wiki-sync or migration.
+description: Bootstrap the first LLM Wiki for an existing codebase. Use only for first-time wiki creation, covering generation, a bounded semantic pass on central pages, a deferred-page backlog, validation, and handoff; route existing wikis to wiki-sync or migration.
 ---
 
 # wiki-bootstrap
 
 Create a first useful wiki without pretending every generated page can be hand-polished in one session. The default output is reference-oriented: a complete generated wiki surface for agents, maintainers, and future documentation work, not finished user-facing product docs. The loop is: **bootstrap with automatic helper setup → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → final owning sync/re-anchor → lint/ci-check → policy-aware handoff**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. For user docs, follow this skill with `onboarding-guide` and then `publish-docs` / `site export --profile user --site-name <project>`. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
 
-In an `external_agent_docs` run, this skill supplies the deterministic
-`bootstrap-source` baseline only. Write the wiki inside the explicit
-documentation workspace, leave the source read-only, and hand the worklist to
-`wiki-semantic-enhance`; do not perform the target-repository commit steps.
-Managed knowledge-base behavior remains the default outside that explicit mode.
+In an `external_agent_docs` run the packet governs instead of the managed steps
+below: this skill supplies only the deterministic `bootstrap-source` baseline
+inside the workspace, the source stays read-only, and the supervisor owns the
+sync/re-anchor, validation, and handoff to `wiki-semantic-enhance`.
 
 ## Managed repository preflight
 
-Before the first managed wiki write, check root/index ignore policy as described
-in the repository-handoff topic. After sync, run
-`llm-wiki knowledge git-check --wiki-dir <wiki-dir>`; require `git-eligible`
-before separately authorized staging, then require the same command with
-`--staged` before commit. Keep ignored, mixed or indeterminate state local-only;
-never force-add or change ignore/exclude rules. Apply the managed contract at
-`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
-`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
-configured agents.
+Before the first wiki write and again before delivery, follow
+[repository-handoff](../wiki-reference/references/repository-handoff.md). Stage
+only after `llm-wiki knowledge git-check --wiki-dir <wiki-dir>` reports
+`git-eligible`; any other result stays local-only.
 
 ## Repository report fallback preflight
 
@@ -42,24 +36,15 @@ creation or publication.
   partial layout. The phrase 're-bootstrap' never authorizes replacement, and
   the compatibility `--overwrite` option is rejected.
 - The target repository is readable and the selected wiki directory (default `docs/llm_wiki`; substitute the project's configured `--wiki-dir` everywhere below) is writable.
-- Resolve the source-selection profile once before any source read. When an
-  explicit or discovered profile is active, substitute its repository-relative
-  path for `<profile>` and carry `--source-selection <profile>` on every
-  source-reading command below. When no profile exists, omit that whole option;
-  never replace a configured non-default profile with a broader scan.
+- Carry `--source-selection <profile>` on every source-reading command when a
+  profile is configured or discovered; omit the option only when none exists,
+  and never widen a configured selection.
 - If `--src-dir` points outside the current repository, the run uses `--allow-external-src` for source-reading commands: `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check`. The `--wiki-dir` remains project-root guarded.
 - Helper toolchain overrides are captured before preparation (for example `LLM_WIKI_GO=/usr/local/go/bin/go` or `LLM_WIKI_GHC=/path/to/ghc`) when the default executable on `PATH` is broken.
-- For `external_agent_docs`, consume the workspace packet/policy rather than
-  target instruction files. The packet supplies the workspace wiki path,
-  forbidden source root, helper cache, plugin trust, and supervisor-owned gates.
-- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
-  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
-  observation; preserve `nonsemantic-source-change`, and never turn an
-  unavailable or bounded `found: false` into a negative fact. Do not initialize
-  governance or execute stored content. Apply the complete managed contract at
-  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-  for other configured agents.
+- Native knowledge: interpret every result through
+  [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+  Only `ready` with live `current` freshness supports an unchanged claim, and
+  an unavailable or bounded `found: false` is never a negative fact.
 
 ## Optional governance adoption is a separate decision
 
@@ -72,9 +57,8 @@ After bootstrap has produced a complete valid snapshot, offer governance only
 when the repository has a concrete durable-identity or section-review need.
 Obtain a separate explicit owner confirmation before either command below.
 Apply the complete managed procedure at
-`.claude/skills/wiki-reference/references/governance.md` for Claude or
-`.llm-wiki/skills/wiki-reference/references/governance.md` for other configured
-agents. Preview first, then apply only after that confirmation:
+[governance](../wiki-reference/references/governance.md).
+Preview first, then apply only after that confirmation:
 
 ```bash
 llm-wiki knowledge init --wiki-dir docs/llm_wiki --dry-run
@@ -207,12 +191,6 @@ it from generated artifacts.
    and stale verification receipts. Do not fabricate replacement review events
    or receipts.
 
-   In `external_agent_docs`, the semantic worker does not run this refresh.
-   It returns only packet-authorized Markdown/result writes; the supervisor
-   performs the assigned owning sync/re-anchor before strict validation. A
-   wiki-only packet with no source remains snapshot-only and cannot be repaired
-   by initializing governance.
-
    For external-source validation, pass `--allow-external-src` to the source
    reader and keep `--wiki-dir` inside the project:
 
@@ -224,8 +202,7 @@ it from generated artifacts.
     apply its linked contract. Report changed paths and validation; an
     authorized repository delivery keeps `<wiki-dir>` separate and may use a
     `docs(wiki): bootstrap <project>` style message. Never reuse the hook path's
-    literal `auto-update [bot]` message or set `LLM_WIKI_AUTO_COMMIT`. In
-    `external_agent_docs`, return workspace paths and results to the supervisor.
+    literal `auto-update [bot]` message or set `LLM_WIKI_AUTO_COMMIT`.
 
 ## Context budget
 

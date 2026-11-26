@@ -1,6 +1,6 @@
 ---
 name: dep-vuln-triage
-description: Triage vulnerable dependency exposure from supported manifests, lockfiles, deep extraction, and explicitly selected advisory data. Use for bounded repository dependency-risk review; preserve unresolved versions, scopes, coverage, and advisory limits instead of claiming safety.
+description: Check a repository for vulnerable dependencies and rank hits by whether the code actually imports them. Use for a bounded dependency-risk review from manifests, lockfiles, and explicitly selected advisory data; unresolved versions stay unknown, never safe.
 ---
 
 # dep-vuln-triage
@@ -37,10 +37,9 @@ report a package, scope, or repository as “not affected”, patched, or cleare
   helper and plugin identity/status, and do not treat a failed, skipped, or
   unsupported extractor as empty dependency surface.
 - If `--src-dir` points outside the current working directory, pass `--allow-external-src` consistently to every source-reading command, including `prepare-extractors --src-dir <repo> --allow-external-src` and `team check --src-dir <repo> --allow-external-src` when team policy is checked. Keep extraction output in a user-approved non-repository scratch path; select the report target through the preflight below.
-- Resolve the active source-selection profile once. When configured, replace
-  `<profile>` below with its exact repository-relative path and keep
-  `--source-selection <profile>` on every source-reading command; omit the
-  whole option only when no profile exists.
+- Carry `--source-selection <profile>` on every source-reading command when a
+  profile is configured or discovered; omit the option only when none exists,
+  and never widen a configured selection.
 
 ## Repository report preflight
 

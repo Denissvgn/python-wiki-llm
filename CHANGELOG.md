@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bundled workflow skills link the shared `wiki-reference` topics relative to
+  their own directory instead of naming `.claude/skills` and
+  `.llm-wiki/skills`. The links now resolve from any agent's install
+  directory, from a `skills export` destination such as a personal skills
+  directory, and from a documentation-run workspace.
+- Workflow skills carry a shorter repository preflight and native-knowledge
+  note and leave the full rules to `wiki-reference`, which every one of them
+  already requires. Rules for `external_agent_docs` runs are stated once per
+  skill instead of inside each step.
+- Nine skill descriptions lead with the request they answer, so an agent
+  matches them to a task more readily. Skill names are unchanged.
+- Installed workflow skills keep their earlier text until refreshed. Run
+  `llm-wiki skills install --force` with the `--skill` options you use to
+  pick up the shorter versions.
+
+### Removed
+
+- `wiki-sync/reference.md` is no longer shipped. Its guidance on unattended
+  callers moved into `wiki-sync/SKILL.md`. A copy installed by an earlier
+  release is left in place and nothing reads it.
+
 ## [6.1.1] - 2026-11-25
 
 ### Fixed

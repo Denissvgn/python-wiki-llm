@@ -1006,8 +1006,14 @@ WORKFLOW_MANAGED_REFERENCE_TOPICS: dict[str, tuple[str, ...]] = {
 }
 
 
-def _installed_topic_span(topic: str) -> str:
-    return f".claude/skills/wiki-reference/references/{topic}.md"
+def _workflow_topic_target(topic: str) -> str:
+    """Sibling-relative link a workflow skill uses for one managed topic.
+
+    The link resolves wherever the dependency-closed skill tree is installed
+    or exported, so workflow manifests never name an agent-specific root.
+    """
+
+    return f"../wiki-reference/references/{topic}.md"
 
 
 MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
@@ -1081,8 +1087,10 @@ MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
     *(
         _managed_topic_route(
             f"skills/{skill_id}/SKILL.md",
-            _installed_topic_span(topic),
+            f"]({_workflow_topic_target(topic)})",
             topic,
+            kind=InboundRouteKind.MARKDOWN_LINK,
+            markdown_target=_workflow_topic_target(topic),
         )
         for skill_id, topics in WORKFLOW_MANAGED_REFERENCE_TOPICS.items()
         for topic in topics
@@ -1196,7 +1204,8 @@ def discover_managed_reference_inbound_routes(
 
     Topic-internal and compatibility-index links are excluded. Active schema,
     workflow, and router routes remain in scope. Alternative Claude and generic
-    installed paths collapse to one source/destination route.
+    installed paths in the schema source collapse to one source/destination
+    route; workflow skills use sibling-relative Markdown links.
     """
 
     managed_destinations = {_topic(topic).path for topic in _TOPIC_HEADINGS} | {
@@ -1489,9 +1498,9 @@ def inbound_route_resolves(
         ]
         if len(matches) != 1:
             return False
-        resolved = (
-            PurePosixPath(route.source_path).parent / matches[0].target_path
-        ).as_posix()
+        resolved = _resolved_package_link(
+            route.source_path, matches[0].target_path
+        )
         return resolved == route.destination_path and matches[0].anchor is None
     if route.kind is InboundRouteKind.HEADING_REFERENCE:
         return f'"{route.destination_heading}"' in normalized_span

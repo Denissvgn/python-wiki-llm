@@ -1,6 +1,6 @@
 ---
 name: agent-docs
-description: Orchestrate provider-neutral documentation in an explicit external workspace from a read-only source project or existing LLM Wiki. Use for packetized semantic and user-doc stages, isolated reconciliation, and locally verified handoff without target installation or commits.
+description: Document a project from an external workspace without modifying or committing to it. Use to run the full supervised documentation pipeline over a read-only source repository or existing LLM Wiki, with packetized stages, reconciliation, and a locally verified handoff.
 ---
 
 # agent-docs
@@ -51,9 +51,8 @@ packet/result fields, stage gates, and failure matrix.
   Aider, or OpenCode instructions. Export the selected bundled skills into the
   documentation workspace and pass their paths/hashes in the packet.
 - Apply the external workspace and handoff boundary from
-  `.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
-  `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
-  configured agents; a packet grants no operating-system, Git, or network
+  [repository-handoff](../wiki-reference/references/repository-handoff.md);
+  a packet grants no operating-system, Git, or network
   authority.
 
 ## Workflow
@@ -90,14 +89,10 @@ packet/result fields, stage gates, and failure matrix.
    admission evidence. Stop on a symlink/path escape, forbidden write, corrupt
    input, unexplained skip, or unresolved freshness decision.
 
-   Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
-   bounds. Only `ready` with live `current` qualifies a claim as unchanged since
-   observation; preserve `nonsemantic-source-change`, and never turn an
-   unavailable or bounded `found: false` into a negative fact. Do not initialize
-   governance or execute stored content. Apply the complete managed contract at
-   `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-   Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-   for other configured agents.
+   Native knowledge: interpret every result through
+   [knowledge-consumption](../wiki-reference/references/knowledge-consumption.md).
+   Only `ready` with live `current` freshness supports an unchanged claim, and
+   an unavailable or bounded `found: false` is never a negative fact.
 
 4. **Run wiki enrichment from an explicit packet.** Build the
    `wiki-enrichment` packet, invoke `wiki-semantic-enhance`, and record an
@@ -153,9 +148,7 @@ packet/result fields, stage gates, and failure matrix.
   is unknown; the supervisor alone assigns heavier scheduling. On resource
   failure, stop and mark unfinished checks inconclusive. Apply the managed
   resource contract at
-  `.claude/skills/wiki-reference/references/resources-context.md` for Claude or
-  `.llm-wiki/skills/wiki-reference/references/resources-context.md` for other
-  configured agents.
+  [resources-context](../wiki-reference/references/resources-context.md).
 - Resume from `.llm-wiki-docs/run.json`, recorded stage state, packet hashes,
   intake, and source/snapshot identity. A changed source or input hash requires
   an explicit refresh/re-import decision.
