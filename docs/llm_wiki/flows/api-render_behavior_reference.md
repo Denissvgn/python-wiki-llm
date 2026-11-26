@@ -192,9 +192,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_behavior_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_behavior_reference) | 4112 | `isinstance(contract, Mapping)` |
-| render_behavior_reference (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:render_behavior_reference) | 4113 | `ValueError('Behavior facts must be a mapping')` |
-| render_behavior_reference (src/llm_wiki_cli/api.py) | render_behavior_reference (src/llm_wiki_cli/services/behavior_reference.py) | 4114 | `render(dict(...))` |
+| render_behavior_reference (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:render_behavior_reference) | 4020 | `isinstance(contract, Mapping)` |
+| render_behavior_reference (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:render_behavior_reference) | 4021 | `ValueError('Behavior facts must be a mapping')` |
+| render_behavior_reference (src/llm_wiki_cli/api.py) | render_behavior_reference (src/llm_wiki_cli/services/behavior_reference.py) | 4022 | `render(dict(...))` |
 | render_behavior_reference (src/llm_wiki_cli/services/behavior_reference.py) | validate_behavior_facts | 231 | `validate_behavior_facts(contract)` |
 | validate_behavior_facts | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `isinstance(contract, Mapping)` |
 | validate_behavior_facts | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 152 | `dict(contract)` |
@@ -214,8 +214,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `render_behavior_reference` | `isinstance` | 4112 |
-| external_call | `render_behavior_reference` | `ValueError` | 4113 |
+| external_call | `render_behavior_reference` | `isinstance` | 4020 |
+| external_call | `render_behavior_reference` | `ValueError` | 4021 |
 | external_call | `validate_behavior_facts` | `isinstance` | 151 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |

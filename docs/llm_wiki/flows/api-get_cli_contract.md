@@ -189,7 +189,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 4066 | `get_contract(data not statically known)` |
+| get_cli_contract (src/llm_wiki_cli/api.py) | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | 3974 | `get_contract(data not statically known)` |
 | get_cli_contract (src/llm_wiki_cli/services/cli_reference.py) | build_cli_contract | 273 | `build_cli_contract(build_cli_parser(...), package=_provider_package_identity(...), program='llm-wiki')` |
 | build_cli_contract | isinstance (src/llm_wiki_cli/services…nce.py:build_cli_contract) | 256 | `isinstance(parser, argparse.ArgumentParser)` |
 | build_cli_contract | CLIReferenceError | 257 | `CLIReferenceError('Reference generation requires an ArgumentParser')` |

@@ -162,33 +162,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet | context_packet_service.validate_context_packet | 2040 | `context_packet_service.validate_context_packet(packet_bytes)` |
-| validate_context_packet | _raise_context_packet_api_error | 2042 | `_raise_context_packet_api_error(exc)` |
-| _raise_context_packet_api_error | _raise_required_knowledge_api_error | 481 | `_raise_required_knowledge_api_error(exc)` |
-| _raise_required_knowledge_api_error | _required_knowledge_failure | 461 | `_required_knowledge_failure(exc)` |
-| _required_knowledge_failure | set (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 430 | `set(data not statically known)` |
-| _required_knowledge_failure | id (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 431 | `id(current)` |
-| _required_knowledge_failure | seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 432 | `seen.add(id(...))` |
-| _required_knowledge_failure | id (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 432 | `id(current)` |
-| _required_knowledge_failure | getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 433 | `getattr(current, 'code', None)` |
-| _required_knowledge_failure | type | 434 | `type(current)` |
-| _required_knowledge_failure | getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 437 | `getattr(current, 'details', None)` |
+| validate_context_packet | context_packet_service.validate_context_packet | 2035 | `context_packet_service.validate_context_packet(packet_bytes)` |
+| validate_context_packet | _raise_context_packet_api_error | 2037 | `_raise_context_packet_api_error(exc)` |
+| _raise_context_packet_api_error | _raise_required_knowledge_api_error | 478 | `_raise_required_knowledge_api_error(exc)` |
+| _raise_required_knowledge_api_error | _required_knowledge_failure | 458 | `_required_knowledge_failure(exc)` |
+| _required_knowledge_failure | set (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 427 | `set(data not statically known)` |
+| _required_knowledge_failure | id (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 428 | `id(current)` |
+| _required_knowledge_failure | seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 429 | `seen.add(id(...))` |
+| _required_knowledge_failure | id (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 429 | `id(current)` |
+| _required_knowledge_failure | getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 430 | `getattr(current, 'code', None)` |
+| _required_knowledge_failure | type | 431 | `type(current)` |
+| _required_knowledge_failure | getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure) | 434 | `getattr(current, 'details', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_required_knowledge_failure` | 432 |
+| mutation | `seen.add` | `_required_knowledge_failure` | 429 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 2040 |
-| external_call | `_required_knowledge_failure` | `id` | 431 |
-| external_call | `_required_knowledge_failure` | `getattr` | 433 |
-| external_call | `_required_knowledge_failure` | `type` | 434 |
-| external_call | `_required_knowledge_failure` | `getattr` | 437 |
+| unresolved_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 2035 |
+| external_call | `_required_knowledge_failure` | `id` | 428 |
+| external_call | `_required_knowledge_failure` | `getattr` | 430 |
+| external_call | `_required_knowledge_failure` | `type` | 431 |
+| external_call | `_required_knowledge_failure` | `getattr` | 434 |
 | step_limit | `validate_context_packet` | `first 12 steps` | 0 |
 
 ## Behavior

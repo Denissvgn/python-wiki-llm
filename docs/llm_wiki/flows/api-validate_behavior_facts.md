@@ -184,9 +184,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_behavior_facts (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_behavior_facts) | 4102 | `isinstance(contract, Mapping)` |
-| validate_behavior_facts (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:validate_behavior_facts) | 4103 | `ValueError('Behavior facts must be a mapping')` |
-| validate_behavior_facts (src/llm_wiki_cli/api.py) | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 4104 | `validate(dict(...))` |
+| validate_behavior_facts (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:validate_behavior_facts) | 4010 | `isinstance(contract, Mapping)` |
+| validate_behavior_facts (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:validate_behavior_facts) | 4011 | `ValueError('Behavior facts must be a mapping')` |
+| validate_behavior_facts (src/llm_wiki_cli/api.py) | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | 4012 | `validate(dict(...))` |
 | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | isinstance (src/llm_wiki_cli/services…y:validate_behavior_facts) | 151 | `isinstance(contract, Mapping)` |
 | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | dict (src/llm_wiki_cli/services…y:validate_behavior_facts) | 152 | `dict(contract)` |
 | validate_behavior_facts (src/llm_wiki_cli/services/behavior_reference.py) | _json_tree | 153 | `cli_reference._json_tree(contract)` |
@@ -204,8 +204,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_behavior_facts` | `isinstance` | 4102 |
-| external_call | `validate_behavior_facts` | `ValueError` | 4103 |
+| external_call | `validate_behavior_facts` | `isinstance` | 4010 |
+| external_call | `validate_behavior_facts` | `ValueError` | 4011 |
 | external_call | `validate_behavior_facts` | `isinstance` | 151 |
 | external_call | `_json_tree` | `type` | 292 |
 | external_call | `_json_tree` | `type` | 294 |

@@ -1,7 +1,7 @@
 # impact_query
 
 **Entry point:** `api._impact_query`
-**Modules involved:** [api](../modules/api.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), [path_policy](../modules/path_policy.md), [query_request_format](../modules/query_request_format.md), [source_selection](../modules/source_selection.md)
+**Modules involved:** [api](../modules/api.md), [documentation_query_builder](../modules/documentation_query_builder.md), [path_policy](../modules/path_policy.md), [query_request_format](../modules/query_request_format.md), [source_selection](../modules/source_selection.md)
 
 ## Sequence
 
@@ -14,12 +14,10 @@
 6. `source_selection.path_is_selected`
 7. `documentation_query_builder.build_live_documentation_query_service`
 8. `documentation_query_builder.build_snapshot_documentation_query_service`
-9. `documentation_queries.compact_stored_knowledge_concept`
 
 ## Touches
 
 - [api](../modules/api.md)
-- [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [path_policy](../modules/path_policy.md)
 - [query_request_format](../modules/query_request_format.md)

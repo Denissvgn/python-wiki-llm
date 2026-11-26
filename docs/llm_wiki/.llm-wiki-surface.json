@@ -51,13 +51,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1916,
+              "line": 1911,
               "step": "acknowledge_maintenance",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 1917,
+              "line": 1912,
               "step": "acknowledge_maintenance",
               "target": "ValueError"
             },
@@ -454,13 +454,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -587,19 +587,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1875,
+              "line": 1870,
               "step": "adopt_maintenance",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 1876,
+              "line": 1871,
               "step": "adopt_maintenance",
               "target": "ValueError"
             },
             {
               "kind": "external_call",
-              "line": 1877,
+              "line": 1872,
               "step": "adopt_maintenance",
               "target": "cast"
             },
@@ -2382,13 +2382,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -2606,25 +2606,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3914,
+              "line": 3822,
               "step": "_normalise_focus",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 418,
+              "line": 415,
               "step": "_normalize_optional_knowledge_mode",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 419,
+              "line": 416,
               "step": "_normalize_optional_knowledge_mode",
               "target": "', '.join"
             },
             {
               "kind": "external_call",
-              "line": 425,
+              "line": 422,
               "step": "_normalize_optional_knowledge_mode",
               "target": "cast"
             },
@@ -3256,13 +3256,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2204,
+              "line": 2199,
               "step": "build_documentation_query_service",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2210,
+              "line": 2205,
               "step": "build_documentation_query_service",
               "target": "isinstance"
             },
@@ -4780,31 +4780,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 418,
+              "line": 415,
               "step": "_normalize_optional_knowledge_mode",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 419,
+              "line": 416,
               "step": "_normalize_optional_knowledge_mode",
               "target": "', '.join"
             },
             {
               "kind": "external_call",
-              "line": 425,
+              "line": 422,
               "step": "_normalize_optional_knowledge_mode",
               "target": "cast"
             },
             {
               "kind": "unresolved_call",
-              "line": 1982,
+              "line": 1977,
               "step": "build_qualified_context",
               "target": "request.get"
             },
             {
               "kind": "external_call",
-              "line": 1984,
+              "line": 1979,
               "step": "build_qualified_context",
               "target": "isinstance"
             },
@@ -5711,7 +5711,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -5809,7 +5809,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -6424,13 +6424,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4166,
+              "line": 4074,
               "step": "check_publication_candidate",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4167,
+              "line": 4075,
               "step": "check_publication_candidate",
               "target": "ValueError"
             },
@@ -9323,7 +9323,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -9421,7 +9421,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -9930,13 +9930,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -11182,7 +11182,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -11274,13 +11274,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4036,
+              "line": 3944,
               "step": "export_documentation_run",
               "target": "cast"
             },
             {
               "kind": "unresolved_call",
-              "line": 4038,
+              "line": 3946,
               "step": "export_documentation_run",
               "target": "_export_documentation_run_impl"
             }
@@ -12120,7 +12120,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -12218,13 +12218,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
             {
               "kind": "unresolved_call",
-              "line": 2414,
+              "line": 2409,
               "step": "flow_segment",
               "target": "validate_request"
             },
@@ -12719,13 +12719,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -12902,7 +12902,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -13080,31 +13080,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1077,
+              "line": 1072,
               "step": "get_knowledge_coverage",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1081,
+              "line": 1076,
               "step": "get_knowledge_coverage",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1101,
+              "line": 1096,
               "step": "get_knowledge_coverage",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1102,
+              "line": 1097,
               "step": "get_knowledge_coverage",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1108,
+              "line": 1103,
               "step": "get_knowledge_coverage",
               "target": "cast"
             },
@@ -13226,13 +13226,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1894,
+              "line": 1889,
               "step": "get_maintenance_status",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 1895,
+              "line": 1890,
               "step": "get_maintenance_status",
               "target": "ValueError"
             },
@@ -13256,7 +13256,7 @@
             },
             {
               "kind": "external_call",
-              "line": 1897,
+              "line": 1892,
               "step": "get_maintenance_status",
               "target": "cast"
             },
@@ -14632,13 +14632,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 812,
+              "line": 809,
               "step": "helper_preparation",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 817,
+              "line": 814,
               "step": "helper_preparation",
               "target": "callable"
             },
@@ -14826,7 +14826,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -16432,7 +16432,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -20109,7 +20109,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -21295,13 +21295,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -22248,7 +22248,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 3867,
+              "line": 3775,
               "step": "query_documentation",
               "step_index": 1,
               "target": "payload.update"
@@ -22256,7 +22256,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 3893,
+              "line": 3801,
               "step": "query_documentation",
               "step_index": 1,
               "target": "payload.update"
@@ -22265,37 +22265,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3057,
+              "line": 3000,
               "step": "_validate_documentation_query_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 3063,
+              "line": 3006,
               "step": "_validate_documentation_query_request",
               "target": "next"
             },
             {
               "kind": "external_call",
-              "line": 3063,
+              "line": 3006,
               "step": "_validate_documentation_query_request",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 3070,
+              "line": 3013,
               "step": "_validate_documentation_query_request",
               "target": "request.get"
             },
             {
               "kind": "external_call",
-              "line": 3071,
+              "line": 3014,
               "step": "_validate_documentation_query_request",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 3072,
+              "line": 3015,
               "step": "_validate_documentation_query_request",
               "target": "', '.join"
             },
@@ -22375,7 +22375,7 @@
             "src/llm_wiki_engine/maintenance_projection.py",
             "src/llm_wiki_engine/concept_identity.py"
           ],
-          "step_count": 2838,
+          "step_count": 2811,
           "truncated": true
         }
       },
@@ -22918,13 +22918,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -23208,13 +23208,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1946,
+              "line": 1941,
               "step": "recover_maintenance",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 1947,
+              "line": 1942,
               "step": "recover_maintenance",
               "target": "ValueError"
             },
@@ -23226,7 +23226,7 @@
             },
             {
               "kind": "external_call",
-              "line": 1949,
+              "line": 1944,
               "step": "recover_maintenance",
               "target": "cast"
             },
@@ -23652,7 +23652,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -24085,13 +24085,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4112,
+              "line": 4020,
               "step": "render_behavior_reference",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4113,
+              "line": 4021,
               "step": "render_behavior_reference",
               "target": "ValueError"
             },
@@ -24176,13 +24176,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4074,
+              "line": 3982,
               "step": "render_cli_reference",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4075,
+              "line": 3983,
               "step": "render_cli_reference",
               "target": "ValueError"
             },
@@ -27531,13 +27531,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4190,
+              "line": 4098,
               "step": "review_publication_candidate",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4191,
+              "line": 4099,
               "step": "review_publication_candidate",
               "target": "ValueError"
             },
@@ -30934,7 +30934,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2293,
+              "line": 2288,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -31954,13 +31954,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4102,
+              "line": 4010,
               "step": "validate_behavior_facts",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4103,
+              "line": 4011,
               "step": "validate_behavior_facts",
               "target": "ValueError"
             },
@@ -32101,13 +32101,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4084,
+              "line": 3992,
               "step": "validate_cli_contract",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4085,
+              "line": 3993,
               "step": "validate_cli_contract",
               "target": "ValueError"
             },
@@ -32491,7 +32491,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 432,
+              "line": 429,
               "step": "_required_knowledge_failure",
               "step_index": 5,
               "target": "seen.add"
@@ -32500,31 +32500,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2040,
+              "line": 2035,
               "step": "validate_context_packet",
               "target": "context_packet_service.validate_context_packet"
             },
             {
               "kind": "external_call",
-              "line": 431,
+              "line": 428,
               "step": "_required_knowledge_failure",
               "target": "id"
             },
             {
               "kind": "external_call",
-              "line": 433,
+              "line": 430,
               "step": "_required_knowledge_failure",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 434,
+              "line": 431,
               "step": "_required_knowledge_failure",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 437,
+              "line": 434,
               "step": "_required_knowledge_failure",
               "target": "getattr"
             },
@@ -33835,13 +33835,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 4200,
+              "line": 4108,
               "step": "validate_publication_receipt",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 4201,
+              "line": 4109,
               "step": "validate_publication_receipt",
               "target": "ValueError"
             },
@@ -34634,13 +34634,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "<dynamic>"
             },
             {
               "kind": "external_call",
-              "line": 4271,
+              "line": 4179,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -37639,19 +37639,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1875,
+              "line": 1870,
               "step": "adopt_maintenance",
               "target": "type"
             },
             {
               "kind": "external_call",
-              "line": 1876,
+              "line": 1871,
               "step": "adopt_maintenance",
               "target": "ValueError"
             },
             {
               "kind": "external_call",
-              "line": 1877,
+              "line": 1872,
               "step": "adopt_maintenance",
               "target": "cast"
             },
@@ -38572,7 +38572,7 @@
             "src/llm_wiki_engine/knowledge_artifacts.py",
             "src/llm_wiki_engine/wiki_write_basis.py"
           ],
-          "step_count": 1977,
+          "step_count": 1950,
           "truncated": true
         }
       },
@@ -63076,7 +63076,6 @@
       "mcp_uri": "llm-wiki://workflows/impact_query",
       "outgoing_internal_links": [
         "modules/api.md",
-        "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/path_policy.md",
         "modules/query_request_format.md",
@@ -78190,5 +78189,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:260878ed750389387c6b24844a7e3b3d74204e72f5ce54af943798bcaff338fc"
+  "source_hash": "sha256:8486b874375a400366b5497836f5392c92db28acfb24797cdd05047a850aa36c"
 }
