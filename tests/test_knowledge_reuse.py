@@ -387,7 +387,7 @@ def test_governed_generation_keeps_using_full_builder(synced):
 
 
 def test_unresolvable_remote_keeps_the_recorded_repository_identity():
-    from types import SimpleNamespace
+    from typing import Any
 
     from llm_wiki_cli.services.knowledge_orchestration import retain_recorded_repository_identity
     from llm_wiki_engine.knowledge_envelope import RepositoryEvidence, build_repository_record
@@ -395,7 +395,7 @@ def test_unresolvable_remote_keeps_the_recorded_repository_identity():
     def evidence(url):
         return RepositoryEvidence(remotes={} if url is None else {"origin": url}, evaluated_revision="a" * 40)
 
-    def committed(url):
+    def committed(url) -> Any:
         record = build_repository_record(evidence=evidence(url))
         bundle = SimpleNamespace(repository=record)
         return SimpleNamespace(artifacts=SimpleNamespace(knowledge=SimpleNamespace(bundle=bundle)))
@@ -418,4 +418,5 @@ def test_unresolvable_remote_keeps_the_recorded_repository_identity():
     local = evidence("/tmp/elsewhere.git")
     assert retain_recorded_repository_identity(local, committed(None)) == (local, None)
     assert retain_recorded_repository_identity(local, None) == (local, None)
-    assert retain_recorded_repository_identity(local, SimpleNamespace(artifacts=None)) == (local, None)
+    without_artifacts: Any = SimpleNamespace(artifacts=None)
+    assert retain_recorded_repository_identity(local, without_artifacts) == (local, None)
