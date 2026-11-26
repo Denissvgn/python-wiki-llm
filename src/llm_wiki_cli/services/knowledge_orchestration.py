@@ -252,6 +252,7 @@ def capture_committed_knowledge(
             captured[name] = None
     validated = None
     manifest_changed = False
+    mismatched: tuple[str, ...] = ()
     if manifest is not None and manifest.artifact_hashes is not None:
         try:
             recorded_manifest = SyncManifest.from_payload(
@@ -278,13 +279,29 @@ def capture_committed_knowledge(
                 and candidate.governance_hash == marker.governance_hash
             ):
                 validated = candidate
+            elif marker is not None:
+                mismatched = tuple(
+                    label for label, name in (
+                        ("surface index", "surface_index_hash"),
+                        ("knowledge index", "knowledge_index_hash"),
+                        ("evaluated envelope", "evaluated_envelope_hash"),
+                        ("governance", "governance_hash"),
+                    ) if getattr(candidate, name) != getattr(marker, name)
+                )
         except (KnowledgeArtifactError, OSError, TypeError, ValueError) as exc:
             if isinstance(exc, KnowledgeArtifactError) and "maintenance" in exc.field.split("."):
                 raise
             if maintenance_marker is not None:
-                raise KnowledgeArtifactError("maintenance", "adopted prior projection is invalid; complete recovery is required") from None
+                # Name the failing check so a maintainer can choose a recovery
+                # point. Other exception text may carry host paths; keep its type.
+                cause = f"{exc.field}: {exc.message}" if isinstance(exc, KnowledgeArtifactError) else type(exc).__name__
+                raise KnowledgeArtifactError(
+                    "maintenance",
+                    f"adopted prior projection is invalid ({cause}); complete recovery is required",
+                ) from exc
     if maintenance_marker is not None and validated is None:
-        raise KnowledgeArtifactError("maintenance", "adopted prior projection cannot be used as a repair seed")
+        detail = f" (recorded {', '.join(mismatched)} hash differs from the stored artifacts)" if mismatched else ""
+        raise KnowledgeArtifactError("maintenance", "adopted prior projection cannot be used as a repair seed" + detail)
     if manifest_changed:
         raise KnowledgeArtifactError(
             "manifest", "changed before the prior commit was captured"

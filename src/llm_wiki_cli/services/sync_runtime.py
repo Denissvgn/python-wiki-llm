@@ -4210,6 +4210,16 @@ def _prepare_sync_run(
         raise SourceRetirementError("Historical source retirement needs an intact prior source/wiki snapshot")
     if manifest is None and not seed_manifest:
         return None
+    if manifest is not None:
+        from llm_wiki_engine.sync_manifest import unrecognised_generation_input_records
+
+        newer = unrecognised_generation_input_records(manifest.generation_inputs)
+        if newer:
+            raise SyncOwnershipError(
+                f"The manifest carries generation input {newer[0]!r}, written by a newer llm-wiki. This version "
+                "would rewrite the pages that record binds without updating it. Upgrade llm-wiki, then sync again; "
+                "read-only commands still work."
+            )
 
     baseline_manifest = manifest or SyncManifest()
     _validate_persisted_source_selection(options, manifest)

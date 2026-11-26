@@ -828,6 +828,33 @@ def _captured_source_hashes(
     return captured
 
 
+# Generation inputs this writer reads and rewrites. Callers may add their own
+# plain keys; a versioned llm-wiki record outside this set comes from a newer
+# writer and binds pages or mappings this one would rewrite without it.
+RECOGNISED_GENERATION_INPUT_RECORDS = frozenset({
+    "entity_retirement",
+    "historical_source_files",
+    "historical_source_releases",
+    "infrastructure",
+    "knowledge_reuse",
+    "llm-wiki/generation-options/v1",
+    "openapi",
+    "source_selection",
+    "source_selection_inputs",
+})
+
+
+def unrecognised_generation_input_records(generation_inputs: Mapping[str, Any]) -> tuple[str, ...]:
+    """Name versioned llm-wiki generation records this writer does not know."""
+    return tuple(sorted(
+        key for key, value in generation_inputs.items()
+        if key not in RECOGNISED_GENERATION_INPUT_RECORDS
+        and isinstance(value, Mapping)
+        and isinstance(value.get("schema_version"), str)
+        and value["schema_version"].startswith("llm-wiki-")
+    ))
+
+
 def validate_manifest_policy(generation_inputs: Mapping[str, Any]) -> None:
     """Validate policy commitments without pretending to have source records."""
 

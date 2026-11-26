@@ -128,17 +128,17 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3476 interactions; 3446 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3482 interactions; 3452 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1074 (1073 omitted); unresolved 1 of 792 (791 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1079 (1078 omitted); unresolved 1 of 793 (792 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_knowledge_plan` | 1 | - | external | 8 |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | unresolved | 8 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | external | 8 |
 | `src/llm_wiki_engine/maintenance_protocol.py:guard_maintenance_owner` | 7 | [src/llm_wiki_engine/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 8 | - | external | 4 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
@@ -159,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1611; effect analysis evaluated: 936, partial: 68, unavailable: 607. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1004 source steps with known totals: observed: 5881, emitted: 5559, omitted: 322. Unavailable totals are excluded.
+Collector observations for 1004 source steps with known totals: observed: 5883, emitted: 5559, omitted: 324. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -170,7 +170,7 @@ Collector observations for 1004 source steps with known totals: observed: 5881, 
 | `build_runtime_knowledge_plan` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
 | `isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `capture_committed_knowledge` | `available` | `partial` | `available` | `15` | `14` | `1` |
+| `capture_committed_knowledge` | `available` | `partial` | `available` | `16` | `14` | `2` |
 | `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
@@ -243,9 +243,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 397 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 398 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| build_runtime_knowledge_plan | capture_committed_knowledge | 401 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 414 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 415 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| build_runtime_knowledge_plan | capture_committed_knowledge | 418 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 243 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 243 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 246 | `guard_maintenance_owner(root, manifest)` |
@@ -259,16 +259,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `old_paths.update` | `build_runtime_knowledge_plan` | 459 |
-| mutation | `captured.update` | `capture_committed_knowledge` | 272 |
+| mutation | `old_paths.update` | `build_runtime_knowledge_plan` | 476 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 273 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_knowledge_plan` | `isinstance` | 397 |
-| external_call | `build_runtime_knowledge_plan` | `TypeError` | 398 |
+| external_call | `build_runtime_knowledge_plan` | `isinstance` | 414 |
+| external_call | `build_runtime_knowledge_plan` | `TypeError` | 415 |
 | unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 243 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `build_runtime_knowledge_plan` | `first 12 steps` | 0 |

@@ -402,3 +402,40 @@ def test_nested_maintenance_parse_errors_never_become_repair_seeds(tmp_path, mon
     with pytest.raises(KnowledgeArtifactError, match="maintenance"):
         capture_committed_knowledge(orphan, owner)
     assert snapshot_wiki(orphan) == before
+
+
+def test_invalid_adopted_projection_error_names_the_failing_check(tmp_path, monkeypatch):
+    wiki = _legacy(tmp_path, monkeypatch)
+    adopt_maintenance_authority("src", wiki, recovery_dir="recovery")
+    from llm_wiki_cli.services import knowledge_orchestration
+    from llm_wiki_engine.knowledge_artifacts import KnowledgeArtifactError
+
+    manifest = SyncManifest.load(wiki)
+    before = snapshot_wiki(wiki)
+    failure = KnowledgeArtifactError(
+        "manifest.generation_inputs.entity_retirement",
+        "historical record has no matching removed native owner at 'entities/Page.md'",
+        code="source-retirement-invalid",
+    )
+
+    def invalid(**_kwargs):
+        raise failure
+
+    monkeypatch.setattr(knowledge_orchestration, "validate_knowledge_artifacts", invalid)
+    with pytest.raises(KnowledgeArtifactError) as caught:
+        knowledge_orchestration.capture_committed_knowledge(wiki, manifest)
+    assert caught.value.field == "maintenance"
+    assert "manifest.generation_inputs.entity_retirement" in caught.value.message
+    assert "no matching removed native owner at 'entities/Page.md'" in caught.value.message
+    assert caught.value.message.endswith("complete recovery is required")
+    assert caught.value.__cause__ is failure
+
+    def unreadable(**_kwargs):
+        raise OSError("cannot read /private/host/path")
+
+    monkeypatch.setattr(knowledge_orchestration, "validate_knowledge_artifacts", unreadable)
+    with pytest.raises(KnowledgeArtifactError) as caught:
+        knowledge_orchestration.capture_committed_knowledge(wiki, manifest)
+    assert "(OSError)" in caught.value.message
+    assert "/private/host/path" not in caught.value.message
+    assert snapshot_wiki(wiki) == before
