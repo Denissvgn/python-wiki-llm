@@ -50,11 +50,11 @@ ownership. Ordinary callers retain the same publication protocol.
 | `llm_wiki_engine.historical_sources` | `read_records`, `read_records` |
 | `llm_wiki_engine.immutable` | `freeze` |
 | `llm_wiki_engine.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts`, `require_validated_artifacts`, `validated_artifact_bytes`, `_decode_json_object` |
-| `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs`, `build_repository_record` |
+| `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
 | `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `llm_wiki_engine.knowledge_freshness` | `LiveKnowledgeEvaluation` |
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `MUTATION_LOCK_FILENAMES`, `governance_bundle_id_from_knowledge`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
-| `llm_wiki_engine.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind`, `RepositoryIdentitySource` |
+| `llm_wiki_engine.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
 | `llm_wiki_engine.progress` | `observed_phase` |
@@ -120,7 +120,6 @@ flowchart LR
 | `_require_runtime_source_current` | `(snapshot: SourceSnapshot) -> None` | — | — |
 | `finalize_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | — | Plan and commit one generated artifact set through the shared protocol. |
 | `_prepared_runtime_governance` | `(inputs: RuntimeKnowledgeInputs) -> GovernanceLedger \| None` | — | Load/reconcile governance without writing or inventing recovery state. |
-| `retain_recorded_repository_identity` | `(evidence: RepositoryEvidence, committed_state: CommittedKnowledgeState \| None) -> tuple[RepositoryEvidence, str \| None]` | — | Keep a recorded identity that this checkout cannot resolve. |
 | `collect_runtime_repository_evidence` | `(source_root: str \| Path, target_wiki_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> RepositoryEvidence` | — | Collect Git evidence for the evaluated source-selection boundary. |
 | `runtime_graph_analyzer_limitations` | `(*, deep: bool = True, data_flow_enabled: bool, dependency_analysis: Mapping \| None, excluded_dependency_tests: int = 0) -> dict[str, tuple[str, ...]]` | — | Describe the same analysis boundaries for bootstrap and sync graphs. |
 | `runtime_generation_options` | `(*, surfaces: Mapping[str, Mapping[str, Any]], generation_inputs: Mapping[str, object] \| None = None, include_tests: Iterable[str] \| None, preserve_semantic: bool) -> dict[str, object]` | — | Project command policy into one cross-command safe option allowlist. |

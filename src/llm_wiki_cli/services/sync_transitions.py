@@ -476,8 +476,17 @@ def plan_page_transitions(
         if outgoing is None or prior.claims.get(key) != {outgoing.previous_owner}:
             if any(portable_path_key(path) == key for path in historical.values()):
                 raise PageTransitionError(f"Occupied historical page {occupant!r}; preview --release-historical-page {occupant!r}")
+            if retired.get(occupant) is not None:
+                raise PageTransitionError(
+                    f"Occupied target has no verified outgoing owner: {occupant!r}. It is the retained page of a "
+                    f"retired source member ({retired[occupant].entity_name!r} from {retired[occupant].source_path!r}), "
+                    f"and {item.owner.source_path!r} now declares a member that maps to the same page. Sync does not "
+                    "give retained history to a different declaration. Move the retained page to a tracked history "
+                    "path outside the generated wiki, then preview again; sync then creates a new page."
+                )
             raise PageTransitionError(
-                f"Occupied target has no verified outgoing owner: {occupant!r}"
+                f"Occupied target has no verified outgoing owner: {occupant!r}. Sync never overwrites a page it "
+                "does not own; move or rename that file, then preview again."
             )
         if outgoing.owner != item.owner and portable_path_key(outgoing.final_path) == key:
             raise PageTransitionError(f"Occupied target is retained by another owner: {occupant!r}")
