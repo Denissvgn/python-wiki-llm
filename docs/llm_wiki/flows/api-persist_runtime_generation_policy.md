@@ -115,16 +115,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| persist_runtime_generation_policy | _validate_runtime_policy | 1317 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 1343 | `set(policy)` |
-| _validate_runtime_policy | sorted | 1345 | `sorted(...)` |
-| _validate_runtime_policy | min | 1350 | `min(...)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1352 | `KnowledgeGenerationError(..., message)` |
-| _validate_runtime_policy | isinstance | 1357 | `isinstance(policy[...], bool)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1358 | `KnowledgeGenerationError(..., 'must be a boolean')` |
-| _validate_runtime_policy | isinstance | 1363 | `isinstance(detail, str)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1364 | `KnowledgeGenerationError(..., 'must be one of: auto, module, package')` |
-| persist_runtime_generation_policy | dict | 1318 | `dict(generation_inputs)` |
+| persist_runtime_generation_policy | _validate_runtime_policy | 1334 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1360 | `set(policy)` |
+| _validate_runtime_policy | sorted | 1362 | `sorted(...)` |
+| _validate_runtime_policy | min | 1367 | `min(...)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1369 | `KnowledgeGenerationError(..., message)` |
+| _validate_runtime_policy | isinstance | 1374 | `isinstance(policy[...], bool)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1375 | `KnowledgeGenerationError(..., 'must be a boolean')` |
+| _validate_runtime_policy | isinstance | 1380 | `isinstance(detail, str)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1381 | `KnowledgeGenerationError(..., 'must be one of: auto, module, package')` |
+| persist_runtime_generation_policy | dict | 1335 | `dict(generation_inputs)` |
 
 ### Boundary effects
 
@@ -134,10 +134,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_runtime_policy` | `sorted` | 1345 |
-| external_call | `_validate_runtime_policy` | `min` | 1350 |
-| external_call | `_validate_runtime_policy` | `isinstance` | 1357 |
-| external_call | `_validate_runtime_policy` | `isinstance` | 1363 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1362 |
+| external_call | `_validate_runtime_policy` | `min` | 1367 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1374 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1380 |
 
 ## Behavior
 
