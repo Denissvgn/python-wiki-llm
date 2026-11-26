@@ -129,7 +129,10 @@ from .services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
     QUERY_IDENTITY_BYTE_LIMIT,
+    compact_stored_knowledge_concept,
+    compact_stored_source_relationship,
     fit_documentation_query_result,
+    surface_page_records,
 )
 from .services.documentation_query_builder import (
     build_live_documentation_query_service,
@@ -846,6 +849,8 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
         "ownership",
         "include_evidence",
         "include_raw_evidence",
+        "read",
+        "source_policy",
         "allow_full_inventory",
         "source_selection",
         "src_dir",
@@ -1005,6 +1010,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
                 "origins": "Supply an iterable with at most 100 values and supported origins.",
                 "resolutions": "Supply an iterable with at most 100 values and supported resolutions.",
                 "source_selection": "Supply the recorded --source-selection profile; run llm-wiki sync after an intentional profile change.",
+                "read": "Supply read 'full' or 'selected'; a selected read takes neither raw evidence nor source discovery.",
                 "value": f"Supply a nonempty query of at most {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes.",
                 "locator_or_exact_route": f"Supply an exact coordinate of at most {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes.",
             }.get(
@@ -2867,9 +2873,24 @@ _DOCUMENTATION_QUERY_FIELDS = {
             "limit",
             "include_raw_evidence",
             "source_policy",
+            "read",
         }
     ),
 }
+_IMPACT_READS = ("full", "selected")
+# A selected read answers impact without validating the whole wiki. It falls
+# back to the full read when the storage cannot serve a selected read or the
+# selection would exceed its budget; integrity failures still raise.
+_SELECTED_IMPACT_FALLBACK_CODES = frozenset(
+    {
+        "flat-native-adoption-required",
+        "storage-budget-exhausted",
+        "unsupported-schema-version",
+    }
+)
+_SELECTED_IMPACT_MAX_BYTES = 64 * 1024 * 1024
+_SELECTED_IMPACT_MAX_RECORDS = 10_000
+_SELECTED_READ_SELECTOR_LIMIT = 100
 
 
 def _query_cost(
@@ -3024,7 +3045,18 @@ def _validate_documentation_query_request(
         elif request.get("allow_full_inventory", False):
             raise InvalidRequestError("allow_full_inventory requires live=true.", code="invalid-request", details={"field": "allow_full_inventory"})
     elif operation == "impact":
-        _normalize_query_choice(request.get("source_policy", "explicit"), field="source_policy", allowed=("explicit", "discovery"))
+        source_policy = _normalize_query_choice(request.get("source_policy", "explicit"), field="source_policy", allowed=("explicit", "discovery"))
+        if _normalize_query_choice(request.get("read", "full"), field="read", allowed=_IMPACT_READS) == "selected":
+            for field, conflicting in (
+                ("include_raw_evidence", request.get("include_raw_evidence", False) is True),
+                ("source_policy", source_policy == "discovery"),
+            ):
+                if conflicting:
+                    raise InvalidRequestError(
+                        f"a selected read uses committed knowledge only; {field} is not supported.",
+                        code="invalid-request",
+                        details={"field": field},
+                    )
     elif operation == "related":
         _normalize_query_choice(request.get("direction", "both"), field="direction", allowed=_KNOWLEDGE_QUERY_DIRECTIONS)
         _normalize_query_values(request.get("kinds"), field="kinds", allowed=_KNOWLEDGE_QUERY_KINDS)
@@ -3174,6 +3206,203 @@ def _existing_supplied_source_paths(
     return tuple(existing)
 
 
+def _selected_knowledge_records(
+    wiki_root: Path,
+    selectors: Sequence[str],
+    collections: tuple[str, ...],
+    bindings: set[tuple[str, str]],
+) -> list[Mapping[str, Any]] | None:
+    """Read the selected stored records, or ``None`` when a full read is needed."""
+
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage_access import capture_knowledge_slice
+
+    records: list[Mapping[str, Any]] = []
+    for start in range(0, len(selectors), _SELECTED_READ_SELECTOR_LIMIT):
+        try:
+            captured = capture_knowledge_slice(
+                wiki_root,
+                selectors[start : start + _SELECTED_READ_SELECTOR_LIMIT],
+                max_bytes=_SELECTED_IMPACT_MAX_BYTES,
+                max_records=_SELECTED_IMPACT_MAX_RECORDS,
+                collections=collections,
+            )
+            selected = captured.slice.to_payload()
+            captured.finish()
+        except KnowledgeStorageError as exc:
+            if exc.code in _SELECTED_IMPACT_FALLBACK_CODES:
+                return None
+            raise
+        if not selected["lookup_complete"]:
+            return None
+        bindings.add(
+            (selected["root_hash"], selected["bundle"]["snapshot"]["surface_index_hash"])
+        )
+        if len(bindings) > 1:
+            raise KnowledgeStorageError(
+                "root",
+                "knowledge changed between selected reads",
+                code="storage-mutation",
+            )
+        for collection in collections:
+            records.extend(selected["records"][collection])
+    return records
+
+
+def _selected_surface_pages(
+    wiki_root: Path,
+    bindings: set[tuple[str, str]],
+) -> list[dict[str, Any]]:
+    """Read the surface index the selected generation commits to."""
+
+    from llm_wiki_engine.knowledge_artifacts import validate_surface_index_bytes
+    from llm_wiki_engine.knowledge_evidence import sha256_bytes
+    from llm_wiki_engine.knowledge_storage import KnowledgeStorageError
+    from llm_wiki_engine.knowledge_storage_io import read_guarded
+    from llm_wiki_engine.wiki_surface_index import SURFACE_INDEX_FILENAME
+
+    ((_, surface_hash),) = bindings
+    surface_bytes = read_guarded(
+        wiki_root / SURFACE_INDEX_FILENAME, _SELECTED_IMPACT_MAX_BYTES
+    ).content
+    if sha256_bytes(surface_bytes) != surface_hash:
+        raise KnowledgeStorageError(
+            SURFACE_INDEX_FILENAME,
+            "surface index differs from the selected generation",
+            code="storage-mixed-generation",
+        )
+    return surface_page_records(validate_surface_index_bytes(surface_bytes))
+
+
+def _selected_impact_payload(
+    wiki_root: Path,
+    selected_paths: Sequence[str],
+    *,
+    limit: int,
+    diff_supplied: bool,
+) -> dict[str, Any] | None:
+    """Answer impact from the committed records of the supplied paths only.
+
+    A concept belongs to a path when its basis is that file or it has a
+    ``derived_from`` relationship to it, as in a full read. Rows carry each
+    concept's identity without the records that need whole-wiki reports.
+    Return ``None`` when the storage cannot serve a selected read.
+    """
+
+    path_set = set(selected_paths)
+    bindings: set[tuple[str, str]] = set()
+    rows = _selected_knowledge_records(
+        wiki_root,
+        [
+            selector
+            for path in selected_paths
+            for selector in ("source:" + path, "in:source:" + path)
+        ],
+        ("concepts", "relationships"),
+        bindings,
+    )
+    if rows is None:
+        return None
+    concepts: dict[str, Mapping[str, Any]] = {}
+    relationships: dict[str, Mapping[str, Any]] = {}
+    for row in rows:
+        value = row["value"]
+        if "locator" in value and "document" in value:
+            concepts[value["locator"]] = value
+            continue
+        target = value.get("target")
+        if (
+            value.get("kind") == "derived_from"
+            and isinstance(target, Mapping)
+            and target.get("source_path") in path_set
+            and isinstance(value.get("from"), str)
+        ):
+            relationships[row["id"]] = value
+    missing = sorted(
+        {rel["from"] for rel in relationships.values()} - set(concepts)
+    )
+    if missing:
+        extra = _selected_knowledge_records(
+            wiki_root,
+            ["concept:" + locator for locator in missing],
+            ("concepts",),
+            bindings,
+        )
+        if extra is None:
+            return None
+        for row in extra:
+            concepts[row["value"]["locator"]] = row["value"]
+
+    derived_from = {rel["from"] for rel in relationships.values()}
+    attributed = {
+        locator: concept
+        for locator, concept in concepts.items()
+        if locator in derived_from
+        or compact_stored_knowledge_concept(concept)["source_path"] in path_set
+    }
+    concept_rows, concept_bound = _bounded_query_records(
+        (compact_stored_knowledge_concept(concept) for concept in attributed.values()),
+        limit=limit,
+    )
+    page_rows, page_bound = _bounded_query_records(
+        (
+            page
+            for page in _selected_surface_pages(wiki_root, bindings)
+            if page.get("source_path") in path_set
+        ),
+        limit=limit,
+    )
+    relationship_rows, relationship_bound = _bounded_query_records(
+        (compact_stored_source_relationship(rel) for rel in relationships.values()),
+        limit=limit,
+    )
+    source_rows, source_bound = _bounded_query_records(
+        (
+            # As in a snapshot-only full read, no source inventory is read.
+            {"path": path, "present": False, "counts": {}}
+            for path in selected_paths
+        ),
+        limit=limit,
+    )
+    bounds = {
+        "matches": dict(source_bound),
+        "paths": dict(source_bound),
+        "concepts": concept_bound,
+        "pages": page_bound,
+        "relationships": relationship_bound,
+    }
+    return {
+        "query": {
+            "paths": list(selected_paths),
+            "diff_supplied": diff_supplied,
+            "read": "selected",
+        },
+        "found": bool(attributed or relationships),
+        "ambiguous": False,
+        "matches": source_rows,
+        "impacted_paths": [row["path"] for row in source_rows],
+        "concepts": concept_rows,
+        "pages": page_rows,
+        "relationships": relationship_rows,
+        "knowledge": {
+            "availability": "ready",
+            "reason": "selected-records-match-commitments",
+            "freshness": "unevaluated (selected read)",
+            "freshness_evaluated": False,
+            "validation_scope": "selected-records",
+            "whole_store_validated": False,
+        },
+        "bounds": bounds,
+        "truncated": any(bool(bound["truncated"]) for bound in bounds.values()),
+        "limitations": [
+            "knowledge and page attribution use the committed snapshot; "
+            "targeted source extraction does not establish global live freshness",
+            "a selected read verifies only the records it returns and omits "
+            "freshness, implementation, maintenance and review records",
+        ],
+    }
+
+
 def _impact_query(
     request: Mapping[str, Any],
     *,
@@ -3213,13 +3442,31 @@ def _impact_query(
             details={"field": "include_raw_evidence"},
         )
 
+    # Validated with the request: read is "full" or "selected", and a
+    # selected read takes neither raw evidence nor source discovery.
+    read = request.get("read", "full")
+    source_policy = request.get("source_policy", "explicit")
+
     src_root = validate_source_root(
         src_dir,
         "--src-dir",
         allow_external=allow_external_src,
     )
     wiki_root = _validate_wiki_dir(wiki_dir)
-    source_policy = request.get("source_policy", "explicit")
+    if read == "selected":
+        selected_payload = _selected_impact_payload(
+            wiki_root,
+            selected_paths,
+            limit=limit,
+            diff_supplied="diff" in request,
+        )
+        if selected_payload is not None:
+            return _with_query_envelope(
+                "impact",
+                selected_payload,
+                scope="snapshot-index-only",
+                supplied_paths=len(selected_paths),
+            )
     checked_paths = selected_paths
     if source_policy == "discovery":
         from llm_wiki_engine.source_selection import resolve_source_selection, path_is_selected
@@ -3333,6 +3580,8 @@ def _impact_query(
     }
     if "source_policy" in request:
         payload["query"]["source_policy"] = source_policy
+    if "read" in request:
+        payload["query"]["read"] = "full"
     if include_raw:
         raw_records, raw_bound, raw_byte_bound = _bounded_raw_query_evidence(
             (
