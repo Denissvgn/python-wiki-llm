@@ -638,6 +638,71 @@ def _knowledge_target_ref(
     return result
 
 
+def compact_stored_knowledge_concept(concept: Mapping[str, Any]) -> dict[str, Any]:
+    """Project the identity of one stored concept read by a selected read.
+
+    The fields match a full query's concept record. Freshness, implementation,
+    maintenance and review records are left out: each comes from a report over
+    the whole wiki, which a selected read does not build.
+    """
+
+    document = cast(Mapping[str, Any], concept.get("document", {}))
+    facets = cast(Mapping[str, Any], concept.get("facets", {}))
+    structure = cast(Mapping[str, Any], facets.get("structure", {}))
+    semantics = cast(Mapping[str, Any], facets.get("semantics", {}))
+    basis = structure.get("basis")
+    locator = concept.get("locator")
+    result = {
+        "locator": locator,
+        "concept_kind": concept.get("concept_kind"),
+        "title": concept.get("title"),
+        "page_kind": document.get("page_kind"),
+        "page_id": document.get("page_id"),
+        "canonical_path": document.get("canonical_path"),
+        "mcp_uri": locator,
+        "source_path": basis.get("source_path") if isinstance(basis, Mapping) else None,
+        "role": document.get("role"),
+        "origin": structure.get("origin"),
+        "evidence": structure.get("evidence"),
+        "verification": semantics.get("verification"),
+        "lifecycle": concept.get("lifecycle"),
+    }
+    extensions = concept.get("extensions", {})
+    governance = (
+        extensions.get(GOVERNANCE_EXTENSION_KEY)
+        if isinstance(extensions, Mapping)
+        else None
+    )
+    if isinstance(governance, Mapping) and isinstance(governance.get("uid"), str):
+        result["uid"] = governance["uid"]
+    return cast(dict[str, Any], _jsonable(result))
+
+
+def surface_page_records(surface_index: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return the page rows a full query lists for a validated surface index."""
+
+    return [_page_ref(page) for page in surface_index.get("pages", []) or []]
+
+
+def compact_stored_source_relationship(
+    relationship: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project one stored ``derived_from`` relationship as a full query does."""
+
+    target = cast(Mapping[str, Any], relationship.get("target", {}))
+    evidence = cast(Mapping[str, Any], relationship.get("evidence", {}))
+    return {
+        "kind": relationship.get("kind"),
+        "direction": "outbound",
+        "from": relationship.get("from"),
+        "resolution": relationship.get("resolution"),
+        "origin": relationship.get("origin"),
+        "evidence": {"state": evidence.get("state")},
+        "related_concept": None,
+        "target": _knowledge_target_ref(target, relationship.get("resolution")),
+    }
+
+
 def _compact_context_endpoint(
     value: object,
     *,

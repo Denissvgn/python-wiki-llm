@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `impact` queries accept `"read": "selected"`, which answers from the
+  committed records of the supplied paths instead of validating the whole
+  wiki first. On a wiki of about 2,000 concepts an answer takes well under a
+  second instead of more than 20 seconds. It lists the same concepts, pages and
+  relationships as a full read of the committed snapshot. Concepts carry their
+  identity, origin, evidence, verification and lifecycle, but not freshness,
+  implementation, maintenance or review records. `knowledge` reports that only
+  the returned records were validated. When the storage cannot serve a
+  selected read, the request is answered with a full read, and `query.read`
+  says which read answered it. The default full read is unchanged.
+
 ### Changed
 
 - Bundled workflow skills link the shared `wiki-reference` topics relative to
@@ -60,6 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   version kept such a record while rewriting the pages and mappings it binds,
   which could leave the wiki needing complete recovery. Read-only commands
   are unaffected.
+- An invalid `source_policy` in a documentation query is now reported against
+  that field instead of the whole request.
 
 ## [6.1.1] - 2026-11-25
 
