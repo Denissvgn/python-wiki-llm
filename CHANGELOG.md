@@ -30,8 +30,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cached extraction, so the source is analysed once. One command replaces a
   preview, a sync, a repeat preview and separate `lint`, `ci-check` and
   `team check` runs.
+- `llm-wiki knowledge storage-usage` reports the disk space the tool owns for
+  a wiki: the committed store, recovery copies, caches and prepared helpers,
+  in the wiki, the Git directory and the system temporary directory.
+  `--reclaim` previews removing caches, helpers, storage-recovery copies or
+  upgrade-recovery copies, and `--apply` deletes them. Recovery copies newer
+  than `--older-than-days` (default 7) are kept.
 
 ### Changed
+
+- Storage cleanup writes no second recovery copy when Git's `HEAD` already
+  holds every removed object with the same bytes; restore one with
+  `git checkout HEAD -- <path>`. An explicit `--storage-recovery-dir`, or an
+  object that is not committed, still gets its copy. This applies to
+  `sync --prune-storage` and `knowledge prune-storage --apply`, whose results
+  now name the `recovery_source`.
+- A writing sync on an adopted wiki also retires completed recovery copies
+  that belong to a wiki directory which no longer exists, such as a removed
+  worktree, once they are seven days old. Earlier such copies stayed for good
+  and kept their shared objects from being collected.
 
 - Bundled workflow skills link the shared `wiki-reference` topics relative to
   their own directory instead of naming `.claude/skills` and

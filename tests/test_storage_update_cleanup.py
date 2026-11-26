@@ -76,6 +76,7 @@ def test_automatic_cleanup_preserves_current_files_and_verifies_recovery(
         "removed": [],
         "bytes": 0,
         "recovery_manifest": None,
+        "recovery_source": None,
     }
 
 
@@ -226,7 +227,7 @@ def test_legacy_flat_native_generation_has_a_verified_noop_cleanup(tmp_path):
     result = lifecycle.finalize_knowledge_storage(
         root, recovery_dir=tmp_path / "recovery"
     )
-    assert result == {"removed": [], "bytes": 0, "recovery_manifest": None}
+    assert result == {"removed": [], "bytes": 0, "recovery_manifest": None, "recovery_source": None}
     assert snapshot(root) == before and not (tmp_path / "recovery").exists()
 
 

@@ -42,6 +42,9 @@ def run(args) -> None:
                                     limit=args.limit, max_bytes=args.max_bytes,
                                     selectors=getattr(args, "selector", None), cursor=args.cursor,
                                     record_index=args.record_index, review_id=args.review_id, record_offset=args.record_offset)
+        elif args.knowledge_action == "storage-usage":
+            from ..services.storage_usage import storage_usage
+            result = storage_usage(root, reclaim=args.reclaim or (), older_than_days=args.older_than_days, apply=args.apply)
         elif args.knowledge_action == "git-check":
             from ..services.wiki_git_delivery import inspect_branch_wiki_changes, inspect_wiki_git_delivery
             base = getattr(args, "base", None)

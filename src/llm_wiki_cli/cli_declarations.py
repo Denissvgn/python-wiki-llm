@@ -877,6 +877,22 @@ def _add_knowledge_command(subparsers):
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
     storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
     storage_check.add_argument("--format", choices=["json"], default="json")
+    storage_usage = actions.add_parser(
+        "storage-usage",
+        help="Report the disk space llm-wiki owns for this wiki; reclaim caches and old recovery copies on request",
+    )
+    _add_knowledge_wiki_argument(storage_usage)
+    storage_usage.add_argument(
+        "--reclaim", action="append", default=None,
+        choices=["caches", "helpers", "storage-recovery", "upgrade-recovery"],
+        help="Class to remove; may be repeated. Previewed unless --apply is given",
+    )
+    storage_usage.add_argument(
+        "--older-than-days", type=int, default=7,
+        help="Recovery classes give up only entries at least this old (default: 7)",
+    )
+    storage_usage.add_argument("--apply", action="store_true", help="Delete the previewed --reclaim candidates")
+    storage_usage.add_argument("--format", choices=["json"], default="json")
     git_check = actions.add_parser(
         "git-check",
         help="Inspect Git delivery policy for every required native snapshot file",

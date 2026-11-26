@@ -5826,6 +5826,8 @@ def run_request(request: SyncRequest) -> None:
         emit(f"Storage cleanup removed {len(cleaned['removed'])} objects ({cleaned['bytes']} bytes).")
         if cleaned["recovery_manifest"] is not None:
             emit("Storage recovery manifest " + cleaned["recovery_manifest"])
+        elif cleaned.get("recovery_source") == "git-head":
+            emit("Removed objects are committed at Git HEAD; no separate recovery copy was written.")
     if request.verify:
         _verify_written_wiki(request, options)
 

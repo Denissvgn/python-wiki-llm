@@ -355,3 +355,46 @@ def test_verify_is_rejected_for_a_dry_run(monkeypatch, capsys, repository):
 
     assert code == 2
     assert "without --dry-run" in capsys.readouterr().err
+
+
+def _recovery_copies(root: Path) -> list[Path]:
+    base = root / ".git" / "llm-wiki-storage-recovery"
+    return [path for path in base.rglob("*") if path.is_file()] if base.exists() else []
+
+
+def test_prune_writes_no_recovery_copy_when_head_holds_the_objects(monkeypatch, capsys, repository):
+    _append_service(repository)
+    _commit_all(repository, "source change")
+    assert _run(monkeypatch, repository, "sync", "--src-dir", ".", "--wiki-dir", WIKI) == 0
+    _commit_all(repository, "wiki refresh keeping the superseded objects")
+    capsys.readouterr()
+
+    code = _run(monkeypatch, repository, "sync", "--prune-storage", "--src-dir", ".", "--wiki-dir", WIKI)
+
+    output = capsys.readouterr().out
+    assert code == 0
+    assert "Storage cleanup removed" in output and "removed 0 objects" not in output
+    assert "committed at Git HEAD" in output
+    assert _recovery_copies(repository) == []
+    removed = _git(repository, "status", "--porcelain").splitlines()
+    assert removed and all(line.lstrip().startswith("D ") for line in removed)
+
+
+def test_prune_keeps_its_recovery_copy_for_uncommitted_objects(monkeypatch, capsys, repository):
+    _append_service(repository)
+    _commit_all(repository, "source change")
+    assert _run(monkeypatch, repository, "sync", "--src-dir", ".", "--wiki-dir", WIKI) == 0
+    _commit_all(repository, "wiki refresh keeping the superseded objects")
+    # Rewind HEAD so the superseded objects are no longer what Git would restore.
+    _git(repository, "reset", "--quiet", "--soft", "HEAD~2")
+    _git(repository, "rm", "--quiet", "-r", "--cached", "docs/llm_wiki")
+    _git(repository, "commit", "--quiet", "-m", "wiki untracked at HEAD")
+    capsys.readouterr()
+
+    code = _run(monkeypatch, repository, "sync", "--prune-storage", "--src-dir", ".", "--wiki-dir", WIKI)
+
+    output = capsys.readouterr().out
+    assert code == 0
+    assert "Storage recovery manifest" in output
+    assert "committed at Git HEAD" not in output
+    assert _recovery_copies(repository)

@@ -307,6 +307,38 @@ caches are bounded separately; process memory also includes decoded JSON and
 the bounded physical routing tables. Exceeding a limit produces an explicit
 failure. Private files are removed when the operation ends or is cancelled.
 
+### See and reclaim the tool's disk use
+
+```sh
+llm-wiki knowledge storage-usage --wiki-dir docs/llm_wiki
+llm-wiki knowledge storage-usage --wiki-dir docs/llm_wiki --reclaim caches --reclaim storage-recovery
+llm-wiki knowledge storage-usage --wiki-dir docs/llm_wiki --reclaim caches --reclaim storage-recovery --apply
+```
+
+The report lists every location the tool owns for this wiki, with bytes and
+file counts by class:
+
+| Class | What it holds | Reclaim |
+|---|---|---|
+| `wiki-store` | Knowledge and manifest objects in the wiki | Use `prune-storage`; it checks references first |
+| `maintenance-recovery` | Recovery copies of adopted wiki writes | Retired by the next writing sync |
+| `storage-recovery` | Copies of objects removed by cleanup or migration | `--reclaim storage-recovery` |
+| `upgrade-recovery` | Copies written by bootstrap and upgrade in the system temporary directory | `--reclaim upgrade-recovery` |
+| `caches` | Extraction and analysis caches | `--reclaim caches` |
+| `helpers` | Prepared language helpers | `--reclaim helpers`; prepare them again afterwards |
+
+It covers the wiki, this checkout's Git directory, the shared Git directory of
+a linked worktree, `LLM_WIKI_CACHE_DIR` when set, and this wiki's entries in
+the system temporary directory. Without `--apply` nothing is deleted and
+`reclaim.candidates` shows what would be. Recovery classes keep entries newer
+than `--older-than-days` (default 7). Symbolic links are never followed.
+
+Storage cleanup keeps its own footprint small. When Git's `HEAD` holds every
+object it removes, no second copy is written and the result reports
+`recovery_source: git-head`. A writing sync on an adopted wiki retires the
+recovery copies of wiki directories that no longer exist, such as removed
+worktrees, after seven days.
+
 To include the size policy in an existing report, use `ci-check --storage-check`.
 Optional `--storage-git-base` and `--storage-git-head` add the explicit Git range
 check to that same report. Neither command installs hooks or changes Git state.

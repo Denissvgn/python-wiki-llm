@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from contextlib import contextmanager
 import json
+import os
 from pathlib import Path
 import re
 import time
@@ -26,6 +27,9 @@ _MAX_SCAN_BYTES = 64 * 1024 * 1024
 _MAX_FILES = 100_000
 _SIDECARS = {CATALOG_FILENAME, COMPLETION_FILENAME, "publication-journal.json"}
 _LOCK_FILENAME = "maintenance-recovery.lock"
+# A catalog whose wiki no longer exists can never be restored to its owner.
+# The wait covers a volume or checkout that is only briefly absent.
+ORPHAN_RETIREMENT_NS = 7 * 24 * 60 * 60 * 1_000_000_000
 
 
 def _portable_name(value):
@@ -232,9 +236,23 @@ def _mark_recovery_complete(preimage_directory, committed_directory):
         atomic_write_guarded_bytes(path, completion, expected_existing=previous)
 
 
-def retain_recovery_catalogs(store, *, owner_root, marker, newest_committed, keep_successful=2):
-    """Retire only positively completed catalogs in one exact owner namespace.
+def _orphaned_owner(recorded) -> bool:
+    """Return whether a recorded owner names a wiki directory that is gone."""
+    root = recorded.get("wiki_root") if isinstance(recorded, dict) else None
+    if not isinstance(root, str) or not os.path.isabs(root):
+        return False
+    try:
+        return not os.path.lexists(root)
+    except OSError:
+        return False
 
+
+def retain_recovery_catalogs(store, *, owner_root, marker, newest_committed, keep_successful=2):
+    """Retire positively completed catalogs of this owner and of vanished owners.
+
+    This owner keeps its newest ``keep_successful`` catalogs. A completed
+    catalog whose owning wiki directory no longer exists, such as a removed
+    worktree, is retired once it is older than ``ORPHAN_RETIREMENT_NS``.
     Store-wide serialization protects blobs published before their catalog is
     committed. Unknown or damaged catalogs prevent blob collection entirely.
     """
@@ -252,6 +270,8 @@ def _retain_recovery_catalogs(root, *, owner_root, marker, newest_committed, kee
     owner = _owner(owner_root, marker)
     newest = _absolute_path(Path(newest_committed))
     eligible = {"committed": [], "captured-preimage": []}
+    orphaned = []
+    orphan_deadline = time.time_ns() - ORPHAN_RETIREMENT_NS
     skipped = removed = scanned_bytes = 0
     entries = sorted(root.iterdir())
     if len(entries) > _MAX_FILES:
@@ -272,34 +292,43 @@ def _retain_recovery_catalogs(root, *, owner_root, marker, newest_committed, kee
                 _validate_catalog(metadata)
                 _validate_layout(absolute, metadata)
                 completion_raw, completion = _read_json(candidate / COMPLETION_FILENAME)
-                if (metadata["blob_store"] != _SHARED_STORE or metadata["owner"] != owner
+                recorded = metadata["owner"]
+                if (metadata["blob_store"] != _SHARED_STORE
                         or metadata["kind"] not in eligible or not isinstance(completion, dict)
                         or set(completion) != {"schema_version", "owner", "catalog_hash", "completed_ns"}
                         or completion["schema_version"] != _COMPLETION_SCHEMA
-                        or completion["owner"] != owner or completion["catalog_hash"] != digest(raw)
+                        or completion["owner"] != recorded or completion["catalog_hash"] != digest(raw)
                         or type(completion["completed_ns"]) is not int or completion["completed_ns"] < 0
                         or any(p.name not in _SIDECARS | {"committed"} for p in candidate.iterdir())):
                     skipped += 1
                     continue
-                eligible[metadata["kind"]].append((completion["completed_ns"], absolute, raw, completion_raw))
+                row = (completion["completed_ns"], absolute, raw, completion_raw)
+                if recorded == owner:
+                    eligible[metadata["kind"]].append(row)
+                elif row[0] <= orphan_deadline and _orphaned_owner(recorded):
+                    orphaned.append(row)
+                else:
+                    skipped += 1
             except (ValueError, OSError, TypeError, KeyError):
                 skipped += 1  # Failed/active, old or unrecognized recoveries stay pinned.
     retired = set()
+    retirable = list(orphaned)
     for candidates in eligible.values():
         candidates.sort(key=lambda row: (row[0], str(row[1])), reverse=True)
-        for _completed, candidate, raw, completion_raw in candidates[keep_successful:]:
-            if candidate == newest:
-                continue
-            journal = candidate / "publication-journal.json"
-            if journal.exists() or journal.is_symlink():
-                journal_raw = read_guarded(journal, MAX_EXPANDED_BYTES).content
-                unlink_guarded_bytes(journal, expected=journal_raw)
-            unlink_guarded_bytes(candidate / COMPLETION_FILENAME, expected=completion_raw)
-            unlink_guarded_bytes(candidate / CATALOG_FILENAME, expected=raw)
-            retired.add(candidate)
-            if candidate.name == "committed":
-                retired.add(candidate.parent)
-            removed += 1
+        retirable.extend(candidates[keep_successful:])
+    for _completed, candidate, raw, completion_raw in retirable:
+        if candidate == newest:
+            continue
+        journal = candidate / "publication-journal.json"
+        if journal.exists() or journal.is_symlink():
+            journal_raw = read_guarded(journal, MAX_EXPANDED_BYTES).content
+            unlink_guarded_bytes(journal, expected=journal_raw)
+        unlink_guarded_bytes(candidate / COMPLETION_FILENAME, expected=completion_raw)
+        unlink_guarded_bytes(candidate / CATALOG_FILENAME, expected=raw)
+        retired.add(candidate)
+        if candidate.name == "committed":
+            retired.add(candidate.parent)
+        removed += 1
     for directory in sorted(retired, key=lambda path: len(path.parts), reverse=True):
         try:
             if not any(directory.iterdir()):

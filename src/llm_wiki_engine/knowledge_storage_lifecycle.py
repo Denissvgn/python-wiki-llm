@@ -424,7 +424,7 @@ def finalize_knowledge_storage(
         _outside_tree(Path(recovery_dir), root)
     before = storage_report(root, require_referenced=True)
     if before["ok"]:
-        return {"removed": [], "bytes": 0, "recovery_manifest": None}
+        return {"removed": [], "bytes": 0, "recovery_manifest": None, "recovery_source": None}
     repairable = {"unreferenced-storage", "unrecognized-storage"}
     if before["integrity"] != "valid-committed-snapshot" or any(
         failure["reason"] not in repairable for failure in before["failures"]
@@ -459,6 +459,7 @@ def finalize_knowledge_storage(
         "removed": applied["removed"],
         "bytes": applied["bytes"],
         "recovery_manifest": applied["recovery_manifest"],
+        "recovery_source": applied["recovery_source"],
     }
 
 
@@ -475,6 +476,41 @@ def _prune_plan(root, root_bytes, manifest_bytes, candidates):
         raise KnowledgeStorageError("plan", "prune plan exceeds its bound", code="storage-limit")
     body["plan_id"] = digest(canonical_bytes(body))
     return body
+
+
+def _committed_at_head(root, candidates) -> bool:
+    """Return whether Git's HEAD holds every candidate with these exact bytes.
+
+    Such objects are recoverable with ``git checkout HEAD -- <path>``, so a
+    second copy outside the wiki would only duplicate history.
+    """
+    import hashlib
+
+    from .knowledge_storage_diagnostics import _git
+
+    try:
+        code, output = _git(root, ["ls-tree", "-r", "-z", "HEAD", "--", "."], maximum=64 * 1024 * 1024)
+    except (KnowledgeStorageError, OSError):
+        return False
+    if code or (output and not output.endswith(b"\0")):
+        return False
+    committed = {}
+    for row in output[:-1].split(b"\0") if output else []:
+        head, separator, name = row.partition(b"\t")
+        fields = head.split(b" ")
+        if not separator or len(fields) != 3 or fields[1] != b"blob":
+            continue
+        committed[name] = fields[2].decode("ascii", "replace")
+    for name, raw in candidates.items():
+        recorded = committed.get(os.fsencode(name))
+        if recorded is None or len(recorded) not in {40, 64}:
+            return False
+        hasher = hashlib.new("sha1" if len(recorded) == 40 else "sha256", usedforsecurity=False)
+        hasher.update(b"blob %d\0" % len(raw))
+        hasher.update(raw)
+        if hasher.hexdigest() != recorded:
+            return False
+    return True
 
 
 def _prune_backup(root, directory, plan, candidates, cancelled):
@@ -606,10 +642,13 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
         raise KnowledgeStorageError("plan", "generation, root or candidate preimages changed", code="storage-mutation")
     removed = []
     recovery = None
+    in_git = False
     if not dry_run:
         with governance_writer_lock(root), storage_writer_lock(root):
             session.recheck()
-            if safe:
+            # An explicit recovery directory always receives its copy.
+            in_git = bool(safe) and recovery_dir is None and _committed_at_head(root, safe)
+            if safe and not in_git:
                 recovery = _prune_backup(root, recovery_dir, prepared, safe, cancelled)
             try:
                 for name, content in safe.items():
@@ -631,7 +670,9 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
                 raise
     return {"dry_run": dry_run, "unreferenced_objects": sorted(safe), "removed": removed,
             "retained": sorted(set(retained)), "bytes": sum(map(len, safe.values())), "git_history_changed": False,
-            "plan": prepared, "recovery_manifest": recovery, "inspection_bytes": inspected_bytes,
+            "plan": prepared, "recovery_manifest": recovery,
+            "recovery_source": "git-head" if in_git else "copy" if recovery is not None else None,
+            "inspection_bytes": inspected_bytes,
             "budget_exhausted": budget_exhausted,
             "scan_scope": "owned-namespace" if plan is None else "saved-plan-candidates"}
 
