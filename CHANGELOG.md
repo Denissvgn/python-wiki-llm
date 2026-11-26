@@ -60,6 +60,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   version kept such a record while rewriting the pages and mappings it binds,
   which could leave the wiki needing complete recovery. Read-only commands
   are unaffected.
+- A documentation query result that exceeds the 64 KiB result limit returns
+  the leading records that fit instead of none. Before, a `typed` query for a
+  module with more than about ten importers, or an `impact` query over a few
+  large modules, came back with no edges or rows. Each record list keeps the
+  same number of leading records in its usual order, and its bound reports
+  how many were returned. A result is marked omitted only when not even its
+  header fits, and an omitted `impact` result still lists `concepts`,
+  `impacted_paths` and `limitations`.
 
 ## [6.1.1] - 2026-11-25
 
