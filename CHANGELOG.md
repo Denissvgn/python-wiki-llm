@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the returned records were validated. When the storage cannot serve a
   selected read, the request is answered with a full read, and `query.read`
   says which read answered it. The default full read is unchanged.
+- `typed` and `impact` queries can page through results that do not fit the
+  64 KiB result limit. A request accepts an `offset`, and a result with more
+  records carries a `follow_up` whose `request` reads the next page. An impact
+  request made with `diff` is followed up with the paths the diff resolved
+  to. Before, a caller could not read past the records in the first result.
+- `typed` and `impact` queries accept `"projection": "compact"`, which keeps
+  each embedded concept's identity, origin, evidence, verification and
+  lifecycle and leaves out its freshness, implementation, maintenance and
+  review records. A typed edge then takes under 1 KB instead of about 5 KB.
 
 ### Changed
 
