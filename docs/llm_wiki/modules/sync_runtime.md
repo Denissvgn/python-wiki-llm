@@ -156,7 +156,7 @@ still stop the operation.
 | `llm_wiki_engine.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `llm_wiki_engine.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `llm_wiki_engine.storage_spool` | `ByteSpool` |
-| `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
+| `llm_wiki_engine.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths`, `unrecognised_generation_input_records` |
 | `llm_wiki_engine.sync_recovery` | `capture_new_sync_pages`, `SyncRecoveryError` |
 | `llm_wiki_engine.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves`, `preview_maintenance_preimages` |
 | `llm_wiki_engine.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
