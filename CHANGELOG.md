@@ -30,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   callers moved into `wiki-sync/SKILL.md`. A copy installed by an earlier
   release is left in place and nothing reads it.
 
+### Fixed
+
+- `sync` explains how to proceed when a new declaration maps to the page of a
+  retired source member. The "Occupied target has no verified outgoing owner"
+  error now names the retired member, the file that declares the new one, and
+  the remedy: move the retained page to a tracked history path outside the
+  generated wiki, after which sync creates a new page. For a file sync does
+  not own, the error says to move or rename it.
+
 ## [6.1.1] - 2026-11-25
 
 ### Fixed
