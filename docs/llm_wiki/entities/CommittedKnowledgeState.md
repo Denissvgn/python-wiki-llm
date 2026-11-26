@@ -38,8 +38,9 @@ flowchart LR
     n3["capture_committed_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n4["committed_governance_bundle_id (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n5["committed_runtime_provenance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n6["_preflight_sync_governance (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n7["_try_sync_knowledge_reuse (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n6["retain_recorded_repository_identity (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["_preflight_sync_governance (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n8["_try_sync_knowledge_reuse (src/llm_wiki_cli/services/sync_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -47,14 +48,16 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_orchestration.md"
     click n1 "../modules/knowledge_orchestration.md"
     click n2 "../modules/knowledge_orchestration.md"
     click n3 "../modules/knowledge_orchestration.md"
     click n4 "../modules/knowledge_orchestration.md"
     click n5 "../modules/knowledge_orchestration.md"
-    click n6 "../modules/sync_runtime.md"
+    click n6 "../modules/knowledge_orchestration.md"
     click n7 "../modules/sync_runtime.md"
+    click n8 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -73,5 +76,6 @@ flowchart LR
 | `capture_committed_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `committed_governance_bundle_id` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `committed_runtime_provenance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `retain_recorded_repository_identity` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_preflight_sync_governance` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_try_sync_knowledge_reuse` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |

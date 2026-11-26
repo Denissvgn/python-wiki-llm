@@ -159,9 +159,9 @@ sequenceDiagram
     p1-->>p30: path.exists (src/llm_wiki_engine/maint…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 4680 interactions; 4650 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4674 interactions; 4644 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1567 (1566 omitted); unresolved 1 of 1205 (1204 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1562 (1561 omitted); unresolved 1 of 1204 (1203 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -190,7 +190,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1909; effect analysis evaluated: 1214, partial: 81, unavailable: 614. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1295 source steps with known totals: observed: 7577, emitted: 7251, omitted: 326. Unavailable totals are excluded.
+Collector observations for 1295 source steps with known totals: observed: 7575, emitted: 7251, omitted: 324. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

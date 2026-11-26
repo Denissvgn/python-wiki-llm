@@ -31,8 +31,9 @@ when an unchanged source has not yet been scheduled by sync for refresh.
 16. `validation.portable_path_key`
 17. `sync_ownership.PageTransitionError`
 18. `sync_ownership.PageTransitionError`
-19. `validation.portable_path_key`
-20. `sync_ownership.PageTransitionError`
+19. `sync_ownership.PageTransitionError`
+20. `validation.portable_path_key`
+21. `sync_ownership.PageTransitionError`
 
 ## Touches
 

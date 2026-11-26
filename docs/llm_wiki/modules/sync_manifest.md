@@ -78,7 +78,7 @@ flowchart LR
 | [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 259 | — | Known or explicitly unknown evidence for one active concept page. |
 | [ManifestTombstone](../entities/ManifestTombstone.md) | 364 | — | Evidence retained for a stale module/entity page. |
 | [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 453 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 893 | — | Operational state; maintenance is present only after explicit adoption. |
+| [SyncManifest](../entities/SyncManifest.md) | 866 | — | Operational state; maintenance is present only after explicit adoption. |
 
 ## Functions
 
@@ -103,6 +103,5 @@ flowchart LR
 | `_copy_sources` | `(value: object, field_name: str) -> dict[str, dict]` | — | — |
 | `_copy_mapping` | `(value: object, field_name: str) -> dict[str, object]` | — | — |
 | `_captured_source_hashes` | `(inventory: Mapping[str, object], value: Mapping[str, str] \| None) -> dict[str, str] \| None` | — | Validate an optional exact-hash replacement for source file reads. |
-| `unrecognised_generation_input_records` | `(generation_inputs: Mapping[str, Any]) -> tuple[str, ...]` | — | Name versioned llm-wiki generation records this writer does not know. |
 | `validate_manifest_policy` | `(generation_inputs: Mapping[str, Any]) -> None` | — | Validate policy commitments without pretending to have source records. |
 | `prune_manifest_for_source_selection` | `(manifest: SyncManifest, policy: SourceSelectionPolicy \| None, *, source_snapshot: SourceSnapshot \| None = None) -> SourceSelectionPruneResult` | — | Erase prior source/page state excluded by the current selection policy. |

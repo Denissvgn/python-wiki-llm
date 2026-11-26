@@ -1060,6 +1060,52 @@ def _prepared_runtime_governance(
     )
 
 
+def retain_recorded_repository_identity(
+    evidence: RepositoryEvidence,
+    committed_state: CommittedKnowledgeState | None,
+) -> tuple[RepositoryEvidence, str | None]:
+    """Keep a recorded identity that this checkout cannot resolve.
+
+    The identity comes from the checkout's remote, which is a property of one
+    clone and not of the committed content. A remote that names no public
+    repository (a local path, or none) is absence of evidence, so it must not
+    replace an identity an earlier sync recorded. A different resolvable
+    identity is real evidence and is kept. The second value is a note for the
+    operator whenever the live and recorded identities differ.
+    """
+    from llm_wiki_engine.knowledge_envelope import build_repository_record
+    from llm_wiki_engine.knowledge_model import RepositoryIdentitySource
+
+    artifacts = committed_state.artifacts if committed_state is not None else None
+    if artifacts is None:
+        return evidence, None
+    recorded = artifacts.knowledge.bundle.repository
+    live = build_repository_record(evidence=evidence)
+    if recorded.identity == "unknown" or live.identity == recorded.identity:
+        return evidence, None
+    if live.identity != "unknown":
+        return evidence, (
+            f"Repository identity: recorded {recorded.identity}; this checkout resolves to "
+            f"{live.identity}, which the knowledge index will record."
+        )
+    if recorded.identity_source is not RepositoryIdentitySource.NORMALIZED_VCS:
+        return evidence, None
+    retained = replace(
+        evidence,
+        remotes={"origin": "https://" + recorded.identity},
+        remotes_evaluated=True,
+        upstream_remote=None,
+        upstream_remote_evaluated=True,
+    )
+    check = build_repository_record(evidence=retained)
+    if check.identity != recorded.identity or check.extensions != recorded.extensions:
+        return evidence, None
+    return retained, (
+        f"Repository identity: this checkout's remote names no public repository; "
+        f"the recorded identity {recorded.identity} is kept."
+    )
+
+
 def collect_runtime_repository_evidence(
     source_root: str | Path,
     target_wiki_dir: str | Path,

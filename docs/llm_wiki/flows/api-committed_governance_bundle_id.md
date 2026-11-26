@@ -106,16 +106,16 @@ sequenceDiagram
     p1-->>p30: state.require_for(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 791 interactions; 761 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 785 interactions; 755 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 278 (277 omitted); unresolved 1 of 148 (147 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 273 (272 omitted); unresolved 1 of 147 (146 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | external | 8 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | external | 3 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 7 | - | external | 4 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 10 | - | external | 19 |
 | `src/llm_wiki_engine/io.py:first_unsafe_path_component` | 10 | - | unresolved | 6 |
@@ -137,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 366; effect analysis evaluated: 197, partial: 25, unavailable: 144. Counts include steps omitted from the displayed trace.
 
-Collector observations for 222 source steps with known totals: observed: 1465, emitted: 1380, omitted: 85. Unavailable totals are excluded.
+Collector observations for 222 source steps with known totals: observed: 1464, emitted: 1380, omitted: 84. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -147,7 +147,7 @@ Collector observations for 222 source steps with known totals: observed: 1465, e
 |---|---|---|---|---:|---:|---:|
 | `committed_governance_bundle_id` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `_previous_committed_artifacts` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
-| `capture_committed_knowledge` | `available` | `partial` | `available` | `16` | `14` | `2` |
+| `capture_committed_knowledge` | `available` | `partial` | `available` | `15` | `14` | `1` |
 | `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
@@ -219,8 +219,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_governance_bundle_id | _previous_committed_artifacts | 805 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 792 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| committed_governance_bundle_id | _previous_committed_artifacts | 788 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 775 | `capture_committed_knowledge(wiki_dir, manifest)` |
 | capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 243 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 243 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 246 | `guard_maintenance_owner(root, manifest)` |
@@ -235,7 +235,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 273 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 272 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 72 |
 
 ### Static analysis gaps

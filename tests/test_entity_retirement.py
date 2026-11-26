@@ -567,7 +567,9 @@ def test_first_duplicate_removal_cannot_transfer_authored_identity_to_second(
     assert _snapshot(wiki) == before
 
 
-def test_foreign_source_cannot_claim_retired_same_named_page(tmp_path, monkeypatch):
+def test_foreign_source_cannot_claim_retired_same_named_page(
+    tmp_path, monkeypatch, capsys
+):
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"alpha.py": _draft_source("Original draft.")}
     )
@@ -580,11 +582,43 @@ def test_foreign_source_cannot_claim_retired_same_named_page(tmp_path, monkeypat
         _draft_source("Foreign draft."), encoding="utf-8"
     )
 
+    capsys.readouterr()
     with pytest.raises(SystemExit) as caught:
         _sync(wiki)
 
     assert caught.value.code != 0
     assert _snapshot(wiki) == before
+    error = capsys.readouterr().err
+    assert "retired source member ('Draft' from 'pkg/alpha.py')" in error
+    assert "'pkg/beta.py' now declares" in error
+    assert "tracked history path outside the generated wiki" in error
+
+
+def test_moving_retained_page_out_of_wiki_frees_its_name_for_a_new_declaration(
+    tmp_path, monkeypatch
+):
+    project, wiki = _bootstrap_project(
+        tmp_path, monkeypatch, {"alpha.py": _draft_source("Original draft.")}
+    )
+    (project / "pkg/alpha.py").write_text(
+        "def surviving_function():\n    return None\n", encoding="utf-8"
+    )
+    _sync(wiki)
+    (project / "pkg/beta.py").write_text(
+        _draft_source("Foreign draft."), encoding="utf-8"
+    )
+    history = project / "history"
+    history.mkdir()
+    (wiki / "entities/Draft.md").rename(history / "Draft-alpha.md")
+
+    _sync(wiki)
+
+    _assert_entity_page(wiki, "Draft", "pkg/beta.py", "Foreign draft.")
+    manifest = SyncManifest.load(wiki)
+    assert "entities/Draft.md" not in manifest.tombstones
+    assert "entities/Draft.md" not in _retirement_pages(manifest)
+    assert "Original draft." in (history / "Draft-alpha.md").read_text(encoding="utf-8")
+    _assert_converged(wiki)
 
 
 def test_deselection_prunes_retired_members_without_reclassifying_them_live(

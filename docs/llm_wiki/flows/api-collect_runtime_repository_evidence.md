@@ -199,39 +199,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence) | 1071 | `Path(source_root).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1071 | `Path(source_root)` |
-| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1) | 1072 | `Path(target_wiki_dir).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1072 | `Path(target_wiki_dir)` |
-| collect_runtime_repository_evidence | isinstance (src/llm_wiki_cli/services…ntime_repository_evidence) | 1077 | `isinstance(source_snapshot, SourceSnapshot)` |
-| collect_runtime_repository_evidence | TypeError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1078 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
-| collect_runtime_repository_evidence | source_snapshot.root.resolve | 1079 | `source_snapshot.root.resolve(data not statically known)` |
-| collect_runtime_repository_evidence | ValueError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1080 | `ValueError('source_snapshot root must match source_root')` |
-| collect_runtime_repository_evidence | selected_paths.add | 1088 | `selected_paths.add(...)` |
-| collect_runtime_repository_evidence | selected_paths.update | 1089 | `selected_paths.update(...)` |
-| collect_runtime_repository_evidence | source_snapshot.captured_input_kinds.items | 1091 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
+| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence) | 1100 | `Path(source_root).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1100 | `Path(source_root)` |
+| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1) | 1101 | `Path(target_wiki_dir).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1101 | `Path(target_wiki_dir)` |
+| collect_runtime_repository_evidence | isinstance (src/llm_wiki_cli/services…ntime_repository_evidence) | 1106 | `isinstance(source_snapshot, SourceSnapshot)` |
+| collect_runtime_repository_evidence | TypeError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1107 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
+| collect_runtime_repository_evidence | source_snapshot.root.resolve | 1108 | `source_snapshot.root.resolve(data not statically known)` |
+| collect_runtime_repository_evidence | ValueError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1109 | `ValueError('source_snapshot root must match source_root')` |
+| collect_runtime_repository_evidence | selected_paths.add | 1117 | `selected_paths.add(...)` |
+| collect_runtime_repository_evidence | selected_paths.update | 1118 | `selected_paths.update(...)` |
+| collect_runtime_repository_evidence | source_snapshot.captured_input_kinds.items | 1120 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 1088 |
-| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 1089 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1104 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1106 |
-| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 1112 |
+| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 1117 |
+| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 1118 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1133 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1135 |
+| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 1141 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 1071 |
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 1072 |
-| external_call | `collect_runtime_repository_evidence` | `isinstance` | 1077 |
-| external_call | `collect_runtime_repository_evidence` | `TypeError` | 1078 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 1079 |
-| external_call | `collect_runtime_repository_evidence` | `ValueError` | 1080 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 1091 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 1100 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 1101 |
+| external_call | `collect_runtime_repository_evidence` | `isinstance` | 1106 |
+| external_call | `collect_runtime_repository_evidence` | `TypeError` | 1107 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 1108 |
+| external_call | `collect_runtime_repository_evidence` | `ValueError` | 1109 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 1120 |
 | step_limit | `collect_runtime_repository_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `collect_runtime_repository_evidence` | `depth limit` | 0 |
 

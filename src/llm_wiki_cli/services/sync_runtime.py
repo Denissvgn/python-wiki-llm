@@ -125,6 +125,7 @@ from .knowledge_orchestration import (
     CommittedKnowledgeState,
     capture_committed_knowledge,
     collect_runtime_repository_evidence,
+    retain_recorded_repository_identity,
     committed_governance_bundle_id,
     committed_runtime_provenance,
     finalize_runtime_knowledge,
@@ -4084,8 +4085,11 @@ def _try_sync_knowledge_reuse(
         raise SyncRuntimeRefreshError(
             "wiki inputs changed while checking knowledge reuse"
         )
-    current_repository = collect_runtime_repository_evidence(
-        options.src_dir, options.wiki_dir, source_snapshot=source_snapshot
+    current_repository, _ = retain_recorded_repository_identity(
+        collect_runtime_repository_evidence(
+            options.src_dir, options.wiki_dir, source_snapshot=source_snapshot
+        ),
+        committed_state,
     )
     if (
         knowledge_reuse.repository_input_hash(
@@ -4478,11 +4482,16 @@ def _prepare_sync_run(
         api_contracts=contracts,
         dependency_analysis=surface_plan.dependency_analysis,
     )
-    repository_evidence = collect_runtime_repository_evidence(
-        options.src_dir,
-        options.wiki_dir,
-        source_snapshot=source_snapshot,
+    repository_evidence, identity_note = retain_recorded_repository_identity(
+        collect_runtime_repository_evidence(
+            options.src_dir,
+            options.wiki_dir,
+            source_snapshot=source_snapshot,
+        ),
+        committed_state,
     )
+    if identity_note is not None:
+        emit(identity_note, flush=True)
     if (
         not options.rebuild_knowledge
         and not options.repair_paths
