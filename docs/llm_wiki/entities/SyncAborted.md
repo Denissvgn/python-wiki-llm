@@ -1,6 +1,6 @@
 # SyncAborted
 
-**Location:** `src/llm_wiki_cli/services/sync_runtime.py:269`
+**Location:** `src/llm_wiki_cli/services/sync_runtime.py:270`
 **Kind:** Class
 **Bases:** `SystemExit`
 **Module:** [sync_runtime](../modules/sync_runtime.md)

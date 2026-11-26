@@ -83,8 +83,10 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
     # Retirement is reconciled against the current wiki on every run. It is
     # publication output, not an input to the cached structural observations.
     inputs.pop("entity_retirement", None)
+    # The key is committed through its hash, so it holds nothing about where
+    # this checkout lives: every source is bound by relative path and content.
     key = {
-        "schema_version": SCHEMA, "source_root": str(snapshot.root),
+        "schema_version": SCHEMA,
         "source_hashes": dict(snapshot.captured_content_hashes),
         "input_kinds": {k: list(v) for k, v in snapshot.captured_input_kinds.items()},
         "gitignore": snapshot.gitignore_fingerprint,

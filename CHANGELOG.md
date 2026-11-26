@@ -38,6 +38,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the remedy: move the retained page to a tracked history path outside the
   generated wiki, after which sync creates a new page. For a file sync does
   not own, the error says to move or rename it.
+- A committed wiki no longer depends on where its checkout lives. The
+  sync-analysis record committed to the absolute source path, so a clone at
+  another path previewed the knowledge index and manifest as "updated" with
+  no source or page change. The first sync with this version rewrites that
+  record once.
+- A checkout whose remote names no public repository, such as a clone made
+  from a local path, keeps the repository identity an earlier sync recorded.
+  Before, `sync --dry-run` reported the knowledge index and manifest as
+  "updated" for such a clone. Sync prints a "Repository identity" line when
+  the checkout and the recorded identity differ, and still records a
+  different resolvable identity, such as a fork's.
 
 ## [6.1.1] - 2026-11-25
 
