@@ -155,6 +155,7 @@ def run(args) -> None:
         src_dir,
         strict=True,
         knowledge_drift_report=bool(getattr(args, "knowledge_drift_report", False)),
+        require_fresh=bool(getattr(args, "require_fresh", False)),
         cache_options=cache_options,
         parallel_jobs=getattr(args, "jobs", 1),
         helper_cache_dir=helper_cache_dir,

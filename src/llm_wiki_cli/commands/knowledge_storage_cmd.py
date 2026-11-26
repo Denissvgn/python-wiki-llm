@@ -43,8 +43,16 @@ def run(args) -> None:
                                     selectors=getattr(args, "selector", None), cursor=args.cursor,
                                     record_index=args.record_index, review_id=args.review_id, record_offset=args.record_offset)
         elif args.knowledge_action == "git-check":
-            from ..services.wiki_git_delivery import inspect_wiki_git_delivery
-            result = inspect_wiki_git_delivery(root, staged=args.staged)
+            from ..services.wiki_git_delivery import inspect_branch_wiki_changes, inspect_wiki_git_delivery
+            base = getattr(args, "base", None)
+            if base is not None:
+                if args.staged:
+                    raise ValueError("Use --base separately from --staged")
+                result = inspect_branch_wiki_changes(root, base=base, branch=getattr(args, "branch", None))
+            elif getattr(args, "branch", None) is not None:
+                raise ValueError("--branch requires --base")
+            else:
+                result = inspect_wiki_git_delivery(root, staged=args.staged)
         else:
             if args.stream:
                 if args.full or args.git_base is not None or args.git_head is not None or getattr(args, "require_referenced", False):

@@ -5782,6 +5782,13 @@ def run_request(request: SyncRequest) -> None:
             raise ValueError("--storage-recovery-dir requires --prune-storage")
         from llm_wiki_engine.knowledge_storage_lifecycle import _outside_tree
         _outside_tree(Path(recovery), options.wiki_dir)
+    if not options.dry_run:
+        from .wiki_git_delivery import ownership_write_refusal
+
+        refusal = ownership_write_refusal(".")
+        if refusal is not None:
+            emit(f"Error: {refusal}", stream="stderr")
+            raise SyncAborted(2)
     release = None
     try:
         with maintenance_write_operation(options.wiki_dir, dry_run=options.dry_run) as basis:

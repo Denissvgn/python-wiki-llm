@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Team policy can reserve the generated wiki for one writer. Set
+  `ownership.mode` to `trunk` in `.llm-wiki/team.json`, or run
+  `llm-wiki team init --ownership trunk`, and only the trunk branch and the
+  listed writer branches may run a writing `sync`. Other branches keep
+  `sync --dry-run`. Branches that never write the wiki cannot conflict on it,
+  so parallel pull requests no longer need a sync each. The default,
+  `branch`, keeps the earlier behaviour.
+- `llm-wiki knowledge git-check --base REF` reports generated wiki paths a
+  branch changed since `REF` and fails when a branch that may not write the
+  wiki changed any. It reads Git metadata only. `--branch NAME` names the
+  branch under evaluation for a detached checkout.
+- `lint` and `ci-check` accept `--require-fresh`. Under trunk ownership, a
+  branch that may not write the wiki reports a stale sync manifest and
+  undocumented or stale generated pages as pending refresh without failing;
+  `--require-fresh` restores the failure for the branch that refreshes the
+  wiki. Integrity checks stay blocking everywhere.
+
 ### Changed
 
 - Bundled workflow skills link the shared `wiki-reference` topics relative to

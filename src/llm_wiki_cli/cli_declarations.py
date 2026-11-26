@@ -516,6 +516,14 @@ def _add_lint_command(subparsers):
         help="Require core wiki structure and a fresh sync manifest",
     )
     lint_parser.add_argument(
+        "--require-fresh",
+        action="store_true",
+        help=(
+            "Fail on a stale sync manifest even where trunk ownership would "
+            "report it as pending refresh"
+        ),
+    )
+    lint_parser.add_argument(
         "--knowledge-drift-report",
         action="store_true",
         help=(
@@ -653,6 +661,14 @@ def _add_ci_check_command(subparsers):
     )
     ci_parser.add_argument(
         "--cache-stats", action="store_true", help="Include cache diagnostics"
+    )
+    ci_parser.add_argument(
+        "--require-fresh",
+        action="store_true",
+        help=(
+            "Fail on a stale sync manifest even where trunk ownership would "
+            "report it as pending refresh"
+        ),
     )
     ci_parser.add_argument(
         "--knowledge-drift-report",
@@ -870,6 +886,19 @@ def _add_knowledge_command(subparsers):
         "--staged",
         action="store_true",
         help="Require a complete current staged snapshot and Git-eligible policy",
+    )
+    git_check.add_argument(
+        "--base",
+        default=None,
+        help=(
+            "Explicit base commit/ref: under trunk ownership, fail when the "
+            "branch changes generated wiki paths since that base"
+        ),
+    )
+    git_check.add_argument(
+        "--branch",
+        default=None,
+        help="Branch under evaluation for --base (default: the checked-out branch)",
     )
     git_check.add_argument("--format", choices=["json"], default="json")
     for action in ("inspect-storage", "diff-storage"):
@@ -1143,6 +1172,26 @@ def _add_team_command(subparsers):
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
         help="Wiki directory to record in team config",
+    )
+    team_init.add_argument(
+        "--ownership",
+        choices=["branch", "trunk"],
+        default="branch",
+        help=(
+            "Who writes generated wiki state: every branch (default), or only "
+            "the trunk and its writer branches"
+        ),
+    )
+    team_init.add_argument(
+        "--trunk",
+        default="main",
+        help="Trunk branch for --ownership trunk (default: main)",
+    )
+    team_init.add_argument(
+        "--writer-branch",
+        action="append",
+        default=None,
+        help="Additional branch allowed to write under --ownership trunk; may be repeated",
     )
     team_check = team_sub.add_parser(
         "check", help="Validate team config and conventions"

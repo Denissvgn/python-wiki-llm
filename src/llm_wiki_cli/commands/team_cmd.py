@@ -64,7 +64,18 @@ def _run_init(args) -> None:
     if path.exists():
         print(f"Team config already exists: {path}")
         return
-    written = team.write_default_team_config(wiki_dir)
+    ownership = None
+    if getattr(args, "ownership", "branch") == "trunk":
+        ownership = {
+            "mode": "trunk",
+            "trunk": getattr(args, "trunk", "main"),
+            "writer_branches": list(getattr(args, "writer_branch", None) or []),
+        }
+    try:
+        written = team.write_default_team_config(wiki_dir, ownership=ownership)
+    except team.TeamConfigError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(2)
     print(f"Team config written to: {written}")
 
 
