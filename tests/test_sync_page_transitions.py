@@ -759,3 +759,80 @@ def test_transition_preflight_rechecks_occupied_targets_at_application(tmp_path,
     assert {
         lock: (lock.read_bytes(), lock.stat().st_mtime_ns) for lock in locks_before
     } == locks_before
+
+
+def test_recognised_generation_input_records_cover_every_writer_key():
+    from llm_wiki_cli.services.knowledge_orchestration import RUNTIME_GENERATION_INPUT_KEY
+    from llm_wiki_engine import historical_sources
+    from llm_wiki_engine.infrastructure_state import INFRASTRUCTURE_GENERATION_INPUT_KEY
+    from llm_wiki_engine.knowledge_reuse_format import REUSE_INPUT_KEY
+    from llm_wiki_engine.source_retirement import ENTITY_RETIREMENT_INPUT_KEY
+    from llm_wiki_engine.source_selection import (
+        SOURCE_SELECTION_GENERATION_INPUT_KEY,
+        SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
+    )
+    from llm_wiki_engine.sync_manifest import (
+        RECOGNISED_GENERATION_INPUT_RECORDS,
+        unrecognised_generation_input_records,
+    )
+
+    assert RECOGNISED_GENERATION_INPUT_RECORDS == {
+        "openapi",
+        ENTITY_RETIREMENT_INPUT_KEY,
+        historical_sources.INPUT,
+        historical_sources.RELEASES,
+        INFRASTRUCTURE_GENERATION_INPUT_KEY,
+        REUSE_INPUT_KEY,
+        RUNTIME_GENERATION_INPUT_KEY,
+        SOURCE_SELECTION_GENERATION_INPUT_KEY,
+        SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
+    }
+    assert unrecognised_generation_input_records({
+        "entity_retirement": {"schema_version": "llm-wiki-entity-retirement/v1"},
+        "options": {"include_tests": False},
+        "example": "caller value",
+        "caller_record": {"schema_version": "acme-record/v1"},
+        "later_state": {"schema_version": "llm-wiki-later-state/v1"},
+    }) == ("later_state",)
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_sync_refuses_a_manifest_with_a_newer_generation_record(
+    tmp_path, monkeypatch, capsys, dry_run
+):
+    from llm_wiki_cli.services import sync_runtime
+
+    project, wiki = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}
+    )
+    manifest = SyncManifest.load(wiki)
+    newer = manifest.with_generation_state(
+        surfaces=manifest.surfaces,
+        generation_inputs={
+            **manifest.generation_inputs,
+            "later_state": {"schema_version": "llm-wiki-later-state/v1", "pages": {}},
+        },
+    )
+    monkeypatch.setattr(
+        sync_runtime, "_load_or_seed_manifest", lambda options: (newer, False)
+    )
+    (project / "pkg/model.py").write_text(
+        _draft_source("Changed draft."), encoding="utf-8"
+    )
+    before = {
+        path.relative_to(wiki).as_posix(): path.read_bytes()
+        for path in wiki.rglob("*") if path.is_file()
+    }
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as caught:
+        _sync(wiki, dry_run=dry_run)
+
+    assert caught.value.code != 0
+    error = capsys.readouterr().err
+    assert "generation input 'later_state', written by a newer llm-wiki" in error
+    assert "Upgrade llm-wiki" in error
+    assert before == {
+        path.relative_to(wiki).as_posix(): path.read_bytes()
+        for path in wiki.rglob("*") if path.is_file()
+    }

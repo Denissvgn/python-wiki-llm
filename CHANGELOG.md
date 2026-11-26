@@ -30,6 +30,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   callers moved into `wiki-sync/SKILL.md`. A copy installed by an earlier
   release is left in place and nothing reads it.
 
+### Fixed
+
+- The "adopted prior projection is invalid; complete recovery is required"
+  error now includes the check that failed, for example the manifest field and
+  the validator message. `maintenance status`, `sync --dry-run` and `upgrade`
+  all report it, so a maintainer can choose a recovery point without calling
+  the validator by hand. When the recorded hashes do not match the stored
+  artifacts, the "cannot be used as a repair seed" error names which ones.
+- `sync` refuses a manifest that carries a versioned llm-wiki generation
+  record it does not recognise, and asks for an upgrade. Before, an older
+  version kept such a record while rewriting the pages and mappings it binds,
+  which could leave the wiki needing complete recovery. Read-only commands
+  are unaffected.
+
 ## [6.1.1] - 2026-11-25
 
 ### Fixed
