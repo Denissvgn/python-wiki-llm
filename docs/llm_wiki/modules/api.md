@@ -31,7 +31,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.doctor_service` | `build_doctor_report` |
 | `.services.documentation_model_policy` | `DocumentationModelEscalationRule`, `DocumentationModelOverride`, `DocumentationModelPolicyError`, `DocumentationModelRoute`, `DocumentationModelRoutingPolicy`, `DocumentationModelRoutingRequest`, `DocumentationModelSelection`, `select_documentation_model`, `validate_documentation_model_selection` |
 | `.services.documentation_policy` | `DocumentationPolicyError` |
-| `.services.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `QUERY_IDENTITY_BYTE_LIMIT`, `fit_documentation_query_result` |
+| `.services.documentation_queries` | `_attach_query_result_byte_bound`, `DocumentationGraphQueryService`, `DocumentationQueryError`, `MAX_QUERY_OFFSET`, `QUERY_IDENTITY_BYTE_LIMIT`, `QUERY_PROJECTIONS`, `compact_stored_knowledge_concept`, `compact_stored_source_relationship`, `fit_documentation_query_result`, `surface_page_records` |
 | `.services.documentation_query_builder` | `build_live_documentation_query_service`, `build_snapshot_documentation_query_service`, `normalize_concept_coordinate`, `normalize_documentation_query_limit`, `normalize_documentation_query_text`, `normalize_supplied_paths`, `supplied_paths_from_unified_diff` |
 | `.services.documentation_run` | `DocumentationAgentPacket`, `DocumentationAgentResult`, `DocumentationIntegrityError`, `DocumentationIntakeBrief`, `DocumentationRun`, `DocumentationRunError`, `DocumentationRunStatus`, `DocumentationSchemaError`, `DocumentationTransitionError`, `DocumentationVerificationReport`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
 | `.services.documentation_wiki_input` | `DocumentationWikiInputError`, `DocumentationWikiSnapshot`, `adopt_documentation_wiki_snapshot`, `fingerprint_documentation_wiki_input` |
@@ -69,11 +69,15 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `llm_wiki_engine.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
 | `llm_wiki_engine.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
 | `llm_wiki_engine.host` | `discarding_output`, `discarding_output`, `discarding_output` |
+| `llm_wiki_engine.knowledge_artifacts` | `validate_surface_index_bytes` |
 | `llm_wiki_engine.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
 | `llm_wiki_engine.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
+| `llm_wiki_engine.knowledge_evidence` | `sha256_bytes` |
 | `llm_wiki_engine.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `llm_wiki_engine.knowledge_loader` | `KnowledgeStateLoadError` |
-| `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError` |
+| `llm_wiki_engine.knowledge_storage` | `KnowledgeStorageError`, `KnowledgeStorageError`, `KnowledgeStorageError` |
+| `llm_wiki_engine.knowledge_storage_access` | `capture_knowledge_slice` |
+| `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `llm_wiki_engine.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
 | `llm_wiki_engine.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
@@ -82,7 +86,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `llm_wiki_engine.storage_receipts` | `expand_storage_receipt` |
 | `llm_wiki_engine.task_contract` | `TaskContext` |
 | `llm_wiki_engine.validation` | `require_portable_relative_path` |
-| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index` |
+| `llm_wiki_engine.wiki_surface_index` | `evaluate_surface_index`, `SURFACE_INDEX_FILENAME` |
 | `llm_wiki_engine.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `pathlib` | `Path` |
 | `re` | `re` |
@@ -108,20 +112,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (67) |
+| Outbound | `src` (71) |
 
-> All 74 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 78 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 288 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 369 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 384 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 388 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 392 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1774 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 294 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 375 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 390 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 394 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 398 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1785 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -209,16 +213,20 @@ flowchart LR
 | `traverse_typed_graph` | `(locator_or_exact_route: object, *, direction: str = 'both', kinds: Iterable[str] \| None = None, origins: Iterable[str] \| None = None, resolutions: Iterable[str] \| None = None, include_evidence: bool = False, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> TypedGraphTraversalResult` | `@_native_query_boundary` | Traverse persisted typed relationships for one exact concept. |
 | `explain_evidence` | `(locator_or_exact_route: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> EvidenceExplanationResult` | `@_native_query_boundary` | Return stored and computed evidence for one exact concept identity. |
 | `_query_cost` | `(scope: str, *, supplied_paths: int = 0) -> dict[str, Any]` | — | — |
-| `_with_query_envelope` | `(operation: str, payload: Mapping[str, Any], *, scope: str, supplied_paths: int = 0) -> DocumentationQueryResult` | — | — |
-| `_bounded_query_records` | `(records: Iterable[Mapping[str, Any]], *, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any]]` | — | — |
+| `_with_query_envelope` | `(operation: str, payload: Mapping[str, Any], *, scope: str, supplied_paths: int = 0, request: Mapping[str, Any] \| None = None) -> DocumentationQueryResult` | — | — |
+| `_bounded_query_records` | `(records: Iterable[Mapping[str, Any]], *, limit: int, offset: int = 0) -> tuple[list[dict[str, Any]], dict[str, Any]]` | — | — |
 | `_bounded_raw_query_evidence` | `(records: Iterable[Mapping[str, Any]], *, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]` | — | — |
 | `_validate_documentation_query_request` | `(request: Mapping[str, Any]) -> tuple[str, int]` | — | — |
+| `_query_offset` | `(request: Mapping[str, Any]) -> int` | — | — |
 | `_require_full_inventory_opt_in` | `(request: Mapping[str, Any]) -> None` | — | — |
 | `_snapshot_query_service` | `(wiki_dir: str, *, limit: int) -> DocumentationGraphQueryService` | — | — |
 | `_combined_query_payload` | `(query: str, payloads: Iterable[Mapping[str, Any]], *, limit: int) -> dict[str, Any]` | — | — |
 | `_surface_query` | `(service: DocumentationGraphQueryService, coordinate: str) -> dict[str, Any]` | — | — |
 | `_source_inventory_summary` | `(path: str, record: Mapping[str, Any] \| None) -> dict[str, Any]` | — | — |
 | `_existing_supplied_source_paths` | `(source_root: Path, paths: Iterable[str]) -> tuple[str, ...]` | — | — |
+| `_selected_knowledge_records` | `(wiki_root: Path, selectors: Sequence[str], collections: tuple[str, ...], bindings: set[tuple[str, str]]) -> list[Mapping[str, Any]] \| None` | — | Read the selected stored records, or ``None`` when a full read is needed. |
+| `_selected_surface_pages` | `(wiki_root: Path, bindings: set[tuple[str, str]]) -> list[dict[str, Any]]` | — | Read the surface index the selected generation commits to. |
+| `_selected_impact_payload` | `(wiki_root: Path, selected_paths: Sequence[str], *, limit: int, offset: int, diff_supplied: bool) -> dict[str, Any] \| None` | — | Answer impact from the committed records of the supplied paths only. |
 | `_impact_query` | `(request: Mapping[str, Any], *, src_dir: str, wiki_dir: str, limit: int, allow_external_src: bool, source_selection: str \| Path \| None) -> DocumentationQueryResult` | — | — |
 | `query_documentation` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| Path \| None = None, comparison_policy: str \| None = None) -> DocumentationQueryResult` | `@_native_query_boundary`, `@ac.comparison_entrypoint` | Dispatch one exact bounded read-only documentation query. |
 | `_normalise_focus` | `(focus: str \| list[str]) -> list[str]` | — | — |

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [query_cmd](../modules/query_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 40 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 42 more
 
 **Complete modules touched:**
 
@@ -24,12 +24,14 @@
 - [host](../modules/host.md)
 - [integrations](../modules/integrations.md)
 - [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
@@ -79,8 +81,8 @@ sequenceDiagram
     participant p18 as validate_path
     participant p19 as _supplied_path_values
     participant p20 as build_snapshot_documentation_query_service
-    participant p21 as fit_documentation_query_result
-    participant p22 as write_bytes_atomic
+    participant p21 as write_bytes_atomic
+    participant p22 as fit_documentation_query_result
     participant p23 as supplied_paths_from_unified_diff
     participant p24 as _validate_wiki_dir
     participant p25 as build_live_documentation_query_service
@@ -109,8 +111,8 @@ sequenceDiagram
     p9->>p18: validate_path
     p7->>p19: _supplied_path_values
     p11->>p20: build_snapshot_documentation_query_service
-    p13->>p21: fit_documentation_query_result
-    p6->>p22: write_bytes_atomic
+    p6->>p21: write_bytes_atomic
+    p13->>p22: fit_documentation_query_result
     p14->>p23: supplied_paths_from_unified_diff
     p10->>p24: _validate_wiki_dir
     p10->>p25: build_live_documentation_query_service
@@ -121,9 +123,9 @@ sequenceDiagram
     p3-->>p30: Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 1827 interactions; 1797 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1976 interactions; 1946 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 706 (705 omitted); unresolved 1 of 497 (496 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 749 (748 omitted); unresolved 1 of 561 (560 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -135,9 +137,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/request_json.py:parse_request` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_engine/request_json.py:load_request` | 2 | - | unresolved | 3 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 19 |
-> Omission summary shows 8 of 419 groups; 411 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 23 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 22 |
+> Omission summary shows 8 of 456 groups; 448 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -150,9 +152,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 625; effect analysis evaluated: 430, partial: 30, unavailable: 165. Counts include steps omitted from the displayed trace.
+Source steps: 667; effect analysis evaluated: 459, partial: 35, unavailable: 173. Counts include steps omitted from the displayed trace.
 
-Collector observations for 460 source steps with known totals: observed: 2816, emitted: 2593, omitted: 223. Unavailable totals are excluded.
+Collector observations for 494 source steps with known totals: observed: 3118, emitted: 2871, omitted: 247. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

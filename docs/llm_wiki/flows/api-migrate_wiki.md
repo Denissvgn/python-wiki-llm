@@ -221,8 +221,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| migrate_wiki | MigrateRequest | 1333 | `MigrateRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, chunk_size=chunk_size, chunk=chunk, plan_chunks=plan_chunks, plugins=trust_source_plugins, source_selection=source_selection)` |
-| migrate_wiki | discarding_output | 1344 | `discarding_output(data not statically known)` |
+| migrate_wiki | MigrateRequest | 1344 | `MigrateRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, chunk_size=chunk_size, chunk=chunk, plan_chunks=plan_chunks, plugins=trust_source_plugins, source_selection=source_selection)` |
+| migrate_wiki | discarding_output | 1355 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 282 | `using_host(...)` |
 | using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
 | using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |
