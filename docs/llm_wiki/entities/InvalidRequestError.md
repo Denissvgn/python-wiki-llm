@@ -1,6 +1,6 @@
 # InvalidRequestError
 
-**Location:** `src/llm_wiki_cli/api.py:387`
+**Location:** `src/llm_wiki_cli/api.py:390`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -30,12 +30,12 @@ flowchart LR
     n5["_normalize_query_choice (src/llm_wiki_cli/api.py)"]
     n6["_normalize_query_input (src/llm_wiki_cli/api.py)"]
     n7["_normalize_query_values (src/llm_wiki_cli/api.py)"]
-    n8["_query_service (src/llm_wiki_cli/api.py)"]
-    n9["_raise_api_error (src/llm_wiki_cli/api.py)"]
-    n10["_raise_maintenance_api_error (src/llm_wiki_cli/api.py)"]
-    n11["_require_full_inventory_opt_in (src/llm_wiki_cli/api.py)"]
-    n12["_run_query (src/llm_wiki_cli/api.py)"]
-    n13["_validate_documentation_query_request (src/llm_wiki_cli/api.py)"]
+    n8["_query_offset (src/llm_wiki_cli/api.py)"]
+    n9["_query_service (src/llm_wiki_cli/api.py)"]
+    n10["_raise_api_error (src/llm_wiki_cli/api.py)"]
+    n11["_raise_maintenance_api_error (src/llm_wiki_cli/api.py)"]
+    n12["_require_full_inventory_opt_in (src/llm_wiki_cli/api.py)"]
+    n13["_run_query (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -87,11 +87,11 @@ flowchart LR
 | `_normalize_query_choice` | call | [api](../modules/api.md) | 1 |
 | `_normalize_query_input` | call | [api](../modules/api.md) | 1 |
 | `_normalize_query_values` | call | [api](../modules/api.md) | 5 |
+| `_query_offset` | call | [api](../modules/api.md) | 1 |
 | `_query_service` | call | [api](../modules/api.md) | 1 |
 | `_raise_api_error` | call | [api](../modules/api.md) | 5 |
 | `_raise_maintenance_api_error` | call | [api](../modules/api.md) | 1 |
 | `_require_full_inventory_opt_in` | call | [api](../modules/api.md) | 2 |
 | `_run_query` | call | [api](../modules/api.md) | 1 |
-| `_validate_documentation_query_request` | call | [api](../modules/api.md) | 10 |
 
-> References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.
+> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.

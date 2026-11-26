@@ -126,9 +126,12 @@ from .services.sync_service import SyncError, SyncOutcome, SyncRequest, SyncRequ
 from .services.dependencies import analyze_dependencies
 from .services.doctor_service import build_doctor_report
 from .services.documentation_queries import (
+    _attach_query_result_byte_bound,
     DocumentationGraphQueryService,
     DocumentationQueryError,
+    MAX_QUERY_OFFSET,
     QUERY_IDENTITY_BYTE_LIMIT,
+    QUERY_PROJECTIONS,
     compact_stored_knowledge_concept,
     compact_stored_source_relationship,
     fit_documentation_query_result,
@@ -851,6 +854,7 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
         "include_raw_evidence",
         "read",
         "source_policy",
+        "projection",
         "allow_full_inventory",
         "source_selection",
         "src_dir",
@@ -1011,6 +1015,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
                 "resolutions": "Supply an iterable with at most 100 values and supported resolutions.",
                 "source_selection": "Supply the recorded --source-selection profile; run llm-wiki sync after an intentional profile change.",
                 "read": "Supply read 'full' or 'selected'; a selected read takes neither raw evidence nor source discovery.",
+                "projection": "Supply projection 'full' or 'compact'.",
                 "value": f"Supply a nonempty query of at most {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes.",
                 "locator_or_exact_route": f"Supply an exact coordinate of at most {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes.",
             }.get(
@@ -2859,6 +2864,8 @@ _DOCUMENTATION_QUERY_FIELDS = {
             "origins",
             "resolutions",
             "include_evidence",
+            "offset",
+            "projection",
         }
     ),
     "symbol": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
@@ -2874,8 +2881,15 @@ _DOCUMENTATION_QUERY_FIELDS = {
             "include_raw_evidence",
             "source_policy",
             "read",
+            "offset",
+            "projection",
         }
     ),
+}
+# Operations whose record lists page by offset, and the bounds of those lists.
+_PAGED_QUERY_BOUNDS: Mapping[str, tuple[str, ...]] = {
+    "typed": ("edges",),
+    "impact": ("matches", "concepts", "pages", "relationships"),
 }
 _IMPACT_READS = ("full", "selected")
 # A selected read answers impact without validating the whole wiki. It falls
@@ -2911,24 +2925,67 @@ def _with_query_envelope(
     *,
     scope: str,
     supplied_paths: int = 0,
+    request: Mapping[str, Any] | None = None,
 ) -> DocumentationQueryResult:
-    return cast(
-        DocumentationQueryResult,
-        fit_documentation_query_result(
-            {
-                "schema_version": DOCUMENTATION_QUERY_SCHEMA_VERSION,
-                "operation": operation,
-                **dict(payload),
-                "cost": _query_cost(scope, supplied_paths=supplied_paths),
-            }
-        ),
+    envelope = {
+        "schema_version": DOCUMENTATION_QUERY_SCHEMA_VERSION,
+        "operation": operation,
+        **dict(payload),
+        "cost": _query_cost(scope, supplied_paths=supplied_paths),
+    }
+    names = _PAGED_QUERY_BOUNDS.get(operation, ()) if request is not None else ()
+    if not names:
+        return cast(DocumentationQueryResult, fit_documentation_query_result(envelope))
+    assert request is not None
+    offset = request.get("offset", 0)
+    follow_request = {key: value for key, value in request.items() if key != "diff"}
+    if "diff" in request:
+        # A follow-up names the paths the diff resolved to, not the diff text.
+        follow_request["paths"] = list(payload["query"]["paths"])
+    totals = [
+        bound["total"] for name in names if (bound := payload["bounds"].get(name))
+    ]
+    # Reserve the largest follow-up this result can carry before fitting it to
+    # the byte limit, so settling the real follow-up never makes it larger.
+    envelope["follow_up"] = {
+        "status": "available",
+        "request": {**follow_request, "offset": offset + max(totals, default=0)},
+    }
+    result = fit_documentation_query_result(envelope)
+    bounds = result["bounds"]
+    returned = max(
+        (bounds[name]["returned"] for name in names if name in bounds), default=0
     )
+    remaining = any(
+        bounds[name]["total"] > offset + returned for name in names if name in bounds
+    )
+    if remaining and returned:
+        result["follow_up"] = {
+            "status": "available",
+            "request": {**follow_request, "offset": offset + returned},
+        }
+    elif remaining:
+        result["follow_up"] = {
+            "status": "unavailable",
+            "reason": "record-exceeds-result-limit",
+        }
+    elif "offset" in request:
+        result["follow_up"] = {"status": "unavailable", "reason": "no-more-records"}
+    else:
+        result.pop("follow_up", None)
+    result_bytes = bounds.get("result_bytes")
+    if isinstance(result_bytes, Mapping):
+        result, _ = _attach_query_result_byte_bound(
+            result, total=result_bytes["total"]
+        )
+    return cast(DocumentationQueryResult, result)
 
 
 def _bounded_query_records(
     records: Iterable[Mapping[str, Any]],
     *,
     limit: int,
+    offset: int = 0,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     unique: dict[str, dict[str, Any]] = {}
     for record in records:
@@ -2936,7 +2993,7 @@ def _bounded_query_records(
         key = json.dumps(copied, sort_keys=True, separators=(",", ":"))
         unique[key] = copied
     ordered = [unique[key] for key in sorted(unique)]
-    returned = ordered[:limit]
+    returned = ordered[offset : offset + limit]
     return returned, {
         "total": len(ordered),
         "returned": len(returned),
@@ -3067,7 +3124,21 @@ def _validate_documentation_query_request(
         _normalize_query_values(request.get("resolutions"), field="resolutions", allowed=tuple(GRAPH_RESOLUTIONS))
         if type(request.get("include_evidence", False)) is not bool:
             raise InvalidRequestError("include_evidence must be a boolean.", code="invalid-request", details={"field": "include_evidence"})
+    if operation in _PAGED_QUERY_BOUNDS:
+        _query_offset(request)
+        _normalize_query_choice(request.get("projection", "full"), field="projection", allowed=QUERY_PROJECTIONS)
     return operation, limit
+
+
+def _query_offset(request: Mapping[str, Any]) -> int:
+    offset = request.get("offset", 0)
+    if isinstance(offset, bool) or not isinstance(offset, int) or not 0 <= offset <= MAX_QUERY_OFFSET:
+        raise InvalidRequestError(
+            f"offset must be an integer from 0 to {MAX_QUERY_OFFSET}.",
+            code="invalid-request",
+            details={"field": "offset"},
+        )
+    return offset
 
 
 def _require_full_inventory_opt_in(request: Mapping[str, Any]) -> None:
@@ -3279,6 +3350,7 @@ def _selected_impact_payload(
     selected_paths: Sequence[str],
     *,
     limit: int,
+    offset: int,
     diff_supplied: bool,
 ) -> dict[str, Any] | None:
     """Answer impact from the committed records of the supplied paths only.
@@ -3343,6 +3415,7 @@ def _selected_impact_payload(
     concept_rows, concept_bound = _bounded_query_records(
         (compact_stored_knowledge_concept(concept) for concept in attributed.values()),
         limit=limit,
+        offset=offset,
     )
     page_rows, page_bound = _bounded_query_records(
         (
@@ -3351,10 +3424,12 @@ def _selected_impact_payload(
             if page.get("source_path") in path_set
         ),
         limit=limit,
+        offset=offset,
     )
     relationship_rows, relationship_bound = _bounded_query_records(
         (compact_stored_source_relationship(rel) for rel in relationships.values()),
         limit=limit,
+        offset=offset,
     )
     source_rows, source_bound = _bounded_query_records(
         (
@@ -3363,6 +3438,7 @@ def _selected_impact_payload(
             for path in selected_paths
         ),
         limit=limit,
+        offset=offset,
     )
     bounds = {
         "matches": dict(source_bound),
@@ -3446,6 +3522,8 @@ def _impact_query(
     # selected read takes neither raw evidence nor source discovery.
     read = request.get("read", "full")
     source_policy = request.get("source_policy", "explicit")
+    offset = _query_offset(request)
+    compact = request.get("projection", "full") == "compact"
 
     src_root = validate_source_root(
         src_dir,
@@ -3458,6 +3536,7 @@ def _impact_query(
             wiki_root,
             selected_paths,
             limit=limit,
+            offset=offset,
             diff_supplied="diff" in request,
         )
         if selected_payload is not None:
@@ -3466,6 +3545,7 @@ def _impact_query(
                 selected_payload,
                 scope="snapshot-index-only",
                 supplied_paths=len(selected_paths),
+                request=request,
             )
     checked_paths = selected_paths
     if source_policy == "discovery":
@@ -3508,17 +3588,24 @@ def _impact_query(
             locator = concept.get("locator")
             if not isinstance(locator, str):
                 continue
+            if compact and locator in service.concept_by_locator:
+                concept_records.append(
+                    compact_stored_knowledge_concept(service.concept_by_locator[locator])
+                )
+                continue
             selected = service.get_concept(locator).get("concept")
             if isinstance(selected, Mapping):
                 concept_records.append(dict(selected))
-    concepts, concept_bound = _bounded_query_records(concept_records, limit=limit)
+    concepts, concept_bound = _bounded_query_records(
+        concept_records, limit=limit, offset=offset
+    )
 
     page_records = [
         dict(page)
         for page in service.pages
         if page.get("source_path") in set(selected_paths)
     ]
-    pages, page_bound = _bounded_query_records(page_records, limit=limit)
+    pages, page_bound = _bounded_query_records(page_records, limit=limit, offset=offset)
 
     relationship_indexes = sorted(
         {
@@ -3534,6 +3621,7 @@ def _impact_query(
             for index in relationship_indexes
         ),
         limit=limit,
+        offset=offset,
     )
 
     source_summaries, source_bound = _bounded_query_records(
@@ -3543,6 +3631,7 @@ def _impact_query(
             for path in selected_paths
         ),
         limit=limit,
+        offset=offset,
     )
     impacted_paths = [
         path
@@ -3604,6 +3693,7 @@ def _impact_query(
         payload,
         scope=scope,
         supplied_paths=len(selected_paths),
+        request=request,
     )
 
 
@@ -3652,7 +3742,7 @@ def query_documentation(
             "Live explanation performs a full source inventory; snapshot explanation does not extract source or establish fresh normalization.",
             "Helper inspection reads existing receipts/bytes and probes runtime versions; it never prepares dependencies.",
         ]
-        return _with_query_envelope(operation, payload, scope=scope)
+        return _with_query_envelope(operation, payload, scope=scope, request=request)
     if operation == "impact":
         return _impact_query(
             request,
@@ -3762,6 +3852,8 @@ def query_documentation(
             origins=origins,
             resolutions=resolutions,
             include_evidence=include_evidence,
+            offset=_query_offset(request),
+            projection=request.get("projection", "full"),
         )
     elif operation == "symbol":
         pages = service.pages_for_symbol(value)
@@ -3815,7 +3907,7 @@ def query_documentation(
     else:
         payload = service.dependency_neighborhood(value)
 
-    return _with_query_envelope(operation, payload, scope=scope)
+    return _with_query_envelope(operation, payload, scope=scope, request=request)
 
 
 def _normalise_focus(focus: str | list[str]) -> list[str]:
