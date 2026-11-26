@@ -384,3 +384,38 @@ def test_governed_generation_keeps_using_full_builder(synced):
     knowledge = load_knowledge_state("wiki").knowledge
     assert knowledge is not None
     assert knowledge_reuse.REUSE_EXTENSION_KEY not in knowledge.extensions
+
+
+def test_unresolvable_remote_keeps_the_recorded_repository_identity():
+    from types import SimpleNamespace
+
+    from llm_wiki_cli.services.knowledge_orchestration import retain_recorded_repository_identity
+    from llm_wiki_engine.knowledge_envelope import RepositoryEvidence, build_repository_record
+
+    def evidence(url):
+        return RepositoryEvidence(remotes={} if url is None else {"origin": url}, evaluated_revision="a" * 40)
+
+    def committed(url):
+        record = build_repository_record(evidence=evidence(url))
+        bundle = SimpleNamespace(repository=record)
+        return SimpleNamespace(artifacts=SimpleNamespace(knowledge=SimpleNamespace(bundle=bundle)))
+
+    recorded = committed("https://github.com/example-org/scratch-repo.git")
+    for local in ("/tmp/elsewhere.git", None):
+        kept, note = retain_recorded_repository_identity(evidence(local), recorded)
+        record = build_repository_record(evidence=kept)
+        assert record == recorded.artifacts.knowledge.bundle.repository
+        assert note is not None and "github.com/example-org/scratch-repo is kept" in note
+
+    same = evidence("git@github.com:example-org/scratch-repo.git")
+    assert retain_recorded_repository_identity(same, recorded) == (same, None)
+
+    fork = evidence("https://github.com/other-org/fork.git")
+    kept, note = retain_recorded_repository_identity(fork, recorded)
+    assert kept is fork
+    assert note is not None and "resolves to github.com/other-org/fork" in note
+
+    local = evidence("/tmp/elsewhere.git")
+    assert retain_recorded_repository_identity(local, committed(None)) == (local, None)
+    assert retain_recorded_repository_identity(local, None) == (local, None)
+    assert retain_recorded_repository_identity(local, SimpleNamespace(artifacts=None)) == (local, None)

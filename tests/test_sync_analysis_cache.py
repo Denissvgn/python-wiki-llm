@@ -538,3 +538,25 @@ def test_detector_change_rebuild_keeps_extraction_sidecars(primed, monkeypatch):
     sync()
     assert seen
     assert load_knowledge_state('wiki').knowledge is not None
+
+
+def test_committed_analysis_does_not_depend_on_the_checkout_path(tmp_path, monkeypatch):
+    first, second = tmp_path / "first", tmp_path / "elsewhere/second-checkout"
+    first.mkdir()
+    monkeypatch.chdir(first)
+    _prime(first, "packed-v4-deflate", "full")
+    sync(rebuild_knowledge=True)
+    shutil.copytree(first, second)
+
+    def commitment():
+        knowledge = load_knowledge_state("wiki").knowledge
+        assert knowledge is not None
+        return knowledge.extensions[sync_analysis_cache.EXTENSION]
+
+    recorded = commitment()
+    monkeypatch.chdir(second)
+    sync(rebuild_knowledge=True)
+
+    assert commitment() == recorded
+    payload = Path("cache", sync_analysis_cache.FILENAME).read_text(encoding="utf-8")
+    assert str(first) not in payload and str(second) not in payload
