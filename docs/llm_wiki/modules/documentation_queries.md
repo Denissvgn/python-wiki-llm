@@ -91,7 +91,7 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [_BoundedResult](../entities/BoundedResult.md) | 486 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 1050 | — | Read-only graph query service over already-derived documentation payloads. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 1075 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 
@@ -132,6 +132,8 @@ flowchart LR
 | `_canonical_json` | `(value: object) -> str` | — | — |
 | `_raw_evidence_byte_bound` | `(value: object) -> dict[str, int \| bool]` | — | — |
 | `_knowledge_target_ref` | `(target: Mapping[str, Any], resolution: object) -> dict[str, Any]` | — | Return only the coordinates needed to understand a compact target. |
+| `_require_query_offset` | `(offset: object) -> int` | — | — |
+| `_require_query_projection` | `(projection: object) -> str` | — | — |
 | `compact_stored_knowledge_concept` | `(concept: Mapping[str, Any]) -> dict[str, Any]` | — | Project the identity of one stored concept read by a selected read. |
 | `surface_page_records` | `(surface_index: Mapping[str, Any]) -> list[dict[str, Any]]` | — | Return the page rows a full query lists for a validated surface index. |
 | `compact_stored_source_relationship` | `(relationship: Mapping[str, Any]) -> dict[str, Any]` | — | Project one stored ``derived_from`` relationship as a full query does. |

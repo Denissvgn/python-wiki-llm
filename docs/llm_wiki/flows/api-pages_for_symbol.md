@@ -210,11 +210,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| pages_for_symbol | _normalize_query_input | 2600 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2288 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2290 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2291 | `str(exc)` |
-| pages_for_symbol | normalize_documentation_query_text | 2601 | `normalize_documentation_query_text(symbol, field='symbol')` |
+| pages_for_symbol | _normalize_query_input | 2605 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2293 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2295 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2296 | `str(exc)` |
+| pages_for_symbol | normalize_documentation_query_text | 2606 | `normalize_documentation_query_text(symbol, field='symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_engine/query…_documentation_query_text) | 49 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 49 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 50 | `DocumentationQueryError(...)` |
@@ -230,7 +230,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2288 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2293 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 49 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 51 |
