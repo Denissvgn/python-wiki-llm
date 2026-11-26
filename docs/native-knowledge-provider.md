@@ -126,6 +126,39 @@ unchanged, not that prose or runtime behavior is correct. Intentionally
 unmodeled concepts are not stale concepts. Missing bases remain in the modeled
 population. See [native scopes and result bounds](native-knowledge.md#python-api).
 
+### Selected impact reads
+
+An impact request validates the whole committed wiki before it answers, which
+takes tens of seconds on a large wiki. Add `"read": "selected"` to answer from
+the committed records of the supplied paths instead:
+
+```python
+result = api.query_documentation({
+    "operation": "impact",
+    "paths": ["src/orders.py", "src/billing.py"],
+    "read": "selected",
+})
+```
+
+A selected read checks the commit header, the manifest binding, the surface
+index and the hash of every record and page it returns, and rechecks that
+nothing changed before it answers. It does not validate records it does not return, so `knowledge`
+reports `validation_scope: "selected-records"` and
+`whole_store_validated: false`.
+
+The answer lists the same concepts, pages and `derived_from` relationships as a
+full read of the committed snapshot. Each concept keeps its identity, origin,
+evidence, verification and lifecycle, but not `freshness`, `implementation`,
+`maintenance` or review records, which come from reports over the whole wiki.
+The read never extracts source files, so `cost.scope` is
+`snapshot-index-only` and each match reports `present: false`.
+
+A selected read cannot be combined with `include_raw_evidence` or
+`source_policy: "discovery"`. When the storage cannot serve a selected read,
+or the selection exceeds its read budget, the request is answered with a full
+read and `query.read` reports `"full"`. A failed integrity check is reported
+as an error, never answered with a full read.
+
 ## Workspace and process boundaries
 
 The working directory is the allowed workspace boundary. Relative source and

@@ -33,11 +33,11 @@ flowchart TD
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
 | [validation](modules/validation.md) | 87 | 0 |
-| [knowledge_evidence](modules/knowledge_evidence.md) | 60 | 3 |
+| [knowledge_evidence](modules/knowledge_evidence.md) | 61 | 3 |
 | [llm_wiki_engine_contracts](modules/llm_wiki_engine_contracts.md) | 58 | 0 |
 | [io](modules/io.md) | 54 | 3 |
+| [knowledge_storage_io](modules/knowledge_storage_io.md) | 53 | 4 |
 | [source_snapshot](modules/source_snapshot.md) | 52 | 10 |
-| [knowledge_storage_io](modules/knowledge_storage_io.md) | 52 | 4 |
 | [knowledge_storage](modules/knowledge_storage.md) | 51 | 10 |
 | [sync_manifest](modules/sync_manifest.md) | 49 | 14 |
 | [wiki_surface](modules/wiki_surface.md) | 49 | 1 |
@@ -46,8 +46,8 @@ flowchart TD
 | [config](modules/config.md) | 41 | 6 |
 | [filesystem_guard](modules/filesystem_guard.md) | 41 | 1 |
 | [host](modules/host.md) | 39 | 1 |
+| [knowledge_artifacts](modules/knowledge_artifacts.md) | 37 | 32 |
 | [source_selection](modules/source_selection.md) | 37 | 2 |
-| [knowledge_artifacts](modules/knowledge_artifacts.md) | 36 | 32 |
 | [knowledge_governance](modules/knowledge_governance.md) | 31 | 13 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 29 | 6 |
 | [path_policy](modules/path_policy.md) | 28 | 4 |
@@ -116,7 +116,7 @@ flowchart TD
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 3 |
 | [knowledge_reuse](modules/knowledge_reuse.md) | 8 | 25 |
 | [context_request_format](modules/context_request_format.md) | 8 | 5 |
-| [api](modules/api.md) | 7 | 67 |
+| [api](modules/api.md) | 7 | 71 |
 | [data_flow](modules/data_flow.md) | 7 | 1 |
 | [publication](modules/publication.md) | 7 | 9 |
 | [extractor_registry](modules/extractor_registry.md) | 7 | 0 |
@@ -166,6 +166,7 @@ flowchart TD
 | [freshness_wording](modules/freshness_wording.md) | 4 | 0 |
 | [knowledge_kinds](modules/knowledge_kinds.md) | 4 | 3 |
 | [knowledge_reuse_format](modules/knowledge_reuse_format.md) | 4 | 3 |
+| [knowledge_storage_access](modules/knowledge_storage_access.md) | 4 | 17 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 4 | 14 |
 | [knowledge_validators](modules/knowledge_validators.md) | 4 | 5 |
 | [query_request_format](modules/query_request_format.md) | 4 | 5 |
@@ -200,7 +201,6 @@ flowchart TD
 | [knowledge_audit](modules/knowledge_audit.md) | 3 | 4 |
 | [knowledge_coverage](modules/knowledge_coverage.md) | 3 | 3 |
 | [knowledge_links](modules/knowledge_links.md) | 3 | 4 |
-| [knowledge_storage_access](modules/knowledge_storage_access.md) | 3 | 17 |
 | [pack_interfaces](modules/pack_interfaces.md) | 3 | 3 |
 | [query_result_format](modules/query_result_format.md) | 3 | 0 |
 | [search_discovery](modules/search_discovery.md) | 3 | 5 |

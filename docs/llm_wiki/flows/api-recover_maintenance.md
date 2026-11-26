@@ -223,17 +223,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1935 | `type(allow_prepared_adoption)` |
-| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1935 | `type(allow_captured_preimage)` |
-| recover_maintenance | ValueError (src/llm_wiki_cli/api.py:recover_maintenance) | 1936 | `ValueError('Maintenance recovery modes must be booleans')` |
-| recover_maintenance | _identity (src/llm_wiki_engine/maintenance_state.py) | 1937 | `_identity(expected_adoption_id)` |
+| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1941 | `type(allow_prepared_adoption)` |
+| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1941 | `type(allow_captured_preimage)` |
+| recover_maintenance | ValueError (src/llm_wiki_cli/api.py:recover_maintenance) | 1942 | `ValueError('Maintenance recovery modes must be booleans')` |
+| recover_maintenance | _identity (src/llm_wiki_engine/maintenance_state.py) | 1943 | `_identity(expected_adoption_id)` |
 | _identity (src/llm_wiki_engine/maintenance_state.py) | UUID | 59 | `UUID(value)` |
 | _identity (src/llm_wiki_engine/maintenance_state.py) | MaintenanceError | 61 | `MaintenanceError('identity-invalid', 'identity must be canonical UUIDv4')` |
 | _identity (src/llm_wiki_engine/maintenance_state.py) | require | 64 | `require(..., 'identity-invalid', 'identity must be canonical UUIDv4')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
 | _identity (src/llm_wiki_engine/maintenance_state.py) | str (src/llm_wiki_engine/maintenance_state.py:_identity) | 65 | `str(parsed)` |
-| recover_maintenance | cast (src/llm_wiki_cli/api.py:recover_maintenance) | 1938 | `cast(MaintenanceRecoveryResult, recover_maintenance_authority(...))` |
-| recover_maintenance | recover_maintenance_authority | 1938 | `recover_maintenance_authority(_validate_wiki_dir(...), recovery_dir=recovery_dir, expected_adoption_id=expected_adoption_id, src_dir=src_dir, allow_prepared_adoption=allow_prepared_adoption, allow_captured_preimage=allow_captured_preimage)` |
+| recover_maintenance | cast (src/llm_wiki_cli/api.py:recover_maintenance) | 1944 | `cast(MaintenanceRecoveryResult, recover_maintenance_authority(...))` |
+| recover_maintenance | recover_maintenance_authority | 1944 | `recover_maintenance_authority(_validate_wiki_dir(...), recovery_dir=recovery_dir, expected_adoption_id=expected_adoption_id, src_dir=src_dir, allow_prepared_adoption=allow_prepared_adoption, allow_captured_preimage=allow_captured_preimage)` |
 
 ### Boundary effects
 
@@ -243,10 +243,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `recover_maintenance` | `type` | 1935 |
-| external_call | `recover_maintenance` | `ValueError` | 1936 |
+| external_call | `recover_maintenance` | `type` | 1941 |
+| external_call | `recover_maintenance` | `ValueError` | 1942 |
 | external_call | `_identity` | `UUID` | 59 |
-| external_call | `recover_maintenance` | `cast` | 1938 |
+| external_call | `recover_maintenance` | `cast` | 1944 |
 | step_limit | `recover_maintenance` | `first 12 steps` | 0 |
 | truncated_flow | `recover_maintenance` | `depth limit` | 0 |
 
