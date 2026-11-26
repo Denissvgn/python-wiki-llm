@@ -40,17 +40,19 @@
 32. `knowledge_orchestration.runtime_source_snapshot_hash`
 33. `knowledge_orchestration.runtime_generation_options_hash`
 34. `knowledge_reuse.observation_inputs_hash`
-35. `knowledge_orchestration.collect_runtime_repository_evidence`
-36. `knowledge_reuse.wiki_input_hashes`
-37. `sync_analysis_cache.SyncAnalysisMutationError`
-38. `sync_analysis_cache.input_key`
+35. `knowledge_orchestration.retain_recorded_repository_identity`
+36. `knowledge_orchestration.collect_runtime_repository_evidence`
+37. `host.emit`
+38. `knowledge_reuse.wiki_input_hashes`
 39. `sync_analysis_cache.SyncAnalysisMutationError`
-40. `knowledge_reuse.observation_inputs_hash`
-41. `wiki_surface.canonical_path`
-42. `extraction_service.get_call_graph`
-43. `knowledge_reuse.wiki_input_hashes`
-44. `sync_analysis_cache.SyncAnalysisMutationError`
-45. `wiki_surface.canonical_path`
+40. `sync_analysis_cache.input_key`
+41. `sync_analysis_cache.SyncAnalysisMutationError`
+42. `knowledge_reuse.observation_inputs_hash`
+43. `wiki_surface.canonical_path`
+44. `extraction_service.get_call_graph`
+45. `knowledge_reuse.wiki_input_hashes`
+46. `sync_analysis_cache.SyncAnalysisMutationError`
+47. `wiki_surface.canonical_path`
 
 ## Touches
 
