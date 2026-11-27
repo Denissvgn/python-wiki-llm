@@ -64,6 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   its place in the knowledge tree and reads its byte range from the pack's
   own directory, so index pages change only where the tree itself changed;
   the same sync rewrote about 0.26 MB of index pages instead of all 1.5 MB.
+  Catalog nodes are packed apart from records, so a changed parent no longer
+  rewrites a pack of unrelated records; a sync that added one module wrote
+  103 storage objects instead of 183.
   Adopt with
   `sync --knowledge-format packed-v4-fine-deflate`; the default format is
   unchanged. Every reader and writer must be upgraded first: earlier releases

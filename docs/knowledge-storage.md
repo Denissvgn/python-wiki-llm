@@ -106,6 +106,11 @@ The fine profile changes both:
   hash; the page's own record already holds that hash. A link keeps its
   identity when other lines of the page change.
 - Packs target 256 KiB. Expect roughly four to five times as many pack files.
+- Catalog nodes, the small parents of the knowledge tree, are packed apart from
+  the records they point to. Most of them change whenever a record below them
+  does, so sharing packs with records made each one rewrite a whole pack. A
+  pack whose bucket starts with `1` holds catalog nodes; one that starts with
+  `0` holds records.
 - The locator finds a member by its place in the knowledge tree and takes its
   byte range from the pack's own ZIP directory. A locator row therefore stays
   the same when the member's content, size or position in its pack changes,

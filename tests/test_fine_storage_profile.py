@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
@@ -335,3 +336,36 @@ def test_selected_impact_read_works_on_a_fine_wiki(monkeypatch, tmp_path, capsys
     assert [c["locator"] for c in selected["concepts"]] == [c["locator"] for c in full["concepts"]]
     for name in ("pages", "relationships", "impacted_paths", "found"):
         assert selected[name] == full[name], name
+
+
+def test_fine_packs_keep_catalog_nodes_apart_from_record_nodes(monkeypatch):
+    monkeypatch.setattr(packs, "FINE_PACK_TARGET_BYTES", 2_048)
+    payload = _fixture_payload()
+    plan = _fine_plan(payload)
+
+    kinds_by_bit: dict[str, set[str]] = {"0": set(), "1": set()}
+    for path, raw in plan.objects.items():
+        match = packs.PACK_NAME.fullmatch(path)
+        if match is None:
+            continue
+        assert packs.inspect_pack(raw, path)["objects"] >= 1
+        bucket = match[3]
+        assert bucket != "root"
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            for name in archive.namelist():
+                kinds_by_bit[bucket[0]].add(json.loads(archive.read(name))["kind"])
+
+    assert kinds_by_bit == {"0": {"records"}, "1": {"catalog"}}
+    reader = packs.open_knowledge_store(plan.root_bytes, lambda name, _: plan.objects[name])
+    assert reader.materialize() == payload
+
+
+def test_a_fine_member_in_a_pack_for_the_other_kind_is_rejected(monkeypatch):
+    monkeypatch.setattr(packs, "FINE_PACK_TARGET_BYTES", 2_048)
+    monkeypatch.setattr(packs, "_kinded_route", lambda name, catalog: ("0" if catalog else "1") + packs._bucket(name))
+    plan = _fine_plan(_fixture_payload())
+    monkeypatch.undo()
+
+    reader = packs.open_knowledge_store(plan.root_bytes, lambda name, _: plan.objects[name])
+    with pytest.raises(KnowledgeStorageError, match="other node kind"):
+        reader.materialize()

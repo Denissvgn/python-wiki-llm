@@ -78,6 +78,37 @@ def _bucket(member: str) -> str:
     return _bits(hashlib.sha256(member.encode("ascii")).hexdigest())
 
 
+_CATALOG_START = b'{"children":'
+
+
+def _is_catalog(content: bytes) -> bool:
+    """Tell a catalog node from a records node by its canonical first key."""
+    return content.startswith(_CATALOG_START)
+
+
+def _kinded_route(name: str, catalog: bool) -> str:
+    """Route a fine-profile member: one bit for its node kind, then its name hash.
+
+    Catalog nodes are small and most of them change whenever any leaf below
+    them does. Routing them apart keeps them in a few packs of their own, so
+    they no longer force the rewrite of the data packs they used to share.
+    """
+    return ("1" if catalog else "0") + _bucket(name)
+
+
+def _bucket_holds(bucket: str, name: str, kinded: bool | None) -> bool:
+    """Check a member name against its pack bucket under one routing rule.
+
+    ``kinded`` False is routing by name hash alone, True is the fine profile's
+    kind bit followed by the name hash, and None accepts either for callers
+    that inspect a pack without knowing its profile.
+    """
+    bits = _bucket(name)
+    by_name = bits.startswith(bucket)
+    by_kind = not bucket or bits.startswith(bucket[1:])
+    return by_name if kinded is False else by_kind if kinded else by_name or by_kind
+
+
 def _member_name(raw: bytes) -> str:
     node = decode_bytes(raw, limit=MAX_OBJECT_BYTES, field="member")
     prefix = node.get("prefix")
@@ -313,6 +344,9 @@ def _pack_logical(logical, compression, prior, objects, profile="standard"):
             _fail("reuse", "prior logical identity differs")
         return descriptor, position
 
+    routes = ({name: _kinded_route(name, _is_catalog(logical.objects[path])) for name, path in members.items()}
+              if fine else {name: _bucket(name) for name in members})
+
     def pack(group: dict[str, str], prefix: str):
         nonlocal reused_packs, reused_members
         # Size on uncompressed data bounds both stored and expanded packs.
@@ -322,7 +356,7 @@ def _pack_logical(logical, compression, prior, objects, profile="standard"):
                 _fail("pack", "colliding logical members exceed pack limits", "storage-limit")
             groups: dict[str, dict[str, str]] = defaultdict(dict)
             for name, raw in group.items():
-                groups[_bucket(name)[len(prefix)]][name] = raw
+                groups[routes[name][len(prefix)]][name] = raw
             for bit, child in sorted(groups.items()):
                 pack(child, prefix + bit)
             return
@@ -470,13 +504,13 @@ def _paged_indexes(members, packs, files, *, member_kind="members", rows=LOCAL_I
     return tuple(root["descriptor"] for root in roots)
 
 
-def _coordinates(value: Any) -> tuple[str, list[Any]]:
+def _coordinates(value: Any, kinded: bool | None = False) -> tuple[str, list[Any]]:
     if not isinstance(value, list) or len(value) != 6:
         _fail("member", "invalid member coordinates")
     bucket, name, offset, compressed, expanded, crc = value
     if not isinstance(bucket, str) or not _BITS.fullmatch(bucket):
         _fail("member", "invalid stable pack bucket")
-    if not isinstance(name, str) or not _MEMBER.fullmatch(name) or not _bucket(name).startswith(bucket):
+    if not isinstance(name, str) or not _MEMBER.fullmatch(name) or not _bucket_holds(bucket, name, kinded):
         _fail("member", "member name or stable bucket differs")
     _integer(offset, "member.offset", MAX_PACK_BYTES)
     _integer(compressed, "member.compressed", MAX_PACK_BYTES, 1)
@@ -494,7 +528,7 @@ def _named_coordinates(value: Any) -> tuple[str, str]:
     bucket, name = value
     if not isinstance(bucket, str) or not _BITS.fullmatch(bucket):
         _fail("member", "invalid stable pack bucket")
-    if not isinstance(name, str) or not _MEMBER.fullmatch(name) or not _bucket(name).startswith(bucket):
+    if not isinstance(name, str) or not _MEMBER.fullmatch(name) or not _bucket_holds(bucket, name, True):
         _fail("member", "member name or stable bucket differs")
     return bucket, name
 
@@ -542,8 +576,9 @@ def inspect_index_pages(raw: bytes, relative: str) -> dict[str, Any]:
     return {"pages": count, "bytes": len(raw)}
 
 
-def _position(value: Any, descriptor: dict[str, Any]) -> tuple[dict[str, Any], list[Any]]:
-    bucket, position = _coordinates(value)
+def _position(value: Any, descriptor: dict[str, Any],
+              kinded: bool | None = False) -> tuple[dict[str, Any], list[Any]]:
+    bucket, position = _coordinates(value, kinded)
     name, offset, compressed, expanded, _ = position
     if (descriptor["bucket"] != bucket or offset + 30 + len(name) + compressed > descriptor["bytes"] - 22
             or expanded > descriptor["expanded_bytes"]):
@@ -584,7 +619,8 @@ def decode_member(raw: bytes, position: list[Any], compression: str, commitment:
     return content
 
 
-def _pack_structure(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]:
+def _pack_structure(raw: bytes, descriptor: dict[str, Any], compression: str,
+                    kinded: bool | None = None) -> dict[str, list[Any]]:
     """Check all container/header bytes; member content validation is separate."""
     _pack_descriptor(descriptor)
     if len(raw) != descriptor["bytes"] or digest(raw) != descriptor["hash"]:
@@ -613,7 +649,7 @@ def _pack_structure(raw: bytes, descriptor: dict[str, Any], compression: str) ->
                         or info.compress_type != (0 if compression == "stored" else 8)):
                     _fail("pack", "noncanonical ZIP metadata, order or membership")
                 value = [descriptor["bucket"], name, offset, info.compress_size, info.file_size, info.CRC]
-                _, position = _position(value, descriptor)
+                _, position = _position(value, descriptor, kinded)
                 end = offset + 30 + len(name) + info.compress_size
                 if raw[offset:offset + 30 + len(name)] != _member_header(position, compression):
                     _fail("pack", "local header differs from its complete directory")
@@ -629,10 +665,11 @@ def _pack_structure(raw: bytes, descriptor: dict[str, Any], compression: str) ->
     return positions
 
 
-def validate_pack(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]:
+def validate_pack(raw: bytes, descriptor: dict[str, Any], compression: str,
+                  kinded: bool | None = None) -> dict[str, list[Any]]:
     """Validate a whole archive and each logical member, inflating each once."""
     result = {}
-    for position in _pack_structure(raw, descriptor, compression).values():
+    for position in _pack_structure(raw, descriptor, compression, kinded).values():
         name, offset, compressed, _, _ = position
         content = decode_member(raw[offset:offset + 30 + len(name) + compressed], position, compression, None)
         key = digest(content)[7:]
@@ -673,6 +710,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         self.storage_format = packed_family(packed)
         self.packing = packed["packing"]
         self._member_kind = SLOT_KIND if self.packing.get("profile") == FINE_PACK_PROFILE else "members"
+        self._kinded = self._member_kind == SLOT_KIND
         self._slot: tuple[str, str] | None = None
         self._slots: dict[str, str] = {}
         self._directories: dict[str, dict[str, list[Any]]] = {}
@@ -817,7 +855,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         compression = self.packing["compression"]
         read_range = self.read_range
         if read_range is None:
-            positions = _pack_structure(self._pack(descriptor), descriptor, compression)
+            positions = _pack_structure(self._pack(descriptor), descriptor, compression, self._kinded)
         else:
             path, size = pack_path(descriptor), descriptor["bytes"]
 
@@ -855,7 +893,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
                         or len(name_bytes) != fields[10] or name in positions):
                     _fail("pack", "noncanonical ZIP directory entry")
                 value = [descriptor["bucket"], name, fields[16], fields[8], fields[9], fields[7]]
-                positions[name] = _position(value, descriptor)[1]
+                positions[name] = _position(value, descriptor, self._kinded)[1]
             if cursor != len(directory):
                 _fail("pack", "ZIP directory has trailing data")
         self._directories[descriptor["hash"]] = positions
@@ -868,7 +906,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         position = self._directory(descriptor).get(name)
         if position is None:
             _fail("index", "located member is absent from its pack")
-        return _position([bucket, *position], descriptor)
+        return _position([bucket, *position], descriptor, True)
 
     def _named_member(self, name: str) -> tuple[dict[str, Any], list[Any]] | None:
         """Find a member by name through the pack catalog alone, or return None."""
@@ -885,11 +923,15 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             walk(self.packing["pack_catalog"], "")
             self._pack_buckets = table
         bits = _bucket(name)
-        for length in range(65):
-            descriptor = self._pack_buckets.get(bits[:length])
-            if descriptor is not None:
-                position = self._directory(descriptor).get(name)
-                return None if position is None else (descriptor, position)
+        routes = ("0" + bits, "1" + bits) if self._kinded else (bits,)
+        for route in routes:
+            for length in range(65):
+                descriptor = self._pack_buckets.get(route[:length])
+                if descriptor is not None:
+                    position = self._directory(descriptor).get(name)
+                    if position is not None:
+                        return descriptor, position
+                    break
         return None
 
     def _pack(self, descriptor: dict[str, Any]) -> bytes:
@@ -933,8 +975,12 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         finally:
             self._slot = None
         expected_name = f"{collection}/{node['prefix'] or 'root'}.json"
-        if self._selected_locations[desc["hash"][7:]][1][0] != expected_name:
+        located = self._selected_locations[desc["hash"][7:]]
+        if located[1][0] != expected_name:
             _fail("member", "logical object identity differs from its member name")
+        bucket = located[0]["bucket"]
+        if self._kinded and bucket and (bucket[0] == "1") != (node["kind"] == "catalog"):
+            _fail("member", "logical object is stored in a pack for the other node kind")
         return node
 
     def materialize(self, *, audit_routes: bool = True) -> dict[str, Any]:
@@ -969,7 +1015,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
                 position = self._directory(descriptor).get(name)
                 if position is None or self._slots[slot] in resolved:
                     _fail("index", "located member is absent from its pack or routed twice")
-                resolved[self._slots[slot]] = _position([bucket, *position], descriptor)
+                resolved[self._slots[slot]] = _position([bucket, *position], descriptor, True)
             locations = resolved
         else:
             locations = {key: _position(value, pack_locations[value[0]]) for key, value in locations.items()}
@@ -988,7 +1034,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             verified[slot] = key, position
         for descriptor in self._pack_descriptors.values():
             buckets.append(descriptor["bucket"])
-            for name, position in _pack_structure(self._pack(descriptor), descriptor, self.packing["compression"]).items():
+            for name, position in _pack_structure(self._pack(descriptor), descriptor, self.packing["compression"], self._kinded).items():
                 observed = verified.get((descriptor["hash"], name))
                 if observed is None or observed[1] != position:
                     _fail("index", "archive member was not validated at its committed coordinates")
