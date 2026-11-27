@@ -95,9 +95,9 @@ sequenceDiagram
     p0-->>p30: historical_sources.check_projections(retirement_manifest, model)
 ```
 
-> Call sequence diagram shows 30 of 1085 interactions; 1055 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1090 interactions; 1060 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 248 (247 omitted); unresolved 1 of 167 (166 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 248 (247 omitted); unresolved 1 of 168 (167 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:require_mapping` | 13 | [src/llm_wiki_engine/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 15 | - | external | 1 |
 | `src/llm_wiki_engine/validation.py:_validation_error` | 15 | - | unresolved | 1 |
-> Omission summary shows 8 of 254 groups; 246 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 255 groups; 247 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -124,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 671; effect analysis evaluated: 442, partial: 16, unavailable: 213. Counts include steps omitted from the displayed trace.
+Source steps: 675; effect analysis evaluated: 445, partial: 16, unavailable: 214. Counts include steps omitted from the displayed trace.
 
-Collector observations for 458 source steps with known totals: observed: 2287, emitted: 2100, omitted: 187. Unavailable totals are excluded.
+Collector observations for 461 source steps with known totals: observed: 2298, emitted: 2110, omitted: 188. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -209,8 +209,8 @@ flowchart LR
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_engine/knowl…luate_knowledge_freshness) | 277 | `isinstance(knowledge, KnowledgeIndex)` |
 | evaluate_knowledge_freshness | parse_knowledge_index | 276 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 553 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_engine/knowledge_model.py) | 1612 | `_object(value, ...)` |
-| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1698 | `dict(require_mapping(...))` |
+| _record | _object (src/llm_wiki_engine/knowledge_model.py) | 1645 | `_object(value, ...)` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1731 | `dict(require_mapping(...))` |
 
 ### Boundary effects
 

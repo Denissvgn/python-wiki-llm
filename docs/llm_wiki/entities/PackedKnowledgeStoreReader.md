@@ -1,6 +1,6 @@
 # PackedKnowledgeStoreReader
 
-**Location:** `src/llm_wiki_engine/knowledge_packs.py:570`
+**Location:** `src/llm_wiki_engine/knowledge_packs.py:706`
 **Kind:** Class
 **Bases:** `KnowledgeStoreReader`
 **Module:** [knowledge_packs](../modules/knowledge_packs.md)
@@ -22,6 +22,9 @@ Reads selected authenticated member ranges or fully captures indexed ZIP storage
 | `_index` | `(descriptor: dict[str, Any], prefix: str, leaf_kind: str = 'members') -> dict[str, Any]` | — | — |
 | `_find_entry` | `(key: str, leaf_kind: str) -> Any` | — | — |
 | `_find` | `(key: str) -> tuple[dict[str, Any], list[Any]]` | — | — |
+| `_directory` | `(descriptor: dict[str, Any]) -> dict[str, list[Any]]` | — | Return member coordinates from a pack's own ZIP directory. |
+| `_locate` | `(slot: str) -> tuple[dict[str, Any], list[Any]]` | — | Resolve a tree slot to its pack and the member's range inside it. |
+| `_named_member` | `(name: str) -> tuple[dict[str, Any], list[Any]] \| None` | — | Find a member by name through the pack catalog alone, or return None. |
 | `_pack` | `(descriptor: dict[str, Any]) -> bytes` | — | — |
 | `_read_member` | `(logical_path: str, maximum: int) -> bytes` | — | — |
 | `_node` | `(desc, collection, prefix)` | — | — |
@@ -59,7 +62,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_packs](../modules/knowledge_packs.md) | 13 | — |
+| [knowledge_packs](../modules/knowledge_packs.md) | 16 | — |
 
 ### Structure
 

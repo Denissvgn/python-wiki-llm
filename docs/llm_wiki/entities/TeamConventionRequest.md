@@ -1,6 +1,6 @@
 # TeamConventionRequest
 
-**Location:** `src/llm_wiki_cli/services/team.py:88`
+**Location:** `src/llm_wiki_cli/services/team.py:199`
 **Kind:** Class
 **Bases:** —
 **Module:** [team](../modules/team.md)

@@ -18,7 +18,7 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 | `.sync_manifest` | `ManifestArtifactHashes`, `SyncManifest`, `SyncManifest`, `validate_manifest_policy`, `MANIFEST_FILENAME` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
-| `collections.abc` | `Callable`, `Mapping` |
+| `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `llm_wiki_engine.canonical_json` | `canonical_chunks` |
@@ -26,6 +26,7 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
+| `zlib` | `zlib` |
 
 ## Local dependency map
 
@@ -54,9 +55,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ManifestStore](../entities/ManifestStore.md) | 84 | — | — |
-| [ManifestStoreReader](../entities/ManifestStoreReader.md) | 155 | — | — |
-| [ValidatedManifestHeader](../entities/ValidatedManifestHeader.md) | 250 | — | Policy and artifact commitments only; never a complete sync manifest. |
+| [ManifestStore](../entities/ManifestStore.md) | 121 | — | — |
+| [ManifestStoreReader](../entities/ManifestStoreReader.md) | 192 | — | — |
+| [ValidatedManifestHeader](../entities/ValidatedManifestHeader.md) | 287 | — | Policy and artifact commitments only; never a complete sync manifest. |
 
 ## Functions
 
@@ -65,6 +66,8 @@ flowchart LR
 | `object_path` | `(commitment: str) -> str` | — | — |
 | `_descriptor` | `(value: object) -> dict[str, Any]` | — | — |
 | `validate_catalog` | `(raw: bytes) -> dict[str, Any]` | — | — |
+| `_segment_end` | `(buffer: bytearray) -> int` | — | Return where the segment starting ``buffer`` ends. |
+| `content_segments` | `(parts: Iterable[bytes]) -> Iterator[bytes]` | — | Regroup a byte stream into content-defined segments of bounded size. |
 | `build_manifest_store` | `(payload: Mapping[str, Any]) -> ManifestStore` | — | — |
 | `read_manifest_header` | `(raw: bytes, read: Reader) -> ValidatedManifestHeader` | — | — |
 | `current_manifest_format` | `(wiki_dir: str \| Path) -> str` | — | — |

@@ -36,6 +36,7 @@ Field names describe the behaviour, not CLI flags: ``cache=False`` is
 | `rebuild_cache` | `bool` | `False` | — |
 | `cache_dir` | `str \| Path \| None` | `None` | — |
 | `cache_stats` | `bool` | `False` | — |
+| `require_fresh` | `bool` | `False` | — |
 
 ## Methods
 

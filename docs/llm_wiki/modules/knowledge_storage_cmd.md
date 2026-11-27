@@ -10,7 +10,8 @@ Adapts explicit storage migration, recovery, export, cleanup, diagnostics and lo
 
 | Source | Symbols |
 |--------|---------|
-| `..services.wiki_git_delivery` | `inspect_wiki_git_delivery` |
+| `..services.storage_usage` | `storage_usage` |
+| `..services.wiki_git_delivery` | `inspect_branch_wiki_changes`, `inspect_wiki_git_delivery` |
 | `.knowledge_cmd` | `_wiki_root` |
 | `__future__` | `annotations` |
 | `json` | `json` |
@@ -29,15 +30,16 @@ Adapts explicit storage migration, recovery, export, cleanup, diagnostics and lo
 flowchart LR
     n0["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n1["src/llm_wiki_cli/commands/knowledge_storage_cmd.py"]
-    n2["src/llm_wiki_cli/services/wiki_git_delivery.py"]
-    n3["src/llm_wiki_engine/filesystem_guard.py"]
-    n4["src/llm_wiki_engine/knowledge_storage.py"]
-    n5["src/llm_wiki_engine/knowledge_storage_diagnostics.py"]
-    n6["src/llm_wiki_engine/knowledge_storage_io.py"]
-    n7["src/llm_wiki_engine/knowledge_storage_lifecycle.py"]
-    n8["src/llm_wiki_engine/knowledge_stream_audit.py"]
+    n2["src/llm_wiki_cli/services/storage_usage.py"]
+    n3["src/llm_wiki_cli/services/wiki_git_delivery.py"]
+    n4["src/llm_wiki_engine/filesystem_guard.py"]
+    n5["src/llm_wiki_engine/knowledge_storage.py"]
+    n6["src/llm_wiki_engine/knowledge_storage_diagnostics.py"]
+    n7["src/llm_wiki_engine/knowledge_storage_io.py"]
+    n8["src/llm_wiki_engine/knowledge_storage_lifecycle.py"]
+    n9["src/llm_wiki_engine/knowledge_stream_audit.py"]
     n0 --> n1
-    n0 --> n6
+    n0 --> n7
     n1 --> n0
     n1 --> n2
     n1 --> n3
@@ -46,30 +48,34 @@ flowchart LR
     n1 --> n6
     n1 --> n7
     n1 --> n8
-    n2 --> n4
+    n1 --> n9
     n2 --> n5
-    n2 --> n6
     n2 --> n7
-    n5 --> n4
-    n5 --> n6
-    n5 --> n7
-    n6 --> n3
-    n6 --> n4
-    n7 --> n3
+    n3 --> n5
+    n3 --> n6
+    n3 --> n7
+    n3 --> n8
+    n6 --> n5
+    n6 --> n7
+    n6 --> n8
     n7 --> n4
     n7 --> n5
-    n7 --> n6
     n8 --> n4
+    n8 --> n5
     n8 --> n6
+    n8 --> n7
+    n9 --> n5
+    n9 --> n7
     click n0 "../modules/knowledge_cmd.md"
     click n1 "../modules/knowledge_storage_cmd.md"
-    click n2 "../modules/wiki_git_delivery.md"
-    click n3 "../modules/filesystem_guard.md"
-    click n4 "../modules/knowledge_storage.md"
-    click n5 "../modules/knowledge_storage_diagnostics.md"
-    click n6 "../modules/knowledge_storage_io.md"
-    click n7 "../modules/knowledge_storage_lifecycle.md"
-    click n8 "../modules/knowledge_stream_audit.md"
+    click n2 "../modules/storage_usage.md"
+    click n3 "../modules/wiki_git_delivery.md"
+    click n4 "../modules/filesystem_guard.md"
+    click n5 "../modules/knowledge_storage.md"
+    click n6 "../modules/knowledge_storage_diagnostics.md"
+    click n7 "../modules/knowledge_storage_io.md"
+    click n8 "../modules/knowledge_storage_lifecycle.md"
+    click n9 "../modules/knowledge_stream_audit.md"
 ```
 
 ### Internal neighbors
@@ -78,6 +84,7 @@ flowchart LR
 |---|---|
 | Inbound | [knowledge_cmd](../modules/knowledge_cmd.md) |
 | Outbound | [knowledge_cmd](../modules/knowledge_cmd.md) |
+| Outbound | [storage_usage](../modules/storage_usage.md) |
 | Outbound | [wiki_git_delivery](../modules/wiki_git_delivery.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |

@@ -22,6 +22,7 @@ Complete maintenance recovery catalogs backed by immutable deduplicated bytes.
 | `llm_wiki_engine.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `remove_guarded_tree`, `unlink_guarded_bytes` |
 | `llm_wiki_engine.request_json` | `_pairs`, `_constant` |
 | `llm_wiki_engine.validation` | `is_portable_relative_path` |
+| `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `time` | `time` |
@@ -119,7 +120,8 @@ flowchart LR
 | `_load_recovery_catalog` | `(root, metadata)` | — | — |
 | `mark_recovery_complete` | `(preimage_directory, committed_directory) -> None` | — | Positively mark one successfully verified managed publication. |
 | `_mark_recovery_complete` | `(preimage_directory, committed_directory)` | — | — |
-| `retain_recovery_catalogs` | `(store, *, owner_root, marker, newest_committed, keep_successful = 2)` | — | Retire only positively completed catalogs in one exact owner namespace. |
+| `_orphaned_owner` | `(recorded) -> bool` | — | Return whether a recorded owner names a wiki directory that is gone. |
+| `retain_recovery_catalogs` | `(store, *, owner_root, marker, newest_committed, keep_successful = 2)` | — | Retire positively completed catalogs of this owner and of vanished owners. |
 | `_retain_recovery_catalogs` | `(root, *, owner_root, marker, newest_committed, keep_successful)` | — | — |
 | `collect_recovery_blobs` | `(store)` | — | Collect verified unreachable blobs under the shared writer barrier. |
 | `_shared_references` | `(root)` | — | — |

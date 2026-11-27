@@ -1,6 +1,6 @@
 # SyncError
 
-**Location:** `src/llm_wiki_cli/services/sync_service.py:85`
+**Location:** `src/llm_wiki_cli/services/sync_service.py:86`
 **Kind:** Class
 **Bases:** `Exception`
 **Module:** [sync_service](../modules/sync_service.md)

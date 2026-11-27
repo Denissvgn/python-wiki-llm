@@ -41,7 +41,7 @@ producer incompatibility can still downgrade historical provenance explicitly.
 | `json` | `json` |
 | `llm_wiki_engine` | `historical_sources` |
 | `llm_wiki_engine.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
-| `llm_wiki_engine.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes`, `require_validated_artifacts` |
+| `llm_wiki_engine.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes`, `KnowledgeArtifactError`, `current_knowledge_format`, `require_validated_artifacts` |
 | `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record`, `INVENTORY_HASH_EXTENSION`, `hash_inventory` |
 | `llm_wiki_engine.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256`, `hash_json` |
 | `llm_wiki_engine.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
@@ -49,6 +49,7 @@ producer incompatibility can still downgrade historical provenance explicitly.
 | `llm_wiki_engine.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_assemble_knowledge_index`, `_knowledge_validation_operation` |
 | `llm_wiki_engine.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
 | `llm_wiki_engine.knowledge_model` | `KnowledgeModelError`, `ProducerRecord`, `concept_kind_for_page_kind` |
+| `llm_wiki_engine.knowledge_packs` | `FINE_FORMATS` |
 | `llm_wiki_engine.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `maintenance_transfers_from_page_plan` |
 | `llm_wiki_engine.maintenance_projection` | `project_maintenance_knowledge` |
 | `llm_wiki_engine.progress` | `observed_phase`, `record_counts` |
@@ -78,9 +79,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (22) |
+| Outbound | `src` (23) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -95,6 +96,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | `@observed_phase('knowledge_plan')` | Construct one validated atomic commit plan from evaluated inputs. |
 | `_build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | — |
+| `_writes_line_relative_links` | `(inputs: KnowledgeGenerationInputs) -> bool` | — | Return whether this wiki's storage profile writes position-stable links. |
 | `_application_knowledge_extensions` | `(inputs: KnowledgeGenerationInputs, *, inventory: Mapping[str, Mapping[str, Any]], module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str], envelope: EvaluatedEnvelope) -> dict[str, Any]` | — | Build reserved extensions from the exact final evaluated snapshot. |
 | `_graph_concepts` | `(pages: Sequence[WikiSurfacePage], *, module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str]) -> tuple[GraphConcept, ...]` | — | Project final surface coordinates into graph ownership coordinates. |
 | `_preserve_unchanged_unknown_baselines` | `(baselines: Mapping[str, ConceptObservationBasis], previous: SyncManifest \| None, source_hashes: Mapping[str, str], regenerated_page_paths: frozenset[str]) -> dict[str, ConceptObservationBasis \| ManifestEvidenceBaseline]` | — | Keep unrecoverable provenance unknown until its source is regenerated. |

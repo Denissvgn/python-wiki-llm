@@ -8,18 +8,18 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_model.KnowledgeModelError`
 2. `knowledge_model.KnowledgeModelError`
-3. `knowledge_model.KnowledgeModelError`
+3. `knowledge_model.is_line_relative_link`
 4. `knowledge_model.KnowledgeModelError`
 5. `knowledge_model.KnowledgeModelError`
-6. `wiki_media.contains_uri_authority_userinfo`
-7. `knowledge_model.KnowledgeModelError`
-8. `wiki_media.normalize_markdown_link_target`
-9. `knowledge_model.KnowledgeModelError`
+6. `knowledge_model.KnowledgeModelError`
+7. `wiki_media.contains_uri_authority_userinfo`
+8. `knowledge_model.KnowledgeModelError`
+9. `wiki_media.normalize_markdown_link_target`
 10. `knowledge_model.KnowledgeModelError`
-11. `knowledge_links.LinkObservation`
-12. `knowledge_model.RelationshipLocation`
-13. `knowledge_links.LinkSyntax`
-14. `knowledge_model.KnowledgeModelError`
+11. `knowledge_model.KnowledgeModelError`
+12. `knowledge_links.LinkObservation`
+13. `knowledge_model.RelationshipLocation`
+14. `knowledge_links.LinkSyntax`
 15. `knowledge_model.KnowledgeModelError`
 16. `knowledge_model.KnowledgeModelError`
 17. `knowledge_model.KnowledgeModelError`
@@ -28,6 +28,7 @@
 20. `knowledge_model.KnowledgeModelError`
 21. `knowledge_model.KnowledgeModelError`
 22. `knowledge_model.KnowledgeModelError`
+23. `knowledge_model.KnowledgeModelError`
 
 ## Touches
 

@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 790 | [Open section](#entities) |
-| Modules | 323 | [Open section](#modules) |
-| Workflows | 326 | [Open section](#workflows) |
+| Entities | 791 | [Open section](#entities) |
+| Modules | 324 | [Open section](#modules) |
+| Workflows | 329 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 512 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -751,6 +751,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [WikiLifecycleState](entities/WikiLifecycleState.md)
 - [WikiLock](entities/WikiLock.md)
 - [WikiOperationError](entities/WikiOperationError.md)
+- [WikiOwnership](entities/WikiOwnership.md)
 - [WikiPageCounts](entities/WikiPageCounts.md)
 - [WikiPageIndex](entities/WikiPageIndex.md)
 - [WikiPagesResult](entities/WikiPagesResult.md)
@@ -1083,6 +1084,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [storage_receipts](modules/storage_receipts.md) - Lossless portable encodings for versioned selected-storage receipts.
 - [storage_sort](modules/storage_sort.md) - Bounded private merge runs for complete storage audits.
 - [storage_spool](modules/storage_spool.md) - Private bounded spill buffers; never an on-disk source of authority.
+- [storage_usage](modules/storage_usage.md) - Report the disk space llm-wiki owns for one wiki and reclaim it on request.
 - [styles](modules/styles.md) - Sample bounded diagram-style hooks for LLM Wiki plugins.
 - [surface_index_format](modules/surface_index_format.md) - Format checks for the ``llm-wiki-surface-index/v1`` wiki surface index.
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
@@ -1288,6 +1290,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
 - [input_key](workflows/input_key.md) - entry: `sync_analysis_cache.input_key`
+- [inspect_branch_wiki_changes](workflows/inspect_branch_wiki_changes.md) - entry: `wiki_git_delivery.inspect_branch_wiki_changes`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [inspect_targets](workflows/inspect_targets.md) - entry: `analysis_targets.inspect_targets`
 - [inspect_wiki_git_delivery](workflows/inspect_wiki_git_delivery.md) - entry: `wiki_git_delivery.inspect_wiki_git_delivery`
@@ -1424,6 +1427,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [snapshot](workflows/snapshot.md) - entry: `publication_contracts._snapshot`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`
+- [stabilize_revision_only_noop](workflows/stabilize_revision_only_noop.md) - entry: `knowledge_orchestration._stabilize_revision_only_noop`
 - [stage_publication_documents](workflows/stage_publication_documents.md) - entry: `publication._stage_publication_documents`
 - [staged_write_basis](workflows/staged_write_basis.md) - entry: `sync_runtime._staged_write_basis`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
@@ -1458,6 +1462,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
 - [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
 - [verify_target_blobs](workflows/verify_target_blobs.md) - entry: `checkout._verify_target_blobs`
+- [verify_written_wiki](workflows/verify_written_wiki.md) - entry: `sync_runtime._verify_written_wiki`
 - [wiki_anchor](workflows/wiki_anchor.md) - entry: `context_packet_builder._wiki_anchor`
 - [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
 - [write](workflows/write.md) - entry: `publication_cmd._write`

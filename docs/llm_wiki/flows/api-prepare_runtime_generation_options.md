@@ -96,13 +96,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prepare_runtime_generation_options | isinstance | 364 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 365 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 366 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 368 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple | 370 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | dict.fromkeys | 371 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 373 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| prepare_runtime_generation_options | isinstance | 365 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 366 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 367 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 369 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple | 371 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | dict.fromkeys | 372 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 374 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
 
 ### Boundary effects
 
@@ -112,9 +112,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prepare_runtime_generation_options` | `isinstance` | 364 |
-| external_call | `prepare_runtime_generation_options` | `TypeError` | 365 |
-| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 371 |
+| external_call | `prepare_runtime_generation_options` | `isinstance` | 365 |
+| external_call | `prepare_runtime_generation_options` | `TypeError` | 366 |
+| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 372 |
 
 ## Behavior
 

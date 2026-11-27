@@ -119,6 +119,7 @@ still stop the operation.
 | `.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_for`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `retain_recorded_repository_identity`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
+| `.lint_service` | `build_report`, `render_text` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.scoped_sync_repair` | `ScopedRepairBoundary`, `ScopedRepairError`, `prepare_boundary`, `repair_paths` |
@@ -127,6 +128,7 @@ still stop the operation.
 | `.sync_generated_sections` | `plan_generated_source_repairs`, `repair_source_sections` |
 | `.sync_service` | `SYNC_PAGE_COUNTERS`, `SyncError`, `SyncOutcome`, `SyncRequest`, `SyncRequestError`, `SyncStatus` |
 | `.sync_transitions` | `PageTransitionPlan`, `ReleasedPageInputs`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
+| `.wiki_git_delivery` | `ownership_write_refusal` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -189,9 +191,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (54) |
+| Outbound | `src` (56) |
 
-> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 59 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -369,6 +371,7 @@ flowchart LR
 | `execute_sync` | `(request: SyncRequest) -> SyncOutcome` | — | Run one sync without argparse or process exits. |
 | `_exit_code` | `(exc: SystemExit) -> int` | — | — |
 | `run_request` | `(request: SyncRequest) -> None` | — | Run one sync for a command: output goes to the host, stops raise SyncAborted. |
+| `_verify_written_wiki` | `(request: SyncRequest, options: _SyncRunOptions) -> None` | — | Run the strict checks once on the wiki this sync just wrote. |
 | `_run_sync_options` | `(options, write_basis = None) -> None` | — | — |
 | `_preserve_index_custom_sections` | `(old_md: str, new_md: str) -> str` | — | — |
 | `_overlay_live_index_metadata` | `(existing: list[dict], live: Iterable[Mapping], *, key: str) -> list[dict]` | — | Retain existing page coverage while preferring canonical live metadata. |

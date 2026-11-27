@@ -2,7 +2,7 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 58 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 59 more
 
 **Complete modules touched:**
 
@@ -64,6 +64,7 @@
 - [team](../modules/team.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [yaml_formats](../modules/yaml_formats.md)
@@ -96,9 +97,9 @@ sequenceDiagram
     participant p17 as windows_current_user_sid
     participant p18 as first_unsafe_path_component
     participant p19 as resolve_team_policy
-    participant p20 as capture_health_details
-    participant p21 as _knowledge_declared
-    participant p22 as _current_windows_user_sid
+    participant p20 as _knowledge_declared
+    participant p21 as _current_windows_user_sid
+    participant p22 as capture_health_details
     participant p23 as _profile_phase
     participant p24 as _coerce_plugin_issue
     participant p25 as resolve_inventory_cache_path
@@ -126,9 +127,9 @@ sequenceDiagram
     p3->>p17: windows_current_user_sid
     p3->>p18: first_unsafe_path_component
     p7->>p19: resolve_team_policy
-    p9->>p20: capture_health_details
-    p8->>p21: _knowledge_declared
-    p17->>p22: _current_windows_user_sid
+    p8->>p20: _knowledge_declared
+    p17->>p21: _current_windows_user_sid
+    p9->>p22: capture_health_details
     p12->>p23: _profile_phase
     p7->>p24: _coerce_plugin_issue
     p11->>p25: resolve_inventory_cache_path
@@ -139,9 +140,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload(**=...)
 ```
 
-> Call sequence diagram shows 30 of 1691 interactions; 1661 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1718 interactions; 1688 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 534 (533 omitted); unresolved 1 of 513 (512 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 542 (541 omitted); unresolved 1 of 523 (522 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +156,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 25 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 25 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 25 | - | external | 10 |
-> Omission summary shows 8 of 480 groups; 472 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 493 groups; 485 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -168,9 +169,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 645; effect analysis evaluated: 516, partial: 29, unavailable: 100. Counts include steps omitted from the displayed trace.
+Source steps: 654; effect analysis evaluated: 523, partial: 29, unavailable: 102. Counts include steps omitted from the displayed trace.
 
-Collector observations for 545 source steps with known totals: observed: 3625, emitted: 3451, omitted: 174. Unavailable totals are excluded.
+Collector observations for 552 source steps with known totals: observed: 3661, emitted: 3485, omitted: 176. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

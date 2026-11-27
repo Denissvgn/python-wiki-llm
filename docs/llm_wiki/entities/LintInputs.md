@@ -1,6 +1,6 @@
 # _LintInputs
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:344`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:347`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)

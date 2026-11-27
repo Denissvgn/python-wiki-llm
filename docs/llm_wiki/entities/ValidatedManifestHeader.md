@@ -1,6 +1,6 @@
 # ValidatedManifestHeader
 
-**Location:** `src/llm_wiki_engine/manifest_storage.py:250`
+**Location:** `src/llm_wiki_engine/manifest_storage.py:287`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)

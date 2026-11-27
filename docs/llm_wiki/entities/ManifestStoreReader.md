@@ -1,6 +1,6 @@
 # ManifestStoreReader
 
-**Location:** `src/llm_wiki_engine/manifest_storage.py:155`
+**Location:** `src/llm_wiki_engine/manifest_storage.py:192`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)

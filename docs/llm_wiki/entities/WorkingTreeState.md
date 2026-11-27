@@ -29,15 +29,18 @@ flowchart LR
     n0["WorkingTreeState (src/llm_wiki_engine/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n4["_working_tree (src/llm_wiki_engine/knowledge_envelope.py)"]
+    n3["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n5["_working_tree (src/llm_wiki_engine/knowledge_envelope.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n3 "../modules/knowledge_projection.md"
-    click n4 "../modules/knowledge_envelope.md"
+    click n3 "../modules/knowledge_orchestration.md"
+    click n4 "../modules/knowledge_projection.md"
+    click n5 "../modules/knowledge_envelope.md"
 ```
 
 ### Summary
@@ -57,6 +60,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `knowledge_orchestration` | import | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
 | `_working_tree` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `_working_tree` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |

@@ -37,7 +37,8 @@ flowchart LR
     n7["_run_prepared_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
     n8["_run_sync_options (src/llm_wiki_cli/services/sync_runtime.py)"]
     n9["_simulate_sync_dry_run (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n10["run_request (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n10["_verify_written_wiki (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n11["run_request (src/llm_wiki_cli/services/sync_runtime.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -48,6 +49,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/sync_runtime.md"
     click n2 "../modules/sync_runtime.md"
     click n3 "../modules/sync_runtime.md"
@@ -58,6 +60,7 @@ flowchart LR
     click n8 "../modules/sync_runtime.md"
     click n9 "../modules/sync_runtime.md"
     click n10 "../modules/sync_runtime.md"
+    click n11 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -84,4 +87,5 @@ flowchart LR
 | `_run_prepared_sync` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_run_sync_options` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_simulate_sync_dry_run` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
-| `run_request` | call | [sync_runtime](../modules/sync_runtime.md) | 2 |
+| `_verify_written_wiki` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
+| `run_request` | call | [sync_runtime](../modules/sync_runtime.md) | 3 |

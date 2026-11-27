@@ -93,7 +93,7 @@ sequenceDiagram
     p7-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 738 interactions; 708 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 744 interactions; 714 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 155 (154 omitted); unresolved 1 of 109 (108 omitted). These counts cover the captured static trace.
 
@@ -109,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_model.py:_component_to_payload` | 16 | - | external | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_component_to_payload` | 16 | [src/llm_wiki_engine/knowledge_model.py](../modules/knowledge_model.md) | internal | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_knowledge_index_to_payload_unchecked` | 7 | - | external | 4 |
-> Omission summary shows 8 of 147 groups; 139 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 148 groups; 140 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -122,9 +122,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 475; effect analysis evaluated: 301, partial: 10, unavailable: 164. Counts include steps omitted from the displayed trace.
+Source steps: 481; effect analysis evaluated: 306, partial: 10, unavailable: 165. Counts include steps omitted from the displayed trace.
 
-Collector observations for 311 source steps with known totals: observed: 1475, emitted: 1407, omitted: 68. Unavailable totals are excluded.
+Collector observations for 316 source steps with known totals: observed: 1497, emitted: 1428, omitted: 69. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -203,17 +203,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_knowledge_index | _serialize_payload | 552 | `_serialize_payload(knowledge_index_to_payload(...))` |
-| _serialize_payload | json.dumps (src/llm_wiki_engine/knowl…dex.py:_serialize_payload) | 537 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
-| _serialize_payload | KnowledgeModelError | 543 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
-| serialize_knowledge_index | knowledge_index_to_payload | 552 | `knowledge_index_to_payload(value)` |
-| knowledge_index_to_payload | _model_to_payload | 303 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 309 | `_knowledge_index_to_payload_unchecked(model)` |
-| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2211 | `_bundle_to_payload(model.bundle)` |
-| _bundle_to_payload | _emit_extensions | 2030 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
-| _emit_extensions | isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions) | 1990 | `isinstance(extensions, FrozenDict)` |
-| _emit_extensions | _parse_extensions | 1991 | `_parse_extensions(extensions, path)` |
-| _bundle_to_payload | _wire_enum | 2034 | `_wire_enum(bundle.repository.working_tree)` |
+| serialize_knowledge_index | _serialize_payload | 560 | `_serialize_payload(knowledge_index_to_payload(...))` |
+| _serialize_payload | json.dumps (src/llm_wiki_engine/knowl…dex.py:_serialize_payload) | 545 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
+| _serialize_payload | KnowledgeModelError | 551 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
+| serialize_knowledge_index | knowledge_index_to_payload | 560 | `knowledge_index_to_payload(value)` |
+| knowledge_index_to_payload | _model_to_payload | 311 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 317 | `_knowledge_index_to_payload_unchecked(model)` |
+| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2244 | `_bundle_to_payload(model.bundle)` |
+| _bundle_to_payload | _emit_extensions | 2063 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
+| _emit_extensions | isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions) | 2023 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 2024 | `_parse_extensions(extensions, path)` |
+| _bundle_to_payload | _wire_enum | 2067 | `_wire_enum(bundle.repository.working_tree)` |
 
 ### Boundary effects
 
@@ -223,8 +223,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_serialize_payload` | `json.dumps` | 537 |
-| external_call | `_emit_extensions` | `isinstance` | 1990 |
+| external_call | `_serialize_payload` | `json.dumps` | 545 |
+| external_call | `_emit_extensions` | `isinstance` | 2023 |
 | step_limit | `serialize_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_knowledge_index` | `depth limit` | 0 |
 

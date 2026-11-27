@@ -1,6 +1,6 @@
 # TeamPolicyContext
 
-**Location:** `src/llm_wiki_cli/services/team.py:79`
+**Location:** `src/llm_wiki_cli/services/team.py:190`
 **Kind:** Class
 **Bases:** —
 **Module:** [team](../modules/team.md)
@@ -29,16 +29,19 @@ One command's resolved policy and project-anchored wiki identity.
 ```mermaid
 flowchart LR
     n0["TeamPolicyContext (src/llm_wiki_cli/services/team.py)"]
-    n1["_collect_lint_inputs (src/llm_wiki_cli/services/lint_service.py)"]
-    n2["build_team_issues (src/llm_wiki_cli/services/team.py)"]
-    n3["resolve_team_policy (src/llm_wiki_cli/services/team.py)"]
+    n1["_awaits_trunk_refresh (src/llm_wiki_cli/services/lint_service.py)"]
+    n2["_collect_lint_inputs (src/llm_wiki_cli/services/lint_service.py)"]
+    n3["build_team_issues (src/llm_wiki_cli/services/team.py)"]
+    n4["resolve_team_policy (src/llm_wiki_cli/services/team.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/team.md"
     click n1 "../modules/lint_service.md"
-    click n2 "../modules/team.md"
+    click n2 "../modules/lint_service.md"
     click n3 "../modules/team.md"
+    click n4 "../modules/team.md"
 ```
 
 ### Summary
@@ -51,6 +54,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_awaits_trunk_refresh` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `build_team_issues` | type_reference | [team](../modules/team.md) | — |
 | `resolve_team_policy` | call | [team](../modules/team.md) | 1 |

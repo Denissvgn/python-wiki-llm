@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 85 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 87 more
 
 **Complete modules touched:**
 
@@ -89,6 +89,8 @@
 - [team](../modules/team.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
+- [wiki_git_policy](../modules/wiki_git_policy.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
@@ -165,15 +167,15 @@ sequenceDiagram
     p0-->>p30: storage.get('failures', [...])
 ```
 
-> Call sequence diagram shows 30 of 4336 interactions; 4306 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4356 interactions; 4326 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1309 (1308 omitted); unresolved 1 of 1359 (1358 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1314 (1313 omitted); unresolved 1 of 1365 (1364 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | - | external | 30 |
+| `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | - | external | 32 |
 | `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | [src/llm_wiki_engine/runtime_output.py](../modules/runtime_output.md) | internal | 1 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 15 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 16 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
@@ -181,7 +183,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 16 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 15 | - | unresolved | 6 |
-> Omission summary shows 8 of 1121 groups; 1113 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1137 groups; 1129 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -194,9 +196,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1669; effect analysis evaluated: 1246, partial: 57, unavailable: 366. Counts include steps omitted from the displayed trace.
+Source steps: 1678; effect analysis evaluated: 1255, partial: 57, unavailable: 366. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1303 source steps with known totals: observed: 7532, emitted: 7191, omitted: 341. Unavailable totals are excluded.
+Collector observations for 1312 source steps with known totals: observed: 7608, emitted: 7265, omitted: 343. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -303,12 +305,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `report.issues.append` | `run` | 176 |
-| mutation | `report.issues.append` | `run` | 179 |
-| mutation | `report.diagnostics.append` | `run` | 182 |
-| output | `print` | `run` | 207 |
-| output | `print` | `run` | 221 |
-| output | `print` | `run` | 228 |
+| mutation | `report.issues.append` | `run` | 177 |
+| mutation | `report.issues.append` | `run` | 180 |
+| mutation | `report.diagnostics.append` | `run` | 183 |
+| output | `print` | `run` | 208 |
+| output | `print` | `run` | 222 |
+| output | `print` | `run` | 229 |
 
 ### Static analysis gaps
 

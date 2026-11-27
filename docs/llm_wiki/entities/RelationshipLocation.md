@@ -29,16 +29,19 @@ Half-open character offsets for a relationship observation.
 ```mermaid
 flowchart LR
     n0["RelationshipLocation (src/llm_wiki_engine/knowledge_model.py)"]
-    n1["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
-    n2["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
-    n3["_parse_relationship_location (src/llm_wiki_engine/knowledge_model.py)"]
+    n1["_line_relative_location (src/llm_wiki_engine/knowledge_index.py)"]
+    n2["_validate_builder_link (src/llm_wiki_engine/knowledge_index.py)"]
+    n3["_build_observation (src/llm_wiki_engine/knowledge_links.py)"]
+    n4["_parse_relationship_location (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/knowledge_model.md"
     click n1 "../modules/knowledge_index.md"
-    click n2 "../modules/knowledge_links.md"
-    click n3 "../modules/knowledge_model.md"
+    click n2 "../modules/knowledge_index.md"
+    click n3 "../modules/knowledge_links.md"
+    click n4 "../modules/knowledge_model.md"
 ```
 
 ### Summary
@@ -51,6 +54,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_line_relative_location` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_line_relative_location` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
 | `_build_observation` | call | [knowledge_links](../modules/knowledge_links.md) | 1 |
 | `_parse_relationship_location` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |

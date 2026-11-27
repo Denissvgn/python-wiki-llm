@@ -1,6 +1,6 @@
 # LintRequestError
 
-**Location:** `src/llm_wiki_cli/services/lint_request.py:45`
+**Location:** `src/llm_wiki_cli/services/lint_request.py:46`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [lint_request](../modules/lint_request.md)

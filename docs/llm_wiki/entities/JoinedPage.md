@@ -1,6 +1,6 @@
 # _JoinedPage
 
-**Location:** `src/llm_wiki_engine/knowledge_index.py:182`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:188`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)

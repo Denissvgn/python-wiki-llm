@@ -43,6 +43,7 @@ flowchart LR
     n7["src/llm_wiki_engine/wiki_surface.py"]
     n0 --> n2
     n0 --> n3
+    n0 --> n4
     n0 --> n6
     n0 --> n7
     n1 --> n2

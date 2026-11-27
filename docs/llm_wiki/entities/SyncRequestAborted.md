@@ -27,15 +27,18 @@ flowchart LR
     n2["_flow_category_args (src/llm_wiki_cli/services/sync_runtime.py)"]
     n3["_surface_args (src/llm_wiki_cli/services/sync_runtime.py)"]
     n4["_sync_run_options_from_request (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n5["run_request (src/llm_wiki_cli/services/sync_runtime.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/sync_runtime.md"
     click n1 "../modules/sync_runtime.md"
     click n2 "../modules/sync_runtime.md"
     click n3 "../modules/sync_runtime.md"
     click n4 "../modules/sync_runtime.md"
+    click n5 "../modules/sync_runtime.md"
 ```
 
 ### Summary
@@ -57,3 +60,4 @@ flowchart LR
 | `_flow_category_args` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_surface_args` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |
 | `_sync_run_options_from_request` | call | [sync_runtime](../modules/sync_runtime.md) | 4 |
+| `run_request` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |

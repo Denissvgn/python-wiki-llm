@@ -111,9 +111,9 @@ sequenceDiagram
     p0-->>p30: (…).exists (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan)
 ```
 
-> Call sequence diagram shows 30 of 2631 interactions; 2601 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2662 interactions; 2632 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 892 (891 omitted); unresolved 1 of 474 (473 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 900 (899 omitted); unresolved 1 of 487 (486 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,7 +127,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_storage_io.py:_validate_range` | 15 | [src/llm_wiki_engine/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 22 | - | external | 4 |
 | `src/llm_wiki_engine/knowledge_storage_io.py:_absolute_path` | 22 | [src/llm_wiki_engine/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 601 groups; 593 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 612 groups; 604 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,9 +140,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1266; effect analysis evaluated: 748, partial: 49, unavailable: 469. Counts include steps omitted from the displayed trace.
+Source steps: 1276; effect analysis evaluated: 757, partial: 50, unavailable: 469. Counts include steps omitted from the displayed trace.
 
-Collector observations for 797 source steps with known totals: observed: 4412, emitted: 4185, omitted: 227. Unavailable totals are excluded.
+Collector observations for 807 source steps with known totals: observed: 4463, emitted: 4231, omitted: 232. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -219,14 +219,14 @@ flowchart LR
 | build_knowledge_commit_plan | Path (src/llm_wiki_engine/knowl…ild_knowledge_commit_plan) | 692 | `Path(wiki_dir)` |
 | build_knowledge_commit_plan | KnowledgeArtifactError | 695 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
 | build_knowledge_commit_plan | current_manifest_format | 696 | `current_manifest_format(root)` |
-| current_manifest_format | Path (src/llm_wiki_engine/manif…y:current_manifest_format) | 289 | `Path(wiki_dir)` |
-| current_manifest_format | adoption.exists | 291 | `adoption.exists(data not statically known)` |
-| current_manifest_format | adoption.is_symlink | 291 | `adoption.is_symlink(data not statically known)` |
-| current_manifest_format | path.exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 292 | `path.exists(data not statically known)` |
-| current_manifest_format | path.is_symlink (src/llm_wiki_engine/manif…y:current_manifest_format) | 292 | `path.is_symlink(data not statically known)` |
-| current_manifest_format | KnowledgeStorageError | 294 | `KnowledgeStorageError('manifest', 'adopted maintenance owner is missing; restore a complete snapshot', code='maintenance-adoption-incomplete')` |
-| current_manifest_format | (…).exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 295 | `(path.parent / DEFAULT_LAYOUT.manifest_objects).exists(data not statically known)` |
-| current_manifest_format | KnowledgeStorageError | 296 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
+| current_manifest_format | Path (src/llm_wiki_engine/manif…y:current_manifest_format) | 326 | `Path(wiki_dir)` |
+| current_manifest_format | adoption.exists | 328 | `adoption.exists(data not statically known)` |
+| current_manifest_format | adoption.is_symlink | 328 | `adoption.is_symlink(data not statically known)` |
+| current_manifest_format | path.exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 329 | `path.exists(data not statically known)` |
+| current_manifest_format | path.is_symlink (src/llm_wiki_engine/manif…y:current_manifest_format) | 329 | `path.is_symlink(data not statically known)` |
+| current_manifest_format | KnowledgeStorageError | 331 | `KnowledgeStorageError('manifest', 'adopted maintenance owner is missing; restore a complete snapshot', code='maintenance-adoption-incomplete')` |
+| current_manifest_format | (…).exists (src/llm_wiki_engine/manif…y:current_manifest_format) | 332 | `(path.parent / DEFAULT_LAYOUT.manifest_objects).exists(data not statically known)` |
+| current_manifest_format | KnowledgeStorageError | 333 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
 
 ### Boundary effects
 
@@ -236,11 +236,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_manifest_format` | `adoption.exists` | 291 |
-| unresolved_call | `current_manifest_format` | `adoption.is_symlink` | 291 |
-| unresolved_call | `current_manifest_format` | `path.exists` | 292 |
-| unresolved_call | `current_manifest_format` | `path.is_symlink` | 292 |
-| unresolved_call | `current_manifest_format` | `(path.parent / DEFAULT_LAYOUT.manifest_objects).exists` | 295 |
+| unresolved_call | `current_manifest_format` | `adoption.exists` | 328 |
+| unresolved_call | `current_manifest_format` | `adoption.is_symlink` | 328 |
+| unresolved_call | `current_manifest_format` | `path.exists` | 329 |
+| unresolved_call | `current_manifest_format` | `path.is_symlink` | 329 |
+| unresolved_call | `current_manifest_format` | `(path.parent / DEFAULT_LAYOUT.manifest_objects).exists` | 332 |
 | step_limit | `build_knowledge_commit_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_commit_plan` | `depth limit` | 0 |
 
