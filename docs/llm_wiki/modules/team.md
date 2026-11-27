@@ -69,14 +69,15 @@ flowchart LR
 |-------|------|-------|-------------|
 | [TeamConfigError](../entities/TeamConfigError.md) | 79 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
 | [WikiOwnership](../entities/WikiOwnership.md) | 84 | — | Which branches may write generated wiki state. |
-| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 190 | — | One command's resolved policy and project-anchored wiki identity. |
-| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 199 | — | Inputs needed to check wiki files against team conventions. |
+| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 193 | — | One command's resolved policy and project-anchored wiki identity. |
+| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 202 | — | Inputs needed to check wiki files against team conventions. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_validate_branch_name` | `(value: Any, field: str) -> str` | — | — |
+| `_validate_authored_path` | `(relative: str) -> None` | — | — |
 | `_validate_ownership` | `(value: Any) -> None` | — | — |
 | `wiki_ownership` | `(config: Any) -> WikiOwnership` | — | Return the ownership a validated team config declares. |
 | `default_team_config` | `(wiki_dir: str = DEFAULT_WIKI_DIR, *, ownership: dict[str, Any] \| None = None) -> dict[str, Any]` | — | — |

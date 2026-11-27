@@ -32,10 +32,10 @@ flowchart LR
     n7["_reject_unknown_keys (src/llm_wiki_cli/services/team.py)"]
     n8["_required_path_states (src/llm_wiki_cli/services/team.py)"]
     n9["_resolve_required_path (src/llm_wiki_cli/services/team.py)"]
-    n10["_validate_branch_name (src/llm_wiki_cli/services/team.py)"]
-    n11["_validate_ownership (src/llm_wiki_cli/services/team.py)"]
-    n12["_validate_required_relative_path (src/llm_wiki_cli/services/team.py)"]
-    n13["build_team_issues (src/llm_wiki_cli/services/team.py)"]
+    n10["_validate_authored_path (src/llm_wiki_cli/services/team.py)"]
+    n11["_validate_branch_name (src/llm_wiki_cli/services/team.py)"]
+    n12["_validate_ownership (src/llm_wiki_cli/services/team.py)"]
+    n13["_validate_required_relative_path (src/llm_wiki_cli/services/team.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -88,9 +88,9 @@ flowchart LR
 | `_reject_unknown_keys` | call | [team](../modules/team.md) | 2 |
 | `_required_path_states` | call | [team](../modules/team.md) | 1 |
 | `_resolve_required_path` | call | [team](../modules/team.md) | 2 |
+| `_validate_authored_path` | call | [team](../modules/team.md) | 1 |
 | `_validate_branch_name` | call | [team](../modules/team.md) | 1 |
-| `_validate_ownership` | call | [team](../modules/team.md) | 3 |
+| `_validate_ownership` | call | [team](../modules/team.md) | 2 |
 | `_validate_required_relative_path` | call | [team](../modules/team.md) | 1 |
-| `build_team_issues` | call | [team](../modules/team.md) | 1 |
 
-> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.
+> References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.
