@@ -10,6 +10,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -226,6 +227,7 @@ def _fixture_payload() -> dict:
 
 def _locator_rows(plan) -> dict:
     reader = packs.open_knowledge_store(plan.root_bytes, lambda path, _: plan.objects[path])
+    assert isinstance(reader, packs.PackedKnowledgeStoreReader)
     reader.materialize()
     rows = {}
     for node in reader._indexes.values():
@@ -320,7 +322,7 @@ def test_selected_impact_read_works_on_a_fine_wiki(monkeypatch, tmp_path, capsys
     (root / "empty").mkdir()
     capsys.readouterr()
 
-    def impact(**options):
+    def impact(**options) -> Any:
         return api.query_documentation(
             {"operation": "impact", "paths": ["app/alpha.py", "app/missing.py"], "limit": 100, **options},
             src_dir="empty", wiki_dir=WIKI,
