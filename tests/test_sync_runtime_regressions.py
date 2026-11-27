@@ -253,25 +253,43 @@ def test_wiki_only_commits_do_not_rewrite_repository_revision(
     )
     assert dirty_knowledge.bundle.repository.working_tree is WorkingTreeState.DIRTY
 
+    dirty_tree = _wiki_bytes(wiki_dir)
     _git(project, "add", "app.py", "docs/llm_wiki")
     _git(project, "commit", "--quiet", "-m", "commit source and wiki together")
+    capsys.readouterr()
+
+    # The commit made the tree clean and moved HEAD. Neither is a wiki change,
+    # so the wiki committed with its source is already up to date.
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+
+    assert _wiki_bytes(wiki_dir) == dirty_tree
+    assert "Wiki is up to date." in capsys.readouterr().out
+
+    (project / "app.py").write_text(
+        "def value():\n    return 4\n",
+        encoding="utf-8",
+    )
+    _git(project, "add", "app.py")
+    _git(project, "commit", "--quiet", "-m", "update selected source again")
     clean_source_revision = _git(project, "rev-parse", "HEAD")
     sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
     clean_knowledge = load_knowledge_state(wiki_dir).knowledge
     assert clean_knowledge is not None
+    # A sync with something to write records the checkout it ran in.
     assert clean_knowledge.bundle.repository.evaluated_revision == (
         f"git:{clean_source_revision}"
     )
     assert clean_knowledge.bundle.repository.working_tree is WorkingTreeState.CLEAN
-    reanchored_tree = _wiki_bytes(wiki_dir)
-
+    clean_tree = _wiki_bytes(wiki_dir)
     _git(project, "add", "docs/llm_wiki")
-    _git(project, "commit", "--quiet", "-m", "re-anchor generated wiki")
+    _git(project, "commit", "--quiet", "-m", "refresh generated wiki again")
     capsys.readouterr()
 
+    # A stray untracked file makes the tree dirty without changing the wiki.
+    (project / "notes.txt").write_text("scratch\n", encoding="utf-8")
     sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
 
-    assert _wiki_bytes(wiki_dir) == reanchored_tree
+    assert _wiki_bytes(wiki_dir) == clean_tree
     assert "Wiki is up to date." in capsys.readouterr().out
 
 

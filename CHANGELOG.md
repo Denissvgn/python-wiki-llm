@@ -96,6 +96,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A wiki committed together with its source is no longer reported as out of
+  date. The knowledge records whether the working tree was clean or dirty
+  when it was generated, and a sync used to treat a change of that flag alone
+  as a wiki change. Committing right after a sync, or leaving an untracked
+  file in the checkout, therefore made `sync --dry-run` report a pending
+  knowledge and manifest update and made the next sync rewrite them. A sync
+  now keeps the recorded revision and state until it has something else to
+  write.
 - `sync` explains how to proceed when a new declaration maps to the page of a
   retired source member. The "Occupied target has no verified outgoing owner"
   error now names the retired member, the file that declares the new one, and
