@@ -210,3 +210,103 @@ def test_a_reader_without_the_fine_profile_refuses_the_root(monkeypatch, tmp_pat
         packs.parse_packed_root(raw)
 
     assert refused.value.code == "unsupported-schema-version"
+
+
+def _fine_plan(payload):
+    # Small logical objects give the locator several pages and packs to route.
+    logical = packs.build_knowledge_store(payload, target_bytes=512)
+    return packs._pack_logical(logical, "deflate", None, None, packs.FINE_PACK_PROFILE)
+
+
+def _fixture_payload() -> dict:
+    from tests.knowledge_fixtures import one_module_two_entities_fixture
+
+    return json.loads(one_module_two_entities_fixture().knowledge_bytes)
+
+
+def _locator_rows(plan) -> dict:
+    reader = packs.open_knowledge_store(plan.root_bytes, lambda path, _: plan.objects[path])
+    reader.materialize()
+    rows = {}
+    for node in reader._indexes.values():
+        rows.update(node.get("slots", {}))
+    return rows
+
+
+def test_fine_locator_names_members_and_reads_ranges_from_the_pack(monkeypatch):
+    monkeypatch.setattr(packs, "FINE_PACK_TARGET_BYTES", 2_048)
+    payload = _fixture_payload()
+    plan = _fine_plan(payload)
+
+    reader = packs.open_knowledge_store(plan.root_bytes, lambda path, _: plan.objects[path])
+    assert reader.materialize() == payload
+    rows = _locator_rows(plan)
+    assert len(rows) == json.loads(plan.root_bytes)["packing"]["objects"]
+    assert all(len(value) == 2 and packs._MEMBER.fullmatch(value[1]) for value in rows.values())
+
+    whole_files = []
+
+    def read_file(path, _size):
+        whole_files.append(path)
+        return plan.objects[path]
+
+    ranged = packs.open_knowledge_store(
+        plan.root_bytes, read_file,
+        read_range=lambda path, offset, count, _size: plan.objects[path][offset:offset + count],
+    )
+    assert ranged.select(["source:src/accounts.py"]).to_payload()["records"]
+    assert not any(packs.PACK_NAME.fullmatch(path) for path in whole_files)
+
+
+def test_fine_locator_is_untouched_by_a_content_change(monkeypatch):
+    monkeypatch.setattr(packs, "FINE_PACK_TARGET_BYTES", 2_048)
+    payload = _fixture_payload()
+    before = _fine_plan(payload)
+    changed = json.loads(json.dumps(payload))
+    # Same record identity and size, different stored bytes.
+    changed["concepts"][0]["facets"]["semantics"]["page_hash"] = "sha256:" + "5" * 64
+    after = _fine_plan(changed)
+
+    first, second = json.loads(before.root_bytes)["packing"], json.loads(after.root_bytes)["packing"]
+
+    assert first["pack_catalog"] != second["pack_catalog"]
+    assert first["catalog"] == second["catalog"]
+    assert _locator_rows(before) == _locator_rows(after)
+
+
+def test_each_fine_locator_leaf_has_its_own_container(monkeypatch):
+    monkeypatch.setattr(packs, "FINE_INDEX_ROWS", 4)
+    plan = _fine_plan(_fixture_payload())
+
+    leaves = 0
+    for path, raw in plan.objects.items():
+        if not packs.INDEX_PAGE_NAME.fullmatch(path):
+            continue
+        assert packs.inspect_index_pages(raw, path)["pages"] >= 1
+        kinds = [json.loads(line)["kind"] for line in raw.splitlines()]
+        if "slots" in kinds:
+            assert kinds == ["slots"]
+            leaves += 1
+    assert leaves > 1
+
+
+def test_a_fine_locator_that_names_the_wrong_member_is_rejected():
+    plan = _fine_plan(_fixture_payload())
+    objects = dict(plan.objects)
+    root = json.loads(plan.root_bytes)
+    descriptor = root["packing"]["catalog"]
+    path = packs.index_page_path(descriptor["extent"]["container"])
+    node = json.loads(objects[path])
+    assert node["kind"] == "slots"
+    first, second = sorted(node["slots"])[:2]
+    node["slots"][first], node["slots"][second] = node["slots"][second], node["slots"][first]
+    raw = packs.canonical_bytes(node)
+    del objects[path]
+    container = packs.digest(raw)
+    objects[packs.index_page_path(container)] = raw
+    root["packing"]["catalog"] = {**descriptor, "hash": container, "bytes": len(raw),
+                                  "extent": {"container": container, "offset": 0, "file_bytes": len(raw)}}
+
+    reader = packs.open_knowledge_store(packs.canonical_bytes(root), lambda name, _: objects[name])
+    with pytest.raises(KnowledgeStorageError):
+        reader.materialize()

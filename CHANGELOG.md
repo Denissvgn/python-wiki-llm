@@ -42,7 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   line and no longer repeat their page's hash, so adding a page does not give
   every later link in `index.md` a new identity, and packs target 256 KiB
   instead of 1 MiB. On this project's wiki, a sync that added one page changed
-  about 1% of stored members instead of 53%. Adopt with
+  about 1% of stored members instead of 53%. The locator finds a member by
+  its place in the knowledge tree and reads its byte range from the pack's
+  own directory, so index pages change only where the tree itself changed;
+  the same sync rewrote about 0.26 MB of index pages instead of all 1.5 MB.
+  Adopt with
   `sync --knowledge-format packed-v4-fine-deflate`; the default format is
   unchanged. Every reader and writer must be upgraded first: earlier releases
   refuse such a wiki at the knowledge root. `knowledge migrate` does not

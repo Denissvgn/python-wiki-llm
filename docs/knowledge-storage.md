@@ -106,6 +106,12 @@ The fine profile changes both:
   hash; the page's own record already holds that hash. A link keeps its
   identity when other lines of the page change.
 - Packs target 256 KiB. Expect roughly four to five times as many pack files.
+- The locator finds a member by its place in the knowledge tree and takes its
+  byte range from the pack's own ZIP directory. A locator row therefore stays
+  the same when the member's content, size or position in its pack changes,
+  and only a node added to or removed from the tree touches it. Locator leaves
+  hold up to 96 rows, and each is stored in an index page file of its own so
+  an unchanged leaf keeps its file.
 
 On this project's own wiki, a sync that added one page changed 53% of the
 stored members with `packed-v4-deflate` and about 1% with the fine profile.

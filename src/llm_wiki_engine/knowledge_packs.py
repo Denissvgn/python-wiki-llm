@@ -37,6 +37,10 @@ FINE_PACK_PROFILE = "local-v2"
 FINE_PACK_TARGET_BYTES = 262_144
 LOCAL_PACK_PROFILES = frozenset({LOCAL_PACK_PROFILE, FINE_PACK_PROFILE})
 LOCAL_INDEX_ROWS = 24
+# The fine profile locates a member by its place in the logical tree, so its
+# locator rows are small and change only when the tree gains or loses a node.
+FINE_INDEX_ROWS = 96
+SLOT_KIND = "slots"
 PACK_INDEX_SCHEMA = "llm-wiki-knowledge-pack-index/v1"
 PAGE_INDEX_SCHEMA = "llm-wiki-knowledge-pack-index/v2"
 INDEX_PAGE_DIRECTORY = ".llm-wiki-knowledge/index-pages"
@@ -58,6 +62,7 @@ _HEX = re.compile(r"[0-9a-f]{64}\Z")
 _MEMBER = re.compile(r"(" + "|".join(COLLECTIONS) + r")/(root|[0-9a-f]{1,128})\.json\Z")
 _LOCAL_HEADER = struct.Struct("<4s5H3I2H")
 _END = struct.Struct("<4s4H2IH")
+_CENTRAL = struct.Struct("<4s6H3I5H2I")
 RangeReader = Callable[[str, int, int, int], bytes]
 
 
@@ -81,6 +86,41 @@ def _member_name(raw: bytes) -> str:
             or node.get("kind") not in {"catalog", "records"}):
         _fail("member", "not a logical knowledge object")
     return f"{node['collection']}/{prefix or 'root'}.json"
+
+
+def slot_key(collection: str, prefix: str) -> str:
+    """Identify the place a reader reaches a logical object through.
+
+    ``prefix`` is the route the parent catalog hands down: the parent's own
+    prefix plus one digit, or empty for a collection root. It names the place,
+    not the content, so it survives every change to the object stored there.
+    """
+    return hashlib.sha256(f"{collection}/{prefix or 'root'}".encode("ascii")).hexdigest()
+
+
+def _member_slots(names) -> dict[str, str]:
+    """Map each member name to the slot its parent catalog routes to."""
+    parsed = {}
+    known: dict[str, set[str]] = defaultdict(set)
+    for name in names:
+        collection, stem = name[:-5].split("/", 1)
+        prefix = "" if stem == "root" else stem
+        parsed[name] = collection, prefix
+        known[collection].add(prefix)
+    slots = {}
+    for name, (collection, prefix) in parsed.items():
+        route = ""
+        if prefix:
+            for length in range(len(prefix) - 1, -1, -1):
+                if prefix[:length] in known[collection]:
+                    route = prefix[:length + 1]
+                    break
+            else:
+                _fail(name, "logical member has no parent catalog")
+        slots[name] = slot_key(collection, route)
+    if len(set(slots.values())) != len(slots):
+        _fail("members", "logical members share a routing slot")
+    return slots
 
 
 def pack_path(descriptor: Mapping[str, Any]) -> str:
@@ -223,6 +263,7 @@ def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored
 
 def _pack_logical(logical, compression, prior, objects, profile="standard"):
     local = profile in LOCAL_PACK_PROFILES
+    fine = profile == FINE_PACK_PROFILE
     target_bytes = (FINE_PACK_TARGET_BYTES if profile == FINE_PACK_PROFILE
                     else LOCAL_PACK_TARGET_BYTES if local else PACK_TARGET_BYTES)
     members = {name: path for path, name in logical.member_names.items()}
@@ -247,6 +288,20 @@ def _pack_logical(logical, compression, prior, objects, profile="standard"):
     def previous_member(name, content):
         if prior_reader is None:
             return None
+        if fine:
+            found = prior_reader._named_member(name)
+            if found is None:
+                return None
+            descriptor, position = found
+            _, offset, compressed, expanded, crc = position
+            if expanded != len(content) or crc != zlib.crc32(content):
+                return None
+            raw = prior_reader._pack(descriptor)[offset:offset + 30 + len(name) + compressed]
+            try:
+                decode_member(raw, position, compression, digest(content), verify_name=False)
+            except KnowledgeStorageError:
+                return None
+            return descriptor, position
         key = digest(content)[7:]
         try:
             descriptor, position = prior_reader._find(key)
@@ -322,12 +377,19 @@ def _pack_logical(logical, compression, prior, objects, profile="standard"):
         files[index_path(digest(raw))] = raw
         return {"hash": digest(raw), "bytes": len(raw), "count": len(group)}
 
-    member_directory = {key: [descriptor["bucket"], *position] for key, (descriptor, position) in locations.items()}
-    if local:
-        catalog, pack_catalog = _paged_indexes(member_directory, pack_directory, files)
+    if fine:
+        slots = _member_slots(members)
+        member_directory = {slots[position[0]]: [descriptor["bucket"], position[0]]
+                            for descriptor, position in locations.values()}
+        catalog, pack_catalog = _paged_indexes(member_directory, pack_directory, files,
+                                               member_kind=SLOT_KIND, rows=FINE_INDEX_ROWS, isolate=True)
     else:
-        catalog = index(member_directory, "", "members")
-        pack_catalog = index(pack_directory, "", "packs")
+        member_directory = {key: [descriptor["bucket"], *position] for key, (descriptor, position) in locations.items()}
+        if local:
+            catalog, pack_catalog = _paged_indexes(member_directory, pack_directory, files)
+        else:
+            catalog = index(member_directory, "", "members")
+            pack_catalog = index(pack_directory, "", "packs")
     pack_count = len(pack_directory)
     root = canonical_bytes({"schema_version": LOCAL_PACKED_SCHEMA if local else PACKED_SCHEMA, "store": json.loads(logical.root_bytes),
                             "packing": {"compression": compression, "catalog": catalog, "pack_catalog": pack_catalog,
@@ -343,20 +405,26 @@ def _pack_logical(logical, compression, prior, objects, profile="standard"):
         "encoded_members": len(locations) - reused_members})
 
 
-def _paged_indexes(members, packs, files):
-    """Pack locator pages bottom-up, so every extent has an acyclic commitment."""
+def _paged_indexes(members, packs, files, *, member_kind="members", rows=LOCAL_INDEX_ROWS, isolate=False):
+    """Pack locator pages bottom-up, so every extent has an acyclic commitment.
+
+    With ``isolate`` each member leaf gets a container of its own. A leaf that
+    did not change then keeps its container, and so its extent in the page
+    above it, however many of its neighbours changed.
+    """
     levels = defaultdict(list)
 
     def tree(group, prefix, kind):
         node = {"schema_version": PAGE_INDEX_SCHEMA, "kind": kind, "prefix": prefix, kind: group}
         children = {}
         height = 0
-        if len(group) > LOCAL_INDEX_ROWS or len(canonical_bytes(node)) > MAX_INDEX_BYTES:
+        bound = rows if kind == member_kind else LOCAL_INDEX_ROWS
+        if len(group) > bound or len(canonical_bytes(node)) > MAX_INDEX_BYTES:
             if len(prefix) >= 64 or len(group) <= 1:
                 _fail("index", "unsplittable routing page", "storage-limit")
             groups = defaultdict(dict)
             for key, value in group.items():
-                route = key if kind == "members" else hashlib.sha256(key.encode("ascii")).hexdigest()
+                route = key if kind != "packs" else hashlib.sha256(key.encode("ascii")).hexdigest()
                 groups[_bits(route)[len(prefix)]][key] = value
             children = {bit: tree(child, prefix + bit, kind) for bit, child in sorted(groups.items())}
             height = 1 + max(child["height"] for child in children.values())
@@ -364,7 +432,7 @@ def _paged_indexes(members, packs, files):
         levels[height].append(item)
         return item
 
-    roots = tree(members, "", "members"), tree(packs, "", "packs")
+    roots = tree(members, "", member_kind), tree(packs, "", "packs")
     for height in sorted(levels):
         encoded = []
         for item in sorted(levels[height], key=lambda i: (i["node"]["kind"], i["node"]["prefix"])):
@@ -388,11 +456,15 @@ def _paged_indexes(members, packs, files):
                     "extent": {"container": commitment, "offset": offset, "file_bytes": len(raw)}}
                 offset += len(content)
         for item, raw in encoded:
-            if group and size + len(raw) > INDEX_PAGE_BYTES:
+            alone = isolate and height == 0 and item["node"]["kind"] == member_kind
+            if group and (alone or size + len(raw) > INDEX_PAGE_BYTES):
                 emit(group)
                 group, size = [], 0
             group.append((item, raw))
             size += len(raw)
+            if alone:
+                emit(group)
+                group, size = [], 0
         if group:
             emit(group)
     return tuple(root["descriptor"] for root in roots)
@@ -415,6 +487,18 @@ def _coordinates(value: Any) -> tuple[str, list[Any]]:
     return bucket, value[1:]
 
 
+def _named_coordinates(value: Any) -> tuple[str, str]:
+    """Validate a locator row that names a member and leaves its range to the pack."""
+    if not isinstance(value, list) or len(value) != 2:
+        _fail("member", "invalid named member coordinates")
+    bucket, name = value
+    if not isinstance(bucket, str) or not _BITS.fullmatch(bucket):
+        _fail("member", "invalid stable pack bucket")
+    if not isinstance(name, str) or not _MEMBER.fullmatch(name) or not _bucket(name).startswith(bucket):
+        _fail("member", "member name or stable bucket differs")
+    return bucket, name
+
+
 def inspect_index_pages(raw: bytes, relative: str) -> dict[str, Any]:
     """Validate intrinsic page-container syntax without claiming reachability."""
     match = INDEX_PAGE_NAME.fullmatch(relative)
@@ -424,7 +508,7 @@ def inspect_index_pages(raw: bytes, relative: str) -> dict[str, Any]:
     for line in raw.splitlines(keepends=True):
         node = decode_bytes(line, limit=MAX_INDEX_BYTES, field=relative)
         kind, prefix = node.get("kind"), node.get("prefix")
-        if kind not in {"catalog", "members", "packs"} or not isinstance(prefix, str) or not _BITS.fullmatch(prefix):
+        if kind not in {"catalog", "members", "packs", SLOT_KIND} or not isinstance(prefix, str) or not _BITS.fullmatch(prefix):
             _fail(relative, "invalid routing page")
         field = "children" if kind == "catalog" else kind
         _fields(node, {"schema_version", "kind", "prefix", field}, relative)
@@ -439,13 +523,13 @@ def inspect_index_pages(raw: bytes, relative: str) -> dict[str, Any]:
             for descriptor in entries.values():
                 _index_descriptor(descriptor, paged=True)
         else:
-            if len(entries) > LOCAL_INDEX_ROWS:
+            if len(entries) > (FINE_INDEX_ROWS if kind == SLOT_KIND else LOCAL_INDEX_ROWS):
                 _fail(relative, "routing page exceeds its row bound")
             for key, value in entries.items():
-                if kind == "members":
+                if kind != "packs":
                     if not _HEX.fullmatch(key):
                         _fail(relative, "invalid logical object key")
-                    _coordinates(value)
+                    _named_coordinates(value) if kind == SLOT_KIND else _coordinates(value)
                     route = key
                 else:
                     _pack_descriptor(value)
@@ -588,6 +672,11 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         packed = parse_packed_root(root_bytes)
         self.storage_format = packed_family(packed)
         self.packing = packed["packing"]
+        self._member_kind = SLOT_KIND if self.packing.get("profile") == FINE_PACK_PROFILE else "members"
+        self._slot: tuple[str, str] | None = None
+        self._slots: dict[str, str] = {}
+        self._directories: dict[str, dict[str, list[Any]]] = {}
+        self._pack_buckets: dict[str, dict[str, Any]] | None = None
         self.read_file = read_file
         self.read_range = read_range
         self.physical_objects: MutableMapping[str, bytes] = {}
@@ -667,14 +756,15 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
                 members = node[leaf_kind]
                 if not isinstance(members, dict) or not members:
                     _fail(path, "invalid member table")
-                if self.packing.get("profile") in LOCAL_PACK_PROFILES and len(members) > LOCAL_INDEX_ROWS:
+                if (self.packing.get("profile") in LOCAL_PACK_PROFILES
+                        and len(members) > (FINE_INDEX_ROWS if leaf_kind == SLOT_KIND else LOCAL_INDEX_ROWS)):
                     _fail(path, "locality index exceeds its row bound", "storage-limit")
                 for key, value in members.items():
-                    if leaf_kind == "members":
+                    if leaf_kind != "packs":
                         if not _HEX.fullmatch(key):
                             _fail(path, "invalid logical object key")
                         route = key
-                        _coordinates(value)
+                        _named_coordinates(value) if leaf_kind == SLOT_KIND else _coordinates(value)
                     else:
                         _pack_descriptor(value)
                         if key != value["bucket"]:
@@ -697,8 +787,8 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
 
     def _find_entry(self, key: str, leaf_kind: str) -> Any:
         prefix = ""
-        descriptor = self.packing["catalog" if leaf_kind == "members" else "pack_catalog"]
-        route = key if leaf_kind == "members" else hashlib.sha256(key.encode("ascii")).hexdigest()
+        descriptor = self.packing["pack_catalog" if leaf_kind == "packs" else "catalog"]
+        route = key if leaf_kind != "packs" else hashlib.sha256(key.encode("ascii")).hexdigest()
         while True:
             node = self._index(descriptor, prefix, leaf_kind)
             if node["kind"] == leaf_kind:
@@ -714,6 +804,94 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         value = self._find_entry(key, "members")
         return _position(value, self._find_entry(value[0], "packs"))
 
+    def _directory(self, descriptor: dict[str, Any]) -> dict[str, list[Any]]:
+        """Return member coordinates from a pack's own ZIP directory.
+
+        A whole-file reader validates the complete archive. A range reader
+        fetches only the footer and the directory; what it learns is then
+        proven by the member header and content commitment on every read.
+        """
+        known = self._directories.get(descriptor["hash"])
+        if known is not None:
+            return known
+        compression = self.packing["compression"]
+        read_range = self.read_range
+        if read_range is None:
+            positions = _pack_structure(self._pack(descriptor), descriptor, compression)
+        else:
+            path, size = pack_path(descriptor), descriptor["bytes"]
+
+            def fetch(offset: int, length: int) -> bytes:
+                if self._physical_bytes + length > self.max_bytes:
+                    _fail("read", "pack directory budget exhausted", "storage-budget-exhausted")
+                raw = read_range(path, offset, length, size)
+                self._physical_bytes += len(raw)
+                if len(raw) != length:
+                    _fail(path, "pack directory range differs")
+                return raw
+
+            try:
+                sig, disk, start_disk, here, count, directory_bytes, start, comment = _END.unpack(fetch(size - 22, 22))
+            except struct.error as exc:
+                raise KnowledgeStorageError("pack", "invalid ZIP footer") from exc
+            if (sig != b"PK\x05\x06" or disk or start_disk or comment or here != count
+                    or count != descriptor["members"] or not 0 < directory_bytes <= MAX_DIRECTORY_BYTES
+                    or start + directory_bytes != size - 22):
+                _fail("pack", "unsupported or unbounded ZIP directory")
+            directory = fetch(start, directory_bytes)
+            positions, cursor = {}, 0
+            method = 0 if compression == "stored" else 8
+            for _ in range(count):
+                if cursor + _CENTRAL.size > len(directory):
+                    _fail("pack", "truncated ZIP directory")
+                fields = _CENTRAL.unpack_from(directory, cursor)
+                name_bytes = directory[cursor + _CENTRAL.size:cursor + _CENTRAL.size + fields[10]]
+                cursor += _CENTRAL.size + fields[10]
+                try:
+                    name = name_bytes.decode("ascii")
+                except UnicodeError as exc:
+                    raise KnowledgeStorageError("pack", "invalid ZIP member name") from exc
+                if (fields[0] != b"PK\x01\x02" or fields[4] != method or fields[11] or fields[12]
+                        or len(name_bytes) != fields[10] or name in positions):
+                    _fail("pack", "noncanonical ZIP directory entry")
+                value = [descriptor["bucket"], name, fields[16], fields[8], fields[9], fields[7]]
+                positions[name] = _position(value, descriptor)[1]
+            if cursor != len(directory):
+                _fail("pack", "ZIP directory has trailing data")
+        self._directories[descriptor["hash"]] = positions
+        return positions
+
+    def _locate(self, slot: str) -> tuple[dict[str, Any], list[Any]]:
+        """Resolve a tree slot to its pack and the member's range inside it."""
+        bucket, name = _named_coordinates(self._find_entry(slot, SLOT_KIND))
+        descriptor = self._find_entry(bucket, "packs")
+        position = self._directory(descriptor).get(name)
+        if position is None:
+            _fail("index", "located member is absent from its pack")
+        return _position([bucket, *position], descriptor)
+
+    def _named_member(self, name: str) -> tuple[dict[str, Any], list[Any]] | None:
+        """Find a member by name through the pack catalog alone, or return None."""
+        if self._pack_buckets is None:
+            table: dict[str, dict[str, Any]] = {}
+
+            def walk(descriptor, prefix):
+                node = self._index(descriptor, prefix, "packs")
+                if node["kind"] == "packs":
+                    table.update(node["packs"])
+                else:
+                    for bit, child in node["children"].items():
+                        walk(child, prefix + bit)
+            walk(self.packing["pack_catalog"], "")
+            self._pack_buckets = table
+        bits = _bucket(name)
+        for length in range(65):
+            descriptor = self._pack_buckets.get(bits[:length])
+            if descriptor is not None:
+                position = self._directory(descriptor).get(name)
+                return None if position is None else (descriptor, position)
+        return None
+
     def _pack(self, descriptor: dict[str, Any]) -> bytes:
         raw = self._physical(pack_path(descriptor), descriptor["bytes"])
         if descriptor["hash"] not in self._verified_pack_hashes:
@@ -724,7 +902,15 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
 
     def _read_member(self, logical_path: str, maximum: int) -> bytes:
         key = logical_path.rsplit("/", 1)[-1][:-5]
-        descriptor, position = self._find(key)
+        if self._member_kind == SLOT_KIND:
+            if self._slot is None:
+                _fail("member", "logical object was requested outside its tree route")
+            slot = slot_key(*self._slot)
+            if self._slots.setdefault(slot, key) != key:
+                _fail("member", "one tree route resolves to two logical objects")
+            descriptor, position = self._locate(slot)
+        else:
+            descriptor, position = self._find(key)
         name, offset, compressed, expanded, _ = position
         if expanded > maximum:
             _fail("member", "expanded object differs from its logical descriptor", "storage-limit")
@@ -741,7 +927,11 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         return content
 
     def _node(self, desc, collection, prefix):
-        node = super()._node(desc, collection, prefix)
+        self._slot = collection, prefix
+        try:
+            node = super()._node(desc, collection, prefix)
+        finally:
+            self._slot = None
         expected_name = f"{collection}/{node['prefix'] or 'root'}.json"
         if self._selected_locations[desc["hash"][7:]][1][0] != expected_name:
             _fail("member", "logical object identity differs from its member name")
@@ -766,11 +956,23 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             else:
                 for bit, child in node["children"].items():
                     walk(child, prefix + bit, kind, output)
-        walk(self.packing["catalog"], "", "members", locations)
+        walk(self.packing["catalog"], "", self._member_kind, locations)
         walk(self.packing["pack_catalog"], "", "packs", pack_locations)
         if any(value[0] not in pack_locations for value in locations.values()):
             _fail("index", "member references an absent pack bucket")
-        locations = {key: _position(value, pack_locations[value[0]]) for key, value in locations.items()}
+        if self._member_kind == SLOT_KIND:
+            if set(locations) != set(self._slots):
+                _fail("index", "locator slots differ from the routes of the complete logical store")
+            resolved = {}
+            for slot, (bucket, name) in locations.items():
+                descriptor = pack_locations[bucket]
+                position = self._directory(descriptor).get(name)
+                if position is None or self._slots[slot] in resolved:
+                    _fail("index", "located member is absent from its pack or routed twice")
+                resolved[self._slots[slot]] = _position([bucket, *position], descriptor)
+            locations = resolved
+        else:
+            locations = {key: _position(value, pack_locations[value[0]]) for key, value in locations.items()}
         expected = {path.rsplit("/", 1)[-1][:-5] for path in self.objects}
         if set(locations) != expected or len(locations) != self.packing["objects"]:
             _fail("index", "locator membership differs from the complete logical store")
@@ -836,6 +1038,9 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         self._pack_descriptors.clear()
         self._selected_locations.clear()
         self._verified_pack_hashes.clear()
+        self._slots.clear()
+        self._directories.clear()
+        self._pack_buckets = None
 
 
 def open_knowledge_store(root_bytes: bytes, read_file: Callable[[str, int], bytes], *,
