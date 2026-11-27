@@ -138,6 +138,15 @@ def _validate_branch_name(value: Any, field: str) -> str:
     return value
 
 
+def _validate_authored_path(relative: str) -> None:
+    try:
+        require_portable_relative_path(relative)
+    except (TypeError, ValueError) as exc:
+        raise TeamConfigError(
+            f"ownership.authored_paths contains an invalid wiki-relative path: {relative!r}"
+        ) from exc
+
+
 def _validate_ownership(value: Any) -> None:
     if not isinstance(value, dict):
         raise TeamConfigError("ownership must be an object.")
@@ -157,13 +166,7 @@ def _validate_ownership(value: Any) -> None:
         for relative in _ensure_string_list(
             value["authored_paths"], "ownership.authored_paths"
         ):
-            try:
-                require_portable_relative_path(relative)
-            except (TypeError, ValueError) as exc:
-                raise TeamConfigError(
-                    "ownership.authored_paths contains an invalid wiki-relative "
-                    f"path: {relative!r}"
-                ) from exc
+            _validate_authored_path(relative)
 
 
 def wiki_ownership(config: Any) -> WikiOwnership:
