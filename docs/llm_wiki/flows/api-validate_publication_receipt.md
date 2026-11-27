@@ -201,9 +201,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_publication_receipt (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 3859 | `isinstance(receipt, Mapping)` |
-| validate_publication_receipt (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 3860 | `ValueError('Publication receipt must be a mapping')` |
-| validate_publication_receipt (src/llm_wiki_cli/api.py) | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | 3861 | `validate(dict(...))` |
+| validate_publication_receipt (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 4200 | `isinstance(receipt, Mapping)` |
+| validate_publication_receipt (src/llm_wiki_cli/api.py) | ValueError (src/llm_wiki_cli/api.py:v…idate_publication_receipt) | 4201 | `ValueError('Publication receipt must be a mapping')` |
+| validate_publication_receipt (src/llm_wiki_cli/api.py) | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | 4202 | `validate(dict(...))` |
 | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | isinstance (src/llm_wiki_cli/services…idate_publication_receipt) | 339 | `isinstance(receipt, Mapping)` |
 | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | ValueError (src/llm_wiki_cli/services…idate_publication_receipt) | 340 | `ValueError('Candidate receipt must be a mapping')` |
 | validate_publication_receipt (src/llm_wiki_cli/services/publication_candidate.py) | dict (src/llm_wiki_cli/services…idate_publication_receipt) | 341 | `dict(receipt)` |
@@ -226,8 +226,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_publication_receipt` | `isinstance` | 3859 |
-| external_call | `validate_publication_receipt` | `ValueError` | 3860 |
+| external_call | `validate_publication_receipt` | `isinstance` | 4200 |
+| external_call | `validate_publication_receipt` | `ValueError` | 4201 |
 | external_call | `validate_publication_receipt` | `isinstance` | 339 |
 | external_call | `validate_publication_receipt` | `ValueError` | 340 |
 | external_call | `_json_tree` | `isinstance` | 144 |

@@ -190,7 +190,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py) | 2043 | `context_packet_builder.compare_context_packet_basis(packet_bytes, expected_basis)` |
+| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py) | 2054 | `context_packet_builder.compare_context_packet_basis(packet_bytes, expected_basis)` |
 | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet_builder.py) | validate_context_packet | 1549 | `validate_context_packet(packet_bytes)` |
 | validate_context_packet | _validate_context_packet_bytes | 319 | `_validate_context_packet_bytes(packet_bytes)` |
 | _validate_context_packet_bytes | _coerce_packet_bytes | 335 | `_coerce_packet_bytes(packet_bytes)` |

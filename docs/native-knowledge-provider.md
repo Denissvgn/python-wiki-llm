@@ -126,6 +126,81 @@ unchanged, not that prose or runtime behavior is correct. Intentionally
 unmodeled concepts are not stale concepts. Missing bases remain in the modeled
 population. See [native scopes and result bounds](native-knowledge.md#python-api).
 
+### Selected impact reads
+
+An impact request validates the whole committed wiki before it answers, which
+takes tens of seconds on a large wiki. Add `"read": "selected"` to answer from
+the committed records of the supplied paths instead:
+
+```python
+result = api.query_documentation({
+    "operation": "impact",
+    "paths": ["src/orders.py", "src/billing.py"],
+    "read": "selected",
+})
+```
+
+A selected read checks the commit header, the manifest binding, the surface
+index and the hash of every record and page it returns, and rechecks that
+nothing changed before it answers. It does not validate records it does not return, so `knowledge`
+reports `validation_scope: "selected-records"` and
+`whole_store_validated: false`.
+
+The answer lists the same concepts, pages and `derived_from` relationships as a
+full read of the committed snapshot. Each concept keeps its identity, origin,
+evidence, verification and lifecycle, but not `freshness`, `implementation`,
+`maintenance` or review records, which come from reports over the whole wiki.
+The read never extracts source files, so `cost.scope` is
+`snapshot-index-only` and each match reports `present: false`.
+
+A selected read cannot be combined with `include_raw_evidence` or
+`source_policy: "discovery"`. When the storage cannot serve a selected read,
+or the selection exceeds its read budget, the request is answered with a full
+read and `query.read` reports `"full"`. A failed integrity check is reported
+as an error, never answered with a full read.
+
+### Paging and compact results
+
+Every query result stays within 64 KiB. When the records do not fit, a result
+returns the leading records that do and reports how many in each bound. For
+`typed` and `impact` queries, use these request fields to read the rest:
+
+| Field | Values | Effect |
+|---|---|---|
+| `offset` | integer, `0` to `1000000`; default `0` | Skips that many leading records of each record list. Bounds keep the full `total`. |
+| `projection` | `"full"` (default) or `"compact"` | `compact` keeps each embedded concept's identity, origin, evidence, verification and lifecycle, and leaves out its freshness, implementation, maintenance and review records. |
+
+When records remain after a page, the result carries a `follow_up` whose
+`request` reads the next page. It is the same request with the next `offset`;
+an impact request made with `diff` is followed up with the paths the diff
+resolved to. Read pages until `follow_up` is absent or reports
+`status: "unavailable"`:
+
+```python
+request = {
+    "operation": "typed",
+    "value": "modules/core.md",
+    "direction": "incoming",
+    "kinds": ["imports"],
+    "limit": 100,
+    "projection": "compact",
+}
+edges = []
+while request is not None:
+    result = api.query_documentation(request)
+    edges.extend(result["edges"])
+    follow_up = result.get("follow_up", {})
+    request = follow_up.get("request") if follow_up.get("status") == "available" else None
+```
+
+`reason: "no-more-records"` ends a paged read. `reason:
+"record-exceeds-result-limit"` means a single record does not fit; repeat the
+request with `projection: "compact"`. A result that needs no further page and
+names no `offset` carries no `follow_up`. Each page is a separate read, so
+pages taken across a wiki change can overlap or skip records. An impact
+request pages `matches`, `concepts`, `pages` and `relationships` together;
+`raw_evidence` is not paged.
+
 ## Workspace and process boundaries
 
 The working directory is the allowed workspace boundary. Relative source and

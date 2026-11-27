@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `impact` queries accept `"read": "selected"`, which answers from the
+  committed records of the supplied paths instead of validating the whole
+  wiki first. On a wiki of about 2,000 concepts an answer takes well under a
+  second instead of more than 20 seconds. It lists the same concepts, pages and
+  relationships as a full read of the committed snapshot. Concepts carry their
+  identity, origin, evidence, verification and lifecycle, but not freshness,
+  implementation, maintenance or review records. `knowledge` reports that only
+  the returned records were validated. When the storage cannot serve a
+  selected read, the request is answered with a full read, and `query.read`
+  says which read answered it. The default full read is unchanged.
+- `typed` and `impact` queries can page through results that do not fit the
+  64 KiB result limit. A request accepts an `offset`, and a result with more
+  records carries a `follow_up` whose `request` reads the next page. An impact
+  request made with `diff` is followed up with the paths the diff resolved
+  to. Before, a caller could not read past the records in the first result.
+- `typed` and `impact` queries accept `"projection": "compact"`, which keeps
+  each embedded concept's identity, origin, evidence, verification and
+  lifecycle and leaves out its freshness, implementation, maintenance and
+  review records. A typed edge then takes under 1 KB instead of about 5 KB.
 - Team policy can reserve the generated wiki for one writer. Set
   `ownership.mode` to `trunk` in `.llm-wiki/team.json`, or run
   `llm-wiki team init --ownership trunk`, and only the trunk branch and the
@@ -36,7 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--reclaim` previews removing caches, helpers, storage-recovery copies or
   upgrade-recovery copies, and `--apply` deletes them. Recovery copies newer
   than `--older-than-days` (default 7) are kept.
-
 - New storage formats `packed-v4-fine` and `packed-v4-fine-deflate` keep a
   refresh close to what really changed. Links are located within their own
   line and no longer repeat their page's hash, so adding a page does not give
@@ -140,6 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   how many were returned. A result is marked omitted only when not even its
   header fits, and an omitted `impact` result still lists `concepts`,
   `impacted_paths` and `limitations`.
+- An invalid `source_policy` in a documentation query is now reported against
+  that field instead of the whole request.
 
 ## [6.1.1] - 2026-11-25
 

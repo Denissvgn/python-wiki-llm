@@ -256,8 +256,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| sync_wiki | SyncRequest | 1277 | `SyncRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, force=force, plugins=trust_source_plugins, preserve_semantic=preserve_semantic, initialize_surfaces=initialize_surfaces, flow_categories=flow_categories, exclude_tests=exclude_tests, include_tests=include_tests, openapi_file=openapi_file, clear_openapi_file=clear_openapi_file, helper_cache_dir=helper_cache_dir, source_selection=source_selection, knowledge_format=knowledge_format, rebuild_knowledge=rebuild_knowledge, retire_missing_sources=retire_missing_sources, retire_missing_pages=retire_missing_pages, release_historical_pages=release_historical_pages, expected_historical_release=expected_historical_release)` |
-| sync_wiki | discarding_output | 1300 | `discarding_output(data not statically known)` |
+| sync_wiki | SyncRequest | 1288 | `SyncRequest(source_root=source_root, wiki_root=wiki_root, dry_run=dry_run, force=force, plugins=trust_source_plugins, preserve_semantic=preserve_semantic, initialize_surfaces=initialize_surfaces, flow_categories=flow_categories, exclude_tests=exclude_tests, include_tests=include_tests, openapi_file=openapi_file, clear_openapi_file=clear_openapi_file, helper_cache_dir=helper_cache_dir, source_selection=source_selection, knowledge_format=knowledge_format, rebuild_knowledge=rebuild_knowledge, retire_missing_sources=retire_missing_sources, retire_missing_pages=retire_missing_pages, release_historical_pages=release_historical_pages, expected_historical_release=expected_historical_release)` |
+| sync_wiki | discarding_output | 1311 | `discarding_output(data not statically known)` |
 | discarding_output | using_host | 282 | `using_host(...)` |
 | using_host | isinstance (src/llm_wiki_engine/host.py:using_host) | 173 | `isinstance(host, Host)` |
 | using_host | TypeError (src/llm_wiki_engine/host.py:using_host) | 174 | `TypeError('host must be a Host instance')` |

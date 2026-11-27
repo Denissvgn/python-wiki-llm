@@ -144,7 +144,7 @@ edge.
 
 | Target | Query | Access path |
 |---|---|---|
-| Supplied file or diff | attributed impact | Python/MCP `query_documentation {"operation":"impact","paths":["<file>"],"limit":20,"include_raw_evidence":false}`; use `diff` instead of `paths` for unified-diff text; no full-inventory opt-in |
+| Supplied file or diff | attributed impact | Python/MCP `query_documentation {"operation":"impact","paths":["<file>"],"limit":20,"include_raw_evidence":false}`; use `diff` instead of `paths` for unified-diff text; add `"read":"selected"` for a fast answer from committed records only, without freshness, implementation or maintenance records; add `"projection":"compact"` for identity-only concept rows, and follow `follow_up.request` while its `status` is `available` to read the remaining records; no full-inventory opt-in |
 | Exact native identity | concept/related/typed | Python/MCP `query_documentation` with `operation` `concept`, `related`, or `typed`; committed snapshot only |
 | Exact canonical page | surface | Python/MCP `query_documentation {"operation":"surface","value":"<canonical-path>","limit":20}`; committed snapshot only |
 | Callable symbol name | pages/callers/callees | Python/MCP `query_documentation {"operation":"symbol","value":"<symbol>","limit":20,"allow_full_inventory":true}` |

@@ -2,7 +2,7 @@
 
 **Entry point:** `query_documentation` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 46 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 51 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [api](../modules/api.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
+- [concept_identity](../modules/concept_identity.md)
 - [context_packet](../modules/context_packet.md)
 - [context_packet_builder](../modules/context_packet_builder.md)
 - [documentation_queries](../modules/documentation_queries.md)
@@ -31,11 +32,15 @@
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -83,16 +88,16 @@ sequenceDiagram
     participant p16 as _normalize_query_choice
     participant p17 as _normalize_query_values
     participant p18 as _surface_query
-    participant p19 as _portable_supplied_path
-    participant p20 as validate_path
-    participant p21 as _supplied_path_values
-    participant p22 as build_snapshot_documentation_query_service
-    participant p23 as fit_documentation_query_result
-    participant p24 as supplied_paths_from_unified_diff
-    participant p25 as _validate_wiki_dir
-    participant p26 as build_live_documentation_query_service
-    participant p27 as windows_current_user_sid
-    participant p28 as _normalize_query_limit
+    participant p19 as _query_offset
+    participant p20 as _portable_supplied_path
+    participant p21 as validate_path
+    participant p22 as _supplied_path_values
+    participant p23 as build_snapshot_documentation_query_service
+    participant p24 as fit_documentation_query_result
+    participant p25 as supplied_paths_from_unified_diff
+    participant p26 as _validate_wiki_dir
+    participant p27 as build_live_documentation_query_service
+    participant p28 as windows_current_user_sid
     participant p29 as isinstance (src/llm_wiki_cli/api.py:query_documentation)
     participant p30 as request.get (src/llm_wiki_cli/api.py:query_documentation)
     p0->>p1: _validate_documentation_query_request
@@ -113,37 +118,37 @@ sequenceDiagram
     p0->>p16: _normalize_query_choice
     p0->>p17: _normalize_query_values
     p0->>p18: _surface_query
-    p2->>p19: _portable_supplied_path
-    p4->>p20: validate_path
-    p2->>p21: _supplied_path_values
-    p6->>p22: build_snapshot_documentation_query_service
-    p8->>p23: fit_documentation_query_result
-    p9->>p24: supplied_paths_from_unified_diff
-    p5->>p25: _validate_wiki_dir
-    p5->>p26: build_live_documentation_query_service
-    p4->>p27: windows_current_user_sid
-    p1->>p28: _normalize_query_limit
+    p0->>p19: _query_offset
+    p2->>p20: _portable_supplied_path
+    p4->>p21: validate_path
+    p2->>p22: _supplied_path_values
+    p6->>p23: build_snapshot_documentation_query_service
+    p8->>p24: fit_documentation_query_result
+    p9->>p25: supplied_paths_from_unified_diff
+    p5->>p26: _validate_wiki_dir
+    p5->>p27: build_live_documentation_query_service
+    p4->>p28: windows_current_user_sid
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:query_documentation)(helper_cache_dir, (...))
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:query_documentation)('source')
 ```
 
-> Call sequence diagram shows 30 of 2547 interactions; 2517 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2837 interactions; 2807 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 977 (976 omitted); unresolved 1 of 685 (684 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1046 (1045 omitted); unresolved 1 of 809 (808 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | - | external | 13 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | - | unresolved | 19 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 24 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 2 | - | unresolved | 22 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 16 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_input` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_query_limit` | 16 | [src/llm_wiki_engine/query_request_format.py](../modules/query_request_format.md) | internal | 1 |
-> Omission summary shows 8 of 627 groups; 619 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 680 groups; 672 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -156,9 +161,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 886; effect analysis evaluated: 587, partial: 35, unavailable: 264. Counts include steps omitted from the displayed trace.
+Source steps: 983; effect analysis evaluated: 641, partial: 40, unavailable: 302. Counts include steps omitted from the displayed trace.
 
-Collector observations for 622 source steps with known totals: observed: 3729, emitted: 3477, omitted: 252. Unavailable totals are excluded.
+Collector observations for 681 source steps with known totals: observed: 4141, emitted: 3865, omitted: 276. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -167,7 +172,7 @@ Collector observations for 622 source steps with known totals: observed: 3729, e
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
 | `query_documentation` | `available` | `partial` | `available` | `24` | `23` | `1` |
-| `_validate_documentation_query_request` | `available` | `partial` | `available` | `12` | `10` | `2` |
+| `_validate_documentation_query_request` | `available` | `partial` | `available` | `15` | `10` | `5` |
 | `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 | `next (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -223,7 +228,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `query_documentation` | `request: Mapping[str, Any]`, `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `source_selection: str \| Path \| None`, `helper_cache_dir: str \| Path \| None`, `comparison_policy: str \| None` | `Path`, `wiki_surface`, `_KNOWLEDGE_QUERY_DIRECTIONS`, `_KNOWLEDGE_QUERY_KINDS`, `_TYPED_QUERY_DIRECTIONS`, `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` | `payload[...]`, `payload[...]`, `payload[...]` | `_with_query_envelope(...)`, `_impact_query(...)`, `_with_query_envelope(...)` |
-| `_validate_documentation_query_request` | `request: Mapping[str, Any]` | `Mapping`, `_DOCUMENTATION_QUERY_FIELDS`, `_DOCUMENTATION_QUERY_FIELDS`, `_DOCUMENTATION_QUERY_FIELDS`, `_KNOWLEDGE_QUERY_DIRECTIONS`, `_KNOWLEDGE_QUERY_KINDS`, `_TYPED_QUERY_DIRECTIONS`, `CORE_RELATIONSHIP_KINDS` | - | `(...)` |
+| `_validate_documentation_query_request` | `request: Mapping[str, Any]` | `Mapping`, `_DOCUMENTATION_QUERY_FIELDS`, `_DOCUMENTATION_QUERY_FIELDS`, `_DOCUMENTATION_QUERY_FIELDS`, `_IMPACT_READS`, `_KNOWLEDGE_QUERY_DIRECTIONS`, `_KNOWLEDGE_QUERY_KINDS`, `_TYPED_QUERY_DIRECTIONS` | - | `(...)` |
 | `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | - | - | - | - |
 | `InvalidRequestError` | - | - | - | - |
 | `next (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | - | - | - | - |
@@ -239,35 +244,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_documentation | _validate_documentation_query_request | 3375 | `_validate_documentation_query_request(request)` |
-| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2979 | `isinstance(request, Mapping)` |
-| _validate_documentation_query_request | InvalidRequestError | 2980 | `InvalidRequestError('request must be an object.', code='invalid-request', details={...})` |
-| _validate_documentation_query_request | next (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2985 | `next(..., None)` |
-| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2985 | `isinstance(key, str)` |
-| _validate_documentation_query_request | InvalidRequestError | 2987 | `InvalidRequestError('request fields must be strings.', code='invalid-request', details={...})` |
-| _validate_documentation_query_request | request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2992 | `request.get('operation')` |
-| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2993 | `isinstance(operation, str)` |
-| _validate_documentation_query_request | ', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2994 | `', '.join(...)` |
-| _validate_documentation_query_request | repr (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2994 | `repr(item)` |
-| _validate_documentation_query_request | InvalidRequestError | 2995 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| query_documentation | _validate_documentation_query_request | 3714 | `_validate_documentation_query_request(request)` |
+| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3057 | `isinstance(request, Mapping)` |
+| _validate_documentation_query_request | InvalidRequestError | 3058 | `InvalidRequestError('request must be an object.', code='invalid-request', details={...})` |
+| _validate_documentation_query_request | next (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3063 | `next(..., None)` |
+| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3063 | `isinstance(key, str)` |
+| _validate_documentation_query_request | InvalidRequestError | 3065 | `InvalidRequestError('request fields must be strings.', code='invalid-request', details={...})` |
+| _validate_documentation_query_request | request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3070 | `request.get('operation')` |
+| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3071 | `isinstance(operation, str)` |
+| _validate_documentation_query_request | ', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3072 | `', '.join(...)` |
+| _validate_documentation_query_request | repr (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 3072 | `repr(item)` |
+| _validate_documentation_query_request | InvalidRequestError | 3073 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `payload.update` | `query_documentation` | 3526 |
-| mutation | `payload.update` | `query_documentation` | 3552 |
+| mutation | `payload.update` | `query_documentation` | 3867 |
+| mutation | `payload.update` | `query_documentation` | 3893 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_documentation_query_request` | `isinstance` | 2979 |
-| external_call | `_validate_documentation_query_request` | `next` | 2985 |
-| external_call | `_validate_documentation_query_request` | `isinstance` | 2985 |
-| unresolved_call | `_validate_documentation_query_request` | `request.get` | 2992 |
-| external_call | `_validate_documentation_query_request` | `isinstance` | 2993 |
-| unresolved_call | `_validate_documentation_query_request` | `', '.join` | 2994 |
+| external_call | `_validate_documentation_query_request` | `isinstance` | 3057 |
+| external_call | `_validate_documentation_query_request` | `next` | 3063 |
+| external_call | `_validate_documentation_query_request` | `isinstance` | 3063 |
+| unresolved_call | `_validate_documentation_query_request` | `request.get` | 3070 |
+| external_call | `_validate_documentation_query_request` | `isinstance` | 3071 |
+| unresolved_call | `_validate_documentation_query_request` | `', '.join` | 3072 |
 | step_limit | `query_documentation` | `first 12 steps` | 0 |
 | truncated_flow | `query_documentation` | `depth limit` | 0 |
 

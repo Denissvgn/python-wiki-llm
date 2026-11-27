@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 790 | [Open section](#entities) |
 | Modules | 323 | [Open section](#modules) |
-| Workflows | 325 | [Open section](#workflows) |
+| Workflows | 326 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 512 | [Open section](#entry-point-flows) |
 | Infrastructure | 5 | [Open section](#infrastructure) |
@@ -1420,6 +1420,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
 - [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`
 - [section_locator](workflows/section_locator.md) - entry: `knowledge_governance._section_locator`
+- [selected_surface_pages](workflows/selected_surface_pages.md) - entry: `api._selected_surface_pages`
 - [snapshot](workflows/snapshot.md) - entry: `publication_contracts._snapshot`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`

@@ -1,6 +1,6 @@
 # DocumentationGraphQueryService
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:985`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:1075`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -36,7 +36,7 @@ owner. Query identity, result-byte and collection bounds remain in force.
 | `get_concept` | `(locator_or_exact_route: object) -> dict[str, Any]` | `@_bounded_query_result` | Return one concept selected by current coordinate, UID, or alias. |
 | `related_concepts` | `(locator_or_exact_route: object, *, direction: str = 'both', kinds: Optional[Iterable[str]] = None) -> dict[str, Any]` | `@_bounded_query_result` | Return bounded relationship observations for one exact identity. |
 | `list_concept_sections` | `(locator_or_exact_route: object, *, ownership: str \| None = None) -> dict[str, Any]` | `@_bounded_query_result` | Return bounded document-order sections for one exact concept. |
-| `traverse_typed_graph` | `(locator_or_exact_route: object, *, direction: str = 'both', kinds: Optional[Iterable[str]] = None, origins: Optional[Iterable[str]] = None, resolutions: Optional[Iterable[str]] = None, include_evidence: bool = False) -> dict[str, Any]` | `@_bounded_query_result` | Return a bounded traversal of the persisted typed-graph extension. |
+| `traverse_typed_graph` | `(locator_or_exact_route: object, *, direction: str = 'both', kinds: Optional[Iterable[str]] = None, origins: Optional[Iterable[str]] = None, resolutions: Optional[Iterable[str]] = None, include_evidence: bool = False, offset: int = 0, projection: str = 'full') -> dict[str, Any]` | `@_bounded_query_result` | Return a bounded traversal of the persisted typed-graph extension. |
 | `explain_evidence` | `(locator_or_exact_route: object) -> dict[str, Any]` | `@_bounded_query_result` | Return full stored and computed evidence for one exact identity. |
 | `_build_knowledge_indexes` | `(knowledge_view: Optional[KnowledgeReadView]) -> None` | — | — |
 | `_build_section_ownership_indexes` | `(payload: Mapping[str, Any]) -> None` | — | — |
@@ -44,6 +44,7 @@ owner. Query identity, result-byte and collection bounds remain in force.
 | `_typed_graph_concept_locator` | `(endpoint: object) -> str \| None` | — | Resolve a locator- or durable-UID concept endpoint. |
 | `_knowledge_selection_result` | `(query: str) -> dict[str, Any]` | — | — |
 | `_compact_knowledge_concept` | `(locator: str) -> dict[str, Any]` | — | — |
+| `_projected_concept` | `(locator: str, *, compact: bool) -> dict[str, Any]` | — | Return a concept's full query record, or only its identity. |
 | `_compact_context_concept` | `(locator: str) -> dict[str, Any]` | — | Return a compact concept with the explicit context freshness contract. |
 | `_maintenance_payload` | `(locator: str) -> dict[str, Any] \| None` | — | — |
 | `_implementation_payload` | `(locator: str) -> dict[str, Any] \| None` | — | Project the comparison already evaluated by this read session. |
@@ -58,7 +59,7 @@ owner. Query identity, result-byte and collection bounds remain in force.
 | `_typed_graph_kinds` | `(values: Optional[Iterable[str]]) -> tuple[str, ...]` | — | — |
 | `_typed_graph_enum_filter` | `(values: Optional[Iterable[str]], *, field: str, allowed: Sequence[str]) -> tuple[str, ...]` | — | — |
 | `_incident_typed_graph_edges` | `(locator: str, direction: str) -> list[tuple[int, str]]` | — | — |
-| `_compact_typed_graph_edge` | `(index: int, direction: str, *, include_evidence: bool) -> dict[str, Any]` | — | — |
+| `_compact_typed_graph_edge` | `(index: int, direction: str, *, include_evidence: bool, compact: bool = False) -> dict[str, Any]` | — | — |
 | `_resolved_target_locator` | `(relationship: Mapping[str, Any]) -> Optional[str]` | — | — |
 | `_incident_knowledge_relationships` | `(locator: str, direction: str) -> list[tuple[int, str]]` | — | — |
 | `_compact_knowledge_relationship` | `(index: int, direction: str) -> dict[str, Any]` | — | — |
@@ -75,7 +76,7 @@ owner. Query identity, result-byte and collection bounds remain in force.
 | `_selection_result` | `(query: str, matches: Sequence[Mapping[str, Any]], payload_key: str, empty_payload: object) -> dict[str, Any]` | — | — |
 | `_pages_for_source` | `(source_path: object) -> _BoundedResult` | — | — |
 | `_bounded_payload` | `(payload: object, list_keys: tuple[str, ...]) -> tuple[dict[str, Any], dict[str, _BoundedResult]]` | — | — |
-| `_bounded` | `(records: Iterable[object]) -> _BoundedResult` | — | — |
+| `_bounded` | `(records: Iterable[object], *, offset: int = 0) -> _BoundedResult` | — | — |
 | `_bounded_strings` | `(values: Iterable[object]) -> _BoundedResult` | — | — |
 | `_record_bound` | `(result: dict[str, Any], path: str, bounded: _BoundedResult) -> None` | — | — |
 | `_sync_truncated` | `(result: dict[str, Any]) -> None` | `@staticmethod` | — |
@@ -129,7 +130,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_queries](../modules/documentation_queries.md) | 56 | — |
+| [documentation_queries](../modules/documentation_queries.md) | 57 | — |
 
 ### References
 
