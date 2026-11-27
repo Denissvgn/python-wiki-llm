@@ -50,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Indexed manifests (`indexed-v6`, `indexed-v8`) now cut their catalogs where
+  the content says so, not every 32 KiB. A source added early in a field no
+  longer shifts every later catalog, so a sync leaves most manifest objects
+  byte-identical. On this project's wiki a page-creating sync wrote about
+  0.14 MB of manifest objects where it wrote 0.7 MB before. Existing readers
+  read the result unchanged. The first sync after upgrading rewrites the
+  catalogs once, and a wiki holds roughly twice as many, smaller, manifest
+  objects.
 - Storage cleanup writes no second recovery copy when Git's `HEAD` already
   holds every removed object with the same bytes; restore one with
   `git checkout HEAD -- <path>`. An explicit `--storage-recovery-dir`, or an

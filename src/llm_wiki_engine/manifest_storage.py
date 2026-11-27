@@ -11,12 +11,13 @@ from __future__ import annotations
 from .layout import DEFAULT_LAYOUT
 
 import base64
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
 from typing import Any
+import zlib
 
 from llm_wiki_engine.canonical_json import canonical_chunks
 from llm_wiki_engine.immutable import freeze
@@ -39,6 +40,11 @@ OBJECT_NAME = re.compile(r"\.llm-wiki-manifest/objects/([0-9a-f]{2})/\1[0-9a-f]{
 CATALOG_SCHEMA = "llm-wiki-manifest-catalog/v1"
 FIELDS = ("sources", "surfaces", "generation_inputs", "page_source_mappings", "evidence_baselines", "tombstones")
 Reader = Callable[[str, int], bytes]
+SEGMENT_LIMIT = 32_768
+SEGMENT_FLOOR = 4_096
+_SEGMENT_WINDOW = 24
+_SEGMENT_MASK = 0xFF
+_SEGMENT_ANCHOR = re.compile(rb"[,}\]]")
 
 
 def object_path(commitment: str) -> str:
@@ -67,7 +73,7 @@ def validate_catalog(raw: bytes) -> dict[str, Any]:
             value = base64.b64decode(node["data"], validate=True)
         except ValueError as exc:
             raise KnowledgeStorageError("manifest.catalog", "invalid base64 segment") from exc
-        if not value or len(value) > 32_768 or base64.b64encode(value).decode("ascii") != node["data"]:
+        if not value or len(value) > SEGMENT_LIMIT or base64.b64encode(value).decode("ascii") != node["data"]:
             raise KnowledgeStorageError("manifest.catalog", "invalid segment size or encoding")
     elif node.get("kind") == "branch":
         if (set(node) != {"schema_version", "kind", "children"}
@@ -78,6 +84,37 @@ def validate_catalog(raw: bytes) -> dict[str, Any]:
     else:
         raise KnowledgeStorageError("manifest.catalog", "unknown node kind")
     return node
+
+
+def _segment_end(buffer: bytearray) -> int:
+    """Return where the segment starting ``buffer`` ends.
+
+    The cut follows a JSON delimiter whose preceding bytes hash to a fixed
+    pattern, so it depends on nearby content and not on the offset. Records
+    added or removed earlier in a field therefore leave later segments, and
+    their committed objects, byte-identical.
+    """
+    end = min(len(buffer), SEGMENT_LIMIT)
+    for match in _SEGMENT_ANCHOR.finditer(buffer, SEGMENT_FLOOR, end):
+        stop = match.end()
+        if zlib.crc32(buffer[stop - _SEGMENT_WINDOW:stop]) & _SEGMENT_MASK == 0:
+            return stop
+    return end
+
+
+def content_segments(parts: Iterable[bytes]) -> Iterator[bytes]:
+    """Regroup a byte stream into content-defined segments of bounded size."""
+    buffer = bytearray()
+    for part in parts:
+        buffer += part
+        while len(buffer) >= SEGMENT_LIMIT:
+            stop = _segment_end(buffer)
+            yield bytes(buffer[:stop])
+            del buffer[:stop]
+    while buffer:
+        stop = _segment_end(buffer)
+        yield bytes(buffer[:stop])
+        del buffer[:stop]
 
 
 @dataclass(frozen=True)
@@ -113,7 +150,7 @@ def build_manifest_store(payload: Mapping[str, Any]) -> ManifestStore:
 
     def catalog(value: object) -> dict[str, Any]:
         leaves = [put({"kind": "data", "data": base64.b64encode(part).decode("ascii")}, len(part))
-                  for part in canonical_chunks(value, chunk_bytes=32_768)]
+                  for part in content_segments(canonical_chunks(value, chunk_bytes=SEGMENT_LIMIT))]
         if sum(d["expanded_bytes"] for d in leaves) > MAX_EXPANDED_BYTES:
             raise KnowledgeStorageError("manifest.catalog", "expanded field exceeds limit", code="storage-limit")
         while len(leaves) > 1:

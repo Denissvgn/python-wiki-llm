@@ -177,6 +177,10 @@ bounded catalogs under `.llm-wiki-manifest/objects/`. The commit root and every
 catalog have a 64 KiB ceiling. Large policy values also use committed catalogs;
 reading them still counts against the request's byte budget.
 
+Catalogs end at boundaries chosen from their own content, so adding or removing
+a few sources leaves the other catalogs byte-identical and a sync writes only
+the ones that hold a real change.
+
 Upgrade every reader and writer to support manifest v6, then adopt it explicitly:
 
 ```sh
