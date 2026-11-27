@@ -68,10 +68,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (42) |
+| Inbound | `src` (43) |
 | Outbound | `src` (13) |
 
-> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -143,6 +143,7 @@ flowchart LR
 | `_parse_relationship_target` | `(value: object, path: str) -> RelationshipTarget` | — | — |
 | `_parse_relationship_location` | `(value: object, path: str) -> RelationshipLocation` | — | — |
 | `_parse_relationship_evidence` | `(value: object, path: str) -> RelationshipEvidence` | — | — |
+| `is_line_relative_link` | `(relationship: RelationshipRecord) -> bool` | — | Return whether a link record uses the position-stable form. |
 | `_validate_relationship_shape` | `(relationship: RelationshipRecord, path: str) -> None` | — | — |
 | `_validate_index_references` | `(bundle: BundleRecord, concepts: tuple[ConceptRecord, ...], relationships: tuple[RelationshipRecord, ...]) -> None` | — | — |
 | `_record` | `(value: object, path: str, fields: AbstractSet[str], *, required: AbstractSet[str] = frozenset()) -> tuple[dict[str, Any], dict[str, Any]]` | — | — |

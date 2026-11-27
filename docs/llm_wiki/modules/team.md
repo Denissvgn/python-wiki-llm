@@ -58,26 +58,31 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (4) |
+| Inbound | `src` (5) |
 | Outbound | `src` (16) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TeamConfigError](../entities/TeamConfigError.md) | 74 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
-| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 79 | — | One command's resolved policy and project-anchored wiki identity. |
-| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 88 | — | Inputs needed to check wiki files against team conventions. |
+| [TeamConfigError](../entities/TeamConfigError.md) | 79 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
+| [WikiOwnership](../entities/WikiOwnership.md) | 84 | — | Which branches may write generated wiki state. |
+| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 193 | — | One command's resolved policy and project-anchored wiki identity. |
+| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 202 | — | Inputs needed to check wiki files against team conventions. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `default_team_config` | `(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]` | — | — |
+| `_validate_branch_name` | `(value: Any, field: str) -> str` | — | — |
+| `_validate_authored_path` | `(relative: str) -> None` | — | — |
+| `_validate_ownership` | `(value: Any) -> None` | — | — |
+| `wiki_ownership` | `(config: Any) -> WikiOwnership` | — | Return the ownership a validated team config declares. |
+| `default_team_config` | `(wiki_dir: str = DEFAULT_WIKI_DIR, *, ownership: dict[str, Any] \| None = None) -> dict[str, Any]` | — | — |
 | `team_config_path` | `(root: str \| Path = '.') -> Path` | — | — |
-| `write_default_team_config` | `(wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str \| Path = '.') -> Path` | — | — |
+| `write_default_team_config` | `(wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str \| Path = '.', ownership: dict[str, Any] \| None = None) -> Path` | — | — |
 | `_reject_unknown_keys` | `(data: dict[str, Any], allowed: set[str], scope: str) -> None` | — | — |
 | `_ensure_string_list` | `(value: Any, field: str) -> list[str]` | — | — |
 | `_validate_required_relative_path` | `(relative: str, key: str) -> str` | — | — |

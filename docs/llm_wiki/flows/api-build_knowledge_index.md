@@ -55,12 +55,12 @@ sequenceDiagram
     participant p20 as _knowledge_index_to_payload_unchecked
     participant p21 as _string
     participant p22 as _validated_bundle
-    participant p23 as _validated_pages
-    participant p24 as _parse_bundle
-    participant p25 as _validated_content
-    participant p26 as _structural_facet
-    participant p27 as _validate_snapshot_commitments
-    participant p28 as _surface_pages
+    participant p23 as _line_relative_location
+    participant p24 as _validated_pages
+    participant p25 as _parse_bundle
+    participant p26 as _validated_content
+    participant p27 as _structural_facet
+    participant p28 as _validate_snapshot_commitments
     participant p29 as TypeError (src/llm_wiki_engine/knowl….py:build_knowledge_index)
     participant p30 as _INDEX_VALIDATION_OPERATION.get
     p0->>p1: _assemble_knowledge_index
@@ -85,19 +85,19 @@ sequenceDiagram
     p6->>p20: _knowledge_index_to_payload_unchecked
     p11->>p21: _string
     p10->>p22: _validated_bundle
-    p10->>p23: _validated_pages
-    p11->>p24: _parse_bundle
-    p10->>p25: _validated_content
-    p12->>p26: _structural_facet
-    p10->>p27: _validate_snapshot_commitments
-    p10->>p28: _surface_pages
+    p15->>p23: _line_relative_location
+    p10->>p24: _validated_pages
+    p11->>p25: _parse_bundle
+    p10->>p26: _validated_content
+    p12->>p27: _structural_facet
+    p10->>p28: _validate_snapshot_commitments
     p0-->>p29: TypeError (src/llm_wiki_engine/knowl….py:build_knowledge_index)('knowledge validators changed during builder validation')
     p0-->>p30: _INDEX_VALIDATION_OPERATION.get
 ```
 
-> Call sequence diagram shows 30 of 1231 interactions; 1201 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1240 interactions; 1210 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 294 (293 omitted); unresolved 1 of 174 (173 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 294 (293 omitted); unresolved 1 of 176 (175 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_envelope.py:evaluated_envelope_to_payload` | 9 | [src/llm_wiki_engine/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
 | `src/llm_wiki_engine/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | external | 3 |
 | `src/llm_wiki_engine/knowledge_envelope.py:_validated_bundle_payload` | 13 | - | unresolved | 1 |
-> Omission summary shows 8 of 296 groups; 288 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 299 groups; 291 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -124,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 764; effect analysis evaluated: 412, partial: 23, unavailable: 329. Counts include steps omitted from the displayed trace.
+Source steps: 771; effect analysis evaluated: 417, partial: 23, unavailable: 331. Counts include steps omitted from the displayed trace.
 
-Collector observations for 435 source steps with known totals: observed: 2241, emitted: 2037, omitted: 204. Unavailable totals are excluded.
+Collector observations for 440 source steps with known totals: observed: 2263, emitted: 2058, omitted: 205. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -212,14 +212,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_index | _assemble_knowledge_index | 251 | `_assemble_knowledge_index(inputs)` |
-| _assemble_knowledge_index | _validate_and_join_inputs | 226 | `_validate_and_join_inputs(inputs)` |
-| _validate_and_join_inputs | isinstance (src/llm_wiki_engine/knowl…_validate_and_join_inputs) | 556 | `isinstance(inputs, KnowledgeIndexInputs)` |
-| _validate_and_join_inputs | TypeError (src/llm_wiki_engine/knowl…_validate_and_join_inputs) | 557 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
-| _validate_and_join_inputs | _validated_bundle | 558 | `_validated_bundle(inputs.envelope)` |
-| _validated_bundle | isinstance (src/llm_wiki_engine/knowl…ndex.py:_validated_bundle) | 657 | `isinstance(envelope, EvaluatedEnvelope)` |
-| _validated_bundle | KnowledgeIndexBuildError | 658 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
-| _validated_bundle | evaluated_envelope_to_payload | 663 | `evaluated_envelope_to_payload(envelope)` |
+| build_knowledge_index | _assemble_knowledge_index | 259 | `_assemble_knowledge_index(inputs)` |
+| _assemble_knowledge_index | _validate_and_join_inputs | 232 | `_validate_and_join_inputs(inputs)` |
+| _validate_and_join_inputs | isinstance (src/llm_wiki_engine/knowl…_validate_and_join_inputs) | 564 | `isinstance(inputs, KnowledgeIndexInputs)` |
+| _validate_and_join_inputs | TypeError (src/llm_wiki_engine/knowl…_validate_and_join_inputs) | 565 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
+| _validate_and_join_inputs | _validated_bundle | 566 | `_validated_bundle(inputs.envelope)` |
+| _validated_bundle | isinstance (src/llm_wiki_engine/knowl…ndex.py:_validated_bundle) | 665 | `isinstance(envelope, EvaluatedEnvelope)` |
+| _validated_bundle | KnowledgeIndexBuildError | 666 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
+| _validated_bundle | evaluated_envelope_to_payload | 671 | `evaluated_envelope_to_payload(envelope)` |
 | evaluated_envelope_to_payload | isinstance (src/llm_wiki_engine/knowl…uated_envelope_to_payload) | 1142 | `isinstance(envelope, EvaluatedEnvelope)` |
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_engine/knowl…uated_envelope_to_payload) | 1143 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1145 | `KnowledgeEnvelopeError('schema_version', ...)` |
@@ -228,17 +228,17 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `relationships.extend` | `_assemble_knowledge_index` | 233 |
-| mutation | `joined.append` | `_validate_and_join_inputs` | 615 |
-| mutation | `joined.sort` | `_validate_and_join_inputs` | 636 |
+| mutation | `relationships.extend` | `_assemble_knowledge_index` | 239 |
+| mutation | `joined.append` | `_validate_and_join_inputs` | 623 |
+| mutation | `joined.sort` | `_validate_and_join_inputs` | 644 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_and_join_inputs` | `isinstance` | 556 |
-| external_call | `_validate_and_join_inputs` | `TypeError` | 557 |
-| external_call | `_validated_bundle` | `isinstance` | 657 |
+| external_call | `_validate_and_join_inputs` | `isinstance` | 564 |
+| external_call | `_validate_and_join_inputs` | `TypeError` | 565 |
+| external_call | `_validated_bundle` | `isinstance` | 665 |
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1142 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1143 |
 | step_limit | `build_knowledge_index` | `first 12 steps` | 0 |

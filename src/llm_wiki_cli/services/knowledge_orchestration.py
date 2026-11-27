@@ -93,6 +93,7 @@ from llm_wiki_engine.knowledge_model import (
     KnowledgeIndex,
     ObservationScope,
     ProducerRecord,
+    WorkingTreeState,
     concept_kind_for_page_kind,
 )
 from .source_snapshot import SourceSnapshot, source_snapshot_matches_current_files
@@ -568,7 +569,14 @@ def _stabilize_revision_only_noop(
     runtime_inputs: RuntimeKnowledgeInputs,
     plan_inputs: KnowledgeGenerationInputs,
 ) -> KnowledgeCommitPlan:
-    """Keep a validated artifact set stable across an output-only Git commit."""
+    """Keep a validated artifact set stable when only the checkout state moved.
+
+    The stored repository record says where and in what state the wiki was
+    generated. A new commit, or a working tree that became clean or dirty,
+    changes that record and nothing else. Re-stamping it would make every
+    wiki stale the moment it is committed, so the earlier record is kept
+    until a sync has something else to write.
+    """
 
     candidate = build_knowledge_generation_plan(plan_inputs)
     current_revision = runtime_inputs.repository_evidence.evaluated_revision
@@ -581,31 +589,53 @@ def _stabilize_revision_only_noop(
     )
     if previous is None:
         return candidate
-    previous_revision = previous.knowledge.bundle.repository.evaluated_revision
+    previous_record = previous.knowledge.bundle.repository
+    previous_revision = previous_record.evaluated_revision
     normalized_current = (
         current_revision
         if current_revision.startswith("git:")
         else f"git:{current_revision}"
     )
-    if previous_revision == "unknown" or normalized_current == previous_revision:
+    current_state = runtime_inputs.repository_evidence.working_tree
+    # An unknown earlier state carries nothing worth keeping.
+    kept_state = (
+        current_state
+        if previous_record.working_tree is WorkingTreeState.UNKNOWN
+        else previous_record.working_tree
+    )
+    if previous_revision == "unknown" or (
+        normalized_current == previous_revision and kept_state is current_state
+    ):
         return candidate
-    revision_only_bundle = replace(
+    checkout_only_bundle = replace(
         previous.knowledge.bundle,
         repository=replace(
-            previous.knowledge.bundle.repository,
+            previous_record,
             evaluated_revision=normalized_current,
+            working_tree=current_state,
         ),
     )
     if candidate.evaluated_envelope_hash != EvaluatedEnvelope(
-        bundle=revision_only_bundle
+        bundle=checkout_only_bundle
     ).content_hash():
         return candidate
+    from llm_wiki_engine.knowledge_reuse_format import repository_input_hash
+
+    basis = plan_inputs.reuse_input_basis
     stabilized = build_knowledge_generation_plan(
         replace(
             plan_inputs,
             repository_evidence=replace(
                 runtime_inputs.repository_evidence,
                 evaluated_revision=previous_revision,
+                working_tree=kept_state,
+            ),
+            # The reuse commitment binds the repository record it is stored
+            # beside, so it follows the record that is kept.
+            reuse_input_basis=(
+                basis
+                if basis is None
+                else {**basis, "repository_hash": repository_input_hash(previous_record)}
             ),
         )
     )

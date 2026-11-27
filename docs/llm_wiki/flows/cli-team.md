@@ -70,9 +70,9 @@ sequenceDiagram
     participant p2 as _run_check
     participant p3 as _run_resolve_conflicts
     participant p4 as validate_path
-    participant p5 as write_default_team_config
-    participant p6 as validate_source_root
-    participant p7 as resolve_team_policy
+    participant p5 as validate_source_root
+    participant p6 as resolve_team_policy
+    participant p7 as write_default_team_config
     participant p8 as _finish_check
     participant p9 as team_config_issue
     participant p10 as resolve_conflicts
@@ -85,24 +85,24 @@ sequenceDiagram
     participant p17 as resolve_source_selection
     participant p18 as _build_inventory_result
     participant p19 as extraction_job_request_for
-    participant p20 as write_json_atomic
+    participant p20 as validate_team_config
     participant p21 as _print_payload
     participant p22 as SyncManifest.load
     participant p23 as _coerce_inventory_request
     participant p24 as load_team_config
-    participant p25 as parse_github_actions_workflow
-    participant p26 as check_plugin_requirements
-    participant p27 as _parse_dockerfile
-    participant p28 as check_team_conventions
+    participant p25 as write_json_atomic
+    participant p26 as parse_github_actions_workflow
+    participant p27 as check_plugin_requirements
+    participant p28 as _parse_dockerfile
     participant p29 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
     participant p30 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
     p0->>p1: _run_init
     p0->>p2: _run_check
     p0->>p3: _run_resolve_conflicts
     p1->>p4: validate_path
-    p1->>p5: write_default_team_config
-    p2->>p6: validate_source_root
-    p2->>p7: resolve_team_policy
+    p2->>p5: validate_source_root
+    p2->>p6: resolve_team_policy
+    p1->>p7: write_default_team_config
     p2->>p8: _finish_check
     p2->>p9: team_config_issue
     p3->>p10: resolve_conflicts
@@ -115,36 +115,36 @@ sequenceDiagram
     p11->>p17: resolve_source_selection
     p12->>p18: _build_inventory_result
     p13->>p19: extraction_job_request_for
-    p5->>p20: write_json_atomic
+    p7->>p20: validate_team_config
     p8->>p21: _print_payload
     p11->>p22: SyncManifest.load
     p12->>p23: _coerce_inventory_request
-    p7->>p24: load_team_config
-    p15->>p25: parse_github_actions_workflow
-    p16->>p26: check_plugin_requirements
-    p14->>p27: _parse_dockerfile
-    p16->>p28: check_team_conventions
+    p6->>p24: load_team_config
+    p7->>p25: write_json_atomic
+    p15->>p26: parse_github_actions_workflow
+    p16->>p27: check_plugin_requirements
+    p14->>p28: _parse_dockerfile
     p0-->>p29: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2597 interactions; 2567 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2665 interactions; 2635 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 829 (828 omitted); unresolved 1 of 814 (813 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 853 (852 omitted); unresolved 1 of 829 (828 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | - | external | 3 |
+| `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | - | external | 9 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 5 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 5 | - | unresolved | 5 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 5 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
 | `src/llm_wiki_engine/host.py:current_host` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 1 |
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 16 | - | external | 1 |
-| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 20 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
-> Omission summary shows 8 of 681 groups; 673 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 24 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
+> Omission summary shows 8 of 696 groups; 688 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -157,9 +157,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 955; effect analysis evaluated: 678, partial: 34, unavailable: 243. Counts include steps omitted from the displayed trace.
+Source steps: 984; effect analysis evaluated: 701, partial: 36, unavailable: 247. Counts include steps omitted from the displayed trace.
 
-Collector observations for 712 source steps with known totals: observed: 3917, emitted: 3817, omitted: 100. Unavailable totals are excluded.
+Collector observations for 737 source steps with known totals: observed: 4035, emitted: 3924, omitted: 111. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -169,7 +169,7 @@ Collector observations for 712 source steps with known totals: observed: 3917, e
 |---|---|---|---|---:|---:|---:|
 | `run` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `getattr (src/llm_wiki_cli/commands/team_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `_run_init` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_run_init` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
 | `getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 | `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
@@ -211,6 +211,8 @@ flowchart LR
     s3 -. "output print" .-> b1
     b2["output print"]
     s3 -. "output print" .-> b2
+    b3["output print"]
+    s3 -. "output print" .-> b3
     click s1 "../modules/team_cmd.md"
     click s3 "../modules/team_cmd.md"
     click s5 "../modules/path_policy.md"
@@ -220,6 +222,7 @@ flowchart LR
     class b0 boundary
     class b1 boundary
     class b2 boundary
+    class b3 boundary
 ```
 
 ### Step data
@@ -228,7 +231,7 @@ flowchart LR
 |---|---|---|---|---|
 | `run` | `args` | `sys` | - | - |
 | `getattr (src/llm_wiki_cli/commands/team_cmd.py:run)` | - | - | - | - |
-| `_run_init` | `args` | `DEFAULT_WIKI_DIR` | - | `none` |
+| `_run_init` | `args` | `DEFAULT_WIKI_DIR`, `team`, `sys` | - | `none` |
 | `getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -243,8 +246,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/team_cmd.py:run) | 262 | `getattr(args, 'team_action', None)` |
-| run | _run_init | 264 | `_run_init(args)` |
+| run | getattr (src/llm_wiki_cli/commands/team_cmd.py:run) | 273 | `getattr(args, 'team_action', None)` |
+| run | _run_init | 275 | `_run_init(args)` |
 | _run_init | getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init) | 61 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | _run_init | validate_path | 62 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 102 | `PathValidationError(...)` |
@@ -259,15 +262,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 270 |
+| output | `print` | `run` | 281 |
 | output | `print` | `_run_init` | 65 |
-| output | `print` | `_run_init` | 68 |
+| output | `print` | `_run_init` | 77 |
+| output | `print` | `_run_init` | 79 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 262 |
+| external_call | `run` | `getattr` | 273 |
 | external_call | `_run_init` | `getattr` | 61 |
 | unresolved_call | `validate_path` | `(current_host().cwd() / path).resolve` | 103 |
 | unresolved_call | `validate_path` | `current_host().cwd` | 103 |

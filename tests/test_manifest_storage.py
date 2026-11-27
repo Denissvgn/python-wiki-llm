@@ -15,7 +15,7 @@ from llm_wiki_engine.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, prune_knowledge_storage, recover_knowledge_storage,
 )
 from llm_wiki_engine.manifest_storage import (
-    OBJECT_LIMIT, ROOT_LIMIT, ManifestStoreReader, build_manifest_store,
+    OBJECT_LIMIT, ROOT_LIMIT, SEGMENT_LIMIT, ManifestStoreReader, build_manifest_store, content_segments,
     object_path, read_manifest_header, current_manifest_format,
 )
 from llm_wiki_engine.sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
@@ -212,3 +212,30 @@ def test_documentation_import_reconstructs_v6_catalogs(tmp_path, fmt):
 def test_documentation_import_keeps_malformed_index_page_paths_unknown(suffix):
     from llm_wiki_cli.services.documentation_wiki_input import _is_known_wiki_path
     assert not _is_known_wiki_path('.llm-wiki-knowledge/index-pages/' + suffix)
+
+
+def test_a_small_manifest_change_rewrites_few_catalog_objects():
+    payload = SyncManifest(generation_inputs={"example": "policy"}).to_payload()
+    payload["sources"] = {f"src/unit_{i:05}.py": {"hash": "sha256:" + f"{i:064x}", "notes": "n" * (i % 40)}
+                          for i in range(8_000)}
+    before = build_manifest_store(payload)
+    payload["sources"]["src/unit_00017_added.py"] = {"hash": "sha256:" + "b" * 64, "notes": ""}
+    del payload["sources"]["src/unit_04000.py"]
+    after = build_manifest_store(payload)
+    reader = ManifestStoreReader(json.loads(after.root_bytes), lambda name, _: after.objects[name])
+    assert reader.materialize() == payload
+    assert len(after.objects) > 40
+    written = [raw for name, raw in after.objects.items() if name not in before.objects]
+    # Two edited segments plus the branch nodes above them, not the whole field.
+    assert len(written) <= 6
+    assert sum(map(len, written)) * 5 < sum(map(len, after.objects.values()))
+
+
+def test_manifest_segments_do_not_depend_on_how_the_stream_arrives():
+    data = b"".join(b'{"path":"src/unit_%d.py","hash":"%064x"},' % (i, i * 7919) for i in range(6_000))
+    whole = list(content_segments([data]))
+    assert b"".join(whole) == data
+    assert all(0 < len(part) <= SEGMENT_LIMIT for part in whole)
+    for size in (1_000, 32_768, 50_001):
+        assert list(content_segments(data[i:i + size] for i in range(0, len(data), size))) == whole
+    assert [len(part) for part in content_segments([b"x" * 70_000])] == [SEGMENT_LIMIT, SEGMENT_LIMIT, 4_464]

@@ -13,6 +13,7 @@ from llm_wiki_engine.knowledge_artifacts import (
 from llm_wiki_engine.knowledge_envelope import EvaluatedEnvelope, hash_markdown_snapshot
 from llm_wiki_engine.knowledge_index import KnowledgeIndexInputs, _assemble_knowledge_index
 from llm_wiki_engine.knowledge_links import collect_link_observations
+from llm_wiki_engine.knowledge_model import is_line_relative_link
 from llm_wiki_engine.knowledge_storage import MAX_EXPANDED_BYTES
 from llm_wiki_engine.knowledge_storage_io import StorageReadSession, read_guarded
 from llm_wiki_engine.maintenance_protocol import guard_maintenance_owner
@@ -60,6 +61,7 @@ def _project(artifacts, manifest, root, pages, content, released):
         page_source_mappings=manifest.page_source_mappings, evidence_baselines=manifest.evidence_baselines,
         tombstones=manifest.tombstones, infrastructure_bases=infrastructure_evidence_by_page(manifest.generation_inputs),
         link_observations=collect_link_observations(pages, content, existing_asset_paths=assets),
+        line_relative_links=any(is_line_relative_link(r) for r in model.relationships),
     ))
     index = next(c for c in evaluated.concepts if c.locator == old_index.locator)
     concepts = []

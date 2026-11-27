@@ -2,7 +2,7 @@
 
 **Entry point:** `sync_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 69 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 76 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [health_details](../modules/health_details.md)
 - [helper_runtime](../modules/helper_runtime.md)
 - [historical_release](../modules/historical_release.md)
 - [historical_retirement](../modules/historical_retirement.md)
@@ -38,6 +39,7 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
@@ -46,6 +48,8 @@
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [knowledge_verification](../modules/knowledge_verification.md)
+- [lint_service](../modules/lint_service.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_recovery](../modules/maintenance_recovery.md)
 - [maintenance_state](../modules/maintenance_state.md)
@@ -74,7 +78,10 @@
 - [sync_service](../modules/sync_service.md)
 - [sync_transition_execution](../modules/sync_transition_execution.md)
 - [sync_transitions](../modules/sync_transitions.md)
+- [team](../modules/team.md)
 - [validation](../modules/validation.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
+- [wiki_git_policy](../modules/wiki_git_policy.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -97,25 +104,25 @@ sequenceDiagram
     participant p7 as run_request
     participant p8 as _sync_run_options_from_request
     participant p9 as _outside_tree
-    participant p10 as maintenance_write_operation
-    participant p11 as run_release
-    participant p12 as _run_sync_options
-    participant p13 as finalize_knowledge_storage
-    participant p14 as _absolute_path
-    participant p15 as _prepare_sync_run
-    participant p16 as cache_options_for
-    participant p17 as guard_maintenance_owner
-    participant p18 as governance_writer_lock
-    participant p19 as capture_committed_knowledge
-    participant p20 as storage_writer_lock
-    participant p21 as prepare_boundary
-    participant p22 as storage_report
-    participant p23 as _job_request
-    participant p24 as _surface_args
-    participant p25 as _capture_spooled_wiki
-    participant p26 as prune_knowledge_storage
-    participant p27 as _flow_category_args
-    participant p28 as repair_paths
+    participant p10 as ownership_write_refusal
+    participant p11 as maintenance_write_operation
+    participant p12 as run_release
+    participant p13 as _run_sync_options
+    participant p14 as finalize_knowledge_storage
+    participant p15 as _verify_written_wiki
+    participant p16 as _absolute_path
+    participant p17 as _prepare_sync_run
+    participant p18 as build_report
+    participant p19 as cache_options_for
+    participant p20 as wiki_ownership
+    participant p21 as guard_maintenance_owner
+    participant p22 as load_team_config
+    participant p23 as governance_writer_lock
+    participant p24 as capture_committed_knowledge
+    participant p25 as current_branch
+    participant p26 as storage_writer_lock
+    participant p27 as prepare_boundary
+    participant p28 as storage_report
     participant p29 as str (src/llm_wiki_cli/api.py:sync_wiki)
     participant p30 as current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)
     p0->>p1: discarding_output
@@ -127,32 +134,32 @@ sequenceDiagram
     p2->>p7: run_request
     p7->>p8: _sync_run_options_from_request
     p7->>p9: _outside_tree
-    p7->>p10: maintenance_write_operation
-    p7->>p11: run_release
-    p7->>p12: _run_sync_options
-    p7->>p13: finalize_knowledge_storage
-    p9->>p14: _absolute_path
-    p12->>p15: _prepare_sync_run
-    p8->>p16: cache_options_for
-    p10->>p17: guard_maintenance_owner
-    p10->>p18: governance_writer_lock
-    p11->>p19: capture_committed_knowledge
-    p10->>p20: storage_writer_lock
-    p12->>p21: prepare_boundary
-    p13->>p22: storage_report
-    p8->>p23: _job_request
-    p8->>p24: _surface_args
-    p10->>p25: _capture_spooled_wiki
-    p13->>p26: prune_knowledge_storage
-    p8->>p27: _flow_category_args
-    p8->>p28: repair_paths
+    p7->>p10: ownership_write_refusal
+    p7->>p11: maintenance_write_operation
+    p7->>p12: run_release
+    p7->>p13: _run_sync_options
+    p7->>p14: finalize_knowledge_storage
+    p7->>p15: _verify_written_wiki
+    p9->>p16: _absolute_path
+    p13->>p17: _prepare_sync_run
+    p15->>p18: build_report
+    p8->>p19: cache_options_for
+    p10->>p20: wiki_ownership
+    p11->>p21: guard_maintenance_owner
+    p10->>p22: load_team_config
+    p11->>p23: governance_writer_lock
+    p12->>p24: capture_committed_knowledge
+    p10->>p25: current_branch
+    p11->>p26: storage_writer_lock
+    p13->>p27: prepare_boundary
+    p14->>p28: storage_report
     p0-->>p29: str (src/llm_wiki_cli/api.py:sync_wiki)(exc)
     p1-->>p30: current_host().with_output (src/llm_wiki_engine/host.py:discarding_output)(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 2323 interactions; 2293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2582 interactions; 2552 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 670 (669 omitted); unresolved 1 of 603 (602 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 707 (706 omitted); unresolved 1 of 691 (690 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +173,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | [src/llm_wiki_cli/services/sync_runtime.py](../modules/sync_runtime.md) | internal | 3 |
 | `src/llm_wiki_cli/services/sync_runtime.py:execute_sync` | 14 | - | unresolved | 4 |
 | `src/llm_wiki_engine/host.py:recording_errors` | 19 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 3 |
-> Omission summary shows 8 of 650 groups; 642 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 703 groups; 695 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,9 +186,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1051; effect analysis evaluated: 730, partial: 57, unavailable: 264. Counts include steps omitted from the displayed trace.
+Source steps: 1185; effect analysis evaluated: 835, partial: 63, unavailable: 287. Counts include steps omitted from the displayed trace.
 
-Collector observations for 787 source steps with known totals: observed: 5259, emitted: 4926, omitted: 333. Unavailable totals are excluded.
+Collector observations for 898 source steps with known totals: observed: 5933, emitted: 5565, omitted: 368. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

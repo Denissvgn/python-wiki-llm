@@ -96,9 +96,9 @@ sequenceDiagram
     p3-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1414 interactions; 1384 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1423 interactions; 1393 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 359 (358 omitted); unresolved 1 of 216 (215 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 359 (358 omitted); unresolved 1 of 218 (217 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -112,7 +112,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:_validation_error` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_record` | 4 | - | external | 4 |
-> Omission summary shows 8 of 329 groups; 321 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 333 groups; 325 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -125,9 +125,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 840; effect analysis evaluated: 478, partial: 24, unavailable: 338. Counts include steps omitted from the displayed trace.
+Source steps: 847; effect analysis evaluated: 483, partial: 24, unavailable: 340. Counts include steps omitted from the displayed trace.
 
-Collector observations for 502 source steps with known totals: observed: 2579, emitted: 2368, omitted: 211. Unavailable totals are excluded.
+Collector observations for 507 source steps with known totals: observed: 2601, emitted: 2389, omitted: 212. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -202,12 +202,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_index | isinstance (src/llm_wiki_engine/knowl…:validate_knowledge_index) | 280 | `isinstance(value, KnowledgeIndex)` |
-| validate_knowledge_index | parse_knowledge_index | 282 | `parse_knowledge_index(_model_to_payload(...))` |
+| validate_knowledge_index | isinstance (src/llm_wiki_engine/knowl…:validate_knowledge_index) | 288 | `isinstance(value, KnowledgeIndex)` |
+| validate_knowledge_index | parse_knowledge_index | 290 | `parse_knowledge_index(_model_to_payload(...))` |
 | parse_knowledge_index | _record | 553 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_engine/knowledge_model.py) | 1612 | `_object(value, ...)` |
-| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1698 | `dict(require_mapping(...))` |
-| _object (src/llm_wiki_engine/knowledge_model.py) | require_mapping | 1699 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
+| _record | _object (src/llm_wiki_engine/knowledge_model.py) | 1645 | `_object(value, ...)` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1731 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | require_mapping | 1732 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
 | require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |
@@ -222,7 +222,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_knowledge_index` | `isinstance` | 280 |
+| external_call | `validate_knowledge_index` | `isinstance` | 288 |
 | external_call | `require_mapping` | `isinstance` | 783 |
 | external_call | `_validation_error` | `isinstance` | 95 |
 | unresolved_call | `_validation_error` | `error` | 95 |

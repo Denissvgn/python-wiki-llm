@@ -10,15 +10,18 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_storage.KnowledgeStorageError`
 2. `knowledge_storage.KnowledgeStorageError`
-3. `knowledge_storage_io._absolute_path`
-4. `knowledge_storage.KnowledgeStorageError`
-5. `knowledge_storage.KnowledgeStorageError`
-6. `knowledge_artifacts.build_knowledge_commit_plan`
-7. `canonical_json.sha256_digest`
-8. `knowledge_artifacts.current_knowledge_format`
-9. `canonical_json.sha256_digest`
-10. `knowledge_storage.KnowledgeStorageError`
-11. `knowledge_artifacts.commit_knowledge_artifacts`
+3. `knowledge_storage.KnowledgeStorageError`
+4. `knowledge_storage_io._absolute_path`
+5. `knowledge_artifacts.current_knowledge_format`
+6. `knowledge_storage.KnowledgeStorageError`
+7. `knowledge_storage.KnowledgeStorageError`
+8. `knowledge_storage.KnowledgeStorageError`
+9. `knowledge_artifacts.build_knowledge_commit_plan`
+10. `canonical_json.sha256_digest`
+11. `knowledge_artifacts.current_knowledge_format`
+12. `canonical_json.sha256_digest`
+13. `knowledge_storage.KnowledgeStorageError`
+14. `knowledge_artifacts.commit_knowledge_artifacts`
 
 ## Touches
 

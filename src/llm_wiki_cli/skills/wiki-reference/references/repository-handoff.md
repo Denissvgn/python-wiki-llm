@@ -4,6 +4,7 @@
 
 - [Internal report targets](#internal-report-targets)
 - [Determine delivery state](#determine-delivery-state)
+- [Trunk-owned wikis](#trunk-owned-wikis)
 - [Governance and external-workspace boundaries](#governance-and-external-workspace-boundaries)
 
 Read this topic before the first managed wiki write and again immediately
@@ -107,6 +108,31 @@ Keep the `docs(wiki):` prefix. Never reuse the hook's literal
 commit. User-facing changes may require an `## [Unreleased]` changelog entry;
 pure refactors, test-only or documentation-only changes, and external workspace
 runs do not.
+
+## Trunk-owned wikis
+
+Read `ownership` in `.llm-wiki/team.json` before any wiki write. With
+`"mode": "trunk"`, only the named trunk and `writer_branches` may run a
+writing `sync`; on any other branch it stops with exit status 2.
+
+On a branch that may not write the wiki:
+
+- Do not edit, stage or commit generated wiki paths. Paths under
+  `authored_paths` (default `guides`) remain yours to edit.
+- Use `sync --dry-run` to preview. Lint and CI report the stale manifest and
+  missing or stale generated pages as pending refresh; that is expected.
+- Before handoff run
+  `llm-wiki knowledge git-check --wiki-dir <wiki-dir> --base <base-ref>` and
+  require `ok: true`.
+- Report that the wiki awaits the trunk refresh. Do not switch branches,
+  change the policy or copy the wiki from another branch to get around the
+  refusal.
+
+On the trunk or a writer branch, refresh in one run:
+`llm-wiki sync --prune-storage --verify` with the project's usual roots and
+options. It writes the wiki, removes unreferenced storage and runs the strict
+checks once. Skip the separate preview and the repeat preview. Then stage the
+wiki directory alone and require `git-check --staged` to succeed.
 
 ## Governance and external-workspace boundaries
 

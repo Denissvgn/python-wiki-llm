@@ -33,7 +33,7 @@ from .knowledge_storage import (
 )
 from .knowledge_storage_io import StorageReadSession, read_guarded, _absolute_path
 from .knowledge_packs import (
-    PACKED_SCHEMA, LOCAL_PACKED_SCHEMA, PACKED_SCHEMAS, PACKED_FORMATS, packed_format,
+    PACKED_SCHEMA, LOCAL_PACKED_SCHEMA, PACKED_SCHEMAS, PACKED_FORMATS, FINE_FORMATS, packed_format,
     PACK_NAME, INDEX_NAME, PACK_DIRECTORY, PACK_INDEX_DIRECTORY,
     INDEX_PAGE_NAME, INDEX_PAGE_DIRECTORY, PackedKnowledgeStoreReader, inspect_pack, inspect_index_pages,
 )
@@ -130,11 +130,21 @@ def _backup(directory: Path, files: dict[str, bytes], target_hash: str, target_m
             atomic_write_guarded_bytes(path, content, expected_existing=None)
 
 
+# The fine profile also changes how link records are written, so a byte-level
+# migration cannot produce or leave it; a sync regenerates the records.
+_FINE_MIGRATION_MESSAGE = (
+    "the fine profile is adopted or left by a writing sync: "
+    "run sync with --knowledge-format instead of a storage migration"
+)
+
+
 def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
                               recovery_dir: str | Path | None = None,
                               to: str = "sharded-v2",
                               manifest_format: str | None = None) -> dict[str, Any]:
     """Migrate storage, optionally indexing its manifest in the same commit."""
+    if to in FINE_FORMATS:
+        raise KnowledgeStorageError("to", _FINE_MIGRATION_MESSAGE)
     if type(dry_run) is not bool or to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
         raise KnowledgeStorageError("request", "unsupported storage migration request")
     if manifest_format not in (None, "indexed-v6", "indexed-v8"):
@@ -156,9 +166,13 @@ def _migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool,
     """Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
+    if to in FINE_FORMATS:
+        raise KnowledgeStorageError("to", _FINE_MIGRATION_MESSAGE)
     if to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
         raise KnowledgeStorageError("to", "unsupported migration format")
     root = _absolute_path(Path(wiki_dir))
+    if to not in {"indexed-v6", "indexed-v8"} and current_knowledge_format(root) in FINE_FORMATS:
+        raise KnowledgeStorageError("to", _FINE_MIGRATION_MESSAGE)
     state, session, previous = _committed_inputs(root)
     assert state.knowledge is not None and state.manifest_basis is not None
     adopted = state.manifest_basis.maintenance_state is not None
@@ -424,7 +438,7 @@ def finalize_knowledge_storage(
         _outside_tree(Path(recovery_dir), root)
     before = storage_report(root, require_referenced=True)
     if before["ok"]:
-        return {"removed": [], "bytes": 0, "recovery_manifest": None}
+        return {"removed": [], "bytes": 0, "recovery_manifest": None, "recovery_source": None}
     repairable = {"unreferenced-storage", "unrecognized-storage"}
     if before["integrity"] != "valid-committed-snapshot" or any(
         failure["reason"] not in repairable for failure in before["failures"]
@@ -459,6 +473,7 @@ def finalize_knowledge_storage(
         "removed": applied["removed"],
         "bytes": applied["bytes"],
         "recovery_manifest": applied["recovery_manifest"],
+        "recovery_source": applied["recovery_source"],
     }
 
 
@@ -475,6 +490,41 @@ def _prune_plan(root, root_bytes, manifest_bytes, candidates):
         raise KnowledgeStorageError("plan", "prune plan exceeds its bound", code="storage-limit")
     body["plan_id"] = digest(canonical_bytes(body))
     return body
+
+
+def _committed_at_head(root, candidates) -> bool:
+    """Return whether Git's HEAD holds every candidate with these exact bytes.
+
+    Such objects are recoverable with ``git checkout HEAD -- <path>``, so a
+    second copy outside the wiki would only duplicate history.
+    """
+    import hashlib
+
+    from .knowledge_storage_diagnostics import _git
+
+    try:
+        code, output = _git(root, ["ls-tree", "-r", "-z", "HEAD", "--", "."], maximum=64 * 1024 * 1024)
+    except (KnowledgeStorageError, OSError):
+        return False
+    if code or (output and not output.endswith(b"\0")):
+        return False
+    committed = {}
+    for row in output[:-1].split(b"\0") if output else []:
+        head, separator, name = row.partition(b"\t")
+        fields = head.split(b" ")
+        if not separator or len(fields) != 3 or fields[1] != b"blob":
+            continue
+        committed[name] = fields[2].decode("ascii", "replace")
+    for name, raw in candidates.items():
+        recorded = committed.get(os.fsencode(name))
+        if recorded is None or len(recorded) not in {40, 64}:
+            return False
+        hasher = hashlib.new("sha1" if len(recorded) == 40 else "sha256", usedforsecurity=False)
+        hasher.update(b"blob %d\0" % len(raw))
+        hasher.update(raw)
+        if hasher.hexdigest() != recorded:
+            return False
+    return True
 
 
 def _prune_backup(root, directory, plan, candidates, cancelled):
@@ -606,10 +656,13 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
         raise KnowledgeStorageError("plan", "generation, root or candidate preimages changed", code="storage-mutation")
     removed = []
     recovery = None
+    in_git = False
     if not dry_run:
         with governance_writer_lock(root), storage_writer_lock(root):
             session.recheck()
-            if safe:
+            # An explicit recovery directory always receives its copy.
+            in_git = bool(safe) and recovery_dir is None and _committed_at_head(root, safe)
+            if safe and not in_git:
                 recovery = _prune_backup(root, recovery_dir, prepared, safe, cancelled)
             try:
                 for name, content in safe.items():
@@ -631,7 +684,9 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
                 raise
     return {"dry_run": dry_run, "unreferenced_objects": sorted(safe), "removed": removed,
             "retained": sorted(set(retained)), "bytes": sum(map(len, safe.values())), "git_history_changed": False,
-            "plan": prepared, "recovery_manifest": recovery, "inspection_bytes": inspected_bytes,
+            "plan": prepared, "recovery_manifest": recovery,
+            "recovery_source": "git-head" if in_git else "copy" if recovery is not None else None,
+            "inspection_bytes": inspected_bytes,
             "budget_exhausted": budget_exhausted,
             "scan_scope": "owned-namespace" if plan is None else "saved-plan-candidates"}
 

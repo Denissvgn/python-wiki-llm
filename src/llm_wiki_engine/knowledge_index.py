@@ -76,7 +76,10 @@ from .knowledge_model import (
     parse_knowledge_index,
 )
 from .knowledge_model import (
+    LINE_LOCATION_BASIS,
+    LOCATION_BASIS_EXTENSION,
     _knowledge_index_to_payload_unchecked,
+    is_line_relative_link,
 )
 from .sync_manifest import (
     ManifestEvidenceBaseline,
@@ -164,6 +167,9 @@ class KnowledgeIndexInputs:
     )
     extensions: Mapping[str, Any] = field(default_factory=dict)
     concept_extensions_by_page: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
+    #: Write link records in the position-stable form: located within their
+    #: line and without the source page hash.
+    line_relative_links: bool = False
 
 
 @dataclass(frozen=True)
@@ -231,7 +237,9 @@ def _assemble_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
         if (relationship := _derived_relationship(joined)) is not None
     ]
     relationships.extend(
-        _link_relationship(observation, context.joined_by_path)
+        _link_relationship(
+            observation, context.joined_by_path, line_relative=inputs.line_relative_links
+        )
         for observation in context.observations
     )
     model = KnowledgeIndex(
@@ -1608,9 +1616,23 @@ def _derived_relationship(joined: _JoinedPage) -> RelationshipRecord | None:
     )
 
 
+def _line_relative_location(
+    location: RelationshipLocation, content: str
+) -> RelationshipLocation:
+    """Re-express a page offset as an offset within the link's own line."""
+    line_start = content.rfind("\n", 0, location.start) + 1
+    return RelationshipLocation(
+        start=location.start - line_start,
+        end=location.end - line_start,
+        extensions={LOCATION_BASIS_EXTENSION: LINE_LOCATION_BASIS},
+    )
+
+
 def _link_relationship(
     observation: LinkObservation,
     joined_by_path: Mapping[str, _JoinedPage],
+    *,
+    line_relative: bool = False,
 ) -> RelationshipRecord:
     source = joined_by_path[observation.source_canonical_path]
     return RelationshipRecord(
@@ -1623,12 +1645,16 @@ def _link_relationship(
             raw_target=observation.raw_target,
             normalized_target=observation.normalized_target,
             label=observation.label,
-            location=observation.location,
+            location=(
+                _line_relative_location(observation.location, source.content)
+                if line_relative
+                else observation.location
+            ),
         ),
         origin=Origin.MARKDOWN,
         evidence=RelationshipEvidence(
             state=EvidenceState.PRESENT,
-            page_hash=source.page_hash,
+            page_hash=None if line_relative else source.page_hash,
         ),
         resolution=observation.resolution,
         extensions={LINK_SYNTAX_EXTENSION: observation.syntax.value},
@@ -1811,7 +1837,9 @@ def _validate_builder_link(
             f"{path}.evidence.state",
             "must be 'present' for a knowledge-index link observation",
         )
-    if evidence.page_hash != source.facets.semantics.page_hash:
+    if not is_line_relative_link(relationship) and (
+        evidence.page_hash != source.facets.semantics.page_hash
+    ):
         raise KnowledgeModelError(
             f"{path}.evidence.page_hash",
             "must match the source document semantic page hash",

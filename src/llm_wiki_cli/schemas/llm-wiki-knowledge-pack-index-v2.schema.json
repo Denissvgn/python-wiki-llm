@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:llm-wiki:schema:knowledge-pack-index:v2",
   "title": "Bounded routing pages in content-addressed containers",
-  "description": "Runtime checks additionally enforce byte bounds, prefix ownership, pack membership and ZIP coordinates.",
+  "description": "Runtime checks additionally enforce byte bounds, prefix ownership, pack membership and ZIP coordinates. A slots page locates each member by its place in the logical tree and takes its range from the pack's own directory.",
   "oneOf": [
     {
       "type": "object",
@@ -218,6 +218,52 @@
         "kind",
         "prefix",
         "packs"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-knowledge-pack-index/v2"
+        },
+        "kind": {
+          "const": "slots"
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[01]{0,64}$"
+        },
+        "slots": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 96,
+          "propertyNames": {
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "prefixItems": [
+              {
+                "type": "string",
+                "pattern": "^[01]{0,64}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^(concepts|relationships|edges|sections|extensions|values|lookup)/(root|[0-9a-f]{1,128})\\.json$"
+              }
+            ],
+            "items": false
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "prefix",
+        "slots"
       ],
       "additionalProperties": false
     }

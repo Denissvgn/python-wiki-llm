@@ -41,6 +41,7 @@ flowchart LR
     n6["_relationship_to_payload (src/llm_wiki_engine/knowledge_model.py)"]
     n7["_validate_index_references (src/llm_wiki_engine/knowledge_model.py)"]
     n8["_validate_relationship_shape (src/llm_wiki_engine/knowledge_model.py)"]
+    n9["is_line_relative_link (src/llm_wiki_engine/knowledge_model.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -49,6 +50,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_model.md"
     click n1 "../modules/knowledge_index.md"
     click n2 "../modules/knowledge_index.md"
@@ -58,6 +60,7 @@ flowchart LR
     click n6 "../modules/knowledge_model.md"
     click n7 "../modules/knowledge_model.md"
     click n8 "../modules/knowledge_model.md"
+    click n9 "../modules/knowledge_model.md"
 ```
 
 ### Summary
@@ -81,3 +84,4 @@ flowchart LR
 | `_relationship_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
 | `_validate_index_references` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
 | `_validate_relationship_shape` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `is_line_relative_link` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

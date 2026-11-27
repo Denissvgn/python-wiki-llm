@@ -1,6 +1,6 @@
 # SyncOutcome
 
-**Location:** `src/llm_wiki_cli/services/sync_service.py:63`
+**Location:** `src/llm_wiki_cli/services/sync_service.py:64`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_service](../modules/sync_service.md)

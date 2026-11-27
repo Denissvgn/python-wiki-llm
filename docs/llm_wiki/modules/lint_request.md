@@ -58,4 +58,4 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [LintRequest](../entities/lint_request_LintRequest.md) | 18 | — | One lint of ``wiki_root`` against ``source_root``. |
-| [LintRequestError](../entities/LintRequestError.md) | 45 | `ValueError` | The lint request names a path the workspace policy rejects. |
+| [LintRequestError](../entities/LintRequestError.md) | 46 | `ValueError` | The lint request names a path the workspace policy rejects. |

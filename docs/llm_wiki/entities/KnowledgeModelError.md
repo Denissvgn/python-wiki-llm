@@ -95,4 +95,4 @@ flowchart LR
 | `KindRegistry._require_declared` | call | [knowledge_kinds](../modules/knowledge_kinds.md) | 1 |
 | `_enum_value` | call | [knowledge_model](../modules/knowledge_model.md) | 2 |
 
-> References: showing 12 of 45 logical references; 33 omitted by the 12-row generated summary limit.
+> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.

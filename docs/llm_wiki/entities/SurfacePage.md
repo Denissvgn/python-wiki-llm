@@ -1,6 +1,6 @@
 # _SurfacePage
 
-**Location:** `src/llm_wiki_engine/knowledge_index.py:170`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:176`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)

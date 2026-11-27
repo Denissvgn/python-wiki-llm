@@ -1,6 +1,6 @@
 # ManifestStore
 
-**Location:** `src/llm_wiki_engine/manifest_storage.py:84`
+**Location:** `src/llm_wiki_engine/manifest_storage.py:121`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)

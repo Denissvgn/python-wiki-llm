@@ -28,8 +28,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   each embedded concept's identity, origin, evidence, verification and
   lifecycle and leaves out its freshness, implementation, maintenance and
   review records. A typed edge then takes under 1 KB instead of about 5 KB.
+- Team policy can reserve the generated wiki for one writer. Set
+  `ownership.mode` to `trunk` in `.llm-wiki/team.json`, or run
+  `llm-wiki team init --ownership trunk`, and only the trunk branch and the
+  listed writer branches may run a writing `sync`. Other branches keep
+  `sync --dry-run`. Branches that never write the wiki cannot conflict on it,
+  so parallel pull requests no longer need a sync each. The default,
+  `branch`, keeps the earlier behaviour.
+- `llm-wiki knowledge git-check --base REF` reports generated wiki paths a
+  branch changed since `REF` and fails when a branch that may not write the
+  wiki changed any. It reads Git metadata only. `--branch NAME` names the
+  branch under evaluation for a detached checkout.
+- `lint` and `ci-check` accept `--require-fresh`. Under trunk ownership, a
+  branch that may not write the wiki reports a stale sync manifest and
+  undocumented or stale generated pages as pending refresh without failing;
+  `--require-fresh` restores the failure for the branch that refreshes the
+  wiki. Integrity checks stay blocking everywhere.
+- `sync --verify` runs the strict checks once on the wiki it just wrote and
+  exits with status 1 when they find an issue. The checks reuse the sync's
+  cached extraction, so the source is analysed once. One command replaces a
+  preview, a sync, a repeat preview and separate `lint`, `ci-check` and
+  `team check` runs.
+- `llm-wiki knowledge storage-usage` reports the disk space the tool owns for
+  a wiki: the committed store, recovery copies, caches and prepared helpers,
+  in the wiki, the Git directory and the system temporary directory.
+  `--reclaim` previews removing caches, helpers, storage-recovery copies or
+  upgrade-recovery copies, and `--apply` deletes them. Recovery copies newer
+  than `--older-than-days` (default 7) are kept.
+- New storage formats `packed-v4-fine` and `packed-v4-fine-deflate` keep a
+  refresh close to what really changed. Links are located within their own
+  line and no longer repeat their page's hash, so adding a page does not give
+  every later link in `index.md` a new identity, and packs target 128 KiB
+  instead of 1 MiB. On this project's wiki, a sync that added one page changed
+  about 1% of stored members instead of 53%. The locator finds a member by
+  its place in the knowledge tree and reads its byte range from the pack's
+  own directory, so index pages change only where the tree itself changed;
+  the same sync rewrote about 0.26 MB of index pages instead of all 1.5 MB.
+  Catalog nodes are packed apart from records, so a changed parent no longer
+  rewrites a pack of unrelated records; a sync that added one module wrote
+  103 storage objects instead of 183.
+  Adopt with
+  `sync --knowledge-format packed-v4-fine-deflate`; the default format is
+  unchanged. Every reader and writer must be upgraded first: earlier releases
+  refuse such a wiki at the knowledge root. `knowledge migrate` does not
+  accept these formats; a writing sync adopts and leaves them.
 
 ### Changed
+
+- Indexed manifests (`indexed-v6`, `indexed-v8`) now cut their catalogs where
+  the content says so, not every 32 KiB. A source added early in a field no
+  longer shifts every later catalog, so a sync leaves most manifest objects
+  byte-identical. On this project's wiki a page-creating sync wrote about
+  0.14 MB of manifest objects where it wrote 0.7 MB before. Existing readers
+  read the result unchanged. The first sync after upgrading rewrites the
+  catalogs once, and a wiki holds roughly twice as many, smaller, manifest
+  objects.
+- Storage cleanup writes no second recovery copy when Git's `HEAD` already
+  holds every removed object with the same bytes; restore one with
+  `git checkout HEAD -- <path>`. An explicit `--storage-recovery-dir`, or an
+  object that is not committed, still gets its copy. This applies to
+  `sync --prune-storage` and `knowledge prune-storage --apply`, whose results
+  now name the `recovery_source`.
+- A writing sync on an adopted wiki also retires completed recovery copies
+  that belong to a wiki directory which no longer exists, such as a removed
+  worktree, once they are seven days old. Earlier such copies stayed for good
+  and kept their shared objects from being collected.
 
 - Bundled workflow skills link the shared `wiki-reference` topics relative to
   their own directory instead of naming `.claude/skills` and
@@ -54,6 +117,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A wiki committed together with its source is no longer reported as out of
+  date. The knowledge records whether the working tree was clean or dirty
+  when it was generated, and a sync used to treat a change of that flag alone
+  as a wiki change. Committing right after a sync, or leaving an untracked
+  file in the checkout, therefore made `sync --dry-run` report a pending
+  knowledge and manifest update and made the next sync rewrite them. A sync
+  now keeps the recorded revision and state until it has something else to
+  write.
 - `sync` explains how to proceed when a new declaration maps to the page of a
   retired source member. The "Occupied target has no verified outgoing owner"
   error now names the retired member, the file that declares the new one, and

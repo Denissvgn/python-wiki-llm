@@ -131,6 +131,71 @@ keep project-specific rules outside that tree or back up edits before upgrading.
 Conflicting or unsafe entries are preserved and reported. See the
 [managed skills lifecycle](cli-reference.md#skills) for recovery details.
 
+### Upgrade from a release before the team and small-refresh changes
+
+Nothing about an existing wiki has to change: the default knowledge format,
+the manifest format and per-branch syncing all keep working. Follow these
+steps in order, once per repository.
+
+1. **Update every environment that reads or writes the wiki.** That means
+   each developer and agent checkout and every CI job or action. Then refresh
+   the managed instructions:
+
+   ```bash
+   .venv/bin/pip install --upgrade agent-wiki-cli
+   .venv/bin/llm-wiki upgrade
+   ```
+
+2. **Run one writing sync and commit its result on its own.**
+
+   ```bash
+   .venv/bin/llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --prune-storage --verify
+   ```
+
+   A wiki with an indexed manifest gets its manifest catalogs rewritten once
+   in this sync, into more and smaller files under `.llm-wiki-manifest/`.
+   Earlier releases read them unchanged, so this step does not have to wait
+   for step 1 to finish everywhere. Later syncs rewrite only the catalogs
+   that hold a real change.
+
+3. **Replace separate check commands with `sync --verify`** where a script
+   ran a sync followed by `lint`, `ci-check` or a second `sync --dry-run`.
+   A wiki committed together with its source is no longer reported as out of
+   date, so a dry-run after the commit is a reliable check again.
+
+The next two steps are optional and independent of each other.
+
+4. **Reserve the wiki for one writer** when several branches are worked on in
+   parallel:
+
+   ```bash
+   .venv/bin/llm-wiki team init --ownership trunk
+   ```
+
+   Commit `.llm-wiki/team.json`. From then on only the trunk branch and the
+   listed writer branches run a writing sync; other branches stop committing
+   generated wiki files and run `knowledge git-check --base origin/main` and
+   `lint` instead. Refresh the wiki on the trunk after each merge with
+   `sync --prune-storage --verify`, and add `--require-fresh` to the checks
+   of that job. See [Wiki ownership](cli-reference.md#wiki-ownership).
+
+5. **Adopt the fine storage profile** to make each refresh small. Do this
+   only after step 1 is complete everywhere, because earlier releases refuse
+   such a wiki:
+
+   ```bash
+   .venv/bin/llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v4-fine-deflate --prune-storage --verify
+   ```
+
+   This sync rewrites the whole knowledge store once; commit it on its own.
+   Later syncs keep the profile without the option. To go back, run the same
+   command with `--knowledge-format packed-v4-deflate`. See
+   [Keep each refresh small](knowledge-storage.md#keep-each-refresh-small).
+
+After any of these steps, `llm-wiki knowledge storage-usage --wiki-dir
+docs/llm_wiki` shows what the tool keeps on disk, and its `--reclaim` option
+removes caches and recovery copies that are no longer needed.
+
 To change the instruction format, use `upgrade --agent claude` or another
 supported target. To change the skills preference explicitly:
 

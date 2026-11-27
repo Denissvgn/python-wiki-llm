@@ -219,3 +219,34 @@ def test_recovery_key_namespaces_copied_adoptions_by_canonical_wiki(tmp_path, ma
     second = recovery.recovery_catalog_key(tmp_path / "second/wiki", marker, hashes)
     assert first != second
     assert recovery.recovery_catalog_key(tmp_path / "first/wiki/.", marker, hashes) == first
+
+
+def _other_worktree_generation(store, owner, marker):
+    files = {"other.md": b"other worktree bytes"}
+    preimage, metadata = _managed(store, owner, marker, files)
+    committed, _ = _managed(store, owner, marker, files, kind="committed")
+    recovery.mark_recovery_complete(preimage, committed)
+    return preimage, committed, metadata
+
+
+def test_retention_retires_aged_recoveries_of_a_removed_worktree(tmp_path, marker, monkeypatch):
+    store = tmp_path / "maintenance-preimages"
+    owner = tmp_path / "first/wiki"
+    newest = _generation(store, owner, marker, 0)[1]
+    gone_preimage, gone_committed, _ = _other_worktree_generation(store, tmp_path / "removed/wiki", marker)
+    present = tmp_path / "present/wiki"
+    present.mkdir(parents=True)
+    kept_preimage, kept_committed, kept_metadata = _other_worktree_generation(store, present, marker)
+    failed, failed_metadata = _managed(store, tmp_path / "removed/wiki", marker, {"failed.md": b"interrupted"})
+
+    monkeypatch.setattr(recovery, "ORPHAN_RETIREMENT_NS", 0)
+    report = recovery.retain_recovery_catalogs(store, owner_root=owner, marker=marker, newest_committed=newest)
+
+    assert report["removed_catalogs"] == 2
+    assert report["blob_gc"] == "complete"
+    assert not (gone_preimage / recovery.CATALOG_FILENAME).exists()
+    assert not gone_committed.exists()
+    assert recovery.load_recovery_catalog(kept_preimage, kept_metadata) == {"other.md": b"other worktree bytes"}
+    assert (kept_committed / recovery.CATALOG_FILENAME).exists()
+    # An attempt that never completed stays pinned even when its wiki is gone.
+    assert recovery.load_recovery_catalog(failed, failed_metadata) == {"failed.md": b"interrupted"}

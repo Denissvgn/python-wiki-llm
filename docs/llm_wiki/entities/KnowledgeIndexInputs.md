@@ -1,6 +1,6 @@
 # KnowledgeIndexInputs
 
-**Location:** `src/llm_wiki_engine/knowledge_index.py:151`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:154`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -26,6 +26,7 @@ Already evaluated values required to construct one knowledge index.
 | `infrastructure_bases` | `Mapping[str, ConceptObservationBasis]` | `field(default_factory=dict)` | — |
 | `extensions` | `Mapping[str, Any]` | `field(default_factory=dict)` | — |
 | `concept_extensions_by_page` | `Mapping[str, Mapping[str, Any]]` | `field(default_factory=dict)` | — |
+| `line_relative_links` | `bool` | `False` | — |
 
 ## Methods
 
@@ -62,7 +63,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_index](../modules/knowledge_index.md) | 0 | `concept_extensions_by_page`, `content_by_page`, `envelope`, `evidence_baselines`, `extensions`, `infrastructure_bases`, `link_observations`, `page_source_mappings`, `pages`, `surface_index_bytes`, `tombstones` |
+| [knowledge_index](../modules/knowledge_index.md) | 0 | `concept_extensions_by_page`, `content_by_page`, `envelope`, `evidence_baselines`, `extensions`, `infrastructure_bases`, `line_relative_links`, `link_observations`, `page_source_mappings`, `pages`, `surface_index_bytes`, `tombstones` |
 
 ### References
 

@@ -286,6 +286,7 @@ PRODUCT_SERVICES = frozenset(
         "site_export",
         "site_html_check",
         "skills",
+        "storage_usage",
         "sync_generated_sections",
         "sync_runtime",
         "sync_service",

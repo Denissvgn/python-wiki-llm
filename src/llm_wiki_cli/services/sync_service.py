@@ -57,6 +57,7 @@ class SyncRequest:
     retire_missing_pages: Iterable[str] | None = None
     release_historical_pages: Iterable[str] | None = None
     expected_historical_release: str | None = None
+    verify: bool = False
 
 
 @dataclass(frozen=True)

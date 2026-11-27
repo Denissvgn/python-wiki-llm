@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 59 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 60 more
 
 **Complete modules touched:**
 
@@ -65,6 +65,7 @@
 - [team](../modules/team.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [yaml_formats](../modules/yaml_formats.md)
@@ -105,7 +106,7 @@ sequenceDiagram
     participant p25 as windows_current_user_sid
     participant p26 as first_unsafe_path_component
     participant p27 as resolve_team_policy
-    participant p28 as capture_health_details
+    participant p28 as _current_windows_user_sid
     participant p29 as bool (src/llm_wiki_cli/services/lint_service.py:run)
     participant p30 as report.count (src/llm_wiki_cli/services/lint_service.py:run)
     p0->>p1: lint_request_from_args
@@ -135,28 +136,28 @@ sequenceDiagram
     p12->>p25: windows_current_user_sid
     p12->>p26: first_unsafe_path_component
     p20->>p27: resolve_team_policy
-    p21->>p28: capture_health_details
+    p25->>p28: _current_windows_user_sid
     p0-->>p29: bool (src/llm_wiki_cli/services/lint_service.py:run)(...)
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 1817 interactions; 1787 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1846 interactions; 1816 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 565 (564 omitted); unresolved 1 of 591 (590 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 575 (574 omitted); unresolved 1 of 601 (600 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/lint_service.py:lint_request_from_args` | 2 | [src/llm_wiki_cli/services/lint_request.py](../modules/lint_request.md) | internal | 1 |
-| `src/llm_wiki_cli/services/lint_service.py:lint_request_from_args` | 2 | - | external | 21 |
+| `src/llm_wiki_cli/services/lint_service.py:lint_request_from_args` | 2 | - | external | 23 |
 | `src/llm_wiki_cli/services/lint_service.py:run` | 1 | - | external | 7 |
-| `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 29 | - | external | 7 |
-| `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
-| `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | - | unresolved | 5 |
-| `src/llm_wiki_engine/path_policy.py:validate_path` | 32 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
-| `src/llm_wiki_engine/host.py:current_host` | 36 | - | unresolved | 1 |
-> Omission summary shows 8 of 507 groups; 499 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 31 | - | external | 7 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 34 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 34 | - | unresolved | 5 |
+| `src/llm_wiki_engine/path_policy.py:validate_path` | 34 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 2 |
+| `src/llm_wiki_engine/host.py:current_host` | 38 | - | unresolved | 1 |
+> Omission summary shows 8 of 521 groups; 513 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -169,9 +170,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 662; effect analysis evaluated: 527, partial: 28, unavailable: 107. Counts include steps omitted from the displayed trace.
+Source steps: 671; effect analysis evaluated: 534, partial: 28, unavailable: 109. Counts include steps omitted from the displayed trace.
 
-Collector observations for 555 source steps with known totals: observed: 3650, emitted: 3479, omitted: 171. Unavailable totals are excluded.
+Collector observations for 562 source steps with known totals: observed: 3686, emitted: 3513, omitted: 173. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -190,7 +191,7 @@ Collector observations for 555 source steps with known totals: observed: 3650, e
 | `getattr (src/llm_wiki_cli/services…py:lint_request_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `bool (src/llm_wiki_cli/services…py:lint_request_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `getattr (src/llm_wiki_cli/services…py:lint_request_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
-| `getattr (src/llm_wiki_cli/services…py:lint_request_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/services…py:lint_request_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -205,7 +206,7 @@ flowchart LR
     s9["9. getattr (src/llm_wiki_cli/services…py:lint_request_from_args)"]
     s10["10. bool (src/llm_wiki_cli/services…py:lint_request_from_args)"]
     s11["11. getattr (src/llm_wiki_cli/services…py:lint_request_from_args)"]
-    s12["12. getattr (src/llm_wiki_cli/services…py:lint_request_from_args)"]
+    s12["12. bool (src/llm_wiki_cli/services…py:lint_request_from_args)"]
     s1 -->|"lint_request_from_args(args)"| s2
     s2 -->|"LintRequest(…)"| s3
     s2 -. "getattr (src/llm_wiki_cli/services…py:lint_request_from_args)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
@@ -215,8 +216,8 @@ flowchart LR
     s2 -. "bool (src/llm_wiki_cli/services…py:lint_request_from_args)(getattr(...))" .-> s8
     s2 -. "getattr (src/llm_wiki_cli/services…py:lint_request_from_args)(args, 'knowledge_drift_report', False)" .-> s9
     s2 -. "bool (src/llm_wiki_cli/services…py:lint_request_from_args)(getattr(...))" .-> s10
-    s2 -. "getattr (src/llm_wiki_cli/services…py:lint_request_from_args)(args, 'allow_external_src', False)" .-> s11
-    s2 -. "getattr (src/llm_wiki_cli/services…py:lint_request_from_args)(args, 'source_selection', None)" .-> s12
+    s2 -. "getattr (src/llm_wiki_cli/services…py:lint_request_from_args)(args, 'require_fresh', False)" .-> s11
+    s2 -. "bool (src/llm_wiki_cli/services…py:lint_request_from_args)(getattr(...))" .-> s12
     click s1 "../modules/lint_service.md"
     click s2 "../modules/lint_service.md"
     click s3 "../modules/lint_request.md"
@@ -237,23 +238,23 @@ flowchart LR
 | `getattr (src/llm_wiki_cli/services…py:lint_request_from_args)` | - | - | - | - |
 | `bool (src/llm_wiki_cli/services…py:lint_request_from_args)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/services…py:lint_request_from_args)` | - | - | - | - |
-| `getattr (src/llm_wiki_cli/services…py:lint_request_from_args)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/services…py:lint_request_from_args)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | lint_request_from_args | 3465 | `lint_request_from_args(args)` |
-| lint_request_from_args | LintRequest | 3392 | `LintRequest(wiki_root=getattr(...), source_root=getattr(...), strict=bool(...), knowledge_drift_report=bool(...), allow_external_source=bool(...), source_selection=getattr(...), include_tests=getattr(...), helper_cache_dir=getattr(...), media_size_warn_bytes=getattr(...), jobs=getattr(...), requested_jobs=getattr(...), cache=..., rebuild_cache=bool(...), cache_dir=getattr(...), cache_stats=bool(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3393 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3394 | `getattr(args, 'src_dir', '.')` |
-| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3395 | `bool(getattr(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3395 | `getattr(args, 'strict', False)` |
-| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3396 | `bool(getattr(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3396 | `getattr(args, 'knowledge_drift_report', False)` |
-| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3397 | `bool(getattr(...))` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3397 | `getattr(args, 'allow_external_src', False)` |
-| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3398 | `getattr(args, 'source_selection', None)` |
+| run | lint_request_from_args | 3538 | `lint_request_from_args(args)` |
+| lint_request_from_args | LintRequest | 3463 | `LintRequest(wiki_root=getattr(...), source_root=getattr(...), strict=bool(...), knowledge_drift_report=bool(...), require_fresh=bool(...), allow_external_source=bool(...), source_selection=getattr(...), include_tests=getattr(...), helper_cache_dir=getattr(...), media_size_warn_bytes=getattr(...), jobs=getattr(...), requested_jobs=getattr(...), cache=..., rebuild_cache=bool(...), cache_dir=getattr(...), cache_stats=bool(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3464 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3465 | `getattr(args, 'src_dir', '.')` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3466 | `bool(getattr(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3466 | `getattr(args, 'strict', False)` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3467 | `bool(getattr(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3467 | `getattr(args, 'knowledge_drift_report', False)` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3468 | `bool(getattr(...))` |
+| lint_request_from_args | getattr (src/llm_wiki_cli/services…py:lint_request_from_args) | 3468 | `getattr(args, 'require_fresh', False)` |
+| lint_request_from_args | bool (src/llm_wiki_cli/services…py:lint_request_from_args) | 3469 | `bool(getattr(...))` |
 
 ### Boundary effects
 
@@ -263,12 +264,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `lint_request_from_args` | `getattr` | 3393 |
-| external_call | `lint_request_from_args` | `getattr` | 3394 |
-| external_call | `lint_request_from_args` | `getattr` | 3395 |
-| external_call | `lint_request_from_args` | `getattr` | 3396 |
-| external_call | `lint_request_from_args` | `getattr` | 3397 |
-| external_call | `lint_request_from_args` | `getattr` | 3398 |
+| external_call | `lint_request_from_args` | `getattr` | 3464 |
+| external_call | `lint_request_from_args` | `getattr` | 3465 |
+| external_call | `lint_request_from_args` | `getattr` | 3466 |
+| external_call | `lint_request_from_args` | `getattr` | 3467 |
+| external_call | `lint_request_from_args` | `getattr` | 3468 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -322,3 +322,139 @@ def inspect_wiki_git_delivery(
         if staged:
             result["staged"] = {"status": "indeterminate"}
         return result
+
+
+BRANCH_CHECK_SCHEMA = "llm-wiki-branch-wiki-check/v1"
+_MAX_REF_BYTES = 1024
+
+
+def current_branch(root: str | Path = ".") -> str | None:
+    """Return the checked-out branch name, or ``None`` when HEAD is detached."""
+    code, output = _command(
+        _absolute_path(Path(root)), ["symbolic-ref", "--quiet", "--short", "HEAD"]
+    )
+    name = output.decode("utf-8", "replace").strip()
+    return name if code == 0 and name else None
+
+
+def ownership_write_refusal(root: str | Path = ".") -> str | None:
+    """Explain why this checkout may not write generated wiki state.
+
+    Returns ``None`` when the team policy lets the checked-out branch write.
+    A policy that cannot be read is a refusal: it cannot show who may write.
+    """
+    from .team import TeamConfigError, load_team_config, team_config_path, wiki_ownership
+
+    if not team_config_path(root).exists():
+        return None
+    try:
+        ownership = wiki_ownership(load_team_config(root=root))
+    except TeamConfigError as exc:
+        return f"Team policy is invalid, so wiki ownership is unknown: {exc}"
+    if not ownership.trunk_owned:
+        return None
+    try:
+        branch = current_branch(root)
+    except KnowledgeStorageError as exc:
+        return f"Could not read the checked-out branch for trunk ownership: {exc}"
+    if ownership.may_write(branch):
+        return None
+    allowed = ", ".join([ownership.trunk, *ownership.writer_branches])
+    here = f"branch {branch!r}" if branch else "a detached HEAD"
+    return (
+        f"The generated wiki is trunk-owned and this checkout is on {here}. "
+        f"Only {allowed} may write it. Preview with --dry-run and leave the "
+        "wiki to the trunk refresh."
+    )
+
+
+def inspect_branch_wiki_changes(
+    wiki_dir: str | Path,
+    *,
+    base: str,
+    branch: str | None = None,
+    root: str | Path = ".",
+) -> dict[str, Any]:
+    """Report generated wiki paths a branch changed since ``base``.
+
+    Under trunk ownership a non-writer branch must leave generated paths as
+    they are at its merge base. Only Git metadata is read: no snapshot is
+    validated and no source is scanned.
+    """
+    from .team import TeamConfigError, load_team_config, wiki_ownership
+
+    result: dict[str, Any] = {
+        "schema_version": BRANCH_CHECK_SCHEMA,
+        "base": base,
+        "branch": branch,
+        "checked": False,
+        "reason": "not-inspected",
+        "generated_changes": 0,
+        "generated_samples": [],
+        "authored_changes": 0,
+        "read_only": True,
+        "ok": False,
+    }
+    if (
+        not isinstance(base, str)
+        or not base
+        or base.startswith("-")
+        or "\0" in base
+        or len(base.encode("utf-8")) > _MAX_REF_BYTES
+    ):
+        raise KnowledgeStorageError("base", "an explicit bounded Git reference is required")
+    try:
+        ownership = wiki_ownership(load_team_config(root=root))
+    except TeamConfigError as exc:
+        result["reason"] = "team-policy-invalid"
+        result["error"] = {"code": "team-policy-invalid", "message": str(exc)}
+        return result
+    result["ownership"] = ownership.to_dict()
+    if not ownership.trunk_owned:
+        result.update(ok=True, reason="branch-ownership")
+        return result
+    wiki_root = _absolute_path(Path(wiki_dir))
+    policy = classify_wiki_git_policy(wiki_root)
+    if policy.repository_root is None or policy.wiki_path is None:
+        result["reason"] = policy.reason
+        return result
+    repository = policy.repository_root
+    evaluated = branch if branch is not None else current_branch(repository)
+    result["branch"] = evaluated
+    if ownership.may_write(evaluated):
+        result.update(ok=True, reason="writer-branch")
+        return result
+    code, _ = _command(repository, ["rev-parse", "--verify", "--quiet", base + "^{commit}"])
+    if code:
+        result["reason"] = "base-unresolved"
+        return result
+    prefix = policy.wiki_path.rstrip("/")
+    code, output = _command(
+        repository,
+        ["diff", "--name-only", "-z", "--no-renames", base + "...HEAD", "--", prefix],
+    )
+    if code or (output and not output.endswith(b"\0")):
+        result["reason"] = "diff-unavailable"
+        return result
+    generated: list[str] = []
+    authored = 0
+    for raw in output[:-1].split(b"\0") if output else []:
+        path = raw.decode("utf-8", "surrogateescape")
+        relative = path[len(prefix) + 1:] if path.startswith(prefix + "/") else path
+        if ownership.is_authored(relative):
+            authored += 1
+        else:
+            generated.append(path)
+    generated.sort()
+    result.update(
+        checked=True,
+        ok=not generated,
+        reason="generated-paths-unchanged" if not generated else "generated-paths-changed",
+        generated_changes=len(generated),
+        generated_samples=[
+            path.encode("utf-8", "surrogateescape").decode("utf-8", "replace")
+            for path in generated[:SAMPLE_LIMIT]
+        ],
+        authored_changes=authored,
+    )
+    return result

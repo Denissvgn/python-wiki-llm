@@ -91,9 +91,9 @@ sequenceDiagram
     p0-->>p30: current_validators().run(model)
 ```
 
-> Call sequence diagram shows 30 of 966 interactions; 936 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 971 interactions; 941 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 232 (231 omitted); unresolved 1 of 159 (158 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 232 (231 omitted); unresolved 1 of 160 (159 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/validation.py:_validation_error` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_engine/validation.py:require_mapping` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_record` | 2 | - | external | 4 |
-> Omission summary shows 8 of 219 groups; 211 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 220 groups; 212 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -120,9 +120,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 576; effect analysis evaluated: 384, partial: 10, unavailable: 182. Counts include steps omitted from the displayed trace.
+Source steps: 580; effect analysis evaluated: 387, partial: 10, unavailable: 183. Counts include steps omitted from the displayed trace.
 
-Collector observations for 394 source steps with known totals: observed: 1854, emitted: 1724, omitted: 130. Unavailable totals are excluded.
+Collector observations for 397 source steps with known totals: observed: 1865, emitted: 1734, omitted: 131. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -198,9 +198,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_knowledge_index | _record | 553 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_engine/knowledge_model.py) | 1612 | `_object(value, ...)` |
-| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1698 | `dict(require_mapping(...))` |
-| _object (src/llm_wiki_engine/knowledge_model.py) | require_mapping | 1699 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
+| _record | _object (src/llm_wiki_engine/knowledge_model.py) | 1645 | `_object(value, ...)` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | dict (src/llm_wiki_engine/knowledge_model.py:_object) | 1731 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_engine/knowledge_model.py) | require_mapping | 1732 | `require_mapping(value, error=_OBJECT_ERROR, error_context=path, require_string_keys=True, key_error=_OBJECT_KEYS_ERROR, require_utf8_keys=True, utf8_key_error=_UTF8_ERROR)` |
 | require_mapping | isinstance (src/llm_wiki_engine/validation.py:require_mapping) | 783 | `isinstance(value, Mapping)` |
 | require_mapping | _validation_error | 784 | `_validation_error(error, error_context)` |
 | _validation_error | isinstance (src/llm_wiki_engine/validation.py:_validation_error) | 95 | `isinstance(error, Exception)` |

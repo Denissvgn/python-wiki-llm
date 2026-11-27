@@ -23,6 +23,7 @@ Release a verified historical binding without updating or adopting any source.
 | `llm_wiki_engine.knowledge_envelope` | `EvaluatedEnvelope`, `hash_markdown_snapshot` |
 | `llm_wiki_engine.knowledge_index` | `KnowledgeIndexInputs`, `_assemble_knowledge_index` |
 | `llm_wiki_engine.knowledge_links` | `collect_link_observations` |
+| `llm_wiki_engine.knowledge_model` | `is_line_relative_link` |
 | `llm_wiki_engine.knowledge_storage` | `MAX_EXPANDED_BYTES` |
 | `llm_wiki_engine.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
 | `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner` |
@@ -53,9 +54,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (20) |
+| Outbound | `src` (21) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

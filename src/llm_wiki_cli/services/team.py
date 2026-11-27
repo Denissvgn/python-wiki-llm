@@ -57,7 +57,12 @@ DEFAULT_TEAM_CONFIG: dict[str, Any] = {
     },
 }
 
-_TOP_LEVEL_KEYS = {"version", "wiki_dir", "conventions", "agent"}
+_TOP_LEVEL_KEYS = {"version", "wiki_dir", "conventions", "agent", "ownership"}
+OWNERSHIP_BRANCH = "branch"
+OWNERSHIP_TRUNK = "trunk"
+_OWNERSHIP_KEYS = {"mode", "trunk", "writer_branches", "authored_paths"}
+_DEFAULT_TRUNK = "main"
+_DEFAULT_AUTHORED_PATHS = ("guides",)
 _CONVENTION_KEYS = {
     "required_files",
     "required_dirs",
@@ -73,6 +78,115 @@ _AGENT_KEYS = {"prompt_template", "required_lint_rules", "required_skills"}
 
 class TeamConfigError(ValueError):
     """Raised when `.llm-wiki/team.json` is invalid."""
+
+
+@dataclass(frozen=True)
+class WikiOwnership:
+    """Which branches may write generated wiki state.
+
+    ``branch`` lets every branch sync its own copy. ``trunk`` reserves
+    generated state for the trunk and the named writer branches, so other
+    branches never carry it and cannot conflict on it.
+    """
+
+    mode: str = OWNERSHIP_BRANCH
+    trunk: str = _DEFAULT_TRUNK
+    writer_branches: tuple[str, ...] = ()
+    authored_paths: tuple[str, ...] = _DEFAULT_AUTHORED_PATHS
+
+    @property
+    def trunk_owned(self) -> bool:
+        return self.mode == OWNERSHIP_TRUNK
+
+    def may_write(self, branch: str | None) -> bool:
+        """Return whether ``branch`` may write generated wiki state."""
+        if not self.trunk_owned:
+            return True
+        return branch is not None and (
+            branch == self.trunk or branch in self.writer_branches
+        )
+
+    def is_authored(self, wiki_relative_path: str) -> bool:
+        """Return whether a wiki-relative path is authored, not generated."""
+        return any(
+            wiki_relative_path == prefix or wiki_relative_path.startswith(prefix + "/")
+            for prefix in self.authored_paths
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "mode": self.mode,
+            "trunk": self.trunk,
+            "writer_branches": list(self.writer_branches),
+            "authored_paths": list(self.authored_paths),
+        }
+
+
+def _validate_branch_name(value: Any, field: str) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or value != value.strip()
+        or value.startswith(("-", "/"))
+        or value.endswith(("/", ".lock", "."))
+        or ".." in value
+        or "//" in value
+        or "@{" in value
+        or any(ord(char) < 0x21 or char in "~^:?*[\\\x7f" for char in value)
+    ):
+        raise TeamConfigError(f"{field} must be a plain Git branch name.")
+    return value
+
+
+def _validate_authored_path(relative: str) -> None:
+    try:
+        require_portable_relative_path(relative)
+    except (TypeError, ValueError) as exc:
+        raise TeamConfigError(
+            f"ownership.authored_paths contains an invalid wiki-relative path: {relative!r}"
+        ) from exc
+
+
+def _validate_ownership(value: Any) -> None:
+    if not isinstance(value, dict):
+        raise TeamConfigError("ownership must be an object.")
+    _reject_unknown_keys(value, _OWNERSHIP_KEYS, "ownership")
+    if value.get("mode") not in {OWNERSHIP_BRANCH, OWNERSHIP_TRUNK}:
+        raise TeamConfigError(
+            f"ownership.mode must be {OWNERSHIP_BRANCH!r} or {OWNERSHIP_TRUNK!r}."
+        )
+    if "trunk" in value:
+        _validate_branch_name(value["trunk"], "ownership.trunk")
+    if "writer_branches" in value:
+        for branch in _ensure_string_list(
+            value["writer_branches"], "ownership.writer_branches"
+        ):
+            _validate_branch_name(branch, "ownership.writer_branches")
+    if "authored_paths" in value:
+        for relative in _ensure_string_list(
+            value["authored_paths"], "ownership.authored_paths"
+        ):
+            _validate_authored_path(relative)
+
+
+def wiki_ownership(config: Any) -> WikiOwnership:
+    """Return the ownership a validated team config declares.
+
+    A missing config or a config without ``ownership`` keeps the per-branch
+    behaviour.
+    """
+    declared = config.get("ownership") if config is not None else None
+    if declared is None:
+        return WikiOwnership()
+    return WikiOwnership(
+        mode=declared["mode"],
+        trunk=declared.get("trunk", _DEFAULT_TRUNK),
+        writer_branches=tuple(declared.get("writer_branches", ())),
+        authored_paths=tuple(
+            path.rstrip("/")
+            for path in declared.get("authored_paths", _DEFAULT_AUTHORED_PATHS)
+        ),
+    )
 
 
 @dataclass(frozen=True)
@@ -101,9 +215,13 @@ class TeamConventionRequest:
         return Path(self.wiki_dir)
 
 
-def default_team_config(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
+def default_team_config(
+    wiki_dir: str = DEFAULT_WIKI_DIR, *, ownership: dict[str, Any] | None = None
+) -> dict[str, Any]:
     config = deepcopy(DEFAULT_TEAM_CONFIG)
     config["wiki_dir"] = wiki_dir
+    if ownership is not None:
+        config["ownership"] = deepcopy(ownership)
     return config
 
 
@@ -112,10 +230,14 @@ def team_config_path(root: str | Path = ".") -> Path:
 
 
 def write_default_team_config(
-    wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str | Path = "."
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    *,
+    root: str | Path = ".",
+    ownership: dict[str, Any] | None = None,
 ) -> Path:
     path = team_config_path(root)
-    return write_json_atomic(path, default_team_config(wiki_dir))
+    config = validate_team_config(default_team_config(wiki_dir, ownership=ownership))
+    return write_json_atomic(path, config)
 
 
 def _reject_unknown_keys(data: dict[str, Any], allowed: set[str], scope: str) -> None:
@@ -204,6 +326,8 @@ def validate_team_config(data: Any) -> dict[str, Any]:
         raise TeamConfigError("agent.prompt_template must be a string or null.")
     _ensure_string_list(agent.get("required_lint_rules"), "agent.required_lint_rules")
     _ensure_string_list(agent.get("required_skills"), "agent.required_skills")
+    if "ownership" in data:
+        _validate_ownership(data["ownership"])
     return data
 
 

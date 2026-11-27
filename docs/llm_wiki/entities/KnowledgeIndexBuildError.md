@@ -1,6 +1,6 @@
 # KnowledgeIndexBuildError
 
-**Location:** `src/llm_wiki_engine/knowledge_index.py:136`
+**Location:** `src/llm_wiki_engine/knowledge_index.py:139`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_index](../modules/knowledge_index.md)

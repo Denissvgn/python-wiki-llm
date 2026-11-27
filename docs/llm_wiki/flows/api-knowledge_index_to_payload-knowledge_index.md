@@ -95,9 +95,9 @@ sequenceDiagram
     p5-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1083 interactions; 1053 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1092 interactions; 1062 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 268 (267 omitted); unresolved 1 of 135 (134 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 268 (267 omitted); unresolved 1 of 137 (136 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,7 +111,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_model.py:_bundle_to_payload` | 4 | [src/llm_wiki_engine/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
 | `src/llm_wiki_engine/knowledge_model.py:_wire_enum` | 17 | - | external | 1 |
 | `src/llm_wiki_engine/knowledge_model.py:_component_to_payload` | 21 | - | external | 1 |
-> Omission summary shows 8 of 245 groups; 237 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 249 groups; 241 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -124,9 +124,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 681; effect analysis evaluated: 378, partial: 19, unavailable: 284. Counts include steps omitted from the displayed trace.
+Source steps: 688; effect analysis evaluated: 383, partial: 19, unavailable: 286. Counts include steps omitted from the displayed trace.
 
-Collector observations for 397 source steps with known totals: observed: 2029, emitted: 1863, omitted: 166. Unavailable totals are excluded.
+Collector observations for 402 source steps with known totals: observed: 2051, emitted: 1884, omitted: 167. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -204,17 +204,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | _model_to_payload | 303 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 309 | `_knowledge_index_to_payload_unchecked(model)` |
-| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2211 | `_bundle_to_payload(model.bundle)` |
-| _bundle_to_payload | _emit_extensions | 2030 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
-| _emit_extensions | isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions) | 1990 | `isinstance(extensions, FrozenDict)` |
-| _emit_extensions | _parse_extensions | 1991 | `_parse_extensions(extensions, path)` |
-| _parse_extensions | _object | 1631 | `_object(value, path)` |
-| _parse_extensions | sorted (src/llm_wiki_engine/knowl…odel.py:_parse_extensions) | 1633 | `sorted(data)` |
-| _parse_extensions | _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_engine/knowl…odel.py:_parse_extensions) | 1634 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
-| _parse_extensions | KnowledgeModelError | 1635 | `KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')` |
-| _parse_extensions | _child | 1636 | `_child(path, key)` |
+| knowledge_index_to_payload | _model_to_payload | 311 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 317 | `_knowledge_index_to_payload_unchecked(model)` |
+| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2244 | `_bundle_to_payload(model.bundle)` |
+| _bundle_to_payload | _emit_extensions | 2063 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
+| _emit_extensions | isinstance (src/llm_wiki_engine/knowl…model.py:_emit_extensions) | 2023 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 2024 | `_parse_extensions(extensions, path)` |
+| _parse_extensions | _object | 1664 | `_object(value, path)` |
+| _parse_extensions | sorted (src/llm_wiki_engine/knowl…odel.py:_parse_extensions) | 1666 | `sorted(data)` |
+| _parse_extensions | _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_engine/knowl…odel.py:_parse_extensions) | 1667 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
+| _parse_extensions | KnowledgeModelError | 1668 | `KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')` |
+| _parse_extensions | _child | 1669 | `_child(path, key)` |
 
 ### Boundary effects
 
@@ -224,9 +224,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_emit_extensions` | `isinstance` | 1990 |
-| external_call | `_parse_extensions` | `sorted` | 1633 |
-| unresolved_call | `_parse_extensions` | `_QUALIFIED_NAME_RE.fullmatch` | 1634 |
+| external_call | `_emit_extensions` | `isinstance` | 2023 |
+| external_call | `_parse_extensions` | `sorted` | 1666 |
+| unresolved_call | `_parse_extensions` | `_QUALIFIED_NAME_RE.fullmatch` | 1667 |
 | step_limit | `knowledge_index_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `knowledge_index_to_payload` | `depth limit` | 0 |
 

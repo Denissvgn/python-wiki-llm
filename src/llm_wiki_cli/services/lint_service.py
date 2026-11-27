@@ -310,6 +310,9 @@ class LintReport:
     knowledge_enabled: bool = False
     knowledge_view: KnowledgeReadView | None = None
     health_details: CapturedHealthDetails | None = None
+    # Trunk ownership: this checkout may not write the wiki, so a stale sync
+    # manifest is work for the trunk refresh and not a failure here.
+    pending_refresh: bool = False
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -795,7 +798,21 @@ def _check_sync_manifest(
         or diff.entity_page_renames
         or diff.renamed_module_pages
     )
-    if has_hard_changes:
+    if has_hard_changes and report.pending_refresh:
+        _diagnose(
+            report,
+            "sync_manifest",
+            "Sync manifest awaits the trunk refresh: "
+            f"{len(diff.new_files)} new, {len(diff.changed_files)} changed, "
+            f"{len(unproven_metadata)} metadata-only, {len(diff.removed_files)} removed.",
+            path=MANIFEST_FILENAME,
+            reason_code="pending-refresh",
+            hint=(
+                "The wiki is trunk-owned. Leave it unchanged on this branch; "
+                "use --require-fresh on the branch that refreshes it."
+            ),
+        )
+    elif has_hard_changes:
         parts = [
             f"{len(diff.new_files)} new",
             f"{len(diff.changed_files)} changed",
@@ -2861,17 +2878,67 @@ def _preflight_lint_source_selection(
     return True, selection_inputs, manifest
 
 
+# Findings that only say the generated wiki trails the source. The trunk
+# refresh resolves them, so a branch that may not write the wiki reports them
+# without failing.
+_REFRESH_OWNED_CATEGORIES = frozenset(
+    {
+        "undocumented_classes",
+        "stale_entities",
+        "undocumented_modules",
+        "stale_modules",
+        "missing_workflows",
+        "undocumented_infrastructure",
+        "stale_infrastructure",
+        "stale_dependencies",
+    }
+)
+
+
+def _defer_refresh_owned_findings(report: LintReport) -> None:
+    """Report generated-coverage findings as pending when the trunk owns the wiki."""
+    if not report.pending_refresh:
+        return
+    kept: list[LintIssue] = []
+    for issue in report.issues:
+        if issue.category in _REFRESH_OWNED_CATEGORIES:
+            report.diagnostics.append(
+                replace(issue, severity="warning", reason_code="pending-refresh")
+            )
+        else:
+            kept.append(issue)
+    report.issues[:] = kept
+
+
+def _awaits_trunk_refresh(team_policy: TeamPolicyContext) -> bool:
+    """Return whether trunk ownership keeps this checkout from writing the wiki."""
+    from .team import wiki_ownership
+    from .wiki_git_delivery import current_branch
+
+    ownership = wiki_ownership(team_policy.config)
+    if not ownership.trunk_owned:
+        return False
+    try:
+        branch = current_branch(team_policy.root)
+    except (OSError, ValueError):
+        branch = None
+    return not ownership.may_write(branch)
+
+
 def _new_lint_report(
     wiki_path: Path,
     src_dir: str,
     effective_strict: bool,
     knowledge_drift_report: bool,
+    require_fresh: bool = False,
 ) -> LintReport:
     return LintReport(
         wiki_dir=str(wiki_path),
         src_dir=src_dir,
         strict=effective_strict,
         knowledge_drift_report=knowledge_drift_report,
+        # Provisional until preflight has read the team policy.
+        pending_refresh=not require_fresh,
     )
 
 
@@ -2894,7 +2961,9 @@ def _preflight_lint_inputs(
         team_policy = resolve_team_policy(wiki_path)
     except TeamConfigError as exc:
         report.issues.append(_coerce_plugin_issue(team_config_issue(exc), "team"))
+        report.pending_refresh = False
         return None
+    report.pending_refresh = report.pending_refresh and _awaits_trunk_refresh(team_policy)
     if not wiki_path.exists():
         _add_missing_wiki(report, wiki_path)
         return None
@@ -2912,6 +2981,7 @@ def _finalize_lint_report(
     inputs: _LintInputs | None = None,
 ) -> LintReport:
     """Attach optional health evidence from this operation's captured inputs."""
+    _defer_refresh_owned_findings(report)
     if include_health_details:
         view = report.knowledge_view if inputs is not None else None
         report.health_details = capture_health_details(
@@ -2933,6 +3003,7 @@ def build_report(
     *,
     strict: bool = False,
     knowledge_drift_report: bool = False,
+    require_fresh: bool = False,
     profiler: _LintProfiler | None = None,
     cache_options: InventoryCacheOptions | None = None,
     parallel_jobs: int = 1,
@@ -2955,7 +3026,7 @@ def build_report(
     wiki_path = Path(wiki_dir)
     effective_strict = bool(strict or knowledge_drift_report)
     report = _new_lint_report(
-        wiki_path, src_dir, effective_strict, knowledge_drift_report
+        wiki_path, src_dir, effective_strict, knowledge_drift_report, require_fresh
     )
     preflight = _preflight_lint_inputs(report, wiki_path, src_dir, source_selection)
     if preflight is None:
@@ -3394,6 +3465,7 @@ def lint_request_from_args(args) -> LintRequest:
         source_root=getattr(args, "src_dir", "."),
         strict=bool(getattr(args, "strict", False)),
         knowledge_drift_report=bool(getattr(args, "knowledge_drift_report", False)),
+        require_fresh=bool(getattr(args, "require_fresh", False)),
         allow_external_source=bool(getattr(args, "allow_external_src", False)),
         source_selection=getattr(args, "source_selection", None),
         include_tests=getattr(args, "include_tests", None),
@@ -3425,6 +3497,7 @@ def _build_requested_report(
         src_dir,
         strict=bool(request.strict or request.knowledge_drift_report),
         knowledge_drift_report=request.knowledge_drift_report,
+        require_fresh=request.require_fresh,
         profiler=profiler,
         cache_options=cache_options_for(
             disabled=not request.cache,

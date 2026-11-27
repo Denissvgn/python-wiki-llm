@@ -54,7 +54,8 @@ ownership. Ordinary callers retain the same publication protocol.
 | `llm_wiki_engine.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `llm_wiki_engine.knowledge_freshness` | `LiveKnowledgeEvaluation` |
 | `llm_wiki_engine.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `MUTATION_LOCK_FILENAMES`, `governance_bundle_id_from_knowledge`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
-| `llm_wiki_engine.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind`, `RepositoryIdentitySource` |
+| `llm_wiki_engine.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `WorkingTreeState`, `concept_kind_for_page_kind`, `RepositoryIdentitySource` |
+| `llm_wiki_engine.knowledge_reuse_format` | `repository_input_hash` |
 | `llm_wiki_engine.knowledge_storage_io` | `read_guarded` |
 | `llm_wiki_engine.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
 | `llm_wiki_engine.progress` | `observed_phase` |
@@ -85,19 +86,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (28) |
+| Outbound | `src` (29) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 137 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 193 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 315 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 324 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 347 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 138 | — | Evaluated command state needed to plan one three-artifact commit. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 194 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 316 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 325 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 348 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 
@@ -109,7 +110,7 @@ flowchart LR
 | `_tool_component` | `(analysis_components, **kwargs)` | — | — |
 | `_infrastructure_extractor_component` | `(analysis_components = None) -> ProducerComponentInput` | — | — |
 | `build_runtime_knowledge_plan` | `(inputs: RuntimeKnowledgeInputs) -> KnowledgeCommitPlan` | — | Build a commit plan from one command's already evaluated run state. |
-| `_stabilize_revision_only_noop` | `(runtime_inputs: RuntimeKnowledgeInputs, plan_inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Keep a validated artifact set stable across an output-only Git commit. |
+| `_stabilize_revision_only_noop` | `(runtime_inputs: RuntimeKnowledgeInputs, plan_inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Keep a validated artifact set stable when only the checkout state moved. |
 | `build_runtime_live_evaluation` | `(inputs: RuntimeLiveEvaluationInputs) -> LiveKnowledgeEvaluation` | — | Adapt one existing inventory/snapshot run to the freshness boundary. |
 | `_runtime_live_concept_bases` | `(knowledge: KnowledgeIndex, manifest: SyncManifest, inventory: Mapping[str, Mapping[str, Any]], source_hashes: Mapping[str, str], extractor_ref_by_source: Mapping[str, str], *, infrastructure_bases_by_source: Mapping[str, ConceptObservationBasis], inventory_complete: bool) -> dict[str, ConceptObservationBasis]` | — | — |
 | `_previous_committed_artifacts` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> ValidatedKnowledgeArtifacts \| None` | — | — |

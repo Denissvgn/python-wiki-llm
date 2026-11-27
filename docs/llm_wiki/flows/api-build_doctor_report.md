@@ -2,7 +2,7 @@
 
 **Entry point:** `build_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 75 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 78 more
 
 **Complete modules touched:**
 
@@ -50,6 +50,7 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
@@ -80,6 +81,8 @@
 - [team](../modules/team.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
+- [wiki_git_policy](../modules/wiki_git_policy.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [yaml_formats](../modules/yaml_formats.md)
@@ -111,16 +114,16 @@ sequenceDiagram
     participant p16 as windows_current_user_sid
     participant p17 as first_unsafe_path_component
     participant p18 as resolve_team_policy
-    participant p19 as capture_health_details
-    participant p20 as _knowledge_declared
-    participant p21 as _current_windows_user_sid
+    participant p19 as _knowledge_declared
+    participant p20 as _current_windows_user_sid
+    participant p21 as capture_health_details
     participant p22 as _profile_phase
     participant p23 as _coerce_plugin_issue
     participant p24 as resolve_inventory_cache_path
     participant p25 as _check_unsupported_source_diagnostics
     participant p26 as knowledge_freshness_disclosure
     participant p27 as team_config_issue
-    participant p28 as _check_broken_links
+    participant p28 as _awaits_trunk_refresh
     participant p29 as isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)
     participant p30 as ac.report_schema
     p0->>p1: validate_path
@@ -141,23 +144,23 @@ sequenceDiagram
     p2->>p16: windows_current_user_sid
     p2->>p17: first_unsafe_path_component
     p6->>p18: resolve_team_policy
-    p8->>p19: capture_health_details
-    p7->>p20: _knowledge_declared
-    p16->>p21: _current_windows_user_sid
+    p7->>p19: _knowledge_declared
+    p16->>p20: _current_windows_user_sid
+    p8->>p21: capture_health_details
     p11->>p22: _profile_phase
     p6->>p23: _coerce_plugin_issue
     p10->>p24: resolve_inventory_cache_path
     p14->>p25: _check_unsupported_source_diagnostics
     p9->>p26: knowledge_freshness_disclosure
     p6->>p27: team_config_issue
-    p14->>p28: _check_broken_links
+    p6->>p28: _awaits_trunk_refresh
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(strict, bool)
     p0-->>p30: ac.report_schema(report_schema, ...)
 ```
 
-> Call sequence diagram shows 30 of 3294 interactions; 3264 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3333 interactions; 3303 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1007 (1006 omitted); unresolved 1 of 1068 (1067 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1019 (1018 omitted); unresolved 1 of 1081 (1080 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -171,7 +174,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | unresolved | 6 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 24 | - | external | 10 |
-> Omission summary shows 8 of 903 groups; 895 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 922 groups; 914 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -184,9 +187,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1220; effect analysis evaluated: 925, partial: 47, unavailable: 248. Counts include steps omitted from the displayed trace.
+Source steps: 1234; effect analysis evaluated: 936, partial: 47, unavailable: 251. Counts include steps omitted from the displayed trace.
 
-Collector observations for 972 source steps with known totals: observed: 5863, emitted: 5618, omitted: 245. Unavailable totals are excluded.
+Collector observations for 983 source steps with known totals: observed: 5942, emitted: 5695, omitted: 247. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

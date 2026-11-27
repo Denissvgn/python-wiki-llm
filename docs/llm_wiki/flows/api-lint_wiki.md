@@ -2,7 +2,7 @@
 
 **Entry point:** `lint_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [data_flow](../modules/data_flow.md), and 40 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [data_flow](../modules/data_flow.md), and 41 more
 
 **Complete modules touched:**
 
@@ -47,6 +47,7 @@
 - [sync_analysis](../modules/sync_analysis.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [team](../modules/team.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [yaml_formats](../modules/yaml_formats.md)
 - [yaml_syntax](../modules/yaml_syntax.md)
@@ -79,14 +80,14 @@ sequenceDiagram
     participant p18 as windows_current_user_sid
     participant p19 as first_unsafe_path_component
     participant p20 as resolve_team_policy
-    participant p21 as capture_health_details
-    participant p22 as _current_windows_user_sid
+    participant p21 as _current_windows_user_sid
+    participant p22 as capture_health_details
     participant p23 as _profile_phase
     participant p24 as _coerce_plugin_issue
     participant p25 as resolve_inventory_cache_path
     participant p26 as _check_unsupported_source_diagnostics
     participant p27 as team_config_issue
-    participant p28 as _check_broken_links
+    participant p28 as _awaits_trunk_refresh
     participant p29 as str (src/llm_wiki_cli/api.py:lint_wiki)
     participant p30 as current_host().with_output
     p0->>p1: discarding_output
@@ -109,21 +110,21 @@ sequenceDiagram
     p8->>p18: windows_current_user_sid
     p8->>p19: first_unsafe_path_component
     p13->>p20: resolve_team_policy
-    p14->>p21: capture_health_details
-    p18->>p22: _current_windows_user_sid
+    p18->>p21: _current_windows_user_sid
+    p14->>p22: capture_health_details
     p16->>p23: _profile_phase
     p13->>p24: _coerce_plugin_issue
     p15->>p25: resolve_inventory_cache_path
     p17->>p26: _check_unsupported_source_diagnostics
     p13->>p27: team_config_issue
-    p17->>p28: _check_broken_links
+    p13->>p28: _awaits_trunk_refresh
     p0-->>p29: str (src/llm_wiki_cli/api.py:lint_wiki)(exc)
     p1-->>p30: current_host().with_output(stdout=_Discard(...), stderr=_Discard(...))
 ```
 
-> Call sequence diagram shows 30 of 715 interactions; 685 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 728 interactions; 698 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 194 (193 omitted); unresolved 1 of 183 (182 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 199 (198 omitted); unresolved 1 of 186 (185 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,7 +138,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/lint_service.py:_build_requested_report` | 17 | - | external | 7 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 20 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 2 |
 | `src/llm_wiki_engine/path_policy.py:validate_path` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 208 groups; 200 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 214 groups; 206 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -150,9 +151,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 339; effect analysis evaluated: 267, partial: 17, unavailable: 55. Counts include steps omitted from the displayed trace.
+Source steps: 344; effect analysis evaluated: 272, partial: 17, unavailable: 55. Counts include steps omitted from the displayed trace.
 
-Collector observations for 284 source steps with known totals: observed: 1847, emitted: 1771, omitted: 76. Unavailable totals are excluded.
+Collector observations for 289 source steps with known totals: observed: 1876, emitted: 1798, omitted: 78. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

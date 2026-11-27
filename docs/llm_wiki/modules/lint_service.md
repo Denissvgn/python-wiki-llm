@@ -61,7 +61,8 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |
-| `.team` | `TeamConfigError`, `TeamPolicyContext`, `build_team_issues`, `resolve_team_policy`, `team_config_issue` |
+| `.team` | `TeamConfigError`, `TeamPolicyContext`, `build_team_issues`, `resolve_team_policy`, `team_config_issue`, `wiki_ownership` |
+| `.wiki_git_delivery` | `current_branch` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance`, `sync_guidance` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
@@ -118,10 +119,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (10) |
-| Outbound | `src` (49) |
+| Inbound | `src` (11) |
+| Outbound | `src` (50) |
 
-> All 58 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 60 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -131,10 +132,10 @@ flowchart LR
 | [LintIssue](../entities/lint_service_LintIssue.md) | 247 | — | — |
 | [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 258 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
 | [LintReport](../entities/lint_service_LintReport.md) | 296 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 337 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 344 | — | — |
-| [_LintPreflight](../entities/LintPreflight.md) | 358 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 365 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 340 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 347 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 361 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 368 | — | — |
 
 ## Functions
 
@@ -209,11 +210,13 @@ flowchart LR
 | `_run_report_checks` | `(report: LintReport, wiki_path: Path, src_dir: str, strict: bool, profiler: _LintProfiler \| None, inputs: _LintInputs, media_size_warn_bytes: int, include_plugins: bool, source_plugins_only: bool) -> None` | — | — |
 | `_add_source_selection_mismatch` | `(report: LintReport, message: str) -> None` | — | — |
 | `_preflight_lint_source_selection` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> tuple[bool, dict[str, object] \| None, SyncManifest \| None]` | — | — |
-| `_new_lint_report` | `(wiki_path: Path, src_dir: str, effective_strict: bool, knowledge_drift_report: bool) -> LintReport` | — | — |
+| `_defer_refresh_owned_findings` | `(report: LintReport) -> None` | — | Report generated-coverage findings as pending when the trunk owns the wiki. |
+| `_awaits_trunk_refresh` | `(team_policy: TeamPolicyContext) -> bool` | — | Return whether trunk ownership keeps this checkout from writing the wiki. |
+| `_new_lint_report` | `(wiki_path: Path, src_dir: str, effective_strict: bool, knowledge_drift_report: bool, require_fresh: bool = False) -> LintReport` | — | — |
 | `_add_missing_wiki` | `(report: LintReport, wiki_path: Path) -> None` | — | — |
 | `_preflight_lint_inputs` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> _LintPreflight \| None` | — | — |
 | `_finalize_lint_report` | `(report: LintReport, include_health_details: bool, inputs: _LintInputs \| None = None) -> LintReport` | — | Attach optional health evidence from this operation's captured inputs. |
-| `build_report` | `(wiki_dir: str \| Path, src_dir: str = '.', *, strict: bool = False, knowledge_drift_report: bool = False, profiler: _LintProfiler \| None = None, cache_options: InventoryCacheOptions \| None = None, parallel_jobs: int = 1, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, include_health_details: bool = False, comparison_policy: str \| None = None, _captured_inventory_result: InventoryResult \| None = None, _captured_source_snapshot: SourceSnapshot \| None = None) -> LintReport` | `@comparison_entrypoint` | Build a structured lint report without rendering or exiting. |
+| `build_report` | `(wiki_dir: str \| Path, src_dir: str = '.', *, strict: bool = False, knowledge_drift_report: bool = False, require_fresh: bool = False, profiler: _LintProfiler \| None = None, cache_options: InventoryCacheOptions \| None = None, parallel_jobs: int = 1, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, include_health_details: bool = False, comparison_policy: str \| None = None, _captured_inventory_result: InventoryResult \| None = None, _captured_source_snapshot: SourceSnapshot \| None = None) -> LintReport` | `@comparison_entrypoint` | Build a structured lint report without rendering or exiting. |
 | `_lint_issue_payload` | `(issue: LintIssue) -> dict[str, object]` | — | — |
 | `report_to_dict` | `(report: LintReport, *, include_execution: bool = False) -> dict` | — | — |
 | `_profile_report_to_dict` | `(report: LintReport, profiler: _LintProfiler, *, include_cache: bool = False) -> dict` | — | — |

@@ -726,7 +726,7 @@ def build_knowledge_commit_plan(
     elif maintenance_adoption is not None or (root / ADOPTION_FILENAME).exists() or (root / ADOPTION_FILENAME).is_symlink():
         raise KnowledgeArtifactError("maintenance", "cannot publish a legacy owner into an adopted wiki")
     if knowledge_format not in {None, "v1", "sharded-v2", *PACKED_FORMATS}:
-        raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3, packed-v3-deflate, packed-v4 or packed-v4-deflate")
+        raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3, packed-v3-deflate, packed-v4, packed-v4-deflate, packed-v4-fine or packed-v4-fine-deflate")
     if knowledge_format is None:
         knowledge_format = current_knowledge_format(root)
     if (knowledge_index_bytes is None) == (knowledge_index is None):

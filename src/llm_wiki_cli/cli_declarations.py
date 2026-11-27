@@ -516,6 +516,14 @@ def _add_lint_command(subparsers):
         help="Require core wiki structure and a fresh sync manifest",
     )
     lint_parser.add_argument(
+        "--require-fresh",
+        action="store_true",
+        help=(
+            "Fail on a stale sync manifest even where trunk ownership would "
+            "report it as pending refresh"
+        ),
+    )
+    lint_parser.add_argument(
         "--knowledge-drift-report",
         action="store_true",
         help=(
@@ -653,6 +661,14 @@ def _add_ci_check_command(subparsers):
     )
     ci_parser.add_argument(
         "--cache-stats", action="store_true", help="Include cache diagnostics"
+    )
+    ci_parser.add_argument(
+        "--require-fresh",
+        action="store_true",
+        help=(
+            "Fail on a stale sync manifest even where trunk ownership would "
+            "report it as pending refresh"
+        ),
     )
     ci_parser.add_argument(
         "--knowledge-drift-report",
@@ -861,6 +877,22 @@ def _add_knowledge_command(subparsers):
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
     storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
     storage_check.add_argument("--format", choices=["json"], default="json")
+    storage_usage = actions.add_parser(
+        "storage-usage",
+        help="Report the disk space llm-wiki owns for this wiki; reclaim caches and old recovery copies on request",
+    )
+    _add_knowledge_wiki_argument(storage_usage)
+    storage_usage.add_argument(
+        "--reclaim", action="append", default=None,
+        choices=["caches", "helpers", "storage-recovery", "upgrade-recovery"],
+        help="Class to remove; may be repeated. Previewed unless --apply is given",
+    )
+    storage_usage.add_argument(
+        "--older-than-days", type=int, default=7,
+        help="Recovery classes give up only entries at least this old (default: 7)",
+    )
+    storage_usage.add_argument("--apply", action="store_true", help="Delete the previewed --reclaim candidates")
+    storage_usage.add_argument("--format", choices=["json"], default="json")
     git_check = actions.add_parser(
         "git-check",
         help="Inspect Git delivery policy for every required native snapshot file",
@@ -870,6 +902,19 @@ def _add_knowledge_command(subparsers):
         "--staged",
         action="store_true",
         help="Require a complete current staged snapshot and Git-eligible policy",
+    )
+    git_check.add_argument(
+        "--base",
+        default=None,
+        help=(
+            "Explicit base commit/ref: under trunk ownership, fail when the "
+            "branch changes generated wiki paths since that base"
+        ),
+    )
+    git_check.add_argument(
+        "--branch",
+        default=None,
+        help="Branch under evaluation for --base (default: the checked-out branch)",
     )
     git_check.add_argument("--format", choices=["json"], default="json")
     for action in ("inspect-storage", "diff-storage"):
@@ -1144,6 +1189,26 @@ def _add_team_command(subparsers):
         default=DEFAULT_WIKI_DIR,
         help="Wiki directory to record in team config",
     )
+    team_init.add_argument(
+        "--ownership",
+        choices=["branch", "trunk"],
+        default="branch",
+        help=(
+            "Who writes generated wiki state: every branch (default), or only "
+            "the trunk and its writer branches"
+        ),
+    )
+    team_init.add_argument(
+        "--trunk",
+        default="main",
+        help="Trunk branch for --ownership trunk (default: main)",
+    )
+    team_init.add_argument(
+        "--writer-branch",
+        action="append",
+        default=None,
+        help="Additional branch allowed to write under --ownership trunk; may be repeated",
+    )
     team_check = team_sub.add_parser(
         "check", help="Validate team config and conventions"
     )
@@ -1259,7 +1324,7 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser = subparsers.add_parser(
         "bootstrap", help="Generate initial wiki for an existing codebase"
     )
-    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "packed-v4-fine", "packed-v4-fine-deflate"], default=None,
                                   help="Explicit native storage format; otherwise preserve the adopted format")
     bootstrap_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
@@ -2043,7 +2108,7 @@ def _add_sync_command(subparsers):
         "--repair-evidence", nargs="+", action="extend", default=None, metavar="SOURCE",
         help="Repair owned unchanged evidence with --no-plugins (POSIX paths relative to --src-dir); full analysis still runs",
     )
-    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "packed-v4-fine", "packed-v4-fine-deflate"], default=None,
                             help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(
         "--rebuild-knowledge",
@@ -2091,6 +2156,8 @@ def _add_sync_command(subparsers):
                              help="After successful sync, validate and prune unreferenced storage with verified recovery")
     sync_parser.add_argument("--storage-recovery-dir", default=None,
                              help="Cleanup recovery directory outside the wiki (requires --prune-storage)")
+    sync_parser.add_argument("--verify", action="store_true",
+                             help="After a writing sync, run the strict checks once with the same options and fail on any issue")
     sync_parser.add_argument(
         "--force",
         action="store_true",

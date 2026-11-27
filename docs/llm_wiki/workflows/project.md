@@ -1,7 +1,7 @@
 # project
 
 **Entry point:** `historical_release._project`
-**Modules involved:** [historical_release](../modules/historical_release.md), [infrastructure_state](../modules/infrastructure_state.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_links](../modules/knowledge_links.md), [section_ownership](../modules/section_ownership.md), [wiki_media](../modules/wiki_media.md)
+**Modules involved:** [historical_release](../modules/historical_release.md), [infrastructure_state](../modules/infrastructure_state.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_links](../modules/knowledge_links.md), [knowledge_model](../modules/knowledge_model.md), [section_ownership](../modules/section_ownership.md), [wiki_media](../modules/wiki_media.md)
 
 > Refresh Markdown-derived index facts only. Keep the evaluated source snapshot.
 
@@ -17,6 +17,7 @@
 7. `knowledge_envelope.EvaluatedEnvelope`
 8. `infrastructure_state.infrastructure_evidence_by_page`
 9. `knowledge_links.collect_link_observations`
+10. `knowledge_model.is_line_relative_link`
 
 ## Touches
 
@@ -26,6 +27,7 @@
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
+- [knowledge_model](../modules/knowledge_model.md)
 - [section_ownership](../modules/section_ownership.md)
 - [wiki_media](../modules/wiki_media.md)
 

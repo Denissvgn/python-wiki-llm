@@ -48,6 +48,7 @@ Field names describe the behaviour, not CLI flags: ``plugins=False`` is
 | `retire_missing_pages` | `Iterable[str] \| None` | `None` | — |
 | `release_historical_pages` | `Iterable[str] \| None` | `None` | — |
 | `expected_historical_release` | `str \| None` | `None` | — |
+| `verify` | `bool` | `False` | — |
 
 ## Methods
 
@@ -63,10 +64,11 @@ flowchart LR
     n2["Engine.sync (src/llm_wiki_cli/engine/__init__.py)"]
     n3["_job_request (src/llm_wiki_cli/services/sync_runtime.py)"]
     n4["_sync_run_options_from_request (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n5["execute_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n6["run_request (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n7["sync_request_from_args (src/llm_wiki_cli/services/sync_runtime.py)"]
-    n8["_legacy_seed_sync_request (src/llm_wiki_cli/services/upgrade_runtime.py)"]
+    n5["_verify_written_wiki (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n6["execute_sync (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n7["run_request (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n8["sync_request_from_args (src/llm_wiki_cli/services/sync_runtime.py)"]
+    n9["_legacy_seed_sync_request (src/llm_wiki_cli/services/upgrade_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -75,6 +77,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/sync_service.md"
     click n1 "../modules/api.md"
     click n2 "../modules/engine___init__.md"
@@ -83,7 +86,8 @@ flowchart LR
     click n5 "../modules/sync_runtime.md"
     click n6 "../modules/sync_runtime.md"
     click n7 "../modules/sync_runtime.md"
-    click n8 "../modules/upgrade_runtime.md"
+    click n8 "../modules/sync_runtime.md"
+    click n9 "../modules/upgrade_runtime.md"
 ```
 
 ### Summary
@@ -100,6 +104,7 @@ flowchart LR
 | `Engine.sync` | type_reference | [engine___init__](../modules/engine___init__.md) | — |
 | `_job_request` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `_sync_run_options_from_request` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
+| `_verify_written_wiki` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `execute_sync` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `run_request` | type_reference | [sync_runtime](../modules/sync_runtime.md) | — |
 | `sync_request_from_args` | call | [sync_runtime](../modules/sync_runtime.md) | 1 |

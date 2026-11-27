@@ -110,7 +110,7 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2469 interactions; 2439 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2475 interactions; 2445 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 704 (703 omitted); unresolved 1 of 430 (429 omitted). These counts cover the captured static trace.
 
@@ -126,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/knowledge_index.py:_validator_identity` | 2 | - | external | 5 |
 | `src/llm_wiki_engine/knowledge_index.py:_validator_identity` | 2 | [src/llm_wiki_engine/knowledge_index.py](../modules/knowledge_index.md) | internal | 2 |
 | `src/llm_wiki_engine/knowledge_index.py:_validation_callable_identity` | 11 | - | external | 10 |
-> Omission summary shows 8 of 578 groups; 570 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 579 groups; 571 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,9 +139,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1336; effect analysis evaluated: 755, partial: 41, unavailable: 540. Counts include steps omitted from the displayed trace.
+Source steps: 1342; effect analysis evaluated: 760, partial: 41, unavailable: 541. Counts include steps omitted from the displayed trace.
 
-Collector observations for 796 source steps with known totals: observed: 4039, emitted: 3853, omitted: 186. Unavailable totals are excluded.
+Collector observations for 801 source steps with known totals: observed: 4062, emitted: 3875, omitted: 187. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -216,16 +216,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_knowledge_artifacts | _validator_identity | 321 | `_validator_identity(data not statically known)` |
-| _validator_identity | maintenance_state.maintenance_core | 374 | `maintenance_state.maintenance_core(data not statically known)` |
-| _validator_identity | current_validators().identity | 377 | `current_validators().identity(data not statically known)` |
-| _validator_identity | current_validators | 377 | `current_validators(data not statically known)` |
+| _validator_identity | maintenance_state.maintenance_core | 382 | `maintenance_state.maintenance_core(data not statically known)` |
+| _validator_identity | current_validators().identity | 385 | `current_validators().identity(data not statically known)` |
+| _validator_identity | current_validators | 385 | `current_validators(data not statically known)` |
 | current_validators | _ACTIVE_VALIDATORS.get | 199 | `_ACTIVE_VALIDATORS.get(data not statically known)` |
-| _validator_identity | current_kinds().identity | 378 | `current_kinds().identity(data not statically known)` |
-| _validator_identity | current_kinds | 378 | `current_kinds(data not statically known)` |
+| _validator_identity | current_kinds().identity | 386 | `current_kinds().identity(data not statically known)` |
+| _validator_identity | current_kinds | 386 | `current_kinds(data not statically known)` |
 | current_kinds | _ACTIVE_KINDS.get | 266 | `_ACTIVE_KINDS.get(data not statically known)` |
-| _validator_identity | tuple (src/llm_wiki_engine/knowl…ex.py:_validator_identity) | 379 | `tuple(...)` |
-| _validator_identity | _validation_callable_identity | 379 | `_validation_callable_identity(getattr(...))` |
-| _validation_callable_identity | getattr (src/llm_wiki_engine/knowl…idation_callable_identity) | 386 | `getattr(function, '__func__', function)` |
+| _validator_identity | tuple (src/llm_wiki_engine/knowl…ex.py:_validator_identity) | 387 | `tuple(...)` |
+| _validator_identity | _validation_callable_identity | 387 | `_validation_callable_identity(getattr(...))` |
+| _validation_callable_identity | getattr (src/llm_wiki_engine/knowl…idation_callable_identity) | 394 | `getattr(function, '__func__', function)` |
 
 ### Boundary effects
 
@@ -235,12 +235,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_validator_identity` | `maintenance_state.maintenance_core` | 374 |
-| unresolved_call | `_validator_identity` | `current_validators().identity` | 377 |
+| unresolved_call | `_validator_identity` | `maintenance_state.maintenance_core` | 382 |
+| unresolved_call | `_validator_identity` | `current_validators().identity` | 385 |
 | unresolved_call | `current_validators` | `_ACTIVE_VALIDATORS.get` | 199 |
-| unresolved_call | `_validator_identity` | `current_kinds().identity` | 378 |
+| unresolved_call | `_validator_identity` | `current_kinds().identity` | 386 |
 | unresolved_call | `current_kinds` | `_ACTIVE_KINDS.get` | 266 |
-| external_call | `_validation_callable_identity` | `getattr` | 386 |
+| external_call | `_validation_callable_identity` | `getattr` | 394 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

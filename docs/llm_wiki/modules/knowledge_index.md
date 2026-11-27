@@ -29,7 +29,7 @@ across invocations.
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_kinds` | `current_kinds` |
 | `.knowledge_links` | `LinkObservation`, `LinkSyntax`, `is_valid_external_link_uri`, `is_valid_link_locator_target` |
-| `.knowledge_model` | `Actor`, `ActorKind`, `BundleRecord`, `ConceptFacets`, `ConceptKind`, `ConceptRecord`, `DocumentRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `Lifecycle`, `ObservationScope`, `Origin`, `RelationshipEvidence`, `RelationshipKind`, `RelationshipLocation`, `RelationshipRecord`, `RelationshipTarget`, `Resolution`, `SemanticFacet`, `StructuralFacet`, `TargetClass`, `Verification`, `concept_kind_for_page_kind`, `parse_knowledge_index`, `_knowledge_index_to_payload_unchecked` |
+| `.knowledge_model` | `Actor`, `ActorKind`, `BundleRecord`, `ConceptFacets`, `ConceptKind`, `ConceptRecord`, `DocumentRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `Lifecycle`, `ObservationScope`, `Origin`, `RelationshipEvidence`, `RelationshipKind`, `RelationshipLocation`, `RelationshipRecord`, `RelationshipTarget`, `Resolution`, `SemanticFacet`, `StructuralFacet`, `TargetClass`, `Verification`, `concept_kind_for_page_kind`, `parse_knowledge_index`, `LINE_LOCATION_BASIS`, `LOCATION_BASIS_EXTENSION`, `_knowledge_index_to_payload_unchecked`, `is_line_relative_link` |
 | `.knowledge_validators` | `current_validators` |
 | `.sync_manifest` | `ManifestEvidenceBaseline`, `ManifestPageSource`, `ManifestTombstone` |
 | `__future__` | `annotations` |
@@ -82,16 +82,16 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeIndexBuildError](../entities/KnowledgeIndexBuildError.md) | 136 | `ValueError` | Field-specific failure at the pure knowledge-index join boundary. |
-| [KnowledgeIndexInputs](../entities/KnowledgeIndexInputs.md) | 151 | — | Already evaluated values required to construct one knowledge index. |
-| [_SurfacePage](../entities/SurfacePage.md) | 170 | — | — |
-| [_JoinedPage](../entities/JoinedPage.md) | 182 | — | — |
-| [_BuildContext](../entities/BuildContext.md) | 204 | — | — |
-| [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 212 | — | — |
-| [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 219 | `ValueError` | — |
-| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 335 | — | — |
-| [_IndexValidationProof](../entities/IndexValidationProof.md) | 464 | — | — |
-| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 485 | — | — |
+| [KnowledgeIndexBuildError](../entities/KnowledgeIndexBuildError.md) | 139 | `ValueError` | Field-specific failure at the pure knowledge-index join boundary. |
+| [KnowledgeIndexInputs](../entities/KnowledgeIndexInputs.md) | 154 | — | Already evaluated values required to construct one knowledge index. |
+| [_SurfacePage](../entities/SurfacePage.md) | 176 | — | — |
+| [_JoinedPage](../entities/JoinedPage.md) | 188 | — | — |
+| [_BuildContext](../entities/BuildContext.md) | 210 | — | — |
+| [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 218 | — | — |
+| [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 225 | `ValueError` | — |
+| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 343 | — | — |
+| [_IndexValidationProof](../entities/IndexValidationProof.md) | 472 | — | — |
+| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 493 | — | — |
 
 ## Functions
 
@@ -138,7 +138,8 @@ flowchart LR
 | `_structural_facet` | `(joined: _JoinedPage, concept_kind: ConceptKind) -> StructuralFacet` | — | — |
 | `_evidence_basis` | `(value: ConceptObservationBasis) -> EvidenceBasis` | — | — |
 | `_derived_relationship` | `(joined: _JoinedPage) -> RelationshipRecord \| None` | — | — |
-| `_link_relationship` | `(observation: LinkObservation, joined_by_path: Mapping[str, _JoinedPage]) -> RelationshipRecord` | — | — |
+| `_line_relative_location` | `(location: RelationshipLocation, content: str) -> RelationshipLocation` | — | Re-express a page offset as an offset within the link's own line. |
+| `_link_relationship` | `(observation: LinkObservation, joined_by_path: Mapping[str, _JoinedPage], *, line_relative: bool = False) -> RelationshipRecord` | — | — |
 | `_validate_builder_model` | `(model: KnowledgeIndex) -> None` | — | — |
 | `_require_structure_state` | `(structure: StructuralFacet, concept_path: str, *, origin: Origin, evidence: EvidenceState, allows_basis: bool) -> None` | — | — |
 | `_validate_builder_link` | `(relationship: RelationshipRecord, source: ConceptRecord, page_locator_by_path: Mapping[str, str], path: str) -> None` | — | — |

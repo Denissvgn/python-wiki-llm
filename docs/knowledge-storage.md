@@ -63,6 +63,7 @@ the complete snapshot; initializing governance does not resolve that error.
 | `packed-v3-deflate` | You also want compressed files in the working directory. |
 | `packed-v4` | You want finer routing and smaller writes, with more data packs than v3. |
 | `packed-v4-deflate` | You want that finer layout with individually compressed members. |
+| `packed-v4-fine`, `packed-v4-fine-deflate` | Several people or agents refresh the wiki often and its Git history must stay small. |
 
 All packed formats contain the same logical knowledge. `packed-v3` uses
 uncompressed ZIP members (`ZIP_STORED`); `packed-v3-deflate` compresses members
@@ -89,6 +90,58 @@ external database, network service or Git LFS is required.
 Git normally displays ZIP changes as binary changes. Use the logical inspection
 and comparison commands below to review the underlying records. Compression
 savings and update costs depend on the data and the breadth of each change.
+
+## Keep each refresh small
+
+With the other packed formats, a sync that creates one page rewrites most of
+the store. Two things cause it. Every link is recorded with its character
+offset in the page, so a new entry in `index.md` gives every later link a new
+identity. And packs hold about 1 MiB each, so a few scattered changes still
+replace nearly every pack.
+
+The fine profile changes both:
+
+- A link is located by its offset within its own line, marked with the
+  `llm-wiki/location-basis: line` extension, and does not repeat its page's
+  hash; the page's own record already holds that hash. A link keeps its
+  identity when other lines of the page change.
+- Packs target 128 KiB. Git transfers a rewritten pack whole, so smaller packs
+  make each push smaller. Expect roughly nine times as many pack files, each
+  smaller; the total size of the store does not grow.
+- Catalog nodes, the small parents of the knowledge tree, are packed apart from
+  the records they point to. Most of them change whenever a record below them
+  does, so sharing packs with records made each one rewrite a whole pack. A
+  pack whose bucket starts with `1` holds catalog nodes; one that starts with
+  `0` holds records.
+- The locator finds a member by its place in the knowledge tree and takes its
+  byte range from the pack's own ZIP directory. A locator row therefore stays
+  the same when the member's content, size or position in its pack changes,
+  and only a node added to or removed from the tree touches it. Locator leaves
+  hold up to 96 rows, and each is stored in an index page file of its own so
+  an unchanged leaf keeps its file.
+
+On this project's own wiki, a sync that added one page changed 53% of the
+stored members with `packed-v4-deflate` and about 1% with the fine profile.
+
+Adopt it with a writing sync, and leave it the same way:
+
+```sh
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v4-fine-deflate --prune-storage
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v4-deflate --prune-storage
+```
+
+The first sync after either change rewrites the whole store once. Later syncs
+keep the adopted profile, and `llm-wiki upgrade` leaves it in place.
+`bootstrap --knowledge-format packed-v4-fine-deflate` starts a wiki with it.
+`knowledge migrate` does not accept the fine profile in either direction,
+because link records have to be regenerated, not copied.
+
+Upgrade every reader and writer before adopting it. A release without the
+fine profile stops at the knowledge root with `unsupported-schema-version` and
+reads nothing. Tools that consume link offsets must check the location's
+`llm-wiki/location-basis` extension: without it the offsets count from the
+start of the page, with `line` from the start of the link's line. Task
+receipts and storage reports keep naming the family `packed-v4`.
 
 ## Adopt packed storage
 
@@ -136,6 +189,10 @@ Manifest v6 stores artifact commitments and small generation policy in
 bounded catalogs under `.llm-wiki-manifest/objects/`. The commit root and every
 catalog have a 64 KiB ceiling. Large policy values also use committed catalogs;
 reading them still counts against the request's byte budget.
+
+Catalogs end at boundaries chosen from their own content, so adding or removing
+a few sources leaves the other catalogs byte-identical and a sync writes only
+the ones that hold a real change.
 
 Upgrade every reader and writer to support manifest v6, then adopt it explicitly:
 
@@ -306,6 +363,38 @@ The streaming mode limits each expanded record to 1 MiB, each alias group to
 caches are bounded separately; process memory also includes decoded JSON and
 the bounded physical routing tables. Exceeding a limit produces an explicit
 failure. Private files are removed when the operation ends or is cancelled.
+
+### See and reclaim the tool's disk use
+
+```sh
+llm-wiki knowledge storage-usage --wiki-dir docs/llm_wiki
+llm-wiki knowledge storage-usage --wiki-dir docs/llm_wiki --reclaim caches --reclaim storage-recovery
+llm-wiki knowledge storage-usage --wiki-dir docs/llm_wiki --reclaim caches --reclaim storage-recovery --apply
+```
+
+The report lists every location the tool owns for this wiki, with bytes and
+file counts by class:
+
+| Class | What it holds | Reclaim |
+|---|---|---|
+| `wiki-store` | Knowledge and manifest objects in the wiki | Use `prune-storage`; it checks references first |
+| `maintenance-recovery` | Recovery copies of adopted wiki writes | Retired by the next writing sync |
+| `storage-recovery` | Copies of objects removed by cleanup or migration | `--reclaim storage-recovery` |
+| `upgrade-recovery` | Copies written by bootstrap and upgrade in the system temporary directory | `--reclaim upgrade-recovery` |
+| `caches` | Extraction and analysis caches | `--reclaim caches` |
+| `helpers` | Prepared language helpers | `--reclaim helpers`; prepare them again afterwards |
+
+It covers the wiki, this checkout's Git directory, the shared Git directory of
+a linked worktree, `LLM_WIKI_CACHE_DIR` when set, and this wiki's entries in
+the system temporary directory. Without `--apply` nothing is deleted and
+`reclaim.candidates` shows what would be. Recovery classes keep entries newer
+than `--older-than-days` (default 7). Symbolic links are never followed.
+
+Storage cleanup keeps its own footprint small. When Git's `HEAD` holds every
+object it removes, no second copy is written and the result reports
+`recovery_source: git-head`. A writing sync on an adopted wiki retires the
+recovery copies of wiki directories that no longer exist, such as removed
+worktrees, after seven days.
 
 To include the size policy in an existing report, use `ci-check --storage-check`.
 Optional `--storage-git-base` and `--storage-git-head` add the explicit Git range

@@ -1,6 +1,6 @@
 # CommittedRuntimeProvenance
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:315`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:316`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)

@@ -541,6 +541,12 @@ Use `knowledge storage-check --full --require-referenced` for a read-only gate.
 The [storage lifecycle guide](knowledge-storage.md) describes recovery and the
 complete audit.
 
+Add `--verify` to run the strict checks on the wiki the sync just wrote. The
+run exits with status 1 when they report an issue; the written wiki stays in
+place for inspection. The checks use the same roots, source selection, helper
+cache and inventory cache as the sync and apply `--require-fresh`. `--verify`
+does not combine with `--dry-run`.
+
 For a narrowly authorized repair of captured invalid evidence, use
 `--repair-evidence` with canonical POSIX source paths relative to `--src-dir`:
 
@@ -2032,6 +2038,68 @@ unmapped pages still produce naming issues. Team check also accepts `--jobs`,
 `resolve-conflicts` only applies conservative resolutions for generated pages.
 Manual workflow conflicts are left for humans to resolve.
 
+### Wiki ownership
+
+By default every branch syncs its own copy of the generated wiki. Two branches
+that both sync change the same index and manifest files, so the second one to
+merge conflicts and has to sync again. A team with several open pull requests
+can avoid this by giving the wiki one writer:
+
+```bash
+llm-wiki team init --wiki-dir docs/llm_wiki --ownership trunk --writer-branch llm-wiki/refresh
+```
+
+This records the following in `.llm-wiki/team.json`. Add the same object by
+hand to an existing policy file.
+
+```json
+"ownership": {
+  "mode": "trunk",
+  "trunk": "main",
+  "writer_branches": ["llm-wiki/refresh"]
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `mode` | `branch` (default) or `trunk`. |
+| `trunk` | Branch that owns the generated wiki. Defaults to `main`. |
+| `writer_branches` | Other branches that may write it, such as the branch of a refresh pull request. |
+| `authored_paths` | Wiki-relative paths that people edit and any branch may change. Defaults to `["guides"]`. |
+
+Under trunk ownership:
+
+- A writing `sync` runs only on the trunk or a writer branch. Elsewhere it
+  stops before analysis with exit status 2 and changes nothing. A detached
+  checkout is not a writer. `sync --dry-run` works on every branch.
+- `lint` and `ci-check` on other branches report a stale sync manifest and
+  undocumented or stale generated pages as pending refresh, without failing.
+  Pass `--require-fresh` on the branch that refreshes the wiki, including when
+  its checkout is detached.
+- `knowledge git-check --base REF` fails when such a branch changed a
+  generated wiki path.
+
+Refresh the wiki from the trunk after merging. One refresh covers every
+change merged since the previous one:
+
+```bash
+git switch -C llm-wiki/refresh origin/main
+llm-wiki sync --prune-storage --verify --src-dir . --wiki-dir docs/llm_wiki
+git add -A docs/llm_wiki
+llm-wiki knowledge git-check --wiki-dir docs/llm_wiki --staged
+```
+
+`--verify` runs the strict checks on the written wiki in the same run, with
+`--require-fresh` applied, and reuses the sync's cached extraction. A sync
+that would change an unusually large share of the wiki still stops and asks
+for `--force`, so no separate preview is needed. Commit the wiki directory on
+its own and deliver it through the project's usual review. Until it lands, the wiki on the trunk
+describes an earlier commit; freshness reports name the sources that changed
+since then.
+
+Every reader and writer must run a release that knows the `ownership` key.
+Older releases reject the policy file.
+
 ## `obsidian`
 
 Export and validate an Obsidian-friendly mirror of the canonical wiki.
@@ -2952,6 +3020,25 @@ Native and binary bytes must match exactly; Markdown newline
 normalization is accepted. Missing, unmerged or mismatched files fail, and an
 unavailable or changing snapshot/index is indeterminate. Unreferenced caches
 and orphan objects are outside this snapshot check.
+
+With `--base REF`, the command checks a branch against team ownership instead
+of inspecting the snapshot:
+
+```bash
+llm-wiki knowledge git-check --wiki-dir docs/llm_wiki --base origin/main
+llm-wiki knowledge git-check --wiki-dir docs/llm_wiki --base "$BASE_SHA" --branch "$HEAD_BRANCH"
+```
+
+It lists the wiki paths changed between the merge base with `REF` and `HEAD`.
+Under [trunk ownership](#wiki-ownership) a branch that may not write the wiki
+fails when it changed any generated path; authored paths are counted
+separately. `--branch` names the branch under evaluation when the checkout is
+detached, as in most pull-request jobs. The report uses
+`llm-wiki-branch-wiki-check/v1` with `reason` set to
+`generated-paths-unchanged`, `generated-paths-changed`, `writer-branch`,
+`branch-ownership`, `base-unresolved` or `diff-unavailable`. Only Git metadata
+is read, so the check needs no helpers and finishes in seconds. `--base` and
+`--staged` are separate checks.
 
 Run the staged gate after authorized staging and before commit or delivery.
 Neither command authorizes Git writes, changes ignore rules, force-adds files,
