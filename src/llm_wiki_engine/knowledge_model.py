@@ -1361,21 +1361,53 @@ def _parse_relationship_evidence(value: object, path: str) -> RelationshipEviden
         ),
         extensions=extensions,
     )
-    if evidence.state is EvidenceState.PRESENT and not any(
-        (
-            evidence.source_content_hash,
-            evidence.concept_observation_hash,
-            evidence.page_hash,
-            evidence.aggregate_input_hash,
-        )
-    ):
-        raise KnowledgeModelError(
-            path, "present relationship evidence requires at least one hash"
-        )
     return evidence
 
 
+#: Marks a link whose location counts characters from the start of its own
+#: line. Such a record keeps its identity when other lines of the page change.
+LOCATION_BASIS_EXTENSION = "llm-wiki/location-basis"
+LINE_LOCATION_BASIS = "line"
+
+
+def is_line_relative_link(relationship: RelationshipRecord) -> bool:
+    """Return whether a link record uses the position-stable form.
+
+    That form locates the link within its line and leaves out the source
+    page hash, which the source concept already records.
+    """
+    location = relationship.target.location
+    return (
+        relationship.kind is RelationshipKind.LINKS_TO
+        and location is not None
+        and location.extensions.get(LOCATION_BASIS_EXTENSION) == LINE_LOCATION_BASIS
+    )
+
+
 def _validate_relationship_shape(relationship: RelationshipRecord, path: str) -> None:
+    evidence = relationship.evidence
+    line_relative = is_line_relative_link(relationship)
+    if (
+        evidence.state is EvidenceState.PRESENT
+        and not line_relative
+        and not any(
+            (
+                evidence.source_content_hash,
+                evidence.concept_observation_hash,
+                evidence.page_hash,
+                evidence.aggregate_input_hash,
+            )
+        )
+    ):
+        raise KnowledgeModelError(
+            _child(path, "evidence"),
+            "present relationship evidence requires at least one hash",
+        )
+    if line_relative and evidence.page_hash is not None:
+        raise KnowledgeModelError(
+            _child(path, "evidence.page_hash"),
+            "is not emitted for a line-relative link; the source concept records it",
+        )
     target_kind = relationship.target.endpoint_kind
     target_class = relationship.target.target_class
 
@@ -1495,6 +1527,7 @@ def _validate_relationship_shape(relationship: RelationshipRecord, path: str) ->
         if (
             relationship.evidence.state is EvidenceState.PRESENT
             and relationship.evidence.page_hash is None
+            and not line_relative
         ):
             raise KnowledgeModelError(
                 _child(path, "evidence.page_hash"),

@@ -30,6 +30,12 @@ LOCAL_PACKED_SCHEMA = "llm-wiki-knowledge/v4"
 PACKED_SCHEMAS = (PACKED_SCHEMA, LOCAL_PACKED_SCHEMA)
 LOCAL_PACK_PROFILE = "local-v1"
 LOCAL_PACK_TARGET_BYTES = 1_048_576
+# The fine profile keeps the v4 layout with smaller packs, so a sync that
+# changes a few members rewrites far fewer bytes. Releases that only know
+# ``local-v1`` refuse it at the root instead of misreading it.
+FINE_PACK_PROFILE = "local-v2"
+FINE_PACK_TARGET_BYTES = 262_144
+LOCAL_PACK_PROFILES = frozenset({LOCAL_PACK_PROFILE, FINE_PACK_PROFILE})
 LOCAL_INDEX_ROWS = 24
 PACK_INDEX_SCHEMA = "llm-wiki-knowledge-pack-index/v1"
 PAGE_INDEX_SCHEMA = "llm-wiki-knowledge-pack-index/v2"
@@ -43,7 +49,8 @@ MAX_PACK_BYTES = 8_388_608
 MAX_INDEX_BYTES = 65_536
 MAX_PACK_MEMBERS = 512
 MAX_DIRECTORY_BYTES = 262_144
-PACKED_FORMATS = frozenset({"packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"})
+FINE_FORMATS = frozenset({"packed-v4-fine", "packed-v4-fine-deflate"})
+PACKED_FORMATS = frozenset({"packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"}) | FINE_FORMATS
 INDEX_NAME = re.compile(r"\.llm-wiki-knowledge/pack-index/([0-9a-f]{2})/\1[0-9a-f]{62}\.json\Z")
 PACK_NAME = re.compile(r"\.llm-wiki-knowledge/packs/([0-9a-f]{2})/(\1[0-9a-f]{62})-knowledge-pack-(root|[01]{1,64})\.zip\Z")
 _BITS = re.compile(r"[01]{0,64}\Z")
@@ -126,7 +133,7 @@ def parse_packed_root(raw: bytes) -> dict[str, Any]:
     local = root["schema_version"] == LOCAL_PACKED_SCHEMA
     packing = _fields(root["packing"], {"compression", "catalog", "pack_catalog", "objects", "packs"}
                       | ({"profile"} if local else set()), "packing")
-    if local and packing["profile"] != LOCAL_PACK_PROFILE:
+    if local and packing["profile"] not in LOCAL_PACK_PROFILES:
         _fail("packing.profile", "unsupported locality profile", "unsupported-schema-version")
     if not isinstance(packing["compression"], str) or packing["compression"] not in {"stored", "deflate"}:
         _fail("packing.compression", "unsupported compression method")
@@ -143,7 +150,14 @@ def parse_packed_root(raw: bytes) -> dict[str, Any]:
 def packed_format(root: Mapping[str, Any]) -> str:
     """Return the explicitly adopted physical format of a validated packed root."""
     version = "packed-v4" if root["schema_version"] == LOCAL_PACKED_SCHEMA else "packed-v3"
+    if root["packing"].get("profile") == FINE_PACK_PROFILE:
+        version += "-fine"
     return version + ("-deflate" if root["packing"]["compression"] == "deflate" else "")
+
+
+def packed_family(root: Mapping[str, Any]) -> str:
+    """Return the reader family, which the fine profile shares with packed-v4."""
+    return "packed-v4" if root["schema_version"] == LOCAL_PACKED_SCHEMA else "packed-v3"
 
 
 def _zip_bytes(members: Mapping[str, bytes], compression: str) -> tuple[bytes, dict[str, list[Any]]]:
@@ -198,7 +212,7 @@ def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored
                        profile: str = "standard") -> KnowledgeStorePlan:
     if not isinstance(compression, str) or compression not in {"stored", "deflate"}:
         _fail("compression", "must be stored or deflate")
-    if not isinstance(profile, str) or profile not in {"standard", LOCAL_PACK_PROFILE}:
+    if not isinstance(profile, str) or profile not in {"standard", *LOCAL_PACK_PROFILES}:
         _fail("profile", "unsupported packing profile")
     from contextlib import nullcontext
     from .storage_spool import ByteSpool
@@ -208,8 +222,9 @@ def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored
 
 
 def _pack_logical(logical, compression, prior, objects, profile="standard"):
-    local = profile == LOCAL_PACK_PROFILE
-    target_bytes = LOCAL_PACK_TARGET_BYTES if local else PACK_TARGET_BYTES
+    local = profile in LOCAL_PACK_PROFILES
+    target_bytes = (FINE_PACK_TARGET_BYTES if profile == FINE_PACK_PROFILE
+                    else LOCAL_PACK_TARGET_BYTES if local else PACK_TARGET_BYTES)
     members = {name: path for path, name in logical.member_names.items()}
     sizes = {name: len(logical.objects[path]) for name, path in members.items()}
     if len(members) != len(logical.objects):
@@ -571,7 +586,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
     def __init__(self, root_bytes: bytes, read_file: Callable[[str, int], bytes], *,
                  read_range: RangeReader | None = None, **limits):
         packed = parse_packed_root(root_bytes)
-        self.storage_format = packed_format(packed).removesuffix("-deflate")
+        self.storage_format = packed_family(packed)
         self.packing = packed["packing"]
         self.read_file = read_file
         self.read_range = read_range
@@ -604,7 +619,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         return self.physical_objects[path]
 
     def _index(self, descriptor: dict[str, Any], prefix: str, leaf_kind: str = "members") -> dict[str, Any]:
-        paged = self.packing.get("profile") == LOCAL_PACK_PROFILE
+        paged = self.packing.get("profile") in LOCAL_PACK_PROFILES
         _index_descriptor(descriptor, paged=paged)
         path = index_path(descriptor["hash"])
         if paged:
@@ -652,7 +667,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
                 members = node[leaf_kind]
                 if not isinstance(members, dict) or not members:
                     _fail(path, "invalid member table")
-                if self.packing.get("profile") == LOCAL_PACK_PROFILE and len(members) > LOCAL_INDEX_ROWS:
+                if self.packing.get("profile") in LOCAL_PACK_PROFILES and len(members) > LOCAL_INDEX_ROWS:
                     _fail(path, "locality index exceeds its row bound", "storage-limit")
                 for key, value in members.items():
                     if leaf_kind == "members":
@@ -838,7 +853,8 @@ def physical_objects(reader: KnowledgeStoreReader) -> Mapping[str, bytes]:
 def build_storage(payload: Mapping[str, Any], storage_format: str, *, prior=None, objects=None) -> KnowledgeStorePlan:
     if storage_format in PACKED_FORMATS:
         return build_packed_store(payload, compression="deflate" if storage_format.endswith("-deflate") else "stored", prior=prior, objects=objects,
-                                  profile=LOCAL_PACK_PROFILE if storage_format.startswith("packed-v4") else "standard")
+                                  profile=(FINE_PACK_PROFILE if storage_format in FINE_FORMATS
+                                           else LOCAL_PACK_PROFILE if storage_format.startswith("packed-v4") else "standard"))
     if storage_format == "sharded-v2":
         return build_knowledge_store(payload, objects=objects)
     _fail("format", "unsupported object storage format")

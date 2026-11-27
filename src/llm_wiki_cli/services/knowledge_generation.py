@@ -478,6 +478,7 @@ def _build_knowledge_generation_plan(
             infrastructure_bases=infrastructure_bases,
             extensions=knowledge_extensions,
             concept_extensions_by_page=concept_implementations,
+            line_relative_links=_writes_line_relative_links(inputs),
         )
     )
     if inputs.governance is not None:
@@ -556,6 +557,25 @@ def _build_knowledge_generation_plan(
         knowledge_format=inputs.knowledge_format,
         maintenance_adoption=inputs.maintenance_adoption,
     )
+
+
+def _writes_line_relative_links(inputs: KnowledgeGenerationInputs) -> bool:
+    """Return whether this wiki's storage profile writes position-stable links.
+
+    The fine profile pairs smaller packs with link records that keep their
+    identity when another line of the page changes. An explicit format wins;
+    otherwise the wiki keeps the form of its adopted format.
+    """
+    from llm_wiki_engine.knowledge_artifacts import KnowledgeArtifactError, current_knowledge_format
+    from llm_wiki_engine.knowledge_packs import FINE_FORMATS
+
+    selected = inputs.knowledge_format
+    if selected is None:
+        try:
+            selected = current_knowledge_format(inputs.wiki_dir)
+        except KnowledgeArtifactError:
+            return False
+    return selected in FINE_FORMATS
 
 
 def _application_knowledge_extensions(

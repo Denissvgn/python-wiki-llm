@@ -33,7 +33,7 @@ from .knowledge_storage import (
 )
 from .knowledge_storage_io import StorageReadSession, read_guarded, _absolute_path
 from .knowledge_packs import (
-    PACKED_SCHEMA, LOCAL_PACKED_SCHEMA, PACKED_SCHEMAS, PACKED_FORMATS, packed_format,
+    PACKED_SCHEMA, LOCAL_PACKED_SCHEMA, PACKED_SCHEMAS, PACKED_FORMATS, FINE_FORMATS, packed_format,
     PACK_NAME, INDEX_NAME, PACK_DIRECTORY, PACK_INDEX_DIRECTORY,
     INDEX_PAGE_NAME, INDEX_PAGE_DIRECTORY, PackedKnowledgeStoreReader, inspect_pack, inspect_index_pages,
 )
@@ -130,11 +130,21 @@ def _backup(directory: Path, files: dict[str, bytes], target_hash: str, target_m
             atomic_write_guarded_bytes(path, content, expected_existing=None)
 
 
+# The fine profile also changes how link records are written, so a byte-level
+# migration cannot produce or leave it; a sync regenerates the records.
+_FINE_MIGRATION_MESSAGE = (
+    "the fine profile is adopted or left by a writing sync: "
+    "run sync with --knowledge-format instead of a storage migration"
+)
+
+
 def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
                               recovery_dir: str | Path | None = None,
                               to: str = "sharded-v2",
                               manifest_format: str | None = None) -> dict[str, Any]:
     """Migrate storage, optionally indexing its manifest in the same commit."""
+    if to in FINE_FORMATS:
+        raise KnowledgeStorageError("to", _FINE_MIGRATION_MESSAGE)
     if type(dry_run) is not bool or to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
         raise KnowledgeStorageError("request", "unsupported storage migration request")
     if manifest_format not in (None, "indexed-v6", "indexed-v8"):
@@ -156,9 +166,13 @@ def _migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool,
     """Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
+    if to in FINE_FORMATS:
+        raise KnowledgeStorageError("to", _FINE_MIGRATION_MESSAGE)
     if to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
         raise KnowledgeStorageError("to", "unsupported migration format")
     root = _absolute_path(Path(wiki_dir))
+    if to not in {"indexed-v6", "indexed-v8"} and current_knowledge_format(root) in FINE_FORMATS:
+        raise KnowledgeStorageError("to", _FINE_MIGRATION_MESSAGE)
     state, session, previous = _committed_inputs(root)
     assert state.knowledge is not None and state.manifest_basis is not None
     adopted = state.manifest_basis.maintenance_state is not None

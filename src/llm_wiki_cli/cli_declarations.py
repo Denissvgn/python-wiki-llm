@@ -1324,7 +1324,7 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser = subparsers.add_parser(
         "bootstrap", help="Generate initial wiki for an existing codebase"
     )
-    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "packed-v4-fine", "packed-v4-fine-deflate"], default=None,
                                   help="Explicit native storage format; otherwise preserve the adopted format")
     bootstrap_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
@@ -2108,7 +2108,7 @@ def _add_sync_command(subparsers):
         "--repair-evidence", nargs="+", action="extend", default=None, metavar="SOURCE",
         help="Repair owned unchanged evidence with --no-plugins (POSIX paths relative to --src-dir); full analysis still runs",
     )
-    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "packed-v4-fine", "packed-v4-fine-deflate"], default=None,
                             help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(
         "--rebuild-knowledge",

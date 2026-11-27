@@ -26,6 +26,7 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
                               allow_external_src=False, _captured=None, _seed_legacy=None) -> dict:
     """Use existing guarded writers and recovery copies; never repair bad authority."""
     from llm_wiki_engine.knowledge_artifacts import current_knowledge_format
+    from llm_wiki_engine.knowledge_packs import FINE_FORMATS
     from llm_wiki_engine.knowledge_storage_lifecycle import _committed_inputs, migrate_knowledge_storage
     from llm_wiki_engine.maintenance_protocol import load_adoption_marker, guard_maintenance_owner
     from .maintenance_service import adopt_maintenance_authority
@@ -48,7 +49,9 @@ def upgrade_current_knowledge(src_dir, wiki_dir, *, helper_cache_dir=None, sourc
             # init provisions a scaffold; an established canonical wiki instead
             # enters the guarded legacy owning-seed route below.
             return {"changed": False, "state": "awaiting-bootstrap"}
-    if (adopted and current_knowledge_format(wiki) == CURRENT_KNOWLEDGE_FORMAT
+    # The fine profile is an explicit choice on top of the current format, so
+    # an upgrade keeps it instead of moving the wiki back.
+    if (adopted and current_knowledge_format(wiki) in {CURRENT_KNOWLEDGE_FORMAT, *FINE_FORMATS}
             and current_manifest_format(wiki) == CURRENT_MANIFEST_FORMAT):
         _committed_inputs(wiki)
         return {"changed": False, "state": "current"}

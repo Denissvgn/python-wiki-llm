@@ -63,6 +63,7 @@ the complete snapshot; initializing governance does not resolve that error.
 | `packed-v3-deflate` | You also want compressed files in the working directory. |
 | `packed-v4` | You want finer routing and smaller writes, with more data packs than v3. |
 | `packed-v4-deflate` | You want that finer layout with individually compressed members. |
+| `packed-v4-fine`, `packed-v4-fine-deflate` | Several people or agents refresh the wiki often and its Git history must stay small. |
 
 All packed formats contain the same logical knowledge. `packed-v3` uses
 uncompressed ZIP members (`ZIP_STORED`); `packed-v3-deflate` compresses members
@@ -89,6 +90,45 @@ external database, network service or Git LFS is required.
 Git normally displays ZIP changes as binary changes. Use the logical inspection
 and comparison commands below to review the underlying records. Compression
 savings and update costs depend on the data and the breadth of each change.
+
+## Keep each refresh small
+
+With the other packed formats, a sync that creates one page rewrites most of
+the store. Two things cause it. Every link is recorded with its character
+offset in the page, so a new entry in `index.md` gives every later link a new
+identity. And packs hold about 1 MiB each, so a few scattered changes still
+replace nearly every pack.
+
+The fine profile changes both:
+
+- A link is located by its offset within its own line, marked with the
+  `llm-wiki/location-basis: line` extension, and does not repeat its page's
+  hash; the page's own record already holds that hash. A link keeps its
+  identity when other lines of the page change.
+- Packs target 256 KiB. Expect roughly four to five times as many pack files.
+
+On this project's own wiki, a sync that added one page changed 53% of the
+stored members with `packed-v4-deflate` and about 1% with the fine profile.
+
+Adopt it with a writing sync, and leave it the same way:
+
+```sh
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v4-fine-deflate --prune-storage
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v4-deflate --prune-storage
+```
+
+The first sync after either change rewrites the whole store once. Later syncs
+keep the adopted profile, and `llm-wiki upgrade` leaves it in place.
+`bootstrap --knowledge-format packed-v4-fine-deflate` starts a wiki with it.
+`knowledge migrate` does not accept the fine profile in either direction,
+because link records have to be regenerated, not copied.
+
+Upgrade every reader and writer before adopting it. A release without the
+fine profile stops at the knowledge root with `unsupported-schema-version` and
+reads nothing. Tools that consume link offsets must check the location's
+`llm-wiki/location-basis` extension: without it the offsets count from the
+start of the page, with `line` from the start of the link's line. Task
+receipts and storage reports keep naming the family `packed-v4`.
 
 ## Adopt packed storage
 

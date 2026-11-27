@@ -37,6 +37,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   upgrade-recovery copies, and `--apply` deletes them. Recovery copies newer
   than `--older-than-days` (default 7) are kept.
 
+- New storage formats `packed-v4-fine` and `packed-v4-fine-deflate` keep a
+  refresh close to what really changed. Links are located within their own
+  line and no longer repeat their page's hash, so adding a page does not give
+  every later link in `index.md` a new identity, and packs target 256 KiB
+  instead of 1 MiB. On this project's wiki, a sync that added one page changed
+  about 1% of stored members instead of 53%. Adopt with
+  `sync --knowledge-format packed-v4-fine-deflate`; the default format is
+  unchanged. Every reader and writer must be upgraded first: earlier releases
+  refuse such a wiki at the knowledge root. `knowledge migrate` does not
+  accept these formats; a writing sync adopts and leaves them.
+
 ### Changed
 
 - Storage cleanup writes no second recovery copy when Git's `HEAD` already
