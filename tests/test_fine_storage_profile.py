@@ -310,3 +310,26 @@ def test_a_fine_locator_that_names_the_wrong_member_is_rejected():
     reader = packs.open_knowledge_store(packs.canonical_bytes(root), lambda name, _: objects[name])
     with pytest.raises(KnowledgeStorageError):
         reader.materialize()
+
+
+def test_selected_impact_read_works_on_a_fine_wiki(monkeypatch, tmp_path, capsys):
+    from llm_wiki_cli import api
+
+    root = _repository(monkeypatch, tmp_path, "packed-v4-fine-deflate")
+    monkeypatch.chdir(root)
+    (root / "empty").mkdir()
+    capsys.readouterr()
+
+    def impact(**options):
+        return api.query_documentation(
+            {"operation": "impact", "paths": ["app/alpha.py", "app/missing.py"], "limit": 100, **options},
+            src_dir="empty", wiki_dir=WIKI,
+        )
+
+    selected, full = impact(read="selected"), impact()
+
+    assert selected["query"]["read"] == "selected"
+    assert selected["concepts"]
+    assert [c["locator"] for c in selected["concepts"]] == [c["locator"] for c in full["concepts"]]
+    for name in ("pages", "relationships", "impacted_paths", "found"):
+        assert selected[name] == full[name], name
