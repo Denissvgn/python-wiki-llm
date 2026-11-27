@@ -58,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New storage formats `packed-v4-fine` and `packed-v4-fine-deflate` keep a
   refresh close to what really changed. Links are located within their own
   line and no longer repeat their page's hash, so adding a page does not give
-  every later link in `index.md` a new identity, and packs target 256 KiB
+  every later link in `index.md` a new identity, and packs target 128 KiB
   instead of 1 MiB. On this project's wiki, a sync that added one page changed
   about 1% of stored members instead of 53%. The locator finds a member by
   its place in the knowledge tree and reads its byte range from the pack's

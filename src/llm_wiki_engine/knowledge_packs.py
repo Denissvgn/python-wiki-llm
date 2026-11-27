@@ -34,7 +34,7 @@ LOCAL_PACK_TARGET_BYTES = 1_048_576
 # changes a few members rewrites far fewer bytes. Releases that only know
 # ``local-v1`` refuse it at the root instead of misreading it.
 FINE_PACK_PROFILE = "local-v2"
-FINE_PACK_TARGET_BYTES = 262_144
+FINE_PACK_TARGET_BYTES = 131_072
 LOCAL_PACK_PROFILES = frozenset({LOCAL_PACK_PROFILE, FINE_PACK_PROFILE})
 LOCAL_INDEX_ROWS = 24
 # The fine profile locates a member by its place in the logical tree, so its

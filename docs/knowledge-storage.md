@@ -105,7 +105,9 @@ The fine profile changes both:
   `llm-wiki/location-basis: line` extension, and does not repeat its page's
   hash; the page's own record already holds that hash. A link keeps its
   identity when other lines of the page change.
-- Packs target 256 KiB. Expect roughly four to five times as many pack files.
+- Packs target 128 KiB. Git transfers a rewritten pack whole, so smaller packs
+  make each push smaller. Expect roughly nine times as many pack files, each
+  smaller; the total size of the store does not grow.
 - Catalog nodes, the small parents of the knowledge tree, are packed apart from
   the records they point to. Most of them change whenever a record below them
   does, so sharing packs with records made each one rewrite a whole pack. A
