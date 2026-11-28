@@ -413,3 +413,48 @@ def test_bootstrap_sync_query_context_and_mcp_share_graph_and_section_state(
         size_and_coverage["calls_emitted"]
     )
     assert size_and_coverage["calls_observed"] >= 50
+
+
+def test_imported_sparse_child_has_one_incoming_edge_after_bootstrap_and_sync(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    service = Path("repo/service")
+    package = service / "app"
+    package.mkdir(parents=True)
+    (service / "pyproject.toml").write_text('[project]\nname="service"\nversion="1.0"\n')
+    (package / "__init__.py").write_text("def marker(): pass\n")
+    (package / "mod.py").write_text('"""Sparse child."""\n')
+    (package / "unused.py").touch()
+    importer = service / "tests/test_mod.py"
+    importer.parent.mkdir()
+    importer.write_text("# importer\nfrom app import mod as alias\n")
+
+    api.bootstrap_wiki("repo", "wiki")
+
+    def assert_child_import():
+        knowledge = load_knowledge_state(Path("wiki")).knowledge
+        assert knowledge is not None
+        modules = {
+            concept.facets.structure.basis.source_path: concept.locator
+            for concept in knowledge.concepts
+            if concept.concept_kind == "source-module" and concept.facets.structure.basis
+        }
+        assert "service/app/unused.py" not in modules
+
+        def incoming(path):
+            result = api.query_documentation(
+                {"operation": "typed", "value": modules[path], "direction": "incoming",
+                 "kinds": ["imports"], "include_evidence": True},
+                src_dir="repo", wiki_dir="wiki",
+            )
+            assert "edges" in result
+            return [sample["location"] for edge in result["edges"] for sample in edge["evidence"]["samples"]]
+
+        assert incoming("service/app/mod.py") == [{"source_path": "service/tests/test_mod.py", "line": 2}]
+        assert incoming("service/app/__init__.py") == []
+
+    assert_child_import()
+    (package / "__init__.py").write_text('"""Previously indexed package."""\n')
+    api.sync_wiki("repo", "wiki")
+    assert_child_import()
+    api.sync_wiki("repo", "wiki")
+    assert_child_import()

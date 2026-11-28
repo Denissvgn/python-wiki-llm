@@ -31,6 +31,7 @@ Indexed module import resolver for a fixed inventory.
 | `build` | `(inventory: dict, project_root: str \| Path \| None = None, *, source_snapshot: SourceSnapshot \| None = None) -> ModulePathResolver` | `@classmethod` | — |
 | `candidates` | `(module: str, importer_filepath: str) -> set[str]` | — | — |
 | `import_candidates` | `(module: str, name: str, importer_filepath: str, *, import_type: str \| None = None) -> set[str]` | — | Resolve one extractor import record to its internal module files. |
+| `from_import_children` | `(module: str, name: str, importer: str) -> set[str]` | — | Look up the child alone, respecting package bindings for sparse Python files. |
 | `_candidate_matches` | `(candidate_stems: set[str], importer_filepath: str) -> set[str]` | — | — |
 | `_lookup_for_importer` | `(importer_filepath: str) -> dict[str, frozenset[str]]` | — | — |
 | `typescript_path_alias_matched` | `(module: str, importer_filepath: str) -> bool` | — | Return true when *module* matches the importer's nearest tsconfig paths. |
@@ -68,7 +69,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [imports](../modules/imports.md) | 14 | `go_module_scopes`, `go_package_lookup`, `haskell_module_lookup`, `inventory`, `language_lookup`, `lookup`, `python_modules`, `ts_path_aliases` |
+| [imports](../modules/imports.md) | 15 | `go_module_scopes`, `go_package_lookup`, `haskell_module_lookup`, `inventory`, `language_lookup`, `lookup`, `python_modules`, `ts_path_aliases` |
 
 ### References
 

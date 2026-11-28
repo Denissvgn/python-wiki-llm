@@ -122,7 +122,7 @@ sequenceDiagram
     p5-->>p30: Path(…).expanduser (src/llm_wiki_engine/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 2190 interactions; 2160 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2191 interactions; 2161 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 709 (708 omitted); unresolved 1 of 732 (731 omitted). These counts cover the captured static trace.
 
@@ -151,9 +151,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 750; effect analysis evaluated: 516, partial: 31, unavailable: 203. Counts include steps omitted from the displayed trace.
+Source steps: 751; effect analysis evaluated: 517, partial: 31, unavailable: 203. Counts include steps omitted from the displayed trace.
 
-Collector observations for 547 source steps with known totals: observed: 3094, emitted: 2983, omitted: 111. Unavailable totals are excluded.
+Collector observations for 548 source steps with known totals: observed: 3104, emitted: 2993, omitted: 111. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

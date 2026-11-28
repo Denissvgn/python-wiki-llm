@@ -3102,7 +3102,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3334,
+          "step_count": 3335,
           "truncated": true
         }
       },
@@ -10580,7 +10580,7 @@
             "src/llm_wiki_engine/knowledge_kinds.py",
             "src/llm_wiki_engine/sync_manifest.py"
           ],
-          "step_count": 3115,
+          "step_count": 3133,
           "truncated": true
         }
       },
@@ -11782,7 +11782,7 @@
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/extractors/python_bindings.py"
           ],
-          "step_count": 3289,
+          "step_count": 3308,
           "truncated": true
         }
       },
@@ -23636,7 +23636,7 @@
             "src/llm_wiki_engine/knowledge_verification.py",
             "src/llm_wiki_engine/verification_contracts.py"
           ],
-          "step_count": 4692,
+          "step_count": 4693,
           "truncated": true
         }
       },
@@ -35996,7 +35996,7 @@
             "src/llm_wiki_engine/engine_events.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4357,
+          "step_count": 4358,
           "truncated": true
         }
       },
@@ -36441,67 +36441,67 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2627,
+              "line": 2659,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2628,
+              "line": 2660,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2629,
+              "line": 2661,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2630,
+              "line": 2662,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2631,
+              "line": 2663,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2632,
+              "line": 2664,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2633,
+              "line": 2665,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2634,
+              "line": 2666,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2635,
+              "line": 2667,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2636,
+              "line": 2668,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2637,
+              "line": 2669,
               "step": "run",
               "target": "getattr"
             },
@@ -36561,7 +36561,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_engine/wiki_write_basis.py"
           ],
-          "step_count": 3377,
+          "step_count": 3396,
           "truncated": true
         }
       },
@@ -37984,7 +37984,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/lint_service.py"
           ],
-          "step_count": 1013,
+          "step_count": 1014,
           "truncated": true
         }
       },
@@ -38146,7 +38146,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_engine/wiki_write_basis.py"
           ],
-          "step_count": 3087,
+          "step_count": 3088,
           "truncated": true
         }
       },
@@ -39170,7 +39170,7 @@
             "src/llm_wiki_engine/paths.py",
             "src/llm_wiki_engine/wiki_write_basis.py"
           ],
-          "step_count": 2191,
+          "step_count": 2192,
           "truncated": true
         }
       },
@@ -40143,7 +40143,7 @@
             "src/llm_wiki_engine/knowledge_storage_lifecycle.py",
             "src/llm_wiki_engine/source_retirement.py"
           ],
-          "step_count": 2666,
+          "step_count": 2684,
           "truncated": true
         }
       },
@@ -78312,5 +78312,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:1fc667159dcc7788d00983d03b79ec0b97435ef7dfb32c5776024928251f072c"
+  "source_hash": "sha256:c546051eabe5a530f3015ede7940abf85445e3fe43970dfaf82ef011e58d048a"
 }

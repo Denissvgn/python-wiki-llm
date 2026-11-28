@@ -209,11 +209,45 @@ class ModulePathResolver:
         child-module interpretation even when they predate the ``type`` field.
         """
         if _is_python_from_import(module, name, import_type):
-            child_module = _python_from_import_child(module, name)
-            child_candidates = self.candidates(child_module, importer_filepath)
+            child_candidates = self.from_import_children(module, name, importer_filepath)
             if child_candidates:
                 return child_candidates
         return self.candidates(module, importer_filepath)
+
+    def from_import_children(self, module: str, name: str, importer: str) -> set[str]:
+        """Look up the child alone, respecting package bindings for sparse Python files."""
+        children = self.candidates(_python_from_import_child(module, name), importer)
+        sparse = {
+            path for path in children
+            if isinstance(self.inventory[path], Mapping)
+            and self.inventory[path].get("empty_module") is True
+            and is_python_source(path, self.inventory[path])
+        }
+        if not sparse:
+            return children
+        parents = self.candidates(module, importer)
+        for child in sparse:
+            child_path = PurePosixPath(child)
+            directory = child_path.parent
+            if child_path.name == "__init__.py":
+                directory = directory.parent
+            initializer = (directory / "__init__.py").as_posix()
+            if parents and initializer not in parents:
+                children.discard(child)
+                continue
+            binding = self.inventory.get(initializer, {}).get("python_bindings", {}).get(name)
+            if binding is None:
+                continue
+            # A package may itself import the child under this name. Other
+            # explicit bindings (including local values) own the import.
+            if isinstance(binding, Mapping) and binding.get("kind") == "import":
+                source = binding.get("module") or ""
+                if binding.get("name"):
+                    source = _python_from_import_child(source, binding["name"])
+                if child in self.candidates(source, initializer):
+                    continue
+            children.discard(child)
+        return children
 
     def _candidate_matches(
         self, candidate_stems: set[str], importer_filepath: str

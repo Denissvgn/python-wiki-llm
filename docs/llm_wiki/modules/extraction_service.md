@@ -147,7 +147,7 @@ flowchart LR
 | `_completed_inventory_result` | `(context: _InventoryBuildContext, *, inventory: dict, statuses: dict[str, ExtractorStatus], extraction_job_plan: ExtractionJobPlan, selected_plugin_components: tuple[dict, ...], producer_plugin_components: tuple[dict, ...], evaluated_source_snapshot: SourceSnapshot, outcomes_by_language: dict[str, _ExtractionOutcome], implementation_observations: dict \| None) -> InventoryResult` | — | — |
 | `_inventory_path_outcomes` | `(context, inventory, outcomes_by_language) -> dict` | — | — |
 | `_implementation_observations` | `(context: _InventoryBuildContext, outcomes: dict[str, _ExtractionOutcome]) -> dict \| None` | — | — |
-| `_python_extraction_sidecars` | `(context: _InventoryBuildContext, outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict` | `@observed_phase('sidecar_observations')` | — |
+| `_python_extraction_sidecars` | `(context: _InventoryBuildContext, outcomes_by_language: dict[str, _ExtractionOutcome], inventory: dict) -> dict` | `@observed_phase('sidecar_observations')` | — |
 | `_inventory_plugin_state` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus], inventory: dict) -> tuple[tuple[dict, ...], tuple[dict, ...], SourceSnapshot]` | — | — |
 | `_selected_extractor_plugin_components` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus]) -> tuple[dict, ...]` | — | — |
 | `_snapshot_with_plugin_inventory_paths` | `(snapshot: SourceSnapshot, inventory: dict, components: tuple[dict, ...]) -> SourceSnapshot` | — | — |
@@ -177,6 +177,7 @@ flowchart LR
 | `_as_served_from_cache` | `(extracted: dict) -> dict` | — | Give freshly extracted files the form the extraction cache serves. |
 | `_update_inventory_cache_entries` | `(context: _InventoryBuildContext, plan: _ExtractionPlan, extracted: dict) -> None` | — | — |
 | `_merge_inventory_results` | `(context: _InventoryBuildContext, cached_by_language: dict[str, dict], extracted_by_language: dict[str, dict]) -> dict` | — | — |
+| `_unreferenced_python_modules` | `(inventory: dict, retain_empty_paths: tuple[str, ...]) -> set[str]` | — | Retain a sparse module only when reachable from a selected Python from-import. |
 | `_ordered_inventory_statuses` | `(registry: dict[str, str], status_by_language: dict[str, ExtractorStatus]) -> dict[str, ExtractorStatus]` | — | — |
 | `_save_inventory_cache` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus]) -> None` | — | — |
 | `_should_save_inventory_cache` | `(cache: InventoryCache) -> bool` | — | — |
