@@ -119,6 +119,27 @@ def test_unmapped_python_uses_reverse_import_consumers(policy, sources):
     ]
 
 
+@pytest.mark.parametrize("source", ["src/pkg/api.py", "src/pkg/query.py"])
+def test_import_chains_cross_helpers_and_test_modules_even_with_a_rule(policy, sources, source):
+    before = dict(sources)
+    helper = "tests/old_helper.py"
+    renamed = "tests/new_helper.py"
+    before[helper] = f"from pkg import {Path(source).stem}\n".encode()
+    before["tests/test_shared.py"] = b"from tests.old_helper import fixture\n"
+    before["tests/test_leaf.py"] = b"from tests.test_shared import fixture\n"
+    after = dict(before)
+    del after[helper]
+    after[renamed] = b"from tests.test_shared import fixture\n"
+    after["tests/test_shared.py"] = b"from tests.new_helper import fixture\n"
+
+    result = ci.select(policy, before, after, [changed(source)], None, {"entries": []})
+    assert result["test_ownership"]["import_chains"]["tests/test_leaf.py"] == [
+        source, helper, "tests/test_shared.py", "tests/test_leaf.py",
+    ]
+    assert "tests/test_leaf.py" in result["lanes"]["ubuntu"]["selectors"]
+    assert "tests/test_unrelated.py" not in result["lanes"]["ubuntu"]["selectors"]
+
+
 def test_malformed_fixture_is_data_and_selects_only_its_referencing_test(
     policy, sources
 ):

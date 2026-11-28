@@ -85,7 +85,7 @@ def test_supported_queries_are_read_only_bounded_and_keep_snapshot_qualification
     assert calls[0] == {
         "operation": "impact",
         "paths": ["src/pkg/api.py"],
-        "source_policy": "discovery",
+        "read": "selected",
         "limit": 100,
     }
     assert calls[1]["operation"] == "typed" and calls[1]["direction"] == "incoming"
@@ -271,6 +271,7 @@ def test_admitted_impact_is_an_additive_union_with_existing_changed_tests(
     ]
     assert set(original["jobs"]) <= set(result["jobs"])
     assert result["impact"]["admissions"][0]["status"] == "admitted"
+    assert result["impact"]["additional_test_files"] == ["tests/test_api.py", "tests/test_query.py"]
     ci.additive_floor(result["selection_floor"], result)
 
 
@@ -389,7 +390,7 @@ def test_worker_refuses_a_provider_outside_its_interpreter(monkeypatch, tmp_path
         lambda name: SimpleNamespace(origin=str(tmp_path / "foreign/__init__.py")),
     )
     with pytest.raises(ci.SelectionError, match="noneditably"):
-        adapter.worker(ci, {"schema": adapter.SCHEMA})
+        adapter.verify_package(ci, "llm_wiki_cli", {})
 
 
 def test_frozen_provider_comes_from_base_objects_without_executing_package(
@@ -399,6 +400,8 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
     sources = {
         **sources,
         "src/llm_wiki_cli/__init__.py": original,
+        "src/llm_wiki_engine/__init__.py": original,
+        "src/pyproject.toml": b"# engine build",
         "src/llm_wiki_cli/services/analysis_contracts.json": b"{}",
         "src/llm_wiki_cli/extractors/example/.gitignore": b"build/\n",
         "docs/standalone-documentation.md": b"Trusted installed manual\n",
@@ -413,8 +416,9 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
         ci, root, event["pull_request"]["base"]["sha"], destination
     )
     assert (destination / "src/llm_wiki_cli/__init__.py").read_bytes() == original
-    assert frozen["python_files"] == {"__init__.py": ci.digest(original)}
-    assert frozen["package_files"] == {
+    assert frozen["packages"]["llm_wiki_engine"] == {"__init__.py": ci.digest(original)}
+    assert (destination / "src/pyproject.toml").is_file()
+    assert frozen["packages"]["llm_wiki_cli"] == {
         "__init__.py": ci.digest(original),
         "services/analysis_contracts.json": ci.digest(b"{}"),
     }
@@ -426,11 +430,12 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
     assert frozen["base_sha"] == event["pull_request"]["base"]["sha"]
 
 
+@pytest.mark.parametrize("name", adapter.PACKAGES)
 def test_same_version_but_different_provider_bytes_cannot_analyze(
-    monkeypatch, tmp_path
+    monkeypatch, tmp_path, name
 ):
     environment = tmp_path / "venv"
-    package = environment / "lib/llm_wiki_cli"
+    package = environment / "lib" / name
     package.mkdir(parents=True)
     (package / "__init__.py").write_bytes(b"OLD")
     monkeypatch.setattr(adapter.sys, "prefix", str(environment))
@@ -439,14 +444,8 @@ def test_same_version_but_different_provider_bytes_cannot_analyze(
         "find_spec",
         lambda name: SimpleNamespace(origin=str(package / "__init__.py")),
     )
-    with pytest.raises(ci.SelectionError, match="Python bytes"):
-        adapter.worker(
-            ci,
-            {
-                "schema": adapter.SCHEMA,
-                "provider": {"python_files": {"__init__.py": ci.digest(b"NEW")}},
-            },
-        )
+    with pytest.raises(ci.SelectionError, match="package bytes"):
+        adapter.verify_package(ci, name, {"__init__.py": ci.digest(b"NEW")})
 
 
 @pytest.mark.parametrize("data", [None, b"OLD"])
@@ -464,16 +463,9 @@ def test_missing_or_changed_provider_data_cannot_analyze(monkeypatch, tmp_path, 
         lambda name: SimpleNamespace(origin=str(package / "__init__.py")),
     )
     with pytest.raises(ci.SelectionError, match="package bytes"):
-        adapter.worker(
-            ci,
-            {
-                "schema": adapter.SCHEMA,
-                "provider": {
-                    "python_files": {"__init__.py": ci.digest(b"")},
-                    "package_files": {"schema.json": ci.digest(b"NEW")},
-                },
-            },
-        )
+        adapter.verify_package(ci, "llm_wiki_cli", {
+            "__init__.py": ci.digest(b""), "schema.json": ci.digest(b"NEW"),
+        })
 
 
 def test_revision_two_plan_runs_adapter_automatically_and_keeps_real_git_bindings(
@@ -495,3 +487,64 @@ def test_revision_two_plan_runs_adapter_automatically_and_keeps_real_git_binding
         "tests/test_query.py",
     ]
     assert plan["qualification"] is False
+
+
+def test_offline_split_provider_runs_real_incoming_query(tmp_path, monkeypatch):
+    import json
+    import shutil
+    import subprocess
+    import sys
+    import venv
+
+    import yaml
+
+    from llm_wiki_cli import api
+    from tests.test_pr_ci import commit, git
+
+    frozen = tmp_path / "provider"
+    manifest = adapter.freeze_provider(ci, ROOT, git(ROOT, "rev-parse", "HEAD"), frozen)
+    environment = tmp_path / "worker-env"
+    venv.EnvBuilder(with_pip=False).create(environment)
+    interpreter = environment / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    purelib = Path(subprocess.check_output(
+        [str(interpreter), "-I", "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        text=True,
+    ).strip())
+    # Supply the external runtime dependency offline. The isolated worker can
+    # only find provider packages actually installed from the frozen inputs.
+    shutil.copytree(Path(yaml.__file__).parent, purelib / "yaml")
+    subprocess.run([
+        sys.executable, "-I", "-m", "pip", "install", "--target", str(purelib),
+        *adapter.offline_install_args(frozen),
+    ], check=True)
+
+    monkeypatch.chdir(tmp_path)
+    root = tmp_path / "source"
+    modules = root / "src/llm_wiki_cli"
+    modules.mkdir(parents=True)
+    child = modules / "child.py"
+    child.write_text("def value(): return 1\n")
+    (modules / "consumer.py").write_text("from .child import value\n")
+    policy_path = ".llm-wiki/source-selection.json"
+    (root / policy_path).parent.mkdir()
+    (root / policy_path).write_bytes(ci.git(ROOT, "show", manifest["base_sha"] + ":" + policy_path))
+    api.bootstrap_wiki("source", "wiki")
+    (root / "docs").mkdir()
+    (tmp_path / "wiki").rename(root / "docs/llm_wiki")
+    git(root, "init", "-q")
+    sha = commit(root, "example graph")
+    request = {
+        "schema": adapter.SCHEMA, "provider": manifest,
+        "binding": {"candidate_sha": sha, "candidate_tree": git(root, "rev-parse", "HEAD^{tree}")},
+        "root": str(root), "wiki_dir": "docs/llm_wiki", "source_selection": policy_path,
+        "paths": [child.relative_to(root).as_posix(), "tests/outside.py"],
+    }
+    ci.write_json(tmp_path / "request.json", request)
+    subprocess.run([
+        str(interpreter), "-I", str(ROOT / "release/pr_ci_impact.py"), "worker",
+        "--request", str(tmp_path / "request.json"), "--output", str(tmp_path / "response.json"),
+    ], cwd=root, check=True)
+    result = json.loads((tmp_path / "response.json").read_bytes())
+    assert result["excluded_paths"] == ["tests/outside.py"]
+    assert "src/llm_wiki_cli/consumer.py" in result["affected_sources"]
+    assert set(result["provider"]["packages"]) == set(adapter.PACKAGES)
