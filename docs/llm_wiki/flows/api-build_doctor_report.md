@@ -158,7 +158,7 @@ sequenceDiagram
     p0-->>p30: ac.report_schema(report_schema, ...)
 ```
 
-> Call sequence diagram shows 30 of 3333 interactions; 3303 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3334 interactions; 3304 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 1019 (1018 omitted); unresolved 1 of 1081 (1080 omitted). These counts cover the captured static trace.
 
@@ -187,9 +187,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1234; effect analysis evaluated: 936, partial: 47, unavailable: 251. Counts include steps omitted from the displayed trace.
+Source steps: 1235; effect analysis evaluated: 937, partial: 47, unavailable: 251. Counts include steps omitted from the displayed trace.
 
-Collector observations for 983 source steps with known totals: observed: 5942, emitted: 5695, omitted: 247. Unavailable totals are excluded.
+Collector observations for 984 source steps with known totals: observed: 5952, emitted: 5705, omitted: 247. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

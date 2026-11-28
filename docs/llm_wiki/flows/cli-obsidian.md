@@ -134,7 +134,7 @@ sequenceDiagram
     p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3086 interactions; 3056 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3087 interactions; 3057 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 905 (904 omitted); unresolved 1 of 837 (836 omitted). These counts cover the captured static trace.
 
@@ -163,9 +163,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1345; effect analysis evaluated: 914, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
+Source steps: 1346; effect analysis evaluated: 915, partial: 39, unavailable: 392. Counts include steps omitted from the displayed trace.
 
-Collector observations for 953 source steps with known totals: observed: 5171, emitted: 4935, omitted: 236. Unavailable totals are excluded.
+Collector observations for 954 source steps with known totals: observed: 5181, emitted: 4945, omitted: 236. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

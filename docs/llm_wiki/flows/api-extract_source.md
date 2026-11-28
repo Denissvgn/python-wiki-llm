@@ -117,9 +117,9 @@ sequenceDiagram
     p1-->>p30: package_filter.strip
 ```
 
-> Call sequence diagram shows 30 of 3288 interactions; 3258 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3307 interactions; 3277 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1083 (1082 omitted); unresolved 1 of 1359 (1358 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1086 (1085 omitted); unresolved 1 of 1373 (1372 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -133,7 +133,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 3 | - | external | 10 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 3 | [src/llm_wiki_engine/host.py](../modules/host.md) | internal | 1 |
 | `src/llm_wiki_engine/path_policy.py:validate_source_root` | 3 | [src/llm_wiki_engine/path_policy.py](../modules/path_policy.md) | internal | 6 |
-> Omission summary shows 8 of 740 groups; 732 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 743 groups; 735 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -146,9 +146,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 847; effect analysis evaluated: 687, partial: 38, unavailable: 122. Counts include steps omitted from the displayed trace.
+Source steps: 849; effect analysis evaluated: 689, partial: 38, unavailable: 122. Counts include steps omitted from the displayed trace.
 
-Collector observations for 725 source steps with known totals: observed: 4360, emitted: 4239, omitted: 121. Unavailable totals are excluded.
+Collector observations for 727 source steps with known totals: observed: 4375, emitted: 4253, omitted: 122. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -225,7 +225,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | extract_source | build_extract_payload | 1423 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_extract_payload | validate_source_root | 2320 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_extract_payload | validate_source_root | 2352 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 127 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 102 | `PathValidationError(...)` |
 | validate_path | (…).resolve (src/llm_wiki_engine/path_policy.py:validate_path) | 103 | `(current_host().cwd() / path).resolve(data not statically known)` |
