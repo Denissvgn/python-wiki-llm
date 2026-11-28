@@ -666,6 +666,19 @@ def test_wiki_delivery_selects_git_transport_and_host_provenance_checks(path):
     assert "tests/test_wiki_delivery_action.py" in selection["lanes"]["ubuntu"]["selectors"]
 
 
+@pytest.mark.parametrize("manifest", ["package.json", "package-lock.json"])
+def test_obsidian_dependency_manifests_select_plugin_contracts(manifest):
+    policy = ci.policy_load(ROOT / "release")
+    path = "integrations/obsidian/llm-wiki/" + manifest
+    files = {
+        "tests/test_obsidian.py": b"def test_plugin(): pass\n",
+        "tests/test_unrelated.py": b"def test_other(): pass\n",
+    }
+    plan = selection(policy, files, [changed(path)])
+    assert plan["reasons"][path] == ["obsidian"]
+    assert plan["lanes"]["ubuntu"]["selectors"] == ["tests/test_obsidian.py"]
+
+
 def test_security_document_selects_public_documentation_checks():
     policy = ci.policy_load(ROOT / "release")
     before = {

@@ -321,6 +321,16 @@
         "typescript"
       ]
     },
+    "obsidian": {
+      "tests": [
+        "tests/test_obsidian.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [],
+      "helpers": []
+    },
     "oci": {
       "tests": [
         "tests/test_documentation_calibration_oci_integration.py"
@@ -783,6 +793,15 @@
       ],
       "groups": [
         "typescript"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/obsidian/llm-wiki/package.json",
+        "integrations/obsidian/llm-wiki/package-lock.json"
+      ],
+      "groups": [
+        "obsidian"
       ]
     },
     {
