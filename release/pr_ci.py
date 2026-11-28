@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections import defaultdict, deque
 from fnmatch import fnmatchcase
 import hashlib
 import importlib.util
@@ -560,6 +561,30 @@ def typescript_families(after: dict[str, bytes], changed: set[str]) -> list[str]
     return sorted(families)
 
 
+def importing_tests(
+    consumers: dict[str, list[str]], changed: set[str], after: dict, *, through_production: bool,
+) -> dict[str, list[str]]:
+    """Return one shortest base/head import path to each surviving test owner."""
+    parents: dict[str, str | None] = dict.fromkeys(sorted(changed))
+    pending = deque(parents)
+    chains = {}
+    while pending:
+        source = pending.popleft()
+        for path in consumers.get(module_name(source), ()):
+            if path in parents or (not through_production and not path.startswith("tests/")):
+                continue
+            parents[path] = source
+            pending.append(path)
+            if path in after and path.startswith("tests/") and Path(path).name.startswith("test_"):
+                chain = [path]
+                parent = parents[path]
+                while parent is not None:
+                    chain.append(parent)
+                    parent = parents[parent]
+                chains[path] = chain[::-1]
+    return chains
+
+
 def select(
     policy: dict,
     before: dict[str, bytes],
@@ -577,6 +602,13 @@ def select(
     all_imports = (
         imports_index if imports_index is not None else ownership_index(before, after)
     )
+    reverse_imports: dict[str, list[str]] = defaultdict(list)
+    for importer in sorted(all_imports):
+        for dependency in all_imports[importer]:
+            reverse_imports[dependency].append(importer)
+    import_chains: dict[str, list[str]] = {}
+    changed_tests = set()
+    fixture_owners: dict[str, list[str]] = {}
     unresolved = []
     for row in rows:
         path, old = row["path"], row["old"]
@@ -600,39 +632,21 @@ def select(
                     + ": deleted regression requires an explicit replacement policy"
                 )
             else:
+                changed_tests.add(path)
                 explicit_tests.add(path)
                 found.add("python")
-        if path.endswith(".py") and path in all_imports:
-            owned = {
-                p
-                for p in all_imports
-                if p.startswith("tests/")
-                and Path(p).name.startswith("test_")
-                and ({module_name(path), module_name(old)} & all_imports[p])
-            }
-            # A maintained rule names downstream interfaces. Otherwise include
-            # reverse module consumers before looking for their test owners.
-            if not found:
-                affected = {module_name(path), module_name(old)}
-                while True:
-                    expanded = affected | {
-                        module_name(p)
-                        for p, deps in all_imports.items()
-                        if not p.startswith("tests/") and deps & affected
-                    }
-                    if expanded == affected:
-                        break
-                    affected = expanded
-                owned |= {
-                    p
-                    for p, deps in all_imports.items()
-                    if p.startswith("tests/")
-                    and Path(p).name.startswith("test_")
-                    and deps & affected
-                }
-            explicit_tests.update(p for p in owned if p in after)
-            if owned:
+        seeds = {p for p in (old, path) if p in all_imports}
+        if seeds:
+            # Rules supply the production contracts. Test helpers and imports
+            # between test modules remain consumers even with an explicit rule.
+            chains = importing_tests(reverse_imports, seeds, after, through_production=not found)
+            if chains:
                 found.add("python")
+                explicit_tests.update(chains)
+                for test, chain in chains.items():
+                    previous = import_chains.get(test)
+                    if previous is None or (len(chain), chain) < (len(previous), previous):
+                        import_chains[test] = chain
         if path.startswith("tests/fixtures/") and not found:
             parts = PurePosixPath(path).parts
             tokens = {
@@ -685,6 +699,7 @@ def select(
             }
             if owned:
                 explicit_tests.update(owned)
+                fixture_owners[path] = sorted(owned)
                 found.add("python")
         if not found:
             unresolved.append(path + ": no trusted contract/test ownership")
@@ -792,6 +807,15 @@ def select(
         "typescript_families": families,
         "groups": sorted(groups),
         "reasons": reasons,
+        "test_ownership": {
+            "import_chains": import_chains,
+            "changed_tests": sorted(changed_tests),
+            "fixture_owners": fixture_owners,
+            "policy_groups": {
+                group: policy["groups"][group]["tests"] for group in sorted(groups)
+                if policy["groups"][group]["tests"]
+            },
+        },
         "proposal": addition,
         "lanes": {
             lane: {
@@ -879,6 +903,8 @@ def enrich_impact(
     plan: dict,
     work: Path,
     provider_python: Path | None = None,
+    *,
+    imports_index: dict[str, set[str]] | None = None,
 ) -> dict:
     floor = {
         key: plan.get(key, [])
@@ -928,7 +954,6 @@ def enrich_impact(
     current = json.loads(canonical(floor))
     admissions = []
     actual_changes = {p for row in plan["changes"] for p in (row["old"], row["path"])}
-    index = ownership_index(before, after)
     inventory = {
         p
         for p in after
@@ -950,6 +975,8 @@ def enrich_impact(
             )
             if path in actual_changes:
                 continue
+            if imports_index is None:
+                imports_index = ownership_index(before, after)
             addition = select(
                 policy,
                 before,
@@ -957,7 +984,7 @@ def enrich_impact(
                 [{"status": "M", "old": path, "path": path}],
                 None,
                 read_json(directory / "skip-allowlist.json"),
-                imports_index=index,
+                imports_index=imports_index,
             )
             candidate = json.loads(canonical(current))
             for field in ("groups", "jobs", "typescript_families"):
@@ -1004,6 +1031,16 @@ def enrich_impact(
             admissions.append(
                 {"source": raw, "status": "rejected", "reason": str(exc)[:512]}
             )
+    evidence["additional_selectors"] = {
+        lane: [s for s in data["selectors"] if not any(
+            matches(existing, s) for existing in floor["lanes"].get(lane, {}).get("selectors", ())
+        )]
+        for lane, data in current["lanes"].items()
+    }
+    original_files = {s.partition("::")[0] for lane in floor["lanes"].values() for s in lane["selectors"]}
+    evidence["additional_test_files"] = sorted({
+        s.partition("::")[0] for selectors in evidence["additional_selectors"].values() for s in selectors
+    } - original_files)
     evidence["admissions"] = admissions
     if any(row["status"] == "rejected" for row in admissions):
         evidence["gaps"].append(
@@ -1073,6 +1110,7 @@ def make_plan(
     before_catalog, after_catalog = tree(root, base), tree(root, candidate)
     rows = changes(root, base, candidate)
     before_code, after_code = blobs(root, before_catalog), blobs(root, after_catalog)
+    index = ownership_index(before_code, after_code)
     selected = select(
         policy,
         before_code,
@@ -1080,6 +1118,7 @@ def make_plan(
         rows,
         pr.get("body"),
         read_json(directory / "skip-allowlist.json"),
+        imports_index=index,
     )
     result = {
         "schema": SCHEMA,
@@ -1109,6 +1148,7 @@ def make_plan(
                 result,
                 impact_work,
                 provider_python,
+                imports_index=index,
             )
         else:
             with tempfile.TemporaryDirectory(prefix="llm-wiki-pr-impact-") as scratch:
@@ -1121,6 +1161,7 @@ def make_plan(
                     result,
                     Path(scratch) / "work",
                     provider_python,
+                    imports_index=index,
                 )
     return result
 
@@ -1751,6 +1792,17 @@ def outputs(plan: dict, plan_path: Path) -> None:
         "core-check-comparison",
     ):
         data[job] = str(job in plan["jobs"]).lower()
+    impact = plan.get("impact")
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary and impact:
+        extra = sum(map(len, impact.get("additional_selectors", {}).values()))
+        with Path(summary).open("a", encoding="utf-8") as stream:
+            stream.write(
+                f"Wiki impact: {impact['status']} ({impact['reason']}). "
+                f"{len(impact['queries'])} queries, {len(impact['admissions'])} hint decisions, "
+                f"{extra} additional lane selectors covering {len(impact.get('additional_test_files', []))} "
+                "new test files. See the plan artifact for bounds and reasons.\n"
+            )
     target = os.environ.get("GITHUB_OUTPUT")
     if target:
         with Path(target).open("a", encoding="utf-8") as stream:
@@ -1807,13 +1859,14 @@ def main() -> int:
                     "proposal body unavailable or oversized",
                 )
                 body = args.body.read_text(encoding="utf-8")
+            before = blobs(args.root, tree(args.root, args.base))
+            after = blobs(args.root, tree(args.root, args.head))
+            index = ownership_index(before, after)
+            rows = changes(args.root, args.base, args.head)
+            policy = policy_load(directory)
             result = select(
-                policy_load(directory),
-                blobs(args.root, tree(args.root, args.base)),
-                blobs(args.root, tree(args.root, args.head)),
-                changes(args.root, args.base, args.head),
-                body,
-                read_json(directory / "skip-allowlist.json"),
+                policy, before, after, rows, body,
+                read_json(directory / "skip-allowlist.json"), imports_index=index,
             )
             preview_result = {
                 "schema": SCHEMA,
@@ -1836,7 +1889,7 @@ def main() -> int:
                         "policy_sha256": policy_identity(directory),
                         "run_id": 0,
                         "run_attempt": 0,
-                        "changes": changes(args.root, args.base, args.head),
+                        "changes": rows,
                     }
                 )
                 with tempfile.TemporaryDirectory(
@@ -1845,12 +1898,11 @@ def main() -> int:
                     preview_result = enrich_impact(
                         args.root,
                         directory,
-                        policy_load(directory),
-                        blobs(args.root, tree(args.root, args.base)),
-                        blobs(args.root, tree(args.root, args.head)),
+                        policy, before, after,
                         preview_result,
                         Path(scratch) / "work",
                         args.impact_provider_python,
+                        imports_index=index,
                     )
             print(
                 json.dumps(

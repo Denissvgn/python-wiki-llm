@@ -8,7 +8,6 @@ No result from this module permits dropping a mandatory test or owner.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -19,6 +18,7 @@ import venv
 from typing import Callable
 
 
+PACKAGES = ("llm_wiki_cli", "llm_wiki_engine")
 SCHEMA = "agent-wiki-pr-ci-impact/v1"
 MAX_PATHS = 32
 MAX_CONCEPTS = 3
@@ -142,7 +142,7 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
             {
                 "operation": "impact",
                 "paths": selected,
-                "source_policy": "discovery",
+                "read": "selected",
                 "limit": QUERY_LIMIT,
             }
         )
@@ -157,7 +157,7 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
                 c["locator"]: (
                     0
                     if c.get("page_kind") == "module"
-                    or c.get("concept_kind") == "module"
+                    or c.get("concept_kind") == "source-module"
                     else 1
                 )
                 for c in impact.get("concepts", [])
@@ -300,9 +300,11 @@ def freeze_provider(ci, root: Path, base: str, destination: Path) -> dict:
         # The trusted build declares this manual as an installed data-file.
         "docs/standalone-documentation.md",
     }
-    paths = sorted(
-        p for p in catalog if p.startswith("src/llm_wiki_cli/") or p in build_files
-    )
+    build_files.update("src/" + name for name in (
+        "pyproject.toml", "release_build_backend.py", "README.md", "LICENSE", "MANIFEST.in",
+    ))
+    prefixes = tuple(f"src/{name}/" for name in PACKAGES)
+    paths = sorted(p for p in catalog if p.startswith(prefixes) or p in build_files)
     ci.require(
         0 < len(paths) <= MAX_PROVIDER_FILES, "provider file count exceeds limit"
     )
@@ -319,27 +321,24 @@ def freeze_provider(ci, root: Path, base: str, destination: Path) -> dict:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
         inputs[path] = ci.digest(raw)
-    python = {
-        p.removeprefix("src/llm_wiki_cli/"): sha
-        for p, sha in inputs.items()
-        if p.startswith("src/llm_wiki_cli/") and p.endswith(".py")
+    packages = {
+        name: {
+            p.removeprefix(f"src/{name}/"): sha for p, sha in inputs.items()
+            if p.startswith(f"src/{name}/") and Path(p).name != ".gitignore"
+        }
+        for name in PACKAGES
     }
     ci.require(
-        python and "src/llm_wiki_cli/services/analysis_contracts.json" in inputs,
+        all("__init__.py" in files for files in packages.values())
+        and "src/pyproject.toml" in inputs
+        and "services/analysis_contracts.json" in packages["llm_wiki_cli"],
         "base provider is incomplete",
     )
     return {
         "base_sha": base,
         "base_tree": ci.git(root, "rev-parse", base + "^{tree}").decode().strip(),
         "source_inputs_sha256": ci.digest(ci.canonical(inputs)),
-        "python_files": python,
-        "package_files": {
-            p.removeprefix("src/llm_wiki_cli/"): sha
-            for p, sha in inputs.items()
-            # Git ignore metadata is frozen for build identity but is not
-            # distributed as an installed provider resource.
-            if p.startswith("src/llm_wiki_cli/") and Path(p).name != ".gitignore"
-        },
+        "packages": packages,
         "source_selection_sha256": ci.digest(
             ci.git(root, "show", base + ":.llm-wiki/source-selection.json")
         ),
@@ -347,6 +346,10 @@ def freeze_provider(ci, root: Path, base: str, destination: Path) -> dict:
             "src/llm_wiki_cli/services/analysis_contracts.json"
         ],
     }
+
+
+def offline_install_args(source: Path) -> list[str]:
+    return ["--no-index", "--no-deps", "--no-build-isolation", str(source / "src"), str(source)]
 
 
 def clean_environment() -> dict[str, str]:
@@ -372,6 +375,7 @@ def collect(
     )
     if not paths:
         return report(binding, "not-applicable", "no-supplied-python-paths")
+    stage = "freeze"
     try:
         ci.require(not work.exists(), "refuse to overwrite impact evidence")
         work.mkdir(parents=True)
@@ -379,6 +383,7 @@ def collect(
         provider = freeze_provider(ci, root, binding["base_sha"], provider_source)
         interpreter = provider_python
         if interpreter is None:
+            stage = "install"
             environment = work / ".venv"
             venv.EnvBuilder(with_pip=True).create(environment)
             interpreter = environment / (
@@ -400,10 +405,7 @@ def collect(
                     "-m",
                     "pip",
                     "install",
-                    "--no-index",
-                    "--no-deps",
-                    "--no-build-isolation",
-                    str(provider_source),
+                    *offline_install_args(provider_source),
                 ],
             ]
             with (work / "provider-setup.log").open("wb") as log:
@@ -419,6 +421,7 @@ def collect(
                     ci.require(
                         done.returncode == 0, "trusted impact provider setup failed"
                     )
+        stage = "worker"
         request = {
             "schema": SCHEMA,
             "binding": binding,
@@ -473,47 +476,35 @@ def collect(
             {
                 "reason": "trusted-provider-or-worker-unavailable",
                 "error": type(exc).__name__,
+                "stage": stage,
             }
         ]
         return result
 
 
+def verify_package(ci, name: str, files: dict[str, str]) -> dict:
+    spec = importlib.util.find_spec(name)
+    if spec is None or spec.origin is None:
+        raise ValueError(f"installed base provider missing: {name}")
+    package = Path(spec.origin).resolve().parent
+    ci.require(package.is_relative_to(Path(sys.prefix).resolve()),
+               f"{name} must be installed noneditably in its interpreter")
+    actual = {p.relative_to(package).as_posix() for p in package.rglob("*.py")}
+    ci.require(actual == {path for path in files if path.endswith(".py")},
+               f"installed {name} Python inventory differs from trusted base")
+    for path, sha in files.items():
+        installed = package / path
+        ci.require(installed.resolve().is_relative_to(package) and installed.is_file()
+                   and ci.digest(ci.bounded_file(installed, ci.MAX_JSON)) == sha,
+                   f"installed {name} package bytes differ from trusted base: {path}")
+    return {"origin": str(package), "python_files_verified": len(actual),
+            "package_files_verified": len(files)}
+
+
 def worker(ci, request: dict) -> dict:
     ci.require(request.get("schema") == SCHEMA, "unknown impact request")
-    # -I and an installed package ensure no candidate source is imported.
-    spec = importlib.util.find_spec("llm_wiki_cli")
-    ci.require(
-        spec is not None and spec.origin is not None, "installed base provider missing"
-    )
-    if spec is None or spec.origin is None:
-        raise ValueError("installed base provider missing")
-    package = Path(spec.origin).parent
-    ci.require(
-        package.is_relative_to(Path(sys.prefix)),
-        "impact provider must be installed noneditably in its interpreter",
-    )
     expected = request["provider"]
-    actual = {
-        p.relative_to(package).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
-        for p in package.rglob("*.py")
-    }
-    ci.require(
-        actual == expected["python_files"],
-        "installed provider Python bytes differ from trusted base",
-    )
-    ci.require(
-        all(
-            (package / name).is_file()
-            and ci.digest(ci.bounded_file(package / name, ci.MAX_JSON)) == sha
-            for name, sha in expected["package_files"].items()
-        ),
-        "installed provider package bytes differ from trusted base",
-    )
-    ci.require(
-        ci.digest((package / "services/analysis_contracts.json").read_bytes())
-        == expected["analysis_contracts_sha256"],
-        "provider analysis registry differs",
-    )
+    packages = {name: verify_package(ci, name, expected["packages"][name]) for name in PACKAGES}
     root = Path(request["root"])
     ci.require(
         ci.git(root, "rev-parse", "HEAD").decode().strip()
@@ -531,8 +522,17 @@ def worker(ci, request: dict) -> dict:
             {"reason": "source-selection-changed", "scope_widened": False}
         )
         return result
-    from llm_wiki_cli.api import query_documentation
+    try:
+        from llm_wiki_cli.api import query_documentation
+        from llm_wiki_engine.source_selection import resolve_source_selection, path_is_selected
+    except ImportError as exc:
+        result = report(request["binding"], "unavailable", "provider-import-failed")
+        result["gaps"].append({"stage": "import", "error": type(exc).__name__, "module": exc.name})
+        return result
 
+    policy = resolve_source_selection(root, request["source_selection"])
+    ci.require(policy is not None, "expected a bound source selection")
+    paths = [path for path in request["paths"] if path_is_selected(policy, path)]
     result = observe(
         lambda query: dict(
             query_documentation(
@@ -543,21 +543,23 @@ def worker(ci, request: dict) -> dict:
                 allow_external_src=True,
             )
         ),
-        request["paths"],
+        paths,
         request["binding"],
     )
     ci.require(
         ci.git(root, "status", "--porcelain", "--untracked-files=no").strip() == b"",
         "impact read modified tracked inputs",
     )
+    if not paths:
+        result["reason"] = "no-selected-python-paths"
+    result["excluded_paths"] = sorted(set(request["paths"]) - set(paths))
     result["provider"] = {
         k: expected[k] for k in ("base_sha", "base_tree", "source_inputs_sha256")
     }
     result["provider"].update(
         {
-            "python_files_verified": len(actual),
-            "package_files_verified": len(expected["package_files"]),
-            "origin": str(package),
+            **packages["llm_wiki_cli"],
+            "packages": packages,
             "python": sys.version.split()[0],
             "editable": False,
         }
@@ -573,7 +575,14 @@ def main() -> int:
     args = parser.parse_args()
     ci = ci_module()
     try:
-        ci.write_json(args.output, worker(ci, ci.read_json(args.request)))
+        request = ci.read_json(args.request)
+        try:
+            result = worker(ci, request)
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            result = report(request["binding"], "unavailable", "worker-validation-failed")
+            result["gaps"].append({"stage": "validation", "error": type(exc).__name__,
+                                   "detail": str(exc)[:512]})
+        ci.write_json(args.output, result)
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(
             "Impact worker refused: " + type(exc).__name__ + ": " + str(exc)[:512],
