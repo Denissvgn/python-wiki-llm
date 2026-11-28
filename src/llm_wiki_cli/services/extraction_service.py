@@ -600,7 +600,7 @@ def _completed_inventory_result(
         implementation_observations=implementation_observations,
         extraction_cache_hashes=dict(context.raw_bundle_hashes),
         path_outcomes=_inventory_path_outcomes(context, inventory, outcomes_by_language),
-        **_python_extraction_sidecars(context, outcomes_by_language),
+        **_python_extraction_sidecars(context, outcomes_by_language, inventory),
     )
 
 
@@ -615,7 +615,9 @@ def _inventory_path_outcomes(context, inventory, outcomes_by_language) -> dict:
             path = source.rel_path
             if context.request.only_files is not None and path not in context.request.only_files:
                 continue
-            if path in reported:
+            if path not in inventory and reported.get(path, {}).get("retained_empty") is True:
+                result[path] = {"extraction_state": "no-documentable-content", "reason": "no-documentable-content"}
+            elif path in reported:
                 result[path] = dict(reported[path])
             elif path in inventory:
                 result[path] = {"extraction_state": "extracted", "reason": "inventory-entry"}
@@ -669,6 +671,7 @@ def _implementation_observations(context: _InventoryBuildContext, outcomes: dict
 def _python_extraction_sidecars(
     context: _InventoryBuildContext,
     outcomes_by_language: dict[str, _ExtractionOutcome],
+    inventory: dict,
 ) -> dict:
     outcome = outcomes_by_language.get("python")
     result = {
@@ -686,6 +689,8 @@ def _python_extraction_sidecars(
     ):
         return result
     paths = context.source_snapshot.language_paths("python")
+    if context.request.only_files is not None:
+        paths = sorted(set(paths).intersection(context.request.only_files))
     if context.request.capture_data_effect_observations and all(
         "data_effects" in context.python_sidecars.get(path, {}) for path in paths
     ):
@@ -699,7 +704,7 @@ def _python_extraction_sidecars(
     ):
         result["import_observations"] = import_sidecar(
             deepcopy(record)
-            for sidecars in context.python_sidecars.values()
+            for path, sidecars in context.python_sidecars.items() if path in inventory
             for record in sidecars.get("imports", {}).get("observations", [])
         )
     return result
@@ -1303,6 +1308,9 @@ def _build_extraction_kwargs(
         kwargs["include_empty"] = context.request.include_empty
         if is_builtin:
             kwargs["defer_inventory_model_kinds"] = True
+            # Keep parser-qualified sparse records in the per-file cache. The
+            # merged importers decide which of them belong in the inventory.
+            kwargs["include_empty"] = context.request.include_empty or context.request.deep
             if context.request.capture_path_outcomes:
                 kwargs["diagnostics"] = True
             if context.request.retain_empty_paths:
@@ -1564,11 +1572,35 @@ def _merge_inventory_results(
             for path, entry in inventory.items()
             if entry.get("language") == "python"
         }
+        if context.request.deep and not context.request.include_empty:
+            for path in _unreferenced_python_modules(python_inventory, context.request.retain_empty_paths):
+                del python_inventory[path]
+                del inventory[path]
         resolver = build_module_path_resolver(python_inventory)
         finalize_inventory_model_kinds(
             python_inventory, module_candidates=resolver.candidates
         )
     return inventory
+
+
+def _unreferenced_python_modules(inventory: dict, retain_empty_paths: tuple[str, ...]) -> set[str]:
+    """Retain a sparse module only when reachable from a selected Python from-import."""
+    sparse = {path for path, entry in inventory.items() if entry.get("empty_module") is True}
+    pending = sparse.difference(retain_empty_paths)
+    if not pending:
+        return pending
+    resolver = build_module_path_resolver(inventory)
+    sources = list(inventory.keys() - pending)
+    while sources:
+        importer = sources.pop()
+        for record in inventory[importer].get("imports", ()):
+            if record.get("type") != "from" or record["name"] == "*":
+                continue
+            children = resolver.from_import_children(record["module"], record["name"], importer)
+            retained = pending.intersection(children)
+            pending.difference_update(retained)
+            sources.extend(retained)
+    return pending
 
 
 def _ordered_inventory_statuses(

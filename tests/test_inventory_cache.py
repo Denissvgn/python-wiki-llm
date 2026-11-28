@@ -311,3 +311,26 @@ def test_pure_warm_cache_hit_does_not_rewrite_cache(tmp_path):
     assert second.cache_stats.status == "hit"
     assert second.cache_stats.hits == 1
     assert second.cache_stats.saved_entries == 0
+
+
+def test_unchanged_sparse_child_follows_the_current_importer(tmp_path):
+    root = tmp_path / "src"
+    package = root / "pkg"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("def marker(): pass\n")
+    (package / "mod.py").touch()
+    importer = root / "client.py"
+    options = InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "cache"))
+
+    def inventory():
+        return get_inventory_result(root, deep=True, cache_options=options, include_plugins=False)
+
+    importer.write_text("import pkg\n")
+    assert "pkg/mod.py" not in inventory().inventory
+    importer.write_text("from pkg import mod\n")
+    warm = inventory()
+    assert warm.cache_stats is not None and warm.cache_stats.hits == 2
+    assert warm.inventory["pkg/mod.py"]["empty_module"]
+    assert warm.inventory == get_inventory_result(root, deep=True, include_plugins=False).inventory
+    importer.write_text("from pkg import marker\n")
+    assert "pkg/mod.py" not in inventory().inventory

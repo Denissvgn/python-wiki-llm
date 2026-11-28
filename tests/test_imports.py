@@ -364,3 +364,32 @@ def test_target_scoped_relationships_match_full_relationships_for_targets():
     scoped = _build_relationships(inventory, target_entities={("Model", "models.py")})
 
     assert scoped == {("Model", "models.py"): full[("Model", "models.py")]}
+
+
+def test_sparse_child_selection_uses_scopes_bindings_and_selected_sources(tmp_path):
+    from llm_wiki_cli.services.dependencies import build_dependency_observations
+    from llm_wiki_cli.services.extraction_service import get_inventory_result
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname="example"\nversion="1.0"\n'
+        '[tool.setuptools.packages.find]\nwhere=["a","b"]\n'
+    )
+    (tmp_path / ".gitignore").write_text("ignored.py\n")
+    for root in ("a/pkg", "b/pkg"):
+        package = tmp_path / root
+        package.mkdir(parents=True)
+        (package / "__init__.py").write_text("def symbol(): pass\n")
+        (package / "child.py").touch()
+        (package / "symbol.py").touch()
+        (package / "ignored.py").touch()
+    (tmp_path / "use.py").write_text("from pkg import child as c, symbol, ignored\n")
+    result = get_inventory_result(str(tmp_path), deep=True, capture_path_outcomes=True)
+    observed = build_dependency_observations(result.inventory)["observations"]
+    by_name = {item["name"]: item for item in observed}
+    assert by_name["child"]["resolution"] == "ambiguous"
+    assert by_name["child"]["candidates"] == ["a/pkg/child.py", "b/pkg/child.py"]
+    for name in ("symbol", "ignored"):
+        assert by_name[name]["candidates"] == ["a/pkg/__init__.py", "b/pkg/__init__.py"]
+    assert result.path_outcomes["a/pkg/child.py"]["retained_empty"]
+    assert result.path_outcomes["a/pkg/symbol.py"]["extraction_state"] == "no-documentable-content"
+    assert "a/pkg/ignored.py" not in result.inventory
